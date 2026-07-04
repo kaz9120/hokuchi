@@ -1,0 +1,166 @@
+# サンプルデッキ「スライドは、意図で書く」(schema_version 0.1.0)
+# 中心仮説「意図を書けば配置を導出できる」の検証用。
+# 要素 6 種 (statement/bullets/image/diagram/chart/quote) と、
+# 名前付きパターン + グリッド直接指定の両方を含む。
+# spike/deck.yaml を新スキーマ (slot 制・構造化 edges・annotations・scales) へ移行した。
+schema_version: "0.1.0"
+deck:
+  title: "スライドは、意図で書く"
+  audience:
+    who: "Code to Slide ツールに表現力の限界を感じているエンジニア"
+    action: "次の登壇資料を、ピクセルではなく意図で書いてみる"
+  scales:
+    revenue:
+      y: { min: 0, max: 80 }
+  theme: ../../themes/hokuchi.yaml
+
+slides:
+  - id: opener
+    role: opener
+    idea: "焚き火を愛するエンジニアの登壇が始まる"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "焚き火を愛するエンジニア"
+        emphasis: ["焚き火"]
+    notes: |
+      開演前のバンパースライド。キャッチコピーのみ。
+
+  - id: title
+    role: title
+    idea: "この 30 分で「スライドを意図で書く」という選択肢を持ち帰ってもらう"
+    layout: title-stage
+    elements:
+      - kind: statement
+        slot: title
+        text: "スライドは、意図で書く"
+      - kind: statement
+        slot: subtitle
+        text: "Code to Slide の次へ"
+    notes: |
+      タイトルと副題。発表者名はテーマの opener 仕様に将来統合する。
+
+  - id: placement-is-meaning
+    role: content
+    idea: "スライドの意味の半分は配置が担っている"
+    layout: statement-stage
+    connect: cut
+    elements:
+      - kind: statement
+        slot: statement
+        text: "配置がストーリーを決める"
+        emphasis: ["配置"]
+    notes: |
+      slide:ology p.119「オブジェクトのサイズや接近度で、ストーリーは変わる」。
+      Markdown には配置の語彙がない、という問題提起につなげる。
+
+  - id: campfire-scene
+    role: content
+    idea: "夜の焚き火を囲む時間が、このツールの世界観の原点"
+    layout:
+      areas:
+        - { element: hero, cell: "1-2 / 1-6" }
+        - { element: caption, cell: "3-4 / 3-4" }
+      whitespace_min: 0.3
+    elements:
+      - kind: image
+        id: hero
+        prompt: "夜のキャンプ場で焚き火を囲む 3 人のエンジニア。炎の暖色光が顔を照らす。自然光なし、望遠、浅い被写界深度"
+        treatment: full-bleed
+        subject: third-left
+      - kind: statement
+        id: caption
+        text: "火を囲むように、聴衆と向き合う"
+    notes: |
+      src なし・prompt のみの画像要素。プロンプト文をプレースホルダとして描画する。
+
+  - id: how-it-works
+    role: content
+    idea: "書くのは意図、導出するのはレンダラ、確かめるのは目"
+    layout: diagram-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "意図を書けば、配置は導出できる"
+      - kind: diagram
+        slot: diagram
+        form: flow.cycle
+        nodes:
+          - { id: declare, label: "意図を書く" }
+          - { id: derive,  label: "配置を導出する" }
+          - { id: verify,  label: "目で確かめる" }
+        edges:
+          - declare -> derive
+          - derive -> verify
+          - { from: verify, to: declare, label: "次の周へ" }
+        emphasis: [declare]
+    notes: |
+      このデッキ自体がこのサイクルの 1 周目。
+
+  - id: training-impact
+    role: content
+    idea: "3 月の研修開始が売上反転の起点だった"
+    layout: chart-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "研修が売上を反転させた"
+      - kind: chart
+        slot: chart
+        intent: trend
+        message: "3 月の研修開始と売上の底が一致する"
+        scale: revenue
+        data:
+          x: ["1月", "2月", "3月", "4月", "5月", "6月"]
+          series:
+            - { label: "売上 (百万円)", values: [42, 35, 28, 39, 55, 71] }
+        annotations:
+          - { at: "3月", annotate: "販売研修 開始", style: highlight }
+        detail: appendix
+    notes: |
+      slide:ology p.88 の Sales Drivers 事例の再現。
+      強調レイヤーが「意味」を語れているかがこのスライドの検証点。
+
+  - id: bullet-rules
+    role: content
+    idea: "箇条書きは見出しであって本文ではない"
+    layout: list-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "箇条書きの原則"
+      - kind: bullets
+        slot: list
+        items:
+          - "聴衆を犠牲にしない"
+          - "控えめに使う"
+          - "見出しのつもりで作成する"
+        reveal: one-by-one
+    notes: |
+      slide:ology p.171。5 原則のうち 3 つに絞ってある。
+      残り 2 つ (言い回しを統一する / サブ項目の導入は避ける) は口頭で。
+
+  - id: duarte-quote
+    role: content
+    idea: "データスライドの仕事はデータではなく意味を伝えること"
+    layout: quote-stage
+    elements:
+      - kind: quote
+        slot: quote
+        text: "データスライドが伝えるべきは、データそのものではなく、データの意味です。"
+        attribution: "ナンシー・デュアルテ『slide:ology』"
+    notes: |
+      chart スキーマの message 必須の根拠になっている一文。
+
+  - id: closer
+    role: closer
+    idea: "聴衆が次の登壇資料を意図で書き始める"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "次の登壇、意図で書いてみませんか"
+        emphasis: ["意図"]
+    notes: |
+      行動への呼びかけで閉じる (slide:ology p.37 の第 5 質問)。

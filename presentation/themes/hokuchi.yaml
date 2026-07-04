@@ -1,0 +1,48 @@
+# hokuchi デフォルトテーマ (schema_version 0.1.0)
+# 導出元: BRAND.md §6 / hidoko/packages/ui/src/tokens.css
+# 値は spike/theme.yaml を踏襲し、SPEC §2 の新形式へ移行した。
+schema_version: "0.1.0"
+theme:
+  grid:
+    pattern: col-4        # 4 カラム
+    rows: 6               # grid-direct のセル行番号の基準 (ADR-0008-1)
+    stage_margin: 1       # 上下 1 行を空ける「映画スクリーン」効果
+  palette:
+    # core: 本体コンテンツ・データ系列の色 (落ち着いた補助色)
+    core:
+      - "#c8d4e0"         # moon — 情報・第 2 系列
+      - "#7a8c5e"         # moss — 第 3 系列
+      - "#7c8590"         # smoke — 補助線・第 4 系列
+    # neutral: 役割名スロット (index 参照は不安定なため)
+    neutral:
+      bg: "#0a0907"         # ink-0 夜の闇
+      surface: "#1a1814"    # ink-100 面
+      line: "#3a342b"       # ink-300 罫線・チャート背景レイヤー
+      muted: "#a8a094"      # ink-600 dim されたテキスト
+      text: "#ebe5d8"       # ink-800 標準テキスト
+      text_strong: "#f5f1e6" # ink-900 見出し
+    # highlight: 強調専用 1 色 = ブランド指紋色 ember-400
+    highlight: "#f47d3a"
+    background: dark
+  type:
+    display:
+      family: '"LINE Seed JP", "Inter", sans-serif'
+      weight: 700
+    body:
+      family: '"LINE Seed JP", "Inter", sans-serif'
+      weight: 400
+      min_size_pt: 24
+    # タイプスケール: 役割ごとのフォントサイズ (px)。spike NOTES §1 の実測表 (ADR-0007)
+    scale:
+      hero: 80          # opener / closer の statement
+      title: 74         # title-stage の主タイトル
+      big: 70           # content の statement-stage
+      quote: 46         # 引用本文
+      heading: 34       # diagram / chart / list の見出し
+      bullet: 34        # 箇条書き項目
+      subtitle: 30      # title-stage の副題
+      attribution: 24   # 引用の出典
+      node: 24          # ダイアグラムのノードラベル
+      axis: 20          # チャートの軸ラベル
+  iconography: flat
+  space: 2d

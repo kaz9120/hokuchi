@@ -1,0 +1,20 @@
+{
+  "name": "@hokuchi/presentation",
+  "version": "0.1.0",
+  "description": "hokuchi slide schema CLI — parse / lint / render intent-declared decks",
+  "type": "module",
+  "bin": {
+    "hokuchi": "./cli.mjs"
+  },
+  "scripts": {
+    "test": "node test/check.mjs",
+    "lint:example": "node cli.mjs lint examples/intent-talk/deck.yaml",
+    "render:example": "node cli.mjs render examples/intent-talk/deck.yaml -o out-example",
+    "shot:example": "node cli.mjs shot out-example"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "budoux": "^0.6.4",
+    "js-yaml": "^4.1.0"
+  }
+}

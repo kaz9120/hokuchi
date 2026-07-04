@@ -1,0 +1,10 @@
+{
+  "name": "hokuchi-slide-spike",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Throwaway spike: render intent-declared slides to static HTML",
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  }
+}

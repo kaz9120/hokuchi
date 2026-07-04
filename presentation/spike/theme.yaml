@@ -1,0 +1,34 @@
+# hokuchi デフォルトテーマ (spike 版)
+# 導出元: BRAND.md §6 / hidoko/packages/ui/src/tokens.css
+schema_version: "0.0.1-spike"
+theme:
+  grid:
+    pattern: col-4        # 4 カラム。行はレンダラが 6 行で導出 (spike の暫定)
+    stage_margin: 1       # 上下 1 行を空ける「映画スクリーン」効果
+  palette:
+    # core: 本体コンテンツ用の落ち着いた色 (補助色から)
+    core:
+      - "#c8d4e0"         # moon — 情報・第 2 系列
+      - "#7a8c5e"         # moss — 第 3 系列
+      - "#7c8590"         # smoke — 補助線・第 4 系列
+    # neutral: スロットに役割名を持たせる (index 参照は不安定なため)
+    neutral:
+      bg: "#0a0907"       # ink-0 夜の闇
+      surface: "#1a1814"  # ink-100
+      line: "#3a342b"     # ink-300 罫線・チャート背景レイヤー
+      muted: "#a8a094"    # ink-600 dim されたテキスト
+      text: "#ebe5d8"     # ink-800 標準テキスト
+      text_strong: "#f5f1e6"  # ink-900 見出し
+    # highlight: 強調専用 1 色 = ブランド指紋色 ember-400
+    highlight: "#f47d3a"
+    background: dark
+  type:
+    display:
+      family: '"LINE Seed JP", "Inter", sans-serif'
+      weight: 700
+    body:
+      family: '"LINE Seed JP", "Inter", sans-serif'
+      weight: 400
+      min_size_pt: 24
+  iconography: flat
+  space: 2d

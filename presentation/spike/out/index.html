@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=1280">
+<title>hokuchi slide spike</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+.slide{width:1280px;height:720px;position:relative;overflow:hidden;
+  background:#0a0907;color:#ebe5d8;font-family:"LINE Seed JP", "Inter", sans-serif;font-weight:400;
+  -webkit-font-smoothing:antialiased;letter-spacing:.01em}
+.hi{color:#f47d3a;font-weight:700}
+.stage{position:absolute;display:flex;flex-direction:column}
+.stage.center{align-items:center;justify-content:center;text-align:center}
+.stage.col{gap:0}
+.stage-main{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;width:100%}
+.center{display:flex;align-items:center;justify-content:center}
+
+/* statement-stage */
+.statement-hero{font-family:"LINE Seed JP", "Inter", sans-serif;font-weight:700;line-height:1.22;
+  color:#f5f1e6;max-width:1000px}
+
+/* title-stage — asymmetric bottom-left */
+.title-band{align-items:flex-start;justify-content:flex-end}
+.title-accent{width:76px;height:6px;background:#f47d3a;border-radius:3px;margin-bottom:28px}
+.title-main{font-family:"LINE Seed JP", "Inter", sans-serif;font-weight:700;line-height:1.16;
+  color:#f5f1e6;text-align:left}
+.title-sub{color:#a8a094;margin-top:22px;text-align:left;letter-spacing:.04em}
+
+/* section heading (diagram/chart/list top) */
+.section-head{font-family:"LINE Seed JP", "Inter", sans-serif;font-weight:700;color:#ebe5d8;
+  text-align:left;line-height:1.3;margin-bottom:24px;flex:0 0 auto}
+
+/* bullets */
+.bullets{list-style:none;margin-top:40px;display:flex;flex-direction:column;gap:34px;width:100%}
+.bullets li{display:flex;align-items:baseline;gap:24px;font-size:34px;
+  color:#ebe5d8;line-height:1.4}
+.bullets .dot{flex:0 0 auto;width:12px;height:12px;border-radius:50%;
+  background:#f47d3a;transform:translateY(-4px)}
+
+/* quote */
+.quote-block{max-width:960px;position:relative}
+.quote-mark{font-family:"LINE Seed JP", "Inter", sans-serif;font-size:130px;line-height:.7;color:#3a342b;
+  position:absolute;top:-42px;left:-18px;user-select:none}
+.quote-text{font-family:"LINE Seed JP", "Inter", sans-serif;font-weight:700;font-size:46px;
+  line-height:1.5;color:#f5f1e6;position:relative}
+.quote-attr{margin-top:34px;font-size:24px;color:#a8a094;text-align:right}
+
+/* diagram / chart wrappers */
+.diagram-wrap,.chart-wrap{width:100%;height:100%;display:flex;justify-content:center;align-items:center}
+
+/* grid-direct */
+.grid-stage{position:absolute;inset:0;display:grid;gap:0}
+.grid-cell{position:relative;overflow:hidden;display:flex}
+.grid-caption{align-self:flex-end;padding:34px;font-family:"LINE Seed JP", "Inter", sans-serif;
+  font-weight:700;font-size:38px;line-height:1.3;color:#f5f1e6}
+
+/* image placeholder */
+.img-ph{position:relative;width:100%;height:100%;background:#1a1814;
+  display:flex;align-items:center;justify-content:center;overflow:hidden}
+.img-inner{display:flex;flex-direction:column;align-items:center;gap:22px;
+  padding:36px;max-width:88%;text-align:center}
+.img-prompt{color:#a8a094;font-size:20px;line-height:1.6}
+.img-badge{position:absolute;top:16px;left:16px;font-size:15px;letter-spacing:.14em;
+  color:#a8a094;text-transform:uppercase;border:1px solid #3a342b;
+  padding:4px 10px;border-radius:4px}
+.img-corner{position:absolute;width:22px;height:22px;border:2px solid #3a342b;opacity:.9}
+.img-corner.tl{top:14px;left:14px;border-right:0;border-bottom:0}
+.img-corner.tr{top:14px;right:14px;border-left:0;border-bottom:0}
+.img-corner.bl{bottom:14px;left:14px;border-right:0;border-top:0}
+.img-corner.br{bottom:14px;right:14px;border-left:0;border-top:0}
+
+.err{color:#f47d3a;font-size:28px}
+
+body.index{background:#050403;padding:56px 0;font-family:"LINE Seed JP", "Inter", sans-serif}
+.deck-head{width:1280px;margin:0 auto 44px;color:#ebe5d8}
+.deck-head h1{font-family:"LINE Seed JP", "Inter", sans-serif;font-weight:700;font-size:40px;color:#f5f1e6}
+.deck-head p{color:#a8a094;margin-top:10px;font-size:18px}
+.slide-item{width:1280px;margin:0 auto 56px}
+.slide-cap{color:#a8a094;font-size:15px;margin-bottom:12px;font-family:"LINE Seed JP", "Inter", sans-serif;letter-spacing:.03em}
+.slide-cap b{color:#ebe5d8;font-weight:700}
+.slide-cap .idea{color:#ebe5d8}
+.slide-frame{box-shadow:0 8px 40px rgba(0,0,0,.6);border-radius:6px;overflow:hidden}
+</style>
+</head><body class="index">
+  <div class="deck-head">
+    <h1>スライドは、意図で書く</h1>
+    <p>Code to Slide ツールに表現力の限界を感じているエンジニア — 全 9 枚 / 1280×720</p>
+  </div>
+  <div class="slide-item">
+    <div class="slide-cap"><b>01 · opener</b> &nbsp; statement-stage · role:opener<br><span class="idea">idea: 焚き火を愛するエンジニアの登壇が始まる</span></div>
+    <div class="slide-frame"><div class="slide"><div class="stage center" style="left:96px;right:96px;top:64px;bottom:64px;">
+    <div class="statement-hero" style="font-size:80px"><span class="hi">焚き火</span>を愛するエンジニア</div>
+  </div></div></div>
+  </div>
+  <div class="slide-item">
+    <div class="slide-cap"><b>02 · title</b> &nbsp; title-stage · role:title<br><span class="idea">idea: この 30 分で「スライドを意図で書く」という選択肢を持ち帰ってもらう</span></div>
+    <div class="slide-frame"><div class="slide"><div class="stage title-band" style="left:96px;right:96px;top:162.66666666666669px;bottom:162.66666666666669px;">
+    <div class="title-accent"></div>
+    <div class="title-main" style="font-size:74px">スライドは、意図で書く</div>
+    <div class="title-sub" style="font-size:30px">Code to Slide の次へ</div>
+  </div></div></div>
+  </div>
+  <div class="slide-item">
+    <div class="slide-cap"><b>03 · placement-is-meaning</b> &nbsp; statement-stage · role:content<br><span class="idea">idea: スライドの意味の半分は配置が担っている</span></div>
+    <div class="slide-frame"><div class="slide"><div class="stage center" style="left:96px;right:96px;top:162.66666666666669px;bottom:162.66666666666669px;">
+    <div class="statement-hero" style="font-size:70px"><span class="hi">配置</span>がストーリーを決める</div>
+  </div></div></div>
+  </div>
+  <div class="slide-item">
+    <div class="slide-cap"><b>04 · campfire-scene</b> &nbsp; grid-direct · role:content<br><span class="idea">idea: 夜の焚き火を囲む時間が、このツールの世界観の原点</span></div>
+    <div class="slide-frame"><div class="slide"><div class="grid-stage" style="grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(6,1fr)"><div class="grid-cell" style="grid-column:1 / 3;grid-row:1 / 7;"><div class="img-ph fill">
+    <div class="img-corner tl"></div><div class="img-corner tr"></div>
+    <div class="img-corner bl"></div><div class="img-corner br"></div>
+    <div class="img-badge">IMAGE · prompt</div>
+    <div class="img-inner"><svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#a8a094" stroke-width="1.4" style="opacity:.85">
+    <rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.8"/>
+    <path d="M3 17l5-4 4 3 4-4 5 4"/></svg><div class="img-prompt">夜のキャンプ場で焚き火を囲む 3 人のエンジニア。炎の暖色光が顔を照らす。自然光なし、望遠、浅い被写界深度</div></div>
+  </div></div><div class="grid-cell" style="grid-column:3 / 5;grid-row:3 / 5;"><div class="grid-caption">火を囲むように、聴衆と向き合う</div></div></div></div></div>
+  </div>
+  <div class="slide-item">
+    <div class="slide-cap"><b>05 · how-it-works</b> &nbsp; diagram-stage · role:content<br><span class="idea">idea: 書くのは意図、導出するのはレンダラ、確かめるのは目</span></div>
+    <div class="slide-frame"><div class="slide"><div class="stage col" style="left:96px;right:96px;top:162.66666666666669px;bottom:162.66666666666669px;">
+    <div class="section-head" style="font-size:34px">意図を書けば、配置は導出できる</div>
+    <div class="stage-main center"><div class="diagram-wrap"><svg viewBox="0 0 620 500" width="100%" style="max-width:560px;max-height:100%" role="img">
+    <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3a342b"/>
+    </marker></defs><g class="layer-edges"><path d="M 379.2626411926742 113.9905406847316 A 158 158 0 0 1 467.6151199410522 267.0215228515718" fill="none" stroke="#3a342b" stroke-width="2.5" marker-end="url(#arrow)"/><path d="M 398.35247874837796 386.9879364636966 A 158 158 0 0 1 221.64752125162204 386.9879364636966" fill="none" stroke="#3a342b" stroke-width="2.5" marker-end="url(#arrow)"/><path d="M 152.38488005894777 267.0215228515718 A 158 158 0 0 1 240.73735880732573 113.99054068473163" fill="none" stroke="#3a342b" stroke-width="2.5" marker-end="url(#arrow)"/></g><g class="layer-nodes"><g>
+      <rect x="217" y="59" width="186" height="78" rx="39" fill="#1a1814" stroke="#f47d3a" stroke-width="3"/>
+      <text x="310" y="107.45" text-anchor="middle" fill="#f5f1e6" font-size="27" font-weight="700" font-family='"LINE Seed JP", "Inter", sans-serif'>意図を書く</text>
+    </g><g>
+      <rect x="367.83201379794133" y="302" width="158" height="66" rx="33" fill="#1a1814" stroke="#3a342b" stroke-width="2"/>
+      <text x="446.83201379794133" y="343.4" text-anchor="middle" fill="#ebe5d8" font-size="24" font-weight="400" font-family='"LINE Seed JP", "Inter", sans-serif'>配置を導出する</text>
+    </g><g>
+      <rect x="94.16798620205867" y="302" width="158" height="66" rx="33" fill="#1a1814" stroke="#3a342b" stroke-width="2"/>
+      <text x="173.16798620205867" y="343.4" text-anchor="middle" fill="#ebe5d8" font-size="24" font-weight="400" font-family='"LINE Seed JP", "Inter", sans-serif'>目で確かめる</text>
+    </g></g>
+  </svg></div></div>
+  </div></div></div>
+  </div>
+  <div class="slide-item">
+    <div class="slide-cap"><b>06 · training-impact</b> &nbsp; chart-stage · role:content<br><span class="idea">idea: 3 月の研修開始が売上反転の起点だった</span></div>
+    <div class="slide-frame"><div class="slide"><div class="stage col" style="left:96px;right:96px;top:162.66666666666669px;bottom:162.66666666666669px;">
+    <div class="section-head" style="font-size:34px">研修が売上を反転させた</div>
+    <div class="stage-main center"><div class="chart-wrap"><svg viewBox="0 0 940 440" width="100%" style="max-width:940px;max-height:100%" role="img">
+    <g class="layer-bg"><line x1="78" y1="378" x2="892" y2="378" stroke="#3a342b" stroke-width="1" opacity="0.35"/><text x="64" y="384" text-anchor="end" fill="#a8a094" font-size="20" font-family='"LINE Seed JP", "Inter", sans-serif'>0</text><line x1="78" y1="295" x2="892" y2="295" stroke="#3a342b" stroke-width="1" opacity="0.35"/><text x="64" y="301" text-anchor="end" fill="#a8a094" font-size="20" font-family='"LINE Seed JP", "Inter", sans-serif'>20</text><line x1="78" y1="212" x2="892" y2="212" stroke="#3a342b" stroke-width="1" opacity="0.35"/><text x="64" y="218" text-anchor="end" fill="#a8a094" font-size="20" font-family='"LINE Seed JP", "Inter", sans-serif'>40</text><line x1="78" y1="129" x2="892" y2="129" stroke="#3a342b" stroke-width="1" opacity="0.35"/><text x="64" y="135" text-anchor="end" fill="#a8a094" font-size="20" font-family='"LINE Seed JP", "Inter", sans-serif'>60</text><line x1="78" y1="46" x2="892" y2="46" stroke="#3a342b" stroke-width="1" opacity="0.35"/><text x="64" y="52" text-anchor="end" fill="#a8a094" font-size="20" font-family='"LINE Seed JP", "Inter", sans-serif'>80</text><line x1="78" y1="46" x2="78" y2="378" stroke="#3a342b" stroke-width="1.5"/><line x1="78" y1="378" x2="892" y2="378" stroke="#3a342b" stroke-width="1.5"/><text x="78" y="412" text-anchor="middle" fill="#a8a094" font-size="20" font-family='"LINE Seed JP", "Inter", sans-serif'>1月</text><text x="240.8" y="412" text-anchor="middle" fill="#a8a094" font-size="20" font-family='"LINE Seed JP", "Inter", sans-serif'>2月</text><text x="403.6" y="412" text-anchor="middle" fill="#a8a094" font-size="20" font-family='"LINE Seed JP", "Inter", sans-serif'>3月</text><text x="566.4" y="412" text-anchor="middle" fill="#a8a094" font-size="20" font-family='"LINE Seed JP", "Inter", sans-serif'>4月</text><text x="729.2" y="412" text-anchor="middle" fill="#a8a094" font-size="20" font-family='"LINE Seed JP", "Inter", sans-serif'>5月</text><text x="892" y="412" text-anchor="middle" fill="#a8a094" font-size="20" font-family='"LINE Seed JP", "Inter", sans-serif'>6月</text></g>
+    <g class="layer-data"><polyline points="78,203.7 240.8,232.75 403.6,261.8 566.4,216.14999999999998 729.2,149.75 892,83.35000000000002" fill="none" stroke="#c8d4e0" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="78" cy="203.7" r="5" fill="#c8d4e0"/><circle cx="240.8" cy="232.75" r="5" fill="#c8d4e0"/><circle cx="403.6" cy="261.8" r="5" fill="#c8d4e0"/><circle cx="566.4" cy="216.14999999999998" r="5" fill="#c8d4e0"/><circle cx="729.2" cy="149.75" r="5" fill="#c8d4e0"/><circle cx="892" cy="83.35000000000002" r="5" fill="#c8d4e0"/></g>
+    <g class="layer-emph"><circle cx="403.6" cy="261.8" r="13" fill="none" stroke="#f47d3a" stroke-width="2" opacity="0.5"/><circle cx="403.6" cy="261.8" r="7.5" fill="#f47d3a"/><line x1="403.6" y1="271.8" x2="421.6" y2="309.8" stroke="#f47d3a" stroke-width="1.5" opacity="0.8"/><text x="421.6" y="331.8" text-anchor="start" fill="#f47d3a" font-size="24" font-weight="700" font-family='"LINE Seed JP", "Inter", sans-serif'>販売研修 開始</text></g>
+  </svg></div></div>
+  </div></div></div>
+  </div>
+  <div class="slide-item">
+    <div class="slide-cap"><b>07 · bullet-rules</b> &nbsp; list-stage · role:content<br><span class="idea">idea: 箇条書きは見出しであって本文ではない</span></div>
+    <div class="slide-frame"><div class="slide"><div class="stage col" style="left:96px;right:96px;top:162.66666666666669px;bottom:162.66666666666669px;">
+    <div class="section-head" style="font-size:34px">箇条書きの原則</div>
+    <ul class="bullets"><li><span class="dot"></span><span>聴衆を犠牲にしない</span></li><li><span class="dot"></span><span>控えめに使う</span></li><li><span class="dot"></span><span>見出しのつもりで作成する</span></li></ul>
+  </div></div></div>
+  </div>
+  <div class="slide-item">
+    <div class="slide-cap"><b>08 · duarte-quote</b> &nbsp; quote-stage · role:content<br><span class="idea">idea: データスライドの仕事はデータではなく意味を伝えること</span></div>
+    <div class="slide-frame"><div class="slide"><div class="stage center" style="left:96px;right:96px;top:162.66666666666669px;bottom:162.66666666666669px;">
+    <div class="quote-block">
+      <div class="quote-mark">&ldquo;</div>
+      <div class="quote-text">データスライドが伝えるべきは、データそのものではなく、データの意味です。</div>
+      <div class="quote-attr">— ナンシー・デュアルテ『slide:ology』</div>
+    </div>
+  </div></div></div>
+  </div>
+  <div class="slide-item">
+    <div class="slide-cap"><b>09 · closer</b> &nbsp; statement-stage · role:closer<br><span class="idea">idea: 聴衆が次の登壇資料を意図で書き始める</span></div>
+    <div class="slide-frame"><div class="slide"><div class="stage center" style="left:96px;right:96px;top:64px;bottom:64px;">
+    <div class="statement-hero" style="font-size:80px">次の登壇、<span class="hi">意図</span>で書いてみませんか</div>
+  </div></div></div>
+  </div></body></html>

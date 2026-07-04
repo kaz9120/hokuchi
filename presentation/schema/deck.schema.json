@@ -1,0 +1,379 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hokuchi.dev/schema/deck.schema.json",
+  "title": "hokuchi slide deck",
+  "description": "hokuchi スライドスキーマの Deck / Slide / Element 仕様 (SPEC §3-§7)。色値リテラルは持たず、色は常にトークン名で参照する。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "deck", "slides"],
+  "properties": {
+    "schema_version": { "$ref": "#/$defs/semver" },
+    "deck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "audience", "theme"],
+      "properties": {
+        "title": { "type": "string" },
+        "audience": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["who", "action"],
+          "properties": {
+            "who": { "type": "string" },
+            "action": { "type": "string" }
+          }
+        },
+        "scales": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": { "$ref": "#/$defs/scale" }
+        },
+        "theme": { "type": "string" }
+      }
+    },
+    "slides": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/slide" }
+    }
+  },
+  "$defs": {
+    "semver": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z.-]+)?$"
+    },
+    "scale": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "x": { "$ref": "#/$defs/axisRange" },
+        "y": { "$ref": "#/$defs/axisRange" }
+      }
+    },
+    "axisRange": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["min", "max"],
+      "properties": {
+        "min": { "type": "number" },
+        "max": { "type": "number" }
+      }
+    },
+    "slide": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "role", "idea", "layout", "elements"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "role": { "enum": ["opener", "title", "transition", "content", "closer"] },
+        "idea": { "type": "string", "minLength": 1 },
+        "notes": { "type": "string" },
+        "layout": { "$ref": "#/$defs/layout" },
+        "connect": { "enum": ["cut", "push-left", "push-right", "push-up", "push-down"] },
+        "elements": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/element" }
+        },
+        "build": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/buildStep" }
+        }
+      }
+    },
+    "layout": {
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "statement-stage",
+            "title-stage",
+            "diagram-stage",
+            "chart-stage",
+            "list-stage",
+            "quote-stage"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["areas"],
+          "properties": {
+            "areas": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["element", "cell"],
+                "properties": {
+                  "element": { "type": "string" },
+                  "cell": {
+                    "type": "string",
+                    "pattern": "^\\s*\\d+(-\\d+)?\\s*/\\s*\\d+(-\\d+)?\\s*$"
+                  }
+                }
+              }
+            },
+            "whitespace_min": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "default": 0.3
+            }
+          }
+        }
+      ]
+    },
+    "buildStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "show": { "type": "array", "items": { "type": "string" } },
+        "dim": { "type": "array", "items": { "type": "string" } },
+        "emphasize": { "type": "array", "items": { "type": "string" } },
+        "transform": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["target", "to"],
+          "properties": {
+            "target": { "type": "string" },
+            "to": { "type": "string" }
+          }
+        }
+      }
+    },
+
+    "element": {
+      "type": "object",
+      "required": ["kind"],
+      "allOf": [
+        {
+          "oneOf": [
+            { "$ref": "#/$defs/statement" },
+            { "$ref": "#/$defs/bullets" },
+            { "$ref": "#/$defs/image" },
+            { "$ref": "#/$defs/diagram" },
+            { "$ref": "#/$defs/chart" },
+            { "$ref": "#/$defs/quote" },
+            { "$ref": "#/$defs/raw" }
+          ]
+        },
+        {
+          "oneOf": [
+            { "required": ["slot"] },
+            { "required": ["id"] }
+          ]
+        }
+      ]
+    },
+
+    "statement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "text"],
+      "properties": {
+        "kind": { "const": "statement" },
+        "slot": { "type": "string" },
+        "id": { "type": "string" },
+        "text": { "type": "string" },
+        "emphasis": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+
+    "bullets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "items"],
+      "properties": {
+        "kind": { "const": "bullets" },
+        "slot": { "type": "string" },
+        "id": { "type": "string" },
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" }
+        },
+        "reveal": { "enum": ["one-by-one"] }
+      }
+    },
+
+    "image": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "anyOf": [
+        { "required": ["src"] },
+        { "required": ["prompt"] }
+      ],
+      "properties": {
+        "kind": { "const": "image" },
+        "slot": { "type": "string" },
+        "id": { "type": "string" },
+        "src": { "type": "string" },
+        "prompt": { "type": "string" },
+        "treatment": { "enum": ["full-bleed", "framed", "cutout"] },
+        "subject": { "enum": ["third-left", "third-right"] },
+        "gaze": { "enum": ["toward-content", "away-from-content"] }
+      }
+    },
+
+    "diagram": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "form", "nodes"],
+      "properties": {
+        "kind": { "const": "diagram" },
+        "slot": { "type": "string" },
+        "id": { "type": "string" },
+        "form": {
+          "type": "string",
+          "pattern": "^(flow|structure|cluster|radial|pictogram)\\.[a-z][a-z-]*$"
+        },
+        "nodes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "label"],
+            "properties": {
+              "id": { "type": "string" },
+              "label": { "type": "string" }
+            }
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string",
+                "pattern": "^\\s*\\S+\\s*->\\s*\\S+\\s*$"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["from", "to"],
+                "properties": {
+                  "from": { "type": "string" },
+                  "to": { "type": "string" },
+                  "label": { "type": "string" }
+                }
+              }
+            ]
+          }
+        },
+        "emphasis": { "type": "array", "items": { "type": "string" } },
+        "reveal": { "enum": ["sequential"] }
+      }
+    },
+
+    "chart": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "intent", "message", "data"],
+      "properties": {
+        "kind": { "const": "chart" },
+        "slot": { "type": "string" },
+        "id": { "type": "string" },
+        "intent": { "enum": ["comparison", "trend", "distribution"] },
+        "message": { "type": "string", "minLength": 1 },
+        "data": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["x", "series"],
+              "properties": {
+                "x": {
+                  "type": "array",
+                  "items": { "type": ["string", "number"] }
+                },
+                "series": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["label", "values"],
+                    "properties": {
+                      "label": { "type": "string" },
+                      "values": {
+                        "type": "array",
+                        "items": { "type": "number" }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["source"],
+              "properties": {
+                "source": { "type": "string" },
+                "x": { "type": "string" },
+                "y": { "type": "string" }
+              }
+            }
+          ]
+        },
+        "annotations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["annotate"],
+            "oneOf": [
+              { "required": ["at"] },
+              { "required": ["at_index"] }
+            ],
+            "properties": {
+              "at": { "type": ["string", "number"] },
+              "at_index": { "type": "integer", "minimum": 0 },
+              "annotate": { "type": "string" },
+              "style": { "enum": ["highlight"] }
+            }
+          }
+        },
+        "scale": { "type": "string" },
+        "detail": { "enum": ["appendix"] }
+      }
+    },
+
+    "quote": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "text"],
+      "properties": {
+        "kind": { "const": "quote" },
+        "slot": { "type": "string" },
+        "id": { "type": "string" },
+        "text": { "type": "string" },
+        "attribution": { "type": "string" }
+      }
+    },
+
+    "raw": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "waiver"],
+      "anyOf": [
+        { "required": ["svg"] },
+        { "required": ["html"] }
+      ],
+      "properties": {
+        "kind": { "const": "raw" },
+        "slot": { "type": "string" },
+        "id": { "type": "string" },
+        "svg": { "type": "string" },
+        "html": { "type": "string" },
+        "waiver": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

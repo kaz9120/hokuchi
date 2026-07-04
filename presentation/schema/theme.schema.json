@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hokuchi.dev/schema/theme.schema.json",
+  "title": "hokuchi slide theme",
+  "description": "hokuchi スライドスキーマの Theme 仕様 (SPEC §2)。色・書体・グリッドを名前付きスロットに固定する。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "theme"],
+  "properties": {
+    "schema_version": { "$ref": "#/$defs/semver" },
+    "theme": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["grid", "palette", "type", "iconography", "space"],
+      "properties": {
+        "grid": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["pattern"],
+          "properties": {
+            "pattern": { "enum": ["col-3", "col-4", "col-5", "fibonacci"] },
+            "rows": { "type": "integer", "minimum": 1, "default": 6 },
+            "stage_margin": { "type": "integer", "minimum": 0, "default": 1 }
+          }
+        },
+        "palette": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["core", "neutral", "highlight", "background"],
+          "properties": {
+            "core": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 5,
+              "items": { "$ref": "#/$defs/hexColor" }
+            },
+            "neutral": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["bg", "surface", "line", "muted", "text", "text_strong"],
+              "properties": {
+                "bg": { "$ref": "#/$defs/hexColor" },
+                "surface": { "$ref": "#/$defs/hexColor" },
+                "line": { "$ref": "#/$defs/hexColor" },
+                "muted": { "$ref": "#/$defs/hexColor" },
+                "text": { "$ref": "#/$defs/hexColor" },
+                "text_strong": { "$ref": "#/$defs/hexColor" }
+              }
+            },
+            "highlight": { "$ref": "#/$defs/hexColor" },
+            "background": { "enum": ["dark", "light"] }
+          }
+        },
+        "type": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["display", "body"],
+          "properties": {
+            "display": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["family", "weight"],
+              "properties": {
+                "family": { "type": "string" },
+                "weight": { "type": "integer", "minimum": 1, "maximum": 1000 }
+              }
+            },
+            "body": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["family", "weight", "min_size_pt"],
+              "properties": {
+                "family": { "type": "string" },
+                "weight": { "type": "integer", "minimum": 1, "maximum": 1000 },
+                "min_size_pt": { "type": "number", "exclusiveMinimum": 0 }
+              }
+            },
+            "scale": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "hero": { "type": "integer", "minimum": 1, "default": 80 },
+                "title": { "type": "integer", "minimum": 1, "default": 74 },
+                "big": { "type": "integer", "minimum": 1, "default": 70 },
+                "quote": { "type": "integer", "minimum": 1, "default": 46 },
+                "heading": { "type": "integer", "minimum": 1, "default": 34 },
+                "bullet": { "type": "integer", "minimum": 1, "default": 34 },
+                "subtitle": { "type": "integer", "minimum": 1, "default": 30 },
+                "attribution": { "type": "integer", "minimum": 1, "default": 24 },
+                "node": { "type": "integer", "minimum": 1, "default": 24 },
+                "axis": { "type": "integer", "minimum": 1, "default": 20 }
+              }
+            }
+          }
+        },
+        "iconography": { "enum": ["isometric", "flat", "hand-drawn"] },
+        "space": { "enum": ["2d", "3d"] }
+      }
+    }
+  },
+  "$defs": {
+    "semver": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z.-]+)?$"
+    },
+    "hexColor": {
+      "type": "string",
+      "pattern": "^#[0-9a-fA-F]{6}$"
+    }
+  }
+}

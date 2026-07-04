@@ -55,3 +55,4 @@ hokuchi における意思決定の記録。決定に至る過程（選択肢・
 | [0005](0005-replace-presentation-roadmap.md) | skill は presentation-roadmap を置き換える新規とする | 承認 | presentation |
 | [0006](0006-image-prompt-as-spec.md) | image 要素は生成プロンプトを画像仕様として保持する | 承認 | presentation |
 | [0007](0007-slot-based-elements.md) | 要素はスロット制にし、emphasis を要素別語彙に分け、タイプスケールをテーマに昇格する | 承認 | presentation |
+| [0008](0008-spec-remaining-decisions.md) | spike が残した痛点に SPEC 確定へ向けて回答する | 承認 | presentation |

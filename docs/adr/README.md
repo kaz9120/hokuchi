@@ -57,3 +57,5 @@ hokuchi における意思決定の記録。決定に至る過程（選択肢・
 | [0007](0007-slot-based-elements.md) | 要素はスロット制にし、emphasis を要素別語彙に分け、タイプスケールをテーマに昇格する | 承認 | presentation |
 | [0008](0008-spec-remaining-decisions.md) | spike が残した痛点に SPEC 確定へ向けて回答する | 承認 | presentation |
 | [0009](0009-content-first-layout.md) | リポジトリはコンテンツを主役に置き、発表済み資料は凍結する | 承認 | リポジトリ全体 |
+| [0010](0010-theme-brand-frame.md) | テーマにブランド枠 (brand) を追加し、組織テーマの運用を始める | 承認 | tools/slides |
+| [0011](0011-serve-annotation-loop.md) | serve モードと agentation でアノテーション・フィードバックループを作る | 承認 | tools/slides |

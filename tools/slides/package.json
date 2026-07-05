@@ -10,11 +10,21 @@
     "test": "node test/check.mjs",
     "lint:example": "node cli.mjs lint examples/intent-talk/deck.yaml",
     "render:example": "node cli.mjs render examples/intent-talk/deck.yaml -o out-example",
-    "shot:example": "node cli.mjs shot out-example"
+    "shot:example": "node cli.mjs shot out-example",
+    "lint:coverage": "node cli.mjs lint examples/coverage/deck.yaml",
+    "render:coverage": "node cli.mjs render examples/coverage/deck.yaml -o out-coverage",
+    "shot:coverage": "node cli.mjs shot out-coverage",
+    "serve:coverage": "node cli.mjs serve out-coverage"
   },
   "dependencies": {
     "ajv": "^8.17.1",
     "budoux": "^0.6.4",
     "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "agentation": "^3.0.2",
+    "esbuild": "^0.28.1",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
   }
 }

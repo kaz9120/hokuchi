@@ -1,9 +1,10 @@
 #!/usr/bin/env node
-// cli.mjs — hokuchi presentation CLI: lint / render / shot.
+// cli.mjs — hokuchi presentation CLI: lint / render / shot / serve.
 //
 //   node cli.mjs lint   <deck.yaml>
 //   node cli.mjs render <deck.yaml> -o <outdir>
 //   node cli.mjs shot   <outdir>
+//   node cli.mjs serve  <outdir> [-p port]
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -22,6 +23,7 @@ usage:
   node cli.mjs lint   <deck.yaml>
   node cli.mjs render <deck.yaml> -o <outdir>
   node cli.mjs shot   <outdir>
+  node cli.mjs serve  <outdir> [-p port]   # アノテーション付きプレビュー (ADR-0011)
 `);
   process.exit(code);
 }
@@ -114,7 +116,7 @@ function cmdShot(outDir) {
 // ---------------------------------------------------------------------------
 // arg parsing
 // ---------------------------------------------------------------------------
-function main(argv) {
+async function main(argv) {
   const [cmd, ...rest] = argv;
   try {
     if (cmd === 'lint') {
@@ -127,6 +129,11 @@ function main(argv) {
     } else if (cmd === 'shot') {
       if (!rest[0]) usage();
       cmdShot(rest[0]);
+    } else if (cmd === 'serve') {
+      const { outDir, port } = parseServeArgs(rest);
+      if (!outDir) usage();
+      const { serve } = await import('./src/serve.mjs');
+      await serve(outDir, port);
     } else {
       usage();
     }
@@ -134,6 +141,17 @@ function main(argv) {
     process.stderr.write(`error: ${err.message}\n`);
     process.exit(1);
   }
+}
+
+/** Parse `<outdir> [-p port]`. */
+function parseServeArgs(rest) {
+  let outDir = null, port = 4646;
+  for (let i = 0; i < rest.length; i++) {
+    const a = rest[i];
+    if (a === '-p' || a === '--port') port = Number(rest[++i]);
+    else if (!a.startsWith('-')) outDir = a;
+  }
+  return { outDir, port };
 }
 
 /** Parse `<deck.yaml> -o <outdir>` in any order. */

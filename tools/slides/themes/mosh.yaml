@@ -1,0 +1,47 @@
+# MOSH 組織テーマ (ADR-0010)
+# 一次ソース: https://github.com/TheMoshInc/marp-slide-template (mosh.css + assets)
+# ブランドカラー #FA6E78 / 黒 #111827 / グレー #4B5563 / Nunito / ライト背景。
+# ロゴは全ページ右上、コピーライトは右下 (企業テンプレートの要件。placement: all で明示的に逸脱)。
+schema_version: "0.2.0"
+theme:
+  grid:
+    pattern: col-4
+    rows: 6
+    stage_margin: 1
+  palette:
+    # core[0] はブランドコーラルを少し深めた #e0525d。#fa6e78 のままだと
+    # ライト背景とのコントラスト比 2.7 で contrast lint (閾値 3.0) にかかる。
+    core: ["#e0525d", "#111827", "#4b5563"]
+    neutral:
+      bg: "#fffbf9"
+      surface: "#fef1f0"
+      line: "#e5e0de"
+      muted: "#4b5563"
+      text: "#111827"
+      text_strong: "#111827"
+    highlight: "#fa6e78"
+    background: light
+  type:
+    webfonts:
+      - "https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap"
+    display:
+      family: '"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'
+      weight: 600
+    body:
+      family: '"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'
+      weight: 400
+      min_size_pt: 24
+  brand:
+    logo:
+      src: ./assets/logo-mosh.svg
+      src_invert: ./assets/logo-mosh-white.svg
+      height: 24
+      placement: all
+    footer: "© MOSH, Inc."
+    backgrounds:
+      bumper: { src: ./assets/bg-cover.svg }
+      title: { src: ./assets/bg-cover.svg }
+      transition: { src: ./assets/bg-section-cover.svg, foreground: light }
+      content: { src: ./assets/bg-default.svg }
+  iconography: flat
+  space: 2d

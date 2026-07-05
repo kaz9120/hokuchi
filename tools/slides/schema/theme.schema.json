@@ -56,6 +56,11 @@
           "additionalProperties": false,
           "required": ["display", "body"],
           "properties": {
+            "webfonts": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "<link> で読み込む Web フォント CSS の URL (ADR-0010)"
+            },
             "display": {
               "type": "object",
               "additionalProperties": false,
@@ -94,7 +99,36 @@
           }
         },
         "iconography": { "enum": ["isometric", "flat", "hand-drawn"] },
-        "space": { "enum": ["2d", "3d"] }
+        "space": { "enum": ["2d", "3d"] },
+        "brand": {
+          "description": "組織テーマのブランド枠 (ADR-0010)。ロゴ・フッタ・背景アート。パスはテーマファイルからの相対。",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "logo": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["src"],
+              "properties": {
+                "src": { "type": "string" },
+                "src_invert": { "type": "string", "description": "反転背景 (foreground: light) 用の白版ロゴ" },
+                "height": { "type": "integer", "minimum": 8, "default": 24 },
+                "placement": { "enum": ["bumpers", "all"], "default": "bumpers" }
+              }
+            },
+            "footer": { "type": "string", "description": "全スライド右下の短いテキスト (コピーライト等)" },
+            "backgrounds": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "bumper": { "$ref": "#/$defs/background" },
+                "title": { "$ref": "#/$defs/background" },
+                "transition": { "$ref": "#/$defs/background" },
+                "content": { "$ref": "#/$defs/background" }
+              }
+            }
+          }
+        }
       }
     }
   },
@@ -106,6 +140,15 @@
     "hexColor": {
       "type": "string",
       "pattern": "^#[0-9a-fA-F]{6}$"
+    },
+    "background": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["src"],
+      "properties": {
+        "src": { "type": "string" },
+        "foreground": { "enum": ["light"], "description": "濃色背景の宣言。前景 (テキスト・ロゴ) を白系に反転する" }
+      }
     }
   }
 }

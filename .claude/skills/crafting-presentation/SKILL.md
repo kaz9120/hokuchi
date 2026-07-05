@@ -13,8 +13,8 @@ description: hokuchi のスライドツールで登壇資料を作る。人間�
 
 生成する YAML は次の仕様に準拠する。着手前に最低限 SPEC を開く。
 
-- `presentation/SPEC.md` — スキーマの規範仕様。フィールド・要素 7 種・レイアウトパターン・lint ルール。生成物はこれに従う
-- `presentation/docs/design.md` — 設計思想の背景 (なぜ意図を宣言し配置を導出するのか)
+- `tools/slides/SPEC.md` — スキーマの規範仕様。フィールド・要素 7 種・レイアウトパターン・lint ルール。生成物はこれに従う
+- `tools/slides/docs/design.md` — 設計思想の背景 (なぜ意図を宣言し配置を導出するのか)
 - `references/element-guide.md` — 伝えたいことの形から要素と form を選ぶ判断ガイド。Phase 5 で必ず参照
 - `references/interview-questions.md` — 聴衆プロファイリングの 7 つのクエスチョンと対話への言い換え。Phase 1 で参照
 
@@ -34,7 +34,7 @@ Phase 0 から 7 まで順に進む。この骨格は変えない。Phase 0〜4 
 2. 持ち時間は何分か
 3. 締切はいつか
 4. 既存素材はあるか (過去スライド、原稿、図、データ)
-5. 出力先ディレクトリはどこか (未指定なら `presentation/decks/<slug>/` を提案)
+5. 出力先ディレクトリはどこか。未指定なら発表資料の正式な置き場 `talks/<YYYY-MM-slug>/` を提案する
 
 持ち時間から枚数の目安を出す。SPEC の `deck-size` lint は内容スライドが 10 枚超で info を出す (エラーではない)。opener / title / closer は枠であり、この枚数には数えない。
 
@@ -130,7 +130,7 @@ N. closer   聴衆が次の登壇資料を意図で書き始める
 
 ### 手順
 
-1. テーマを用意する。既存があれば `deck.theme` で参照する。無ければデフォルトテーマ `presentation/themes/hokuchi.yaml` を相対パスで参照する (コピーしない。テーマの単一ソースを保つ)。テーマは勝手に発明しない
+1. テーマを用意する。既存があれば `deck.theme` で参照する。無ければデフォルトテーマ `tools/slides/themes/hokuchi.yaml` を相対パスで参照する (コピーしない。テーマの単一ソースを保つ)。テーマは勝手に発明しない
 2. `deck` ブロックを書く。`title` / `audience` (Phase 1 の結果) / `theme` (相対パス)。連続する chart で軸を揃えるなら `scales` を定義
 3. 各スライドを書く。`id` (安定キー) / `role` / `idea` (Phase 4 の 1 行) / `layout` / `elements` / `notes`
 4. 語る内容は `notes` に、スライドの可視テキストは最小に。スライドは見出し、本文はノート (下記)
@@ -161,7 +161,7 @@ N. closer   聴衆が次の登壇資料を意図で書き始める
 
 ## Phase 6 — 検証
 
-`cli.mjs` (`presentation/cli.mjs`) で lint / render / shot を回す。presentation ディレクトリから実行する。
+`cli.mjs` (`tools/slides/cli.mjs`) で lint / render / shot を回す。tools/slides ディレクトリから実行する。発表が終わったら最終レンダリングを `talks/<slug>/final/` にコピーしてコミットし、凍結する (ADR-0009)。
 
 ```sh
 node cli.mjs lint <deck.yaml>

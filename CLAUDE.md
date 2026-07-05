@@ -8,22 +8,31 @@
 
 ## ディレクトリ
 
+発信物（コンテンツ）が主役、ツールは脇役。root は発信形態ごとのコンテンツと tools/ で構成する（ADR-0009）。
+
 ```
 docs/adr/          意思決定の記録（リポジトリ全体で単一系列）
+talks/             発表資料（主役。時系列に蓄積）
+  <YYYY-MM-slug>/
+    deck.yaml      意図宣言型のソース
+    assets/        実画像など
+    out/           作業レンダリング（git 管理外）
+    final/         発表済みの凍結出力（コミットする）
+articles/          （将来）記事など、他の発信形態も root に並べる
+tools/
+  slides/          スライドスキーマとレンダラ
+    SPEC.md        スキーマの規範仕様（唯一の真実）
+    schema/        JSON Schema（deck / theme）
+    src/ + cli.mjs lint / render / shot の CLI（npm test で検証）
+    themes/        デフォルトテーマ（hokuchi.yaml）
+    examples/      テスト用フィクスチャ
+    docs/design.md 生きた設計書
+    spike/         捨て前提の試作（検証記録として保持）
 .claude/skills/
   crafting-presentation/  対話からスライドを作る skill（Phase 0〜7）
-presentation/      スライドスキーマとレンダラ
-  SPEC.md          スキーマの規範仕様（唯一の真実）
-  schema/          JSON Schema（deck / theme）
-  src/ + cli.mjs   lint / render / shot の CLI（npm test で検証）
-  themes/          デフォルトテーマ（hokuchi.yaml）
-  examples/        テスト用フィクスチャ
-  decks/           実デッキの置き場（skill の既定出力先）
-  docs/design.md   生きた設計書
-  spike/           捨て前提の試作（検証記録として保持）
 ```
 
-スライドを作る依頼は crafting-presentation skill に従う。デッキは `presentation/decks/<スラグ>/deck.yaml` に置き、テーマは `themes/hokuchi.yaml` を相対参照する（コピーしない）。
+スライドを作る依頼は crafting-presentation skill に従う。デッキは `talks/<YYYY-MM-slug>/deck.yaml` に置き、テーマは `tools/slides/themes/hokuchi.yaml` を相対参照する（コピーしない）。発表が終わったら最終レンダリングを `final/` にコミットして凍結する。レンダラは進化するので、deck.yaml だけでは当時の見た目を再現できない。
 
 ## コミット
 

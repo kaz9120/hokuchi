@@ -1,5 +1,5 @@
 {
-  "name": "@hokuchi/presentation",
+  "name": "@hokuchi/slides",
   "version": "0.1.0",
   "description": "hokuchi slide schema CLI — parse / lint / render intent-declared decks",
   "type": "module",

@@ -26,6 +26,9 @@ const ok = (name) => { console.log(`  ok  ${name}`); passed++; };
 loadTheme(themePath);
 ok('themes/hokuchi.yaml passes theme schema');
 
+loadTheme(path.join(root, 'themes/mosh.yaml'));
+ok('themes/mosh.yaml passes theme schema (brand frame, ADR-0010)');
+
 const { deck, theme } = loadDeck(deckPath);
 ok('examples/intent-talk/deck.yaml passes deck schema');
 
@@ -50,12 +53,16 @@ assert.equal(hasError(findings), false);
 ok(`examples/intent-talk lints with 0 errors (${findings.length} total findings)`);
 
 // (3) render — 9 slide pages + index.
-const pages = renderDeck(deck, theme);
+const { pages, assets } = renderDeck(deck, theme, {
+  deckDir: path.dirname(deckPath),
+  themeDir: path.dirname(themePath),
+});
 const slidePages = Object.keys(pages).filter((n) => /^slide-\d+\.html$/.test(n));
 assert.equal(slidePages.length, 9, `expected 9 slide pages, got ${slidePages.length}`);
 assert.ok(pages['index.html'], 'index.html produced');
 assert.ok(pages['slide-01.html'].includes('<!doctype html>'), 'slide page is a full document');
-ok(`render produced ${slidePages.length} slide pages + index.html`);
+assert.ok(assets instanceof Map, 'renderDeck returns an asset map');
+ok(`render produced ${slidePages.length} slide pages + index.html (${assets.size} assets)`);
 
 // Sanity: write to a temp dir so we exercise the real file path once.
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'hokuchi-test-'));

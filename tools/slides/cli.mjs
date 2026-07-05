@@ -56,14 +56,23 @@ function cmdLint(deckPath) {
 // render
 // ---------------------------------------------------------------------------
 function cmdRender(deckPath, outDir) {
-  const { deck, theme } = loadDeck(deckPath);
-  const pages = renderDeck(deck, theme);
+  const { deck, theme, deckPath: absDeck, themePath } = loadDeck(deckPath);
+  const { pages, assets } = renderDeck(deck, theme, {
+    deckDir: path.dirname(absDeck),
+    themeDir: path.dirname(themePath),
+  });
   fs.mkdirSync(outDir, { recursive: true });
   for (const [name, html] of Object.entries(pages)) {
     fs.writeFileSync(path.join(outDir, name), html);
   }
+  for (const [absFrom, rel] of assets) {
+    const dest = path.join(outDir, rel);
+    fs.mkdirSync(path.dirname(dest), { recursive: true });
+    fs.copyFileSync(absFrom, dest);
+  }
   const slideCount = Object.keys(pages).filter((n) => n.startsWith('slide-')).length;
-  process.stdout.write(`rendered ${slideCount} slides -> ${outDir}/ (index.html + slide-NN.html)\n`);
+  const assetNote = assets.size ? ` + ${assets.size} assets` : '';
+  process.stdout.write(`rendered ${slideCount} slides -> ${outDir}/ (index.html + slide-NN.html${assetNote})\n`);
 }
 
 // ---------------------------------------------------------------------------

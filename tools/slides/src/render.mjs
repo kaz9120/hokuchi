@@ -8,6 +8,8 @@
 //   (d) lead scaling     — hero elements fill ~85% of the stage height;
 //   (e) shared scales    — chart axes resolve deck.scales; annotations anchor on x.
 
+import fs from 'node:fs';
+import path from 'node:path';
 import { loadDefaultJapaneseParser } from 'budoux';
 
 const parser = loadDefaultJapaneseParser();
@@ -39,9 +41,24 @@ const PATTERN_SLOTS = {
 // ---------------------------------------------------------------------------
 // Theme → render context
 // ---------------------------------------------------------------------------
-function makeContext(deckRoot, themeRoot) {
+function makeContext(deckRoot, themeRoot, opts = {}) {
   const T = themeRoot.theme;
   const P = T.palette;
+  const assets = new Map(); // abs source path -> rel path inside outdir
+
+  /** Register a file for copying into the output dir; returns its rel path. */
+  function useAsset(absPath, subdir) {
+    for (const [abs, rel] of assets) if (abs === absPath) return rel;
+    let rel = `${subdir}/${path.basename(absPath)}`;
+    // Same basename from a different source: disambiguate with a counter.
+    if ([...assets.values()].includes(rel)) {
+      const ext = path.extname(rel);
+      rel = `${rel.slice(0, -ext.length)}-${assets.size}${ext}`;
+    }
+    assets.set(absPath, rel);
+    return rel;
+  }
+
   return {
     deck: deckRoot.deck,
     slides: deckRoot.slides,
@@ -54,6 +71,13 @@ function makeContext(deckRoot, themeRoot) {
       wDisplay: T.type.display.weight,
       wBody: T.type.body.weight,
     },
+    webfonts: T.type.webfonts || [],
+    background: P.background,
+    brand: T.brand || null,
+    deckDir: opts.deckDir || process.cwd(),
+    themeDir: opts.themeDir || process.cwd(),
+    assets,
+    useAsset,
     C: {
       bg: P.neutral.bg,
       surface: P.neutral.surface,
@@ -65,6 +89,16 @@ function makeContext(deckRoot, themeRoot) {
       core: P.core,
     },
   };
+}
+
+/** Role → brand background group (ADR-0010). */
+function roleGroup(role) {
+  return role === 'opener' || role === 'closer' ? 'bumper' : role;
+}
+
+/** The brand background entry for a slide, or null. */
+function brandBackground(ctx, slide) {
+  return ctx.brand?.backgrounds?.[roleGroup(slide.role)] || null;
 }
 
 /** Stage rectangle for a slide's role (letterbox on/off). */
@@ -378,6 +412,32 @@ function renderImagePlaceholder(el, ctx) {
 }
 
 // ---------------------------------------------------------------------------
+// Image (SPEC §6.3) — real src when present, placeholder from prompt otherwise
+// ---------------------------------------------------------------------------
+function renderImage(el, ctx) {
+  if (!el.src) return renderImagePlaceholder(el, ctx);
+  const rel = ctx.useAsset(path.resolve(ctx.deckDir, el.src), 'assets');
+  const pos = { 'third-left': '33% 50%', 'third-right': '67% 50%' }[el.subject] || '50% 50%';
+  const img = `<img class="photo" src="${esc(rel)}" alt="" style="object-position:${pos}">`;
+  if (el.treatment === 'framed') return `<div class="photo-framed">${img}</div>`;
+  if (el.treatment === 'cutout') return `<div class="photo-cutout">${img.replace('class="photo"', 'class="photo contain"')}</div>`;
+  return img; // full-bleed (default)
+}
+
+// ---------------------------------------------------------------------------
+// Raw escape hatch (SPEC §6.7) — svg file / inline svg / inline html
+// ---------------------------------------------------------------------------
+function renderRaw(el, ctx) {
+  if (el.html) return `<div class="raw-wrap">${el.html}</div>`;
+  const s = String(el.svg || '').trim();
+  if (!s) return '';
+  const svg = s.startsWith('<svg')
+    ? s
+    : fs.readFileSync(path.resolve(ctx.deckDir, s), 'utf8');
+  return `<div class="raw-wrap">${svg}</div>`;
+}
+
+// ---------------------------------------------------------------------------
 // Layout patterns (SPEC §5.1) — all resolve elements by slot, not order
 // ---------------------------------------------------------------------------
 function statementStage(slide, ctx) {
@@ -462,9 +522,10 @@ function gridDirect(slide, ctx) {
     const [r1, r2 = r1] = rowSpec.split('-').map(Number);
     const g = `grid-column:${c1} / ${c2 + 1};grid-row:${r1} / ${r2 + 1};`;
     let inner = '';
-    if (el.kind === 'image') inner = renderImagePlaceholder(el, ctx);
+    if (el.kind === 'image') inner = renderImage(el, ctx);
     else if (el.kind === 'statement') inner = `<div class="grid-caption jp">${inlineText(el.text, el.emphasis)}</div>`;
     else if (el.kind === 'quote') inner = `<div class="grid-caption jp">${inlineText(el.text)}</div>`;
+    else if (el.kind === 'raw') inner = renderRaw(el, ctx);
     return `<div class="grid-cell" style="${g}">${inner}</div>`;
   }).join('');
   return `<div class="grid-stage" style="grid-template-columns:repeat(${cols},1fr);grid-template-rows:repeat(${rows},1fr)">${cells}</div>`;
@@ -485,8 +546,31 @@ function renderSlideBody(slide, ctx) {
   return fn ? fn(slide, ctx) : `<div class="pane center"><div class="err">unknown layout: ${esc(slide.layout)}</div></div>`;
 }
 
+// ---------------------------------------------------------------------------
+// Brand frame (ADR-0010) — background art, logo, footer. Lives outside the
+// stage; role decides the background group, the theme decides everything else.
+// ---------------------------------------------------------------------------
+function brandFrame(slide, ctx, inverted) {
+  const b = ctx.brand;
+  if (!b) return '';
+  let html = '';
+  const isBumper = slide.role === 'opener' || slide.role === 'closer';
+  if (b.logo && (b.logo.placement === 'all' || isBumper)) {
+    const src = inverted && b.logo.src_invert ? b.logo.src_invert : b.logo.src;
+    const rel = ctx.useAsset(path.resolve(ctx.themeDir, src), 'theme-assets');
+    html += `<img class="brand-logo" src="${esc(rel)}" alt="" style="height:${b.logo.height ?? 24}px">`;
+  }
+  if (b.footer) html += `<div class="brand-footer">${esc(b.footer)}</div>`;
+  return html;
+}
+
 function renderSlide(slide, ctx) {
-  return `<div class="slide">${renderSlideBody(slide, ctx)}</div>`;
+  const bg = brandBackground(ctx, slide);
+  const inverted = bg?.foreground === 'light';
+  const bgHtml = bg
+    ? `<img class="bg" src="${esc(ctx.useAsset(path.resolve(ctx.themeDir, bg.src), 'theme-assets'))}" alt="">`
+    : '';
+  return `<div class="slide${inverted ? ' inv' : ''}">${bgHtml}${renderSlideBody(slide, ctx)}${brandFrame(slide, ctx, inverted)}</div>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -549,48 +633,90 @@ svg.lead{display:block;max-width:100%;max-height:100%}
 .img-corner.bl{bottom:14px;left:14px;border-right:0;border-top:0}
 .img-corner.br{bottom:14px;right:14px;border-left:0;border-top:0}
 
+.photo{width:100%;height:100%;object-fit:cover;display:block}
+.photo.contain{object-fit:contain}
+.photo-framed{width:100%;height:100%;padding:40px;background:${C.surface};display:flex}
+.photo-framed .photo{box-shadow:0 6px 28px rgba(0,0,0,.18)}
+.photo-cutout{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+.raw-wrap{width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.raw-wrap svg{max-width:100%;max-height:100%}
+
+.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+.slide>.pane,.slide>.grid-stage,.slide>.headline{z-index:1}
+.brand-logo{position:absolute;top:25px;right:20px;z-index:2}
+.brand-footer{position:absolute;bottom:20px;right:20px;z-index:2;font-size:13px;
+  color:${C.muted};letter-spacing:.03em;font-family:${fonts.body}}
+
+.inv{color:rgba(255,255,255,.94)}
+.inv .statement,.inv .title-main,.inv .quote-text,.inv .grid-caption,.inv .headline{color:#ffffff}
+.inv .hi{color:#ffffff}
+.inv .title-sub,.inv .quote-attr,.inv .brand-footer,.inv .img-prompt{color:rgba(255,255,255,.85)}
+.inv .quote-mark{color:rgba(255,255,255,.38)}
+.inv .bullets li{color:rgba(255,255,255,.94)}
+.inv .bullets .dot,.inv .title-accent{background:#ffffff}
+
 .err{color:${C.highlight};font-size:28px}`;
 }
 
 // ---------------------------------------------------------------------------
 // Page assembly
 // ---------------------------------------------------------------------------
-function page(bodyClass, styleExtra, inner, ctx) {
+function page(bodyClass, styleExtra, inner, ctx, scriptExtra = '') {
+  const fontLinks = ctx.webfonts
+    .map((u) => `<link rel="stylesheet" href="${esc(u)}">`)
+    .join('\n');
   return `<!doctype html>
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=${CANVAS.w}">
 <title>${esc(ctx.deck.title)}</title>
+${fontLinks}
 <style>${css(ctx)}${styleExtra}</style>
-</head><body class="${bodyClass}">${inner}</body></html>`;
+</head><body class="${bodyClass}">${inner}${scriptExtra}</body></html>`;
 }
 
 const num = (i) => String(i + 1).padStart(2, '0');
 
+/** Keyboard navigation between slide pages (← → Space Home End). */
+function navScript(i, total) {
+  return `<script>(()=>{const go=n=>{if(n>=1&&n<=${total})location.href='slide-'+String(n).padStart(2,'0')+'.html'};
+addEventListener('keydown',e=>{if(e.defaultPrevented)return;const t=e.target;
+if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable))return;
+if(e.key==='ArrowRight'||e.key===' ')go(${i + 2});
+else if(e.key==='ArrowLeft')go(${i});else if(e.key==='Home')go(1);else if(e.key==='End')go(${total})})})()</script>`;
+}
+
 /**
- * Render a loaded deck to HTML strings.
- * @returns {{ 'index.html': string, [slidePage]: string }}
+ * Render a loaded deck.
+ * @param {object} opts { deckDir, themeDir } — bases for resolving relative asset paths.
+ * @returns {{ pages: { 'index.html': string, [slidePage]: string },
+ *             assets: Map<string, string> }}  abs source path -> rel path in outdir
  */
-export function renderDeck(deckRoot, themeRoot) {
-  const ctx = makeContext(deckRoot, themeRoot);
-  const out = {};
+export function renderDeck(deckRoot, themeRoot, opts = {}) {
+  const ctx = makeContext(deckRoot, themeRoot, opts);
+  const pages = {};
+  const total = ctx.slides.length;
 
   const singleStyle = `\nbody.single{background:${ctx.C.bg}}`;
   ctx.slides.forEach((s, i) => {
-    out[`slide-${num(i)}.html`] = page('single', singleStyle, renderSlide(s, ctx), ctx);
+    pages[`slide-${num(i)}.html`] = page('single', singleStyle, renderSlide(s, ctx), ctx, navScript(i, total));
   });
 
+  // Index page adapts to the theme's background mode (dark gallery vs light).
+  const light = ctx.background === 'light';
+  const idxBg = light ? '#eceef1' : '#050403';
+  const idxShadow = light ? '0 6px 28px rgba(17,24,39,.14)' : '0 8px 40px rgba(0,0,0,.6)';
   const indexStyle = `
-body.index{background:#050403;padding:56px 0;font-family:${ctx.fonts.body}}
+body.index{background:${idxBg};padding:56px 0;font-family:${ctx.fonts.body}}
 .deck-head{width:${CANVAS.w}px;margin:0 auto 44px;color:${ctx.C.text}}
 .deck-head h1{font-family:${ctx.fonts.display};font-weight:${ctx.fonts.wDisplay};font-size:40px;color:${ctx.C.textStrong}}
 .deck-head p{color:${ctx.C.muted};margin-top:10px;font-size:18px}
 .slide-item{width:${CANVAS.w}px;margin:0 auto 56px}
 .slide-cap{color:${ctx.C.muted};font-size:15px;margin-bottom:12px;letter-spacing:.03em}
 .slide-cap b{color:${ctx.C.text};font-weight:${ctx.fonts.wDisplay}}
-.slide-frame{box-shadow:0 8px 40px rgba(0,0,0,.6);border-radius:6px;overflow:hidden}`;
+.slide-frame{box-shadow:${idxShadow};border-radius:6px;overflow:hidden}`;
 
   const items = ctx.slides.map((s, i) => `
-  <div class="slide-item">
+  <div class="slide-item" id="s${num(i)}">
     <div class="slide-cap"><b>${num(i)} · ${esc(s.id)}</b> &nbsp; ${esc(typeof s.layout === 'object' ? 'grid-direct' : s.layout)} · role:${esc(s.role)}<br>idea: ${esc(s.idea)}</div>
     <div class="slide-frame">${renderSlide(s, ctx)}</div>
   </div>`).join('');
@@ -601,6 +727,6 @@ body.index{background:#050403;padding:56px 0;font-family:${ctx.fonts.body}}
     <p>${esc(ctx.deck.audience.who)} — 全 ${ctx.slides.length} 枚 / ${CANVAS.w}×${CANVAS.h}</p>
   </div>${items}`;
 
-  out['index.html'] = page('index', indexStyle, indexInner, ctx);
-  return out;
+  pages['index.html'] = page('index', indexStyle, indexInner, ctx);
+  return { pages, assets: ctx.assets };
 }

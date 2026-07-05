@@ -73,6 +73,8 @@ theme:
 
 デフォルトテーマは hokuchi の `BRAND.md` §6 と hidoko デザインシステム (`hidoko/packages/ui/src/tokens.css`) から導出する。ember-400 (`#f47d3a`、ブランド指紋色) を highlight スロットに置くと、slide:ology のハイライトカラー (強調専用 1 色、p.156) と BRAND.md の「基準色はブランドを象徴する接点に使う」がそのまま一致する。core には補助色 (moon/moss/smoke)、neutral には ink 段階色を割り当て、書体は LINE Seed JP + Inter、ダーク標準。BRAND.md §6.5 の「冒頭スライドにキャッチコピー」「自己紹介スライドは毎回更新」は opener テンプレートの仕様に落とす。デザインシステムを複数リポジトリからどう共有するかは別途検討 (hokuchi のスコープ外)。
 
+テーマは複数運用する (ADR-0010)。個人登壇は `themes/hokuchi.yaml`、MOSH としての登壇は `themes/mosh.yaml`。組織テーマのために theme は `brand` ブランド枠 (ロゴ・フッタ・背景アート・反転前景) と `type.webfonts` を持つ (theme スキーマ 0.2.0)。ブランド枠は舞台の外側のレイヤーとして描かれ、role とレイアウトの分担 (ADR-0008-6) に触れない。レンダラを変更したときの検証台は `examples/coverage/` — 全 role・全パターン・全要素・ブランド枠を 1 デッキで踏む。
+
 ### 層 2: Slide — 1 枚 = 1 アイデア (第 10・11 章)
 
 ```yaml
@@ -305,5 +307,11 @@ linter を「エラーで止める」のではなく警告中心にしている�
 1. 日本語の文字数閾値 (100/150 字) は英語 50/75 語からの粗い換算で、実測での調整が必要
 2. スピーカーノート駆動 (notes が主、スライドが従) の執筆フローをスキーマがどこまで支援するか — 第 11 章の「スライド依存からの脱却」をツールに込めるかは思想の選択
 3. 配布資料 (appendix/handout) の出力仕様 — `detail: appendix` を導入した以上、スライドと配布資料の分離 (p.84) は仕様の一部。SPEC.md で扱う
+4. grid-direct 上での diagram / chart / bullets — 現状 grid-direct のセルに置けるのは image / statement / quote / raw のみ。必要になった実デッキが現れた時点で対応する
+5. image の treatment: cutout の本実装 (現状は contain 表示のみ)、gaze の静的検査
 
 **決定済み (2026-07-04)。** skill は既存の presentation-roadmap スキルを置き換える新規作成とし、旧スキルとの互換は考慮しない。
+
+## 9. レビューのフィードバックループ — serve と annotations (ADR-0011)
+
+shot が作る PNG は「Claude が自分の目で確認する」ためのもの。人間のレビューには `cli.mjs serve <outdir>` を使う。serve は出力を配信しながら agentation (React 製の注釈オーバーレイ) を配信時にのみ注入し、ブラウザ上で要素をクリックして付けたメモを `POST /__annotations` で受けて `<outdir>/annotations.md` に追記する。人間は注釈を送信して「アノテーションを見て」と言うだけで、Claude はセレクタ・位置つきの構造化フィードバックを読める。ディスク上の HTML は書き換えない (プレゼン本番と同一物を保つ)。agentation への依存はバンドルエントリ 1 ファイルに隔離されており、置き換え可能 (ADR-0011 撤退ライン)。

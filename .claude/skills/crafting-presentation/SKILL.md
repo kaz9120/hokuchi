@@ -130,7 +130,7 @@ N. closer   聴衆が次の登壇資料を意図で書き始める
 
 ### 手順
 
-1. テーマを用意する。既存があれば `deck.theme` で参照する。無ければデフォルトテーマ `tools/slides/themes/hokuchi.yaml` を相対パスで参照する (コピーしない。テーマの単一ソースを保つ)。テーマは勝手に発明しない
+1. テーマを用意する。登壇の立場で選ぶ — 個人としての登壇は `tools/slides/themes/hokuchi.yaml`、MOSH としての登壇は `tools/slides/themes/mosh.yaml` (ADR-0010)。どちらも相対パスで参照する (コピーしない。テーマの単一ソースを保つ)。テーマは勝手に発明しない。判断できなければ Phase 0 で聞く
 2. `deck` ブロックを書く。`title` / `audience` (Phase 1 の結果) / `theme` (相対パス)。連続する chart で軸を揃えるなら `scales` を定義
 3. 各スライドを書く。`id` (安定キー) / `role` / `idea` (Phase 4 の 1 行) / `layout` / `elements` / `notes`
 4. 語る内容は `notes` に、スライドの可視テキストは最小に。スライドは見出し、本文はノート (下記)
@@ -167,11 +167,13 @@ N. closer   聴衆が次の登壇資料を意図で書き始める
 node cli.mjs lint <deck.yaml>
 node cli.mjs render <deck.yaml> -o <outdir>
 node cli.mjs shot <outdir>
+node cli.mjs serve <outdir>    # 人間レビュー用のアノテーション付きプレビュー (ADR-0011)
 ```
 
 1. `lint` を実行し、警告を原則すべて解消する。テキスト超過 (`slideument`) は本文を `notes` へ移す。`one-idea` はスライドを分割する。`annotation-anchor` / `edge-ref` はエラーなので必ず直す。解消せず残す警告があれば、理由を添えてユーザーに報告する
 2. `render` で HTML/SVG を描画する
-3. `shot` でスクリーンショットを生成し、ユーザーに見せてフィードバックを得る
+3. `shot` でスクリーンショットを生成し、自分の目で確かめてからユーザーに見せる
+4. 人間の細かいレビューには `serve` を提案する。ブラウザで ← → ページ送りしながら要素をクリックしてメモを付け、Send すると `<outdir>/annotations.md` に追記される。ユーザーから「アノテーションを送った」と言われたらそのファイルを読み、Phase 7 の入力にする
 
 lint レポートは捨てずに残る一級の成果物 (ADR-0002)。逸脱を黙って常態化させない。
 
@@ -179,7 +181,7 @@ lint レポートは捨てずに残る一級の成果物 (ADR-0002)。逸脱を�
 
 ## Phase 7 — 磨き
 
-ユーザーのフィードバックを、スライド `id` 単位で反映する。
+ユーザーのフィードバック (口頭・テキスト・`annotations.md` のアノテーション) を、スライド `id` 単位で反映する。
 
 - 変更は指示された `id` のスライドに限る。他のスライドには触らない (ADR-0004)
 - 人間が手編集した YAML を、対話の再生成で上書きしない。特定 id のスライドだけを書き換える

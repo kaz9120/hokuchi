@@ -12,7 +12,7 @@
 
 運用の規則は 2 つ。
 
-- テーマは `tools/slides/themes/hokuchi.yaml` を相対参照する。コピーしない
+- テーマは登壇の立場で選び、相対参照する（個人は `tools/slides/themes/hokuchi.yaml`、MOSH としては `tools/slides/themes/mosh.yaml`。ADR-0010）。コピーしない
 - 発表が終わったら最終レンダリングを `final/` にコミットして凍結する。レンダラは進化するので、deck.yaml だけでは当時の見た目を再現できない (ADR-0009)
 
 作り方は crafting-presentation skill（「スライド作って」で起動）を参照。

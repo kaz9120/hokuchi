@@ -1,0 +1,403 @@
+# 「AI時代のエンジニア生存戦略」(ROSCA 勉強会 2026-07-06、セッション 10 分)
+# 構造: 問いの掛け替え型。借り物の問い「AIはもう、人間を超えたのか」で開き、
+# 電王戦の証言で答えの重みを証明し、本当の問い「自分の言葉で語れますか」で閉じる。
+schema_version: "0.1.0"
+deck:
+  title: "AI時代のエンジニア生存戦略"
+  audience:
+    who: "生成AIにキャリアの不安を感じながら、何をすべきか掴めずにいるジュニア〜ジュニアミドルのエンジニア"
+    action: "借り物の言葉でAIを語るのをやめ、自分の手で使い考え、自分の言葉で語り始める"
+  theme: ../../tools/slides/themes/mosh.yaml
+
+slides:
+  - id: opener
+    role: opener
+    idea: "AIが人間を超える現場に10年前からいた人間の登壇が始まる"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "10年前、AIが人間を超える現場にいた"
+        emphasis: ["現場"]
+    notes: |
+      開演前のバンパー。キャッチコピーのみ。
+
+  - id: title
+    role: title
+    idea: "生存戦略を、予測ではなく問いとして始める"
+    layout: title-stage
+    elements:
+      - kind: statement
+        slot: title
+        text: "AI時代のエンジニア生存戦略"
+      - kind: statement
+        slot: subtitle
+        text: "山本一将 / MOSH株式会社 Engineering Manager"
+    notes: |
+      自己紹介は肩書きだけで最小限に。
+      「いきなり生存戦略の話はしません。まず、皆さんが今日いちばん聞きたいはずの問いから始めます」
+      【20秒】
+
+  - id: q1
+    role: content
+    idea: "聴衆が抱えて来た問い「AIはもう、人間を超えたのか」を言語化する"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "AIはもう、人間を超えたのか？"
+        emphasis: ["超えた"]
+    notes: |
+      「仕事がなくなるのでは」という不安の根っこには、この問いがあるはずです。
+      ニュースも SNS も、この問いの答えを探し続けている。
+      間を取ってから、次のスライドで即答する。
+      【20秒】
+
+  - id: my-answer
+    role: content
+    idea: "私の答え——超えている。トップエンジニアも、だ"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "超えている。トップエンジニアも、だ"
+        emphasis: ["超えている"]
+    notes: |
+      私の答えははっきりしています。超えている。平均的なエンジニアどころか、
+      トップエンジニアも、です。
+      根拠のない断言ではありません。
+      【20秒】
+
+  - id: knuth
+    role: content
+    idea: "コンピュータ科学の神クヌースですら、AIへの敗北を認めた"
+    layout: quote-stage
+    elements:
+      - kind: quote
+        slot: quote
+        text: '"Shock! Shock!"'
+        attribution: "Donald Knuth ── 2026年2月の論文より"
+    notes: |
+      2026年2月、一本の論文がこの一言から始まりました。
+      書いたのはドナルド・クヌース。コンピュータ科学の世界で「神」と呼ばれる人物です。
+      87歳のクヌース先生が、数週間かけても解けなかった数学の問題を Claude に解かれた。
+      そして書いた。「AIに対する自分の意見を改めないといけないようだ」。
+      神様が、自ら負けを認めたんです。
+      【40秒】
+
+  - id: hallucination
+    role: content
+    idea: "ハルシネーションは取るに足らない——そう言い切れる理由が私にはある"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "ハルシネーション？\n取るに足らない"
+        emphasis: ["取るに足らない"]
+    notes: |
+      「でもハルシネーションがあるじゃないか」——そう思いましたよね。
+      言い切ります。あれは取るに足らない問題です。
+      なぜそこまで言い切れるのか。それを説明するために、10年前の話をさせてください。
+      私はコンピュータ将棋の開発者でした。
+      【30秒】
+
+  - id: shogi-developer
+    role: content
+    idea: "私はコンピュータ将棋の開発者として、AIが人間を超える過程を中から見た"
+    layout:
+      areas:
+        - { element: board, cell: "1-2 / 1-6" }
+        - { element: caption, cell: "3-4 / 3-4" }
+      whitespace_min: 0.3
+    elements:
+      - kind: image
+        id: board
+        prompt: "薄暗い対局場に置かれた将棋盤と駒。盤上に鋭い側光、深い陰影、静かな緊張感。望遠、浅い被写界深度"
+        treatment: full-bleed
+        subject: third-left
+      - kind: statement
+        id: caption
+        text: "私は、コンピュータ将棋の開発者だった"
+    notes: |
+      世界コンピュータ将棋選手権に出場していました。
+      コンピュータ将棋がいちばん盛り上がっていた時代、
+      AIが人間を超えていく過程を、開発者として中から見ていた人間です。
+      【25秒】
+
+  - id: denousen-final
+    role: content
+    idea: "2015年4月11日、電王戦FINAL第5局は21手49分という異例の短さで終わった"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "2015年4月11日\n21手49分で、終わった"
+        emphasis: ["21手49分"]
+    notes: |
+      将棋電王戦FINAL 第5局。プロ棋士とコンピュータ将棋ソフトの五番勝負、
+      2勝2敗で迎えた大将戦です。
+      その対局が、21手、49分で終わりました。通常のプロの対局は100手以上、数時間かかります。
+      ソフトには既知の欠陥がありました。特定の手——2八角——に誘導されると自ら不利になる。
+      アマチュアがすでに発見していて、しかもルール上、事前提供後のソフト修正は許されていなかった。
+      プロ棋士はその欠陥を突き、開発者は自らの意志で投了しました。
+      【60秒】
+
+  - id: expectation
+    role: content
+    idea: "私が電王戦に期待したのは勝敗ではなく、AIの現在地を正確に記録することだった"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "見たかったのは、AIの現在地だった"
+        emphasis: ["現在地"]
+    notes: |
+      誤解しないでほしいのは、あの一手が悪かったわけではないということです。
+      ただ、私が電王戦に期待していたのは勝ち負けではありませんでした。
+      AIの能力の現在地を、人間のエキスパートとの力関係として正確に記録に残すこと。
+      あの欠陥は、アマチュアにも明らかにできた。
+      トップ棋士にしかできない検証は、果たされないまま終わったんです。
+      【40秒】
+
+  - id: air-2015
+    role: content
+    idea: "検証の代わりに残ったのは「AIはまだまだ」という空気だった"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "残ったのは、「AIはまだまだ」という空気だった"
+        emphasis: ["空気"]
+    notes: |
+      そして世間は、この結果を「AIはまだ人間に勝てない」の証拠として使いました。
+      修正可能な欠陥を理由に、AIの能力そのものが不当に低く見積もられていく。
+      その空気だけが残った。
+      【25秒】
+
+  - id: search-38h
+    role: content
+    idea: "私は38時間の探索で「時間が解決する欠陥」だと反証したが、届かなかった"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "38時間、探索させ続けた"
+        emphasis: ["38時間"]
+    notes: |
+      私は少し意地になって、自分のソフトで問題の局面を38時間探索させ続けました。
+      1時間の探索では悪手を指すかもしれない。でも38時間なら回避する。
+      そして38時間を5分に縮めることは、コンピュータの歴史では時間の問題です。
+      解決可能で、取るに足らない欠陥——それを示して発信しました。
+      誰にも届きませんでした。世間の結論は、もう出ていたからです。
+      【45秒】
+
+  - id: valley
+    role: content
+    idea: "AI擁護側だった私ですら「AIは人間を幸せにしない」と感じて離れた"
+    layout: quote-stage
+    elements:
+      - kind: quote
+        slot: quote
+        text: "AIは、人間を幸せにしない"
+        attribution: "2015年の、私"
+    notes: |
+      あの日、本気でそう思いました。
+      私は開発者側、AI擁護側の人間です。その私ですら、この空気の中で
+      AI研究への興味を失い、コンピュータ将棋から離れました。
+      欠陥を指摘して安心する側の空気に、飲まれたんです。
+      【30秒】
+
+  - id: fujii
+    role: content
+    idea: "その空気の中で、ソフトを使い倒した世代——藤井聡太が台頭した"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "藤井聡太 ── ソフトを使い倒した、最初の世代"
+        emphasis: ["藤井聡太"]
+    notes: |
+      でも、同じ空気の中で、まったく違う動きをした世代がいました。
+      藤井聡太。将棋ソフトを使い倒した最初の世代です。
+      彼はソフトの欠点を突く側に立たなかった。練習相手として、研究の道具として使い、
+      自分の将棋を作り上げ、史上最強の棋士になりました。
+      【30秒】
+
+  - id: yamashita
+    role: content
+    idea: "小学生の頃から選手権会場で開発者に学んだ山下数毅が、プロ棋士になった"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "山下数毅 ── 選手権会場に通った小学生"
+        emphasis: ["山下数毅"]
+    notes: |
+      もう一人、紹介させてください。山下数毅さん。
+      彼は小学生の頃から世界コンピュータ将棋選手権の会場に足を運んで、
+      AI開発者から直接、仕組みの話を聞いて学んでいました。
+      実は私も一度、幼い彼にソフトの仕組みを解説したことがあります。
+      小学生にあの話をしたのは、後にも先にもあの一度きりです。驚きました。
+      その彼が、高校二年生でプロ棋士になりました。
+      【40秒】
+
+  - id: no-preconception
+    role: content
+    idea: "彼らは物心ついた時からAIが当たり前にあり、先入観なく使い倒せた"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "彼らに、先入観はなかった"
+        emphasis: ["先入観"]
+    notes: |
+      なぜ彼らは台頭できたのか。
+      物心ついた時には、AIが当たり前にそこにあったからだと私は思っています。
+      「AIはまだまだ」という空気を経由せず、先入観なく触れた。
+      練習相手としても、研究のツールとしても、当たり前のように使った。
+      新しい世代ならではの強さです。
+      【30秒】
+
+  - id: precedent
+    role: content
+    idea: "将棋界は「AIが人間を超えた後の世界」を10年先に生きる先行事例だ"
+    layout: diagram-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "将棋界は、10年先を生きる先行事例"
+      - kind: diagram
+        slot: diagram
+        form: flow.linear
+        nodes:
+          - { id: surpass, label: "AIが人間を超える" }
+          - { id: air, label: "欠陥を指摘する空気" }
+          - { id: rise, label: "使い倒す世代の台頭" }
+        edges:
+          - surpass -> air
+          - air -> rise
+        emphasis: [rise]
+    notes: |
+      将棋界は「AIが人間を超えた後の世界」を、私たちより10年先に生きています。
+      超えられて、欠陥を指摘する空気が流れて、それでもAIを使い倒した世代が台頭した。
+      この流れを、先行事例として見てほしいんです。
+      ちなみに、プロ棋士という仕事はなくなっていません。
+      【35秒】
+
+  - id: same-air-now
+    role: content
+    idea: "いまのLLMを巡る空気は、2015年の将棋界と同じだ"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "いま、同じ空気を感じている"
+        emphasis: ["同じ空気"]
+    notes: |
+      エンジニアの世界はいま、この図のどこにいるか。
+      ハルシネーション、バグ、不正確な出力。それを指摘して
+      「まだ人間は置き換えられない」と安心する声。気持ちは分かります。
+      でも私には、あのときの2八角とまったく同じに見える。
+      修正可能な欠陥を理由に、本質を見ないまま結論を出すことです。
+      【30秒】
+
+  - id: guarantee
+    role: content
+    idea: "ハルシネーションは時間が解決する——38時間回した私が保証する"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "時間が解決する。私が保証する"
+        emphasis: ["保証する"]
+    notes: |
+      ハルシネーションは、時間が解決します。38時間探索を回した私が保証します。
+      本当に、取るに足らない問題です。
+      そして多少のハルシネーションがあったとしても、いまのAIは人間よりはるかに優秀です。
+      しかも進化のスピードは、コンピュータ将棋の時代より桁違いに速い。
+      【30秒】
+
+  - id: good-rules
+    role: content
+    idea: "現代が将棋より難しいのはオープンワールドだから——良いルールを作ればAIは最大の実力を発揮する"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "良いルールを作れば、AIは最大の実力を発揮する"
+        emphasis: ["良いルール"]
+    notes: |
+      将棋と違って、エンジニアリングはオープンワールドです。ルールが複雑すぎる。
+      だから複雑な作業では、まだ人間が勝ってしまうことがある。
+      でもそれは、ルールを作る人間の能力の問題でもあります。
+      ルールを絞れば、AIは確実に人間を上回る。
+      良いルールを作ってそこに収める——これが、いまの私の言葉です。
+      (流行語で言えばハーネスエンジニアリングですが、単語は本質ではないので口頭で軽く)
+      こういう発想は、AIの能力を認めて、自分の言葉で語る努力をしない限り出てきません。
+      【50秒】
+
+  - id: borrowed-words
+    role: content
+    idea: "私の答えを借りて帰っても、借り物の言葉のままでは不安は漠然としたままだ"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "私の答えを借りても、あなたは救われない"
+        emphasis: ["借りても"]
+    notes: |
+      ここまで私の答えを話してきました。でも。
+      今日この答えをそのまま借りて帰っても、あなたは救われません。
+      「仕事がなくなる」という不安が漠然としているのは、
+      借り物の言葉で将来を見ているからです。
+      誰かの予言、SNSの流行語、ニュースの見出し。
+      借り物の言葉のままでは、不安は漠然としたままで、漠然とした不安には打つ手がない。
+      【35秒】
+
+  - id: own-words
+    role: content
+    idea: "自分で使い考えた不安は具体的な問いになり、行動に変わる"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "自分の言葉になった不安は、行動に変わる"
+        emphasis: ["自分の言葉"]
+    notes: |
+      逆に、自分の手でAIを使い倒して考えた人間の不安は、具体的になります。
+      「この作業は置き換わるな」「ここはまだ全然ダメだな」と。
+      具体的な不安は、具体的な問いになり、行動に変えられる。
+      それが、私の考える生存戦略です。
+      【25秒】
+
+  - id: q2
+    role: content
+    idea: "本当の問い「あなたはAIについて、自分の言葉で語れますか」を聴衆に手渡す"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "あなたはAIについて、\n自分の言葉で語れますか？"
+        emphasis: ["自分の言葉"]
+    notes: |
+      冒頭の問いを覚えていますか。「AIはもう、人間を超えたのか」。
+      あの問いの答えを知ることは、あなたを救いません。
+      本当の問いはこちらです。
+      あなたはAIについて、自分の言葉で語れますか？
+      (十分な間を取る)
+      【30秒】
+
+  - id: closer
+    role: closer
+    idea: "懇親会で自分の言葉を話すという最初の行動に踏み出してもらう"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "あなたの言葉を、聞かせてください"
+        emphasis: ["あなたの言葉"]
+    notes: |
+      このあとの懇親会で、あなたの言葉を聞かせてください。
+      借り物じゃなくていい。使ってみて感じたこと、引っかかったこと、それで十分です。
+      ありがとうございました。
+      【15秒】

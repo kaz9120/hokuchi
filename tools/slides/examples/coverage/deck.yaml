@@ -1,0 +1,252 @@
+# カバレッジデッキ — レンダラ改善の検証台。
+# 全 role (opener/title/transition/content/closer)、全レイアウトパターン、
+# 全要素 7 種 (statement/bullets/image/diagram/chart/quote/raw)、
+# ブランド枠 (ロゴ・フッタ・背景・反転前景) を 1 デッキで踏む。
+# レンダラを変えたら、まずこのデッキを render / shot して全種の見た目を確認する。
+schema_version: "0.1.0"
+deck:
+  title: "カバレッジデッキ — 全種の見た目検証"
+  audience:
+    who: "レンダラを変更する開発者 (人間と Claude)"
+    action: "変更のたびにこのデッキを描画し、全種のリグレッションを目で確認する"
+  scales:
+    shared-y:
+      y: { min: 0, max: 100 }
+  theme: ../../themes/mosh.yaml
+
+slides:
+  - id: opener
+    role: opener
+    idea: "バンパー: レターボックスなし + bumper 背景 + ロゴ"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "全種を、1 周する"
+        emphasis: ["全種"]
+    notes: |
+      検証点: hero サイズ、bumper 背景 (bg-cover)、ロゴとフッタの位置。
+
+  - id: title
+    role: title
+    idea: "タイトル: title-stage の主従とアクセントバー"
+    layout: title-stage
+    elements:
+      - kind: statement
+        slot: title
+        text: "カバレッジデッキ"
+      - kind: statement
+        slot: subtitle
+        text: "レンダラ改善の検証台 — 全 role・全パターン・全要素"
+    notes: |
+      検証点: title/subtitle のタイプスケール、アクセントバー色、title 背景。
+
+  - id: transition-inverted
+    role: transition
+    idea: "転換: 濃色背景 (foreground: light) で前景が白系に反転する"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "ここから、見た目の話"
+        emphasis: ["見た目"]
+    notes: |
+      検証点: 反転前景 (文字が白、emphasis も白)、白版ロゴへの切り替え。
+
+  - id: statement
+    role: content
+    idea: "statement: big サイズと emphasis の強調色"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "1 枚に、1 アイデアだけ置く"
+        emphasis: ["1 アイデア"]
+    notes: |
+      検証点: big サイズ、ハイライト色、BudouX 文節折り返し。
+
+  - id: quote
+    role: content
+    idea: "quote: 引用符・本文・出典の 3 点構成"
+    layout: quote-stage
+    elements:
+      - kind: quote
+        slot: quote
+        text: "データスライドが伝えるべきは、データそのものではなく、データの意味です。"
+        attribution: "ナンシー・デュアルテ『slide:ology』"
+    notes: |
+      検証点: 引用マークの位置、出典の右寄せ、行末孤立文字がないこと。
+
+  - id: diagram-cycle
+    role: content
+    idea: "diagram flow.cycle: 環状配置とエッジラベル"
+    layout: diagram-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "循環 (flow.cycle) の検証"
+      - kind: diagram
+        slot: diagram
+        form: flow.cycle
+        nodes:
+          - { id: write, label: "書く" }
+          - { id: render, label: "描画する" }
+          - { id: check, label: "目で見る" }
+        edges:
+          - write -> render
+          - render -> check
+          - { from: check, to: write, label: "次の周へ" }
+        emphasis: [check]
+    notes: |
+      検証点: 環状レイアウト、曲線エッジ、エッジラベル、強調ノードの視覚差。
+
+  - id: diagram-linear
+    role: content
+    idea: "diagram flow.linear: 直列配置の等間隔と矢印"
+    layout: diagram-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "直列 (flow.linear) の検証"
+      - kind: diagram
+        slot: diagram
+        form: flow.linear
+        nodes:
+          - { id: a, label: "宣言" }
+          - { id: b, label: "導出" }
+          - { id: c, label: "検証" }
+          - { id: d, label: "凍結" }
+        edges: [a -> b, b -> c, c -> d]
+        emphasis: [d]
+    notes: |
+      検証点: 横一列の等間隔、ノード幅のラベル追従、末尾ノードの強調。
+
+  - id: chart-trend
+    role: content
+    idea: "chart trend: 折れ線 + 注釈アンカー + 共有スケール"
+    layout: chart-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "推移 (trend) と注釈の検証"
+      - kind: chart
+        slot: chart
+        intent: trend
+        message: "4月の改修を境に処理時間が下がり続ける"
+        scale: shared-y
+        data:
+          x: ["1月", "2月", "3月", "4月", "5月", "6月"]
+          series:
+            - { label: "処理時間 (分)", values: [82, 78, 80, 55, 38, 24] }
+        annotations:
+          - { at: "4月", annotate: "レンダラ改修", style: highlight }
+    notes: |
+      検証点: 3 レイヤー (背景・データ・強調)、注釈の位置、共有 y スケール。
+
+  - id: chart-comparison
+    role: content
+    idea: "chart comparison: 2 系列の棒とコア配色"
+    layout: chart-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "比較 (comparison) と 2 系列の検証"
+      - kind: chart
+        slot: chart
+        intent: comparison
+        message: "手作業よりツールの方が全工程で速い"
+        scale: shared-y
+        data:
+          x: ["構成", "描画", "検証"]
+          series:
+            - { label: "手作業", values: [90, 70, 60] }
+            - { label: "ツール", values: [35, 12, 20] }
+    notes: |
+      検証点: グループ棒の間隔、core 配色の系列差、軸ラベル。
+
+  - id: bullets
+    role: content
+    idea: "bullets: 上限 5 項目とドットの整列"
+    layout: list-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "箇条書き (5 項目上限) の検証"
+      - kind: bullets
+        slot: list
+        items:
+          - "短い行"
+          - "折り返しを見るための少し長い日本語の行"
+          - "英数字 mix: render() / serve"
+          - "ドットの整列"
+          - "これが上限"
+    notes: |
+      検証点: 行間、ドット位置、長文項目の折り返し。
+
+  - id: image-src
+    role: content
+    idea: "image src: 実画像の full-bleed 描画と三分割配置"
+    layout:
+      areas:
+        - { element: photo, cell: "1-2 / 1-6" }
+        - { element: caption, cell: "3-4 / 4-5" }
+      whitespace_min: 0.3
+    elements:
+      - kind: image
+        id: photo
+        src: ./assets/sample-photo.svg
+        prompt: "夕暮れの山並み。手前は黒いシルエット、空は橙から紺へのグラデーション"
+        treatment: full-bleed
+        subject: third-right
+      - kind: statement
+        id: caption
+        text: "実画像は src、意図は prompt に残す"
+    notes: |
+      検証点: src 画像のコピーと参照、object-fit cover、subject の寄せ。
+
+  - id: image-placeholder
+    role: content
+    idea: "image prompt: 実画像なしのプレースホルダ描画"
+    layout:
+      areas:
+        - { element: ph, cell: "2-3 / 2-5" }
+      whitespace_min: 0.3
+    elements:
+      - kind: image
+        id: ph
+        prompt: "朝焼けのキャンプ場で湯気の立つコーヒーを持つ手元。逆光、浅い被写界深度"
+        treatment: framed
+    notes: |
+      検証点: プレースホルダの枠・バッジ・プロンプト表示。
+
+  - id: raw
+    role: content
+    idea: "raw: 語彙外の 1 枚を SVG で埋め込む脱出口"
+    layout:
+      areas:
+        - { element: custom, cell: "1-4 / 2-5" }
+      whitespace_min: 0.3
+    elements:
+      - kind: raw
+        id: custom
+        svg: |
+          <svg xmlns="http://www.w3.org/2000/svg" width="640" height="240" viewBox="0 0 640 240">
+            <rect x="8" y="8" width="624" height="224" rx="16" fill="none" stroke="#fa6e78" stroke-width="3" stroke-dasharray="10 6"/>
+            <text x="320" y="110" text-anchor="middle" font-size="28" fill="#111827" font-family="sans-serif">raw 要素 — 語彙で表せない 1 枚のための口</text>
+            <text x="320" y="160" text-anchor="middle" font-size="18" fill="#4b5563" font-family="sans-serif">waiver 必須 / デッキの 1 割まで (raw-budget)</text>
+          </svg>
+        waiver: "レンダラ検証のため、語彙にない見た目 (破線枠) を意図的に埋め込む"
+    notes: |
+      検証点: インライン SVG の描画、raw-budget lint が 1/13 で発火しないこと。
+
+  - id: closer
+    role: closer
+    idea: "クローザ: 行動喚起で閉じるバンパー"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "変えたら、まずこのデッキを見る"
+        emphasis: ["このデッキ"]
+    notes: |
+      検証点: closer の hero サイズとバンパー背景。

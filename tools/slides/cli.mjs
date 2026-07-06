@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 // cli.mjs — hokuchi presentation CLI: lint / render / shot / serve.
 //
-//   node cli.mjs lint   <deck.yaml>
-//   node cli.mjs render <deck.yaml> -o <outdir>
-//   node cli.mjs shot   <outdir>
-//   node cli.mjs serve  <outdir> [-p port]
+//   hokuchi lint   <deck.yaml>
+//   hokuchi render <deck.yaml> [-o <outdir>]   # 省略時は deck と同じ場所の out/
+//   hokuchi shot   <outdir>
+//   hokuchi serve  <outdir> [-p port]
+//
+// npm link (tools/slides で一度実行) で hokuchi コマンドとして使う。
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -20,10 +22,10 @@ function usage(code = 1) {
   process.stderr.write(`hokuchi — intent-declared slide toolkit
 
 usage:
-  node cli.mjs lint   <deck.yaml>
-  node cli.mjs render <deck.yaml> -o <outdir>
-  node cli.mjs shot   <outdir>
-  node cli.mjs serve  <outdir> [-p port]   # アノテーション付きプレビュー (ADR-0011)
+  hokuchi lint   <deck.yaml>
+  hokuchi render <deck.yaml> [-o <outdir>]   # 省略時は deck と同じ場所の out/
+  hokuchi shot   <outdir>
+  hokuchi serve  <outdir> [-p port]          # アノテーション付きプレビュー (ADR-0011)
 `);
   process.exit(code);
 }
@@ -57,8 +59,9 @@ function cmdLint(deckPath) {
 // ---------------------------------------------------------------------------
 // render
 // ---------------------------------------------------------------------------
-function cmdRender(deckPath, outDir) {
+function cmdRender(deckPath, outDirArg) {
   const { deck, theme, deckPath: absDeck, themePath } = loadDeck(deckPath);
+  const outDir = outDirArg ?? path.join(path.dirname(absDeck), 'out');
   const { pages, assets } = renderDeck(deck, theme, {
     deckDir: path.dirname(absDeck),
     themeDir: path.dirname(themePath),
@@ -134,7 +137,7 @@ async function main(argv) {
       cmdLint(rest[0]);
     } else if (cmd === 'render') {
       const { deckPath, outDir } = parseRenderArgs(rest);
-      if (!deckPath || !outDir) usage();
+      if (!deckPath) usage();
       cmdRender(deckPath, outDir);
     } else if (cmd === 'shot') {
       if (!rest[0]) usage();

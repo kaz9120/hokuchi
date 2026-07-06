@@ -23,7 +23,7 @@ tools/
   slides/          スライドスキーマとレンダラ
     SPEC.md        スキーマの規範仕様（唯一の真実）
     schema/        JSON Schema（deck / theme）
-    src/ + cli.mjs lint / render / shot の CLI（npm test で検証）
+    src/ + cli.mjs lint / render / shot の CLI（npm link で hokuchi コマンドに。npm test で検証）
     themes/        デフォルトテーマ（hokuchi.yaml）
     examples/      テスト用フィクスチャ
     docs/design.md 生きた設計書
@@ -32,7 +32,7 @@ tools/
   crafting-presentation/  対話からスライドを作る skill（Phase 0〜7）
 ```
 
-スライドを作る依頼は crafting-presentation skill に従う。デッキは `talks/<YYYY-MM-slug>/deck.yaml` に置き、テーマは登壇の立場で選んで相対参照する（個人は `tools/slides/themes/hokuchi.yaml`、MOSH としては `tools/slides/themes/mosh.yaml`。コピーしない。ADR-0010）。発表が終わったら最終レンダリングを `final/` にコミットして凍結する。レンダラは進化するので、deck.yaml だけでは当時の見た目を再現できない。人間の細かいレビューは `cli.mjs serve` のアノテーション (ADR-0011) で受ける。
+スライドを作る依頼は crafting-presentation skill に従う。デッキは `talks/<YYYY-MM-slug>/deck.yaml` に置き、テーマは登壇の立場で選んで相対参照する（個人は `tools/slides/themes/hokuchi.yaml`、MOSH としては `tools/slides/themes/mosh.yaml`。コピーしない。ADR-0010）。発表が終わったら最終レンダリングを `final/` にコミットして凍結する。レンダラは進化するので、deck.yaml だけでは当時の見た目を再現できない。人間の細かいレビューは `hokuchi serve` のアノテーション (ADR-0011) で受ける。
 
 ## コミット
 

@@ -5,7 +5,7 @@ description: hokuchi のスライドツールで登壇資料を作る。人間�
 
 # スライドを意図で書く
 
-このスキルは、対話で聴衆とメッセージを深掘りし、hokuchi の宣言スキーマ (SPEC 準拠の `deck.yaml`) を生成し、`cli.mjs` で検証・描画するまでを一気に通す。
+このスキルは、対話で聴衆とメッセージを深掘りし、hokuchi の宣言スキーマ (SPEC 準拠の `deck.yaml`) を生成し、`hokuchi` CLI で検証・描画するまでを一気に通す。
 
 書き手は Claude、レビュアーは人間。Claude が書くのはピクセルではなく意図 (何を伝えたいか・要素同士がどう関係するか) であり、配置・色・サイズはテーマとレンダラが導出する (ADR-0001)。人間がレビューするのは主に各スライドの `idea` と `notes`。
 
@@ -163,13 +163,13 @@ N. closer   聴衆が次の登壇資料を意図で書き始める
 
 ## Phase 6 — 検証
 
-`cli.mjs` (`tools/slides/cli.mjs`) で lint / render / shot を回す。tools/slides ディレクトリから実行する。
+`hokuchi` コマンド (`tools/slides/cli.mjs` を npm link したもの) で lint / render / shot を回す。任意のディレクトリから実行できる。コマンドが見つからないときは `tools/slides` で `npm link` を一度実行する (nodenv 環境では続けて `nodenv rehash`)。
 
 ```sh
-node cli.mjs lint <deck.yaml>
-node cli.mjs render <deck.yaml> -o <outdir>
-node cli.mjs shot <outdir>
-node cli.mjs serve <outdir>    # 人間レビュー用のアノテーション付きプレビュー (ADR-0011)
+hokuchi lint <deck.yaml>
+hokuchi render <deck.yaml>     # 出力は deck と同じ場所の out/ (-o で変更可)
+hokuchi shot <outdir>
+hokuchi serve <outdir>         # 人間レビュー用のアノテーション付きプレビュー (ADR-0011)
 ```
 
 1. `lint` を実行し、警告を原則すべて解消する。テキスト超過 (`slideument`) は本文を `notes` へ移す。`one-idea` はスライドを分割する。`annotation-anchor` / `edge-ref` はエラーなので必ず直す。解消せず残す警告があれば、理由を添えてユーザーに報告する

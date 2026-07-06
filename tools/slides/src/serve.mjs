@@ -39,12 +39,16 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { Agentation } from 'agentation';
 
-const page = location.pathname.split('/').pop() || 'index.html';
+// SPA (ADR-0012): the deck is one document, so the slide context lives in the
+// URL hash. Resolve it at send time, not load time.
+function pageRef() {
+  return (location.pathname.split('/').pop() || 'index.html') + location.hash;
+}
 function send(kind, output, annotations) {
   return fetch('/__annotations', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ page, kind, output, annotations }),
+    body: JSON.stringify({ page: pageRef(), kind, output, annotations }),
   });
 }
 
@@ -124,7 +128,7 @@ export async function serve(outDir, port = 4646) {
     }
 
     let rel = decodeURIComponent(url.pathname);
-    if (rel === '/') rel = '/slide-01.html';
+    if (rel === '/') rel = '/index.html';
     const abs = path.resolve(absOut, '.' + rel);
     if (!abs.startsWith(absOut + path.sep) || !fs.existsSync(abs) || fs.statSync(abs).isDirectory()) {
       res.writeHead(404, { 'content-type': 'text/plain' });
@@ -148,7 +152,7 @@ export async function serve(outDir, port = 4646) {
 
   process.stdout.write(
     `serving ${outDir}/ -> http://localhost:${port}/\n` +
-    `  ページ送り: ← → (Home/End で先頭/末尾)、一覧は /index.html\n` +
+    `  ページ送り: ← → (Home/End で先頭/末尾)、g で一覧モード切替 (全スライドまとめて注釈できる)\n` +
     `  アノテーション: 右下のツールバーで要素をクリックしてメモ → Send で ${annotationsPath} に追記\n`
   );
   return server;

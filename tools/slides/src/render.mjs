@@ -806,74 +806,98 @@ svg.lead{display:block;max-width:100%;max-height:100%}
 }
 
 // ---------------------------------------------------------------------------
-// Page assembly
+// Document assembly (ADR-0012) — one self-contained SPA per deck
+//
+// Every slide lives in the single index.html as <section class="page" id="pNN">.
+// The load-bearing mechanism is CSS :target — deck mode shows exactly the slide
+// named by the URL hash with no JS required, which keeps shot (headless Chrome
+// on index.html#pNN) independent of script timing. JS adds only keyboard
+// navigation, viewport scaling, and the g-key list-mode toggle.
 // ---------------------------------------------------------------------------
-function page(bodyClass, styleExtra, inner, ctx, scriptExtra = '') {
-  const fontLinks = ctx.webfonts
-    .map((u) => `<link rel="stylesheet" href="${esc(u)}">`)
-    .join('\n');
-  return `<!doctype html>
-<html lang="ja"><head><meta charset="utf-8">
-<meta name="viewport" content="width=${CANVAS.w}">
-<title>${esc(ctx.deck.title)}</title>
-${fontLinks}
-<style>${css(ctx)}${styleExtra}</style>
-</head><body class="${bodyClass}">${inner}${scriptExtra}</body></html>`;
-}
-
 const num = (i) => String(i + 1).padStart(2, '0');
 
-/** Keyboard navigation between slide pages (← → Space Home End). */
-function navScript(i, total) {
-  return `<script>(()=>{const go=n=>{if(n>=1&&n<=${total})location.href='slide-'+String(n).padStart(2,'0')+'.html'};
+function spaCss(ctx) {
+  const light = ctx.background === 'light';
+  const galleryBg = light ? '#eceef1' : '#050403';
+  const frameShadow = light ? '0 6px 28px rgba(17,24,39,.14)' : '0 8px 40px rgba(0,0,0,.6)';
+  return `
+html,body{height:100%}
+body{background:${galleryBg};font-family:${ctx.fonts.body}}
+.frame{width:${CANVAS.w}px;height:${CANVAS.h}px;flex:0 0 auto}
+
+/* deck mode — one slide at a time, selected purely by :target */
+body.deck{overflow:hidden}
+body.deck .page{display:none}
+body.deck .page:target{display:flex;position:fixed;inset:0;align-items:center;justify-content:center}
+body.deck .page:target .frame{transform:scale(var(--s,1))}
+body.deck .cap,body.deck .deck-head{display:none}
+
+/* list mode (g key) — all slides stacked with captions, for review/annotation */
+body.list{overflow:auto;padding:56px 0}
+body.list .page{display:block;width:${CANVAS.w}px;margin:0 auto 56px}
+body.list .cap{color:${ctx.C.muted};font-size:15px;margin-bottom:12px;letter-spacing:.03em;line-height:1.7}
+body.list .cap b{color:${ctx.C.text};font-weight:${ctx.fonts.wDisplay}}
+body.list .cap .notes{white-space:pre-wrap;margin-top:6px;font-size:14px;opacity:.85}
+body.list .frame{box-shadow:${frameShadow};border-radius:6px;overflow:hidden}
+body.list .deck-head{width:${CANVAS.w}px;margin:0 auto 44px;color:${ctx.C.text}}
+.deck-head h1{font-family:${ctx.fonts.display};font-weight:${ctx.fonts.wDisplay};font-size:40px;color:${ctx.C.textStrong}}
+.deck-head p{color:${ctx.C.muted};margin-top:10px;font-size:18px}`;
+}
+
+/** Hash navigation (← → Space Home End), fit-to-viewport scale, g = list mode. */
+function navScript(total) {
+  return `<script>(()=>{const total=${total},pad=n=>String(n).padStart(2,'0');
+const cur=()=>{const m=location.hash.match(/^#p(\\d+)$/);return m?Number(m[1]):1};
+const go=n=>{if(n>=1&&n<=total)location.hash='#p'+pad(n)};
+const fit=()=>document.documentElement.style.setProperty('--s',Math.min(innerWidth/${CANVAS.w},innerHeight/${CANVAS.h}));
+if(!location.hash)location.replace('#p01');
+fit();addEventListener('resize',fit);
 addEventListener('keydown',e=>{if(e.defaultPrevented)return;const t=e.target;
 if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable))return;
-if(e.key==='ArrowRight'||e.key===' ')go(${i + 2});
-else if(e.key==='ArrowLeft')go(${i});else if(e.key==='Home')go(1);else if(e.key==='End')go(${total})})})()</script>`;
+if(e.key==='g'){const b=document.body,list=b.classList.toggle('list');b.classList.toggle('deck',!list);
+if(list)document.getElementById('p'+pad(cur()))?.scrollIntoView({block:'start'});return}
+if(document.body.classList.contains('list'))return;
+if(e.key==='ArrowRight'||e.key===' ')go(cur()+1);
+else if(e.key==='ArrowLeft')go(cur()-1);
+else if(e.key==='Home')go(1);
+else if(e.key==='End')go(total)})})()</script>`;
 }
 
 /**
- * Render a loaded deck.
+ * Render a loaded deck into a single-file SPA (ADR-0012).
  * @param {object} opts { deckDir, themeDir } — bases for resolving relative asset paths.
- * @returns {{ pages: { 'index.html': string, [slidePage]: string },
+ * @returns {{ pages: { 'index.html': string },
  *             assets: Map<string, string> }}  abs source path -> rel path in outdir
  */
 export function renderDeck(deckRoot, themeRoot, opts = {}) {
   const ctx = makeContext(deckRoot, themeRoot, opts);
-  const pages = {};
   const total = ctx.slides.length;
 
-  const singleStyle = `\nbody.single{background:${ctx.C.bg}}`;
-  ctx.slides.forEach((s, i) => {
-    pages[`slide-${num(i)}.html`] = page('single', singleStyle, renderSlide(s, ctx), ctx, navScript(i, total));
-  });
+  const sections = ctx.slides.map((s, i) => `
+  <section class="page" id="p${num(i)}">
+    <div class="cap"><b>${num(i)} · ${esc(s.id)}</b> &nbsp; ${esc(typeof s.layout === 'object' ? 'grid-direct' : s.layout)} · role:${esc(s.role)}<br>idea: ${esc(s.idea)}${s.notes ? `<div class="notes">${esc(String(s.notes).trim())}</div>` : ''}</div>
+    <div class="frame">${renderSlide(s, ctx)}</div>
+  </section>`).join('');
 
-  // Index page adapts to the theme's background mode (dark gallery vs light).
-  const light = ctx.background === 'light';
-  const idxBg = light ? '#eceef1' : '#050403';
-  const idxShadow = light ? '0 6px 28px rgba(17,24,39,.14)' : '0 8px 40px rgba(0,0,0,.6)';
-  const indexStyle = `
-body.index{background:${idxBg};padding:56px 0;font-family:${ctx.fonts.body}}
-.deck-head{width:${CANVAS.w}px;margin:0 auto 44px;color:${ctx.C.text}}
-.deck-head h1{font-family:${ctx.fonts.display};font-weight:${ctx.fonts.wDisplay};font-size:40px;color:${ctx.C.textStrong}}
-.deck-head p{color:${ctx.C.muted};margin-top:10px;font-size:18px}
-.slide-item{width:${CANVAS.w}px;margin:0 auto 56px}
-.slide-cap{color:${ctx.C.muted};font-size:15px;margin-bottom:12px;letter-spacing:.03em}
-.slide-cap b{color:${ctx.C.text};font-weight:${ctx.fonts.wDisplay}}
-.slide-frame{box-shadow:${idxShadow};border-radius:6px;overflow:hidden}`;
-
-  const items = ctx.slides.map((s, i) => `
-  <div class="slide-item" id="s${num(i)}">
-    <div class="slide-cap"><b>${num(i)} · ${esc(s.id)}</b> &nbsp; ${esc(typeof s.layout === 'object' ? 'grid-direct' : s.layout)} · role:${esc(s.role)}<br>idea: ${esc(s.idea)}</div>
-    <div class="slide-frame">${renderSlide(s, ctx)}</div>
-  </div>`).join('');
-
-  const indexInner = `
+  const head = `
   <div class="deck-head">
     <h1>${esc(ctx.deck.title)}</h1>
-    <p>${esc(ctx.deck.audience.who)} — 全 ${ctx.slides.length} 枚 / ${CANVAS.w}×${CANVAS.h}</p>
-  </div>${items}`;
+    <p>${esc(ctx.deck.audience.who)} — 全 ${total} 枚 / ${CANVAS.w}×${CANVAS.h} · ← → でページ送り、g で一覧</p>
+  </div>`;
 
-  pages['index.html'] = page('index', indexStyle, indexInner, ctx);
-  return { pages, assets: ctx.assets };
+  const fontLinks = ctx.webfonts
+    .map((u) => `<link rel="stylesheet" href="${esc(u)}">`)
+    .join('\n');
+
+  const doc = `<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=${CANVAS.w}">
+<title>${esc(ctx.deck.title)}</title>
+${fontLinks}
+<style>${css(ctx)}${spaCss(ctx)}</style>
+</head><body class="deck" data-slides="${total}">${head}
+<main>${sections}
+</main>${navScript(total)}</body></html>`;
+
+  return { pages: { 'index.html': doc }, assets: ctx.assets };
 }

@@ -315,3 +315,12 @@ linter を「エラーで止める」のではなく警告中心にしている�
 ## 9. レビューのフィードバックループ — serve と annotations (ADR-0011)
 
 shot が作る PNG は「Claude が自分の目で確認する」ためのもの。人間のレビューには `hokuchi serve <outdir>` を使う。serve は出力を配信しながら agentation (React 製の注釈オーバーレイ) を配信時にのみ注入し、ブラウザ上で要素をクリックして付けたメモを `POST /__annotations` で受けて `<outdir>/annotations.md` に追記する。人間は注釈を送信して「アノテーションを見て」と言うだけで、Claude はセレクタ・位置つきの構造化フィードバックを読める。ディスク上の HTML は書き換えない (プレゼン本番と同一物を保つ)。agentation への依存はバンドルエントリ 1 ファイルに隔離されており、置き換え可能 (ADR-0011 撤退ライン)。
+
+## 10. 出力形式 — 単一ファイル SPA (ADR-0012)
+
+render の出力は `index.html` (+ assets/ と theme-assets/) の 1 ドキュメントで、全スライドが `<section class="page" id="pNN">` として含まれる。表示モードは 2 つ。
+
+- **deck モード (既定)** — URL hash (`#pNN`) が指すスライドだけを CSS `:target` で表示する。JS が担うのはキーボードナビ (← → Space Home End)・ビューポートへの縮尺調整・モード切替だけで、JS が無くても `#p03` を開けば 3 枚目が正しく出る
+- **list モード (g キー)** — 全スライドを id / layout / idea / notes のキャプション付きで縦に並べる。レビューはこのモードで行うと、デッキ全体への注釈を 1 回の Send にまとめられる
+
+`:target` を基本機構にしたのは shot の決定性のため。shot は `index.html#pNN` を headless Chrome (1280×720) で 1 枚ずつ撮るだけで、スクリプトの実行タイミングに依存しない。スライド数は `<body data-slides="N">` から読む。PNG の命名 `slide-NN.png` は Google Slides への手貼りフローが依存しているため維持する。

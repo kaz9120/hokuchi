@@ -75,23 +75,25 @@ function cmdRender(deckPath, outDirArg) {
     fs.mkdirSync(path.dirname(dest), { recursive: true });
     fs.copyFileSync(absFrom, dest);
   }
-  const slideCount = Object.keys(pages).filter((n) => n.startsWith('slide-')).length;
-  // Prune stale pages/shots left over from a previous, longer render.
+  const slideCount = deck.slides.length;
+  // Prune per-page HTML from the pre-SPA format (ADR-0012) and stale shots
+  // left over from a previous, longer render.
   let pruned = 0;
   for (const f of fs.readdirSync(outDir)) {
     const m = f.match(/^slide-(\d+)\.(html|png)$/);
-    if (m && Number(m[1]) > slideCount) {
+    if (m && (m[2] === 'html' || Number(m[1]) > slideCount)) {
       fs.unlinkSync(path.join(outDir, f));
       pruned++;
     }
   }
   const assetNote = assets.size ? ` + ${assets.size} assets` : '';
   const pruneNote = pruned ? `, pruned ${pruned} stale` : '';
-  process.stdout.write(`rendered ${slideCount} slides -> ${outDir}/ (index.html + slide-NN.html${assetNote}${pruneNote})\n`);
+  process.stdout.write(`rendered ${slideCount} slides -> ${outDir}/index.html (single-file SPA${assetNote}${pruneNote})\n`);
 }
 
 // ---------------------------------------------------------------------------
-// shot — screenshot each slide-NN.html with installed Chrome (headless)
+// shot — screenshot each slide via index.html#pNN with installed Chrome
+// (headless). :target selection is pure CSS, so no script timing is involved.
 // ---------------------------------------------------------------------------
 function findChrome() {
   const candidates = [
@@ -106,12 +108,15 @@ function findChrome() {
 
 function cmdShot(outDir) {
   const chrome = findChrome();
-  const files = fs.readdirSync(outDir).filter((f) => /^slide-\d+\.html$/.test(f)).sort();
-  if (files.length === 0) throw new Error(`no slide-NN.html found in ${outDir}/. Run render first.`);
+  const indexPath = path.resolve(outDir, 'index.html');
+  if (!fs.existsSync(indexPath)) throw new Error(`${outDir}/ に index.html がありません。先に render を実行してください。`);
+  const m = fs.readFileSync(indexPath, 'utf8').match(/data-slides="(\d+)"/);
+  if (!m) throw new Error('index.html に data-slides がありません (旧形式?)。render し直してください。');
+  const total = Number(m[1]);
 
-  for (const f of files) {
-    const htmlPath = path.resolve(outDir, f);
-    const pngPath = htmlPath.replace(/\.html$/, '.png');
+  for (let i = 1; i <= total; i++) {
+    const nn = String(i).padStart(2, '0');
+    const pngPath = path.resolve(outDir, `slide-${nn}.png`);
     execFileSync(chrome, [
       '--headless',
       '--disable-gpu',
@@ -119,11 +124,11 @@ function cmdShot(outDir) {
       '--force-device-scale-factor=1',
       '--window-size=1280,720',
       `--screenshot=${pngPath}`,
-      `file://${htmlPath}`,
+      `file://${indexPath}#p${nn}`,
     ], { stdio: 'ignore' });
-    process.stdout.write(`shot ${f} -> ${path.basename(pngPath)}\n`);
+    process.stdout.write(`shot #p${nn} -> slide-${nn}.png\n`);
   }
-  process.stdout.write(`captured ${files.length} PNG -> ${outDir}/\n`);
+  process.stdout.write(`captured ${total} PNG -> ${outDir}/\n`);
 }
 
 // ---------------------------------------------------------------------------

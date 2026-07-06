@@ -2,7 +2,7 @@
 //
 // (1) theme + example validate against their own schemas
 // (2) examples/intent-talk lints with zero errors
-// (3) render produces 9 slide HTML pages (+ index)
+// (3) render produces a single-file SPA containing every slide (ADR-0012)
 // (4) edge sugar ("a -> b" string) normalizes to { from, to }
 
 import assert from 'node:assert/strict';
@@ -52,22 +52,27 @@ assert.equal(errors.length, 0, `expected 0 lint errors, got ${JSON.stringify(err
 assert.equal(hasError(findings), false);
 ok(`examples/intent-talk lints with 0 errors (${findings.length} total findings)`);
 
-// (3) render — 9 slide pages + index.
+// (3) render — one self-contained SPA document (ADR-0012).
 const { pages, assets } = renderDeck(deck, theme, {
   deckDir: path.dirname(deckPath),
   themeDir: path.dirname(themePath),
 });
-const slidePages = Object.keys(pages).filter((n) => /^slide-\d+\.html$/.test(n));
-assert.equal(slidePages.length, 9, `expected 9 slide pages, got ${slidePages.length}`);
-assert.ok(pages['index.html'], 'index.html produced');
-assert.ok(pages['slide-01.html'].includes('<!doctype html>'), 'slide page is a full document');
+assert.deepEqual(Object.keys(pages), ['index.html'], 'SPA output is index.html only');
+const doc = pages['index.html'];
+assert.ok(doc.includes('<!doctype html>'), 'SPA is a full document');
+assert.ok(doc.includes(`data-slides="${deck.slides.length}"`), 'slide count exposed for shot');
+for (let i = 1; i <= deck.slides.length; i++) {
+  const id = `id="p${String(i).padStart(2, '0')}"`;
+  assert.ok(doc.includes(id), `SPA contains section ${id}`);
+}
+assert.ok(doc.includes(':target'), 'deck mode selects slides via CSS :target');
 assert.ok(assets instanceof Map, 'renderDeck returns an asset map');
-ok(`render produced ${slidePages.length} slide pages + index.html (${assets.size} assets)`);
+ok(`render produced a single-file SPA with ${deck.slides.length} slides (${assets.size} assets)`);
 
 // Sanity: write to a temp dir so we exercise the real file path once.
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'hokuchi-test-'));
 for (const [name, html] of Object.entries(pages)) fs.writeFileSync(path.join(tmp, name), html);
-assert.equal(fs.readdirSync(tmp).filter((f) => f.endsWith('.html')).length, 10);
+assert.equal(fs.readdirSync(tmp).filter((f) => f.endsWith('.html')).length, 1);
 fs.rmSync(tmp, { recursive: true, force: true });
 ok('render output writes to disk cleanly');
 

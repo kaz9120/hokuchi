@@ -17,6 +17,7 @@ description: hokuchi のスライドツールで登壇資料を作る。人間�
 - `tools/slides/docs/design.md` — 設計思想の背景 (なぜ意図を宣言し配置を導出するのか)
 - `references/element-guide.md` — 伝えたいことの形から要素と form を選ぶ判断ガイド。Phase 5 で必ず参照
 - `references/interview-questions.md` — 聴衆プロファイリングの 7 つのクエスチョンと対話への言い換え。Phase 1 で参照
+- `references/style-defaults.md` — 話者固有の登壇スタイルの既定 (振り返りで育てる)。Phase 4 と 5 で必ず参照
 
 ## 全体の流れ
 
@@ -117,7 +118,8 @@ N. closer   聴衆が次の登壇資料を意図で書き始める
 
 - 各行が 1 文で言えているか。言えないスライドは 2 アイデアが混ざっている。分割する (SPEC の `one-idea` lint の基準)
 - 各 `idea` が One Big Idea に貢献しているか。しないものは落とす
-- opener / title / closer が枠として揃っているか。行動喚起で閉じる closer があるか (p.37)
+- 行動喚起で閉じる closer があるか (p.37)。opener は既定では置かない (`style-defaults.md`)
+- 構成が `references/style-defaults.md` の既定 (自己紹介・章立て・transition) に沿っているか。外すなら理由を言えるか
 - 枚数が Phase 0 の目安から大きく外れていないか
 
 ユーザーの承認を得てから Phase 5 へ。プロットが変わるなら Phase 3〜4 に戻る。
@@ -126,7 +128,7 @@ N. closer   聴衆が次の登壇資料を意図で書き始める
 
 ## Phase 5 — YAML 生成
 
-承認済みプロットを SPEC 準拠の `deck.yaml` に書く。要素選択は `references/element-guide.md` に従う。
+承認済みプロットを SPEC 準拠の `deck.yaml` に書く。要素選択は `references/element-guide.md` に、話者固有の既定 (support の付け方・実写真優先など) は `references/style-defaults.md` に従う。
 
 ### 手順
 
@@ -161,7 +163,7 @@ N. closer   聴衆が次の登壇資料を意図で書き始める
 
 ## Phase 6 — 検証
 
-`cli.mjs` (`tools/slides/cli.mjs`) で lint / render / shot を回す。tools/slides ディレクトリから実行する。発表が終わったら最終レンダリングを `talks/<slug>/final/` にコピーしてコミットし、凍結する (ADR-0009)。
+`cli.mjs` (`tools/slides/cli.mjs`) で lint / render / shot を回す。tools/slides ディレクトリから実行する。
 
 ```sh
 node cli.mjs lint <deck.yaml>
@@ -188,3 +190,12 @@ lint レポートは捨てずに残る一級の成果物 (ADR-0002)。逸脱を�
 - 反映のたびに Phase 6 の lint / render / shot を回し、変更が意図どおりか目で確かめる
 
 フィードバックが構成そのものに及ぶなら、Phase 3〜4 に戻って合意し直してから書き換える。
+
+---
+
+## 発表後 — 凍結と振り返り
+
+発表が終わったら 2 つやる。
+
+1. 最終レンダリングを `talks/<slug>/final/` にコミットして凍結する (ADR-0009)
+2. 振り返りをする。初版の deck.yaml と最終版の diff を読み、修正を「スタイル由来 (話者の型とのズレ)」「語彙不足 (スキーマに表現手段がなかった)」「内容の推敲」に分類する。スタイル由来の学びは `references/style-defaults.md` に追記し、次の登壇の初版から当てる。語彙不足はツール側の課題として起票する

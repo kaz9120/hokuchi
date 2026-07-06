@@ -9,6 +9,7 @@ Phase 5 で「伝えたいこと」を要素と form に翻訳するための判
 | 伝えたいこと | 要素 | レイアウトパターン |
 |------------|------|------------------|
 | 1 文で刺す主張・キャッチコピー | statement | statement-stage (opener/closer/content), title-stage (タイトル) |
+| 自己紹介 (顔写真+名前+略歴) | image + statement + bullets の定型 | profile-stage (slideument 対象外) |
 | 他者の言葉の権威で語らせる | quote | quote-stage |
 | 要素間の関係・構造・流れ | diagram | diagram-stage |
 | 数値の意味 (比較・変化・分布) | chart | chart-stage |
@@ -80,7 +81,7 @@ subtype カタログは網羅ではない (p.73)。「これらのサンプル�
 
 | 要素 | 選ぶ基準 | 注意 |
 |------|---------|------|
-| statement | 自分の言葉で 1 点を大きく刺す。opener/closer のキャッチ、章の主張 | `emphasis` は強調語の配列。1 枚 1 主張 |
+| statement | 自分の言葉で 1 点を大きく刺す。opener/closer のキャッチ、章の主張 | `emphasis` は強調語の配列。1 枚 1 主張。statement-stage の `support` スロットで主張の下に文脈 1 行を添えられる |
 | quote | 他者の言葉の権威・当事者性で語らせる。出典が効くとき | `attribution` に出典。地の文の言い換えなら statement にする |
 | image | 情景・感情・被写体で世界観を作る。論理より情動 | `treatment` (full-bleed/framed/cutout)、`subject` で三分割配置、`gaze` は視線をコンテンツ側へ (逆向きは `gaze` lint)。`src` が無くても `prompt` を残す |
 | bullets | 上のどれでもなく、対等・並列な短い項目の列挙 | 最後の手段。5 項目まで、ネスト不可。並列性が無いなら散文か diagram に |

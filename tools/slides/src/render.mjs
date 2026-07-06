@@ -906,7 +906,7 @@ export function renderDeck(deckRoot, themeRoot, opts = {}) {
   const total = ctx.slides.length;
 
   const sections = ctx.slides.map((s, i) => `
-  <section class="page" id="p${num(i)}">
+  <section class="page" id="p${num(i)}" data-slide-id="${esc(s.id)}">
     <div class="cap"><b>${num(i)} · ${esc(s.id)}</b> &nbsp; ${esc(typeof s.layout === 'object' ? 'grid-direct' : s.layout)} · role:${esc(s.role)}<br>idea: ${esc(s.idea)}${s.notes ? `<div class="notes">${esc(String(s.notes).trim())}</div>` : ''}</div>
     <div class="frame">${renderSlide(s, ctx)}</div>
   </section>`).join('');

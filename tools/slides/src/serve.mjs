@@ -39,16 +39,44 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { Agentation } from 'agentation';
 
-// SPA (ADR-0012): the deck is one document, so the slide context lives in the
-// URL hash. Resolve it at send time, not load time.
-function pageRef() {
-  return (location.pathname.split('/').pop() || 'index.html') + location.hash;
+// SPA (ADR-0012): the deck is one document and hash navigation does not
+// reload, so annotations accumulate across slides and the URL at send time
+// only names the last slide. Resolve the slide PER ANNOTATION at creation
+// time and append the mapping to the submitted markdown.
+function slideOf(a) {
+  var pages = Array.prototype.slice.call(document.querySelectorAll('section.page'));
+  if (document.body.classList.contains('list') && a && typeof a.y === 'number') {
+    for (var i = 0; i < pages.length; i++) {
+      var s = pages[i];
+      if (a.y >= s.offsetTop && a.y < s.offsetTop + s.offsetHeight) return s;
+    }
+  }
+  return document.querySelector('section.page:target') || pages[0] || null;
+}
+var slideMarks = new Map(); // annotation id -> '#pNN (slide: <deck.yaml の id>)'
+function mark(a) {
+  var sec = slideOf(a);
+  if (sec && a && a.id && !slideMarks.has(a.id)) {
+    slideMarks.set(a.id, '#' + sec.id + (sec.dataset.slideId ? ' (slide: ' + sec.dataset.slideId + ')' : ''));
+  }
+}
+function slideMap(annotations) {
+  if (!Array.isArray(annotations) || annotations.length === 0) return '';
+  var lines = annotations.map(function (a, i) {
+    return (i + 1) + '. ' + (a.element || '?') + ' -> ' + (slideMarks.get(a.id) || '(slide 不明)');
+  });
+  return '\\n\\n### Slide mapping\\n' + lines.join('\\n');
+}
+function copyMap() {
+  if (!slideMarks.size) return '';
+  var lines = Array.from(slideMarks.values()).map(function (v, i) { return (i + 1) + '. ' + v; });
+  return '\\n\\n### Slide mapping (注釈の追加順)\\n' + lines.join('\\n');
 }
 function send(kind, output, annotations) {
   return fetch('/__annotations', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ page: pageRef(), kind, output, annotations }),
+    body: JSON.stringify({ page: 'index.html' + location.hash, kind, output: output, annotations: annotations }),
   });
 }
 
@@ -56,8 +84,15 @@ const host = document.createElement('div');
 host.id = '__agentation-host';
 document.body.appendChild(host);
 createRoot(host).render(React.createElement(Agentation, {
-  onSubmit: (output, annotations) => { send('submit', output, annotations); },
-  onCopy: (md) => { send('copy', md, null); },
+  copyToClipboard: false, // 自前でコピーし、Slide mapping を含める
+  onAnnotationAdd: function (a) { mark(a); },
+  onAnnotationDelete: function (x) { slideMarks.delete(typeof x === 'string' ? x : (x && x.id)); },
+  onSubmit: function (output, annotations) { send('submit', output + slideMap(annotations), annotations); },
+  onCopy: function (md) {
+    var full = md + copyMap();
+    try { navigator.clipboard.writeText(full); } catch (e) {}
+    send('copy', full, null);
+  },
 }));
 `;
 

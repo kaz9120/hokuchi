@@ -140,14 +140,15 @@ slides:
         slot: diagram
         form: flow.linear
         nodes:
-          - { id: a, label: "宣言" }
-          - { id: b, label: "導出" }
-          - { id: c, label: "検証" }
-          - { id: d, label: "凍結" }
+          - { id: a, label: "宣言", detail: "deck.yaml に意図を書く" }
+          - { id: b, label: "導出", detail: "render が配置を決める" }
+          - { id: c, label: "検証", detail: "lint と目視" }
+          - { id: d, label: "凍結", detail: "final/ にコミット" }
         edges: [a -> b, b -> c, c -> d]
         emphasis: [d]
     notes: |
-      検証点: 横一列の等間隔、ノード幅のラベル追従、末尾ノードの強調。
+      検証点: 横一列の等間隔、ノード幅のラベル追従、末尾ノードの強調、
+      detail (補足 1 行) 付きカードの高さ。
 
   - id: chart-trend
     role: content

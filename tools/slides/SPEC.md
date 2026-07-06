@@ -218,6 +218,7 @@ slides:
 | `id` | 文字列 | 必須 | 安定キー。再生成・差分レビューをまたいでスライドを同定する (ADR-0004) |
 | `role` | 下表の enum | 必須 | 舞台の枠を支配する (ADR-0008-6) |
 | `idea` | 文字列 | 必須 | このスライドが伝える 1 文。1 枚 1 アイデアの検証基準 (p.109) |
+| `chapter` | 文字列 | 任意 | 章ラベル。左上に常時表示するテロップ。話者なしで読まれる公開資料の文脈維持用。opener / closer では表示されない |
 | `notes` | 文字列 | 任意 | 話者ノート。スライドから削ったテキストの行き先 (p.240-243) |
 | `layout` | 文字列 or オブジェクト | 必須 | 舞台内の配置 (第 5 章) |
 | `connect` | 下表の enum | 任意 | 前スライドからのつなぎ (第 7 章) |
@@ -267,6 +268,7 @@ opener / closer はレターボックスを外し、ロゴを許可します。�
 | パターン | スロット | 受け入れる kind | タイプスケール | 必須 |
 |---------|---------|----------------|--------------|:---:|
 | `statement-stage` | `statement` | statement | `big` (content) / `hero` (opener・closer) | 必須 |
+| | `support` | statement | `subtitle` | 任意。主張の下に置く 1 行の文脈。muted 色で描画され、one-idea の主役級に数えない |
 | `title-stage` | `title` | statement | `title` | 必須 |
 | | `subtitle` | statement | `subtitle` | 任意 |
 | `diagram-stage` | `headline` | statement | `heading` | 任意 |
@@ -276,6 +278,13 @@ opener / closer はレターボックスを外し、ロゴを許可します。�
 | `list-stage` | `headline` | statement | `heading` | 任意 |
 | | `list` | bullets | `bullet` | 必須 |
 | `quote-stage` | `quote` | quote | `quote` 本文 / `attribution` 出典 | 必須 |
+| `profile-stage` | `portrait` | image | — (丸抜き描画) | 必須 |
+| | `name` | statement | `heading` ×1.2 | 必須 |
+| | `affiliation` | statement | `attribution` | 任意 |
+| | `handle` | statement | `node` | 任意 |
+| | `bio` | bullets | `node` 相当 | 任意 |
+
+`profile-stage` は自己紹介の定型です (毎回の登壇の 2 枚目に置く運用)。`bio` の各項目は `ラベル ── 本文` の形で書くと、ラベルが highlight 色の見出しとして描画されます。自己紹介は聴衆が流し読みする参照情報であり読み上げ原稿ではないため、slideument lint の対象外とします (§9)。`name` / `affiliation` / `handle` の statement は従属スロットで、one-idea の主役級に数えません。
 
 主役スロット (diagram-stage の `diagram`、chart-stage の `chart`、list-stage の `list`、statement-stage の `statement`、quote-stage の `quote`) の要素は、舞台高さの 85% を目安にスケールします。収まらなければ縮小し、縮小が発生したことを shrink-report lint が報告します (ADR-0008-2、NOTES §2.4)。
 
@@ -404,7 +413,7 @@ opener / closer はレターボックスを外し、ロゴを許可します。�
 | フィールド | 型 | 必須 | 意味 |
 |-----------|----|----|------|
 | `form` | `<family>.<subtype>` | 必須 | レイアウト戦略の指定。描画テンプレートの ID ではない (p.156) |
-| `nodes` | `{ id, label }` の配列 | 必須 | ノード |
+| `nodes` | `{ id, label, detail? }` の配列 | 必須 | ノード。`detail` は補足 1 行で、非 cycle のカード型描画で label の下に muted で表示される |
 | `edges` | 構造化形または文字列糖衣の配列 | 任意 | ノード間の関係 |
 | `emphasis` | ノード id の配列 | 任意 | 強調ノード。サイズ・色は階層原則から導出 (p.119) |
 | `reveal` | `sequential` | 任意 | 複雑な図は段階的に示す (p.78)。省略時は一括表示 |
@@ -584,7 +593,7 @@ linter はエラーで止めず警告を中心とします。ただし逸脱は�
 
 | id | 重大度 | 検出条件 | 出典 |
 |----|-------|---------|------|
-| `slideument` | warn (100字) / error (150字) | 可視テキスト合計が閾値超過 (英語 50/75 語相当。換算は要検証) | p.26, p.164 |
+| `slideument` | warn (100字) / error (150字) | 可視テキスト合計が閾値超過 (英語 50/75 語相当。換算は要検証)。profile-stage は参照情報のため対象外 (§5.1) | p.26, p.164 |
 | `one-idea` | warn | 主役級要素 (diagram/chart/statement) が 1 枚に 2 つ以上。従属スロット (headline / subtitle / attribution) に入った statement は主役級に数えない | p.109, p.256 |
 | `bullet-count` | warn | `bullets.items` が 5 項目超 | p.171 |
 | `pie-rules` | warn | 円グラフが 9 項目以上、または合計が 100% でない | p.91 |

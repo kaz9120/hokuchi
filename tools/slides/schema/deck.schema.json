@@ -68,6 +68,7 @@
         "id": { "type": "string", "minLength": 1 },
         "role": { "enum": ["opener", "title", "transition", "content", "closer"] },
         "idea": { "type": "string", "minLength": 1 },
+        "chapter": { "type": "string", "description": "章ラベル。左上に常時表示するテロップ。公開資料での文脈維持用" },
         "notes": { "type": "string" },
         "layout": { "$ref": "#/$defs/layout" },
         "connect": { "enum": ["cut", "push-left", "push-right", "push-up", "push-down"] },
@@ -92,7 +93,8 @@
             "diagram-stage",
             "chart-stage",
             "list-stage",
-            "quote-stage"
+            "quote-stage",
+            "profile-stage"
           ]
         },
         {
@@ -241,7 +243,8 @@
             "required": ["id", "label"],
             "properties": {
               "id": { "type": "string" },
-              "label": { "type": "string" }
+              "label": { "type": "string" },
+              "detail": { "type": "string", "description": "ノードの補足 1 行。カード型描画で label の下に muted で表示される" }
             }
           }
         },

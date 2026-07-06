@@ -36,7 +36,11 @@ function contrastRatio(a, b) {
 // Per-slide inspection helpers
 // ---------------------------------------------------------------------------
 const kinds = (slide, k) => slide.elements.filter((e) => e.kind === k);
-const isLeadSlot = (e) => e.slot !== 'headline' && e.slot !== 'subtitle';
+// Structurally subordinate slots do not count as separate ideas (SPEC §9).
+// The profile-stage slots (name / affiliation / handle) are reference labels,
+// not statements competing for the slide's one idea.
+const SUBORDINATE_SLOTS = new Set(['headline', 'subtitle', 'support', 'name', 'affiliation', 'handle']);
+const isLeadSlot = (e) => !SUBORDINATE_SLOTS.has(e.slot);
 
 /** Visible text total: text / items / label / annotate (SPEC §9 slideument). */
 function visibleTextCount(slide) {
@@ -62,7 +66,10 @@ export function lint(deckRoot, themeRoot) {
   const theme = themeRoot.theme;
 
   // slideument — visible text budget (SPEC §9; 100/150 is a coarse JP conversion).
+  // profile-stage is exempt: a self-introduction is reference material the
+  // audience skims while the speaker talks over it, not spoken-word slides.
   for (const s of slides) {
+    if (s.layout === 'profile-stage') continue;
     const n = visibleTextCount(s);
     if (n > 150) add('slideument', 'error', s.id, `可視テキスト ${n} 字が上限 150 字を超えている`);
     else if (n > 100) add('slideument', 'warn', s.id, `可視テキスト ${n} 字が目安 100 字を超えている`);

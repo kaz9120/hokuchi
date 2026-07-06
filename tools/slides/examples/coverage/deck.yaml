@@ -41,6 +41,34 @@ slides:
     notes: |
       検証点: title/subtitle のタイプスケール、アクセントバー色、title 背景。
 
+  - id: profile
+    role: content
+    idea: "profile-stage: 自己紹介の定型 (丸抜き写真 + ラベル付き bio)"
+    layout: profile-stage
+    elements:
+      - kind: image
+        slot: portrait
+        src: ./assets/sample-photo.svg
+        prompt: "プロフィール写真のサンプル"
+      - kind: statement
+        slot: name
+        text: "架空 太郎｜検証用のプロフィール"
+      - kind: statement
+        slot: affiliation
+        text: "hokuchi 検証チーム"
+      - kind: statement
+        slot: handle
+        text: "X: @example"
+      - kind: bullets
+        slot: bio
+        items:
+          - "略歴 ── レンダラ検証のための架空の経歴。長めの行の折り返しもここで確認する"
+          - "実績 ── カバレッジデッキ 14 枚を毎リリースで描画"
+          - "趣味 ── スロット制、タイプスケール、文節改行"
+    notes: |
+      検証点: 丸抜き写真、ラベル (highlight 色) と本文の階層、
+      slideument lint が profile-stage を対象外にすること。
+
   - id: transition-inverted
     role: transition
     idea: "転換: 濃色背景 (foreground: light) で前景が白系に反転する"

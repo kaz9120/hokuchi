@@ -73,8 +73,18 @@ function cmdRender(deckPath, outDir) {
     fs.copyFileSync(absFrom, dest);
   }
   const slideCount = Object.keys(pages).filter((n) => n.startsWith('slide-')).length;
+  // Prune stale pages/shots left over from a previous, longer render.
+  let pruned = 0;
+  for (const f of fs.readdirSync(outDir)) {
+    const m = f.match(/^slide-(\d+)\.(html|png)$/);
+    if (m && Number(m[1]) > slideCount) {
+      fs.unlinkSync(path.join(outDir, f));
+      pruned++;
+    }
+  }
   const assetNote = assets.size ? ` + ${assets.size} assets` : '';
-  process.stdout.write(`rendered ${slideCount} slides -> ${outDir}/ (index.html + slide-NN.html${assetNote})\n`);
+  const pruneNote = pruned ? `, pruned ${pruned} stale` : '';
+  process.stdout.write(`rendered ${slideCount} slides -> ${outDir}/ (index.html + slide-NN.html${assetNote}${pruneNote})\n`);
 }
 
 // ---------------------------------------------------------------------------

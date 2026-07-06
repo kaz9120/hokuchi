@@ -30,12 +30,13 @@ const DEFAULT_SCALE = {
 
 // Named-pattern slot maps (SPEC §5.1). Elements enter a slot by `slot:`.
 const PATTERN_SLOTS = {
-  'statement-stage': ['statement'],
+  'statement-stage': ['statement', 'support'],
   'title-stage': ['title', 'subtitle'],
   'diagram-stage': ['headline', 'diagram'],
   'chart-stage': ['headline', 'chart'],
   'list-stage': ['headline', 'list'],
   'quote-stage': ['quote'],
+  'profile-stage': ['portrait', 'name', 'affiliation', 'handle', 'bio'],
 };
 
 // ---------------------------------------------------------------------------
@@ -265,33 +266,87 @@ function curvedEdge(a, b, center, C, trim) {
   return { path, ctrl: { x: ctrl.x + ox * 14, y: ctrl.y + oy * 14 } };
 }
 
+/**
+ * Row of step cards (every non-cycle form). Cards read as an ordered sequence:
+ * number badge + label + optional `detail` sub-line; edges become straight
+ * arrows between cards. Emphasis gets the highlight border and badge.
+ */
+function renderStepRow(el, box, ctx, arrowDef) {
+  const { C, fonts, scale } = ctx;
+  const emph = new Set(el.emphasis || []);
+  const n = el.nodes.length;
+  const hasDetail = el.nodes.some((nd) => nd.detail);
+  const gap = Math.min(64, box.w * 0.05);
+  const cardW = Math.min(350, (box.w - gap * (n - 1)) / n);
+  const cardH = hasDetail ? 150 : 108;
+  const totalW = cardW * n + gap * (n - 1);
+  const x0 = (box.w - totalW) / 2;
+  const cy = box.h / 2;
+  const y = cy - cardH / 2;
+
+  const byId = {};
+  el.nodes.forEach((nd, i) => {
+    byId[nd.id] = { ...nd, i, x: x0 + i * (cardW + gap), cx: x0 + i * (cardW + gap) + cardW / 2 };
+  });
+
+  let edgeSvg = '';
+  for (const edge of el.edges || []) {
+    const a = byId[edge.from], b = byId[edge.to];
+    if (!a || !b) continue; // edge-ref lint reports this; render skips silently.
+    const [l, r] = a.i < b.i ? [a, b] : [b, a];
+    const x1 = l.x + cardW + 5, x2 = r.x - 7;
+    if (x2 <= x1) continue;
+    edgeSvg += `<line x1="${round(x1)}" y1="${round(cy)}" x2="${round(x2)}" y2="${round(cy)}" stroke="${C.line}" stroke-width="2.5" marker-end="url(#arrow)"/>`;
+    if (edge.label) {
+      edgeSvg += `<text x="${round((x1 + x2) / 2)}" y="${round(cy - 14)}" text-anchor="middle" fill="${C.muted}" font-size="${scale.axis}" font-family='${fonts.body}'>${esc(edge.label)}</text>`;
+    }
+  }
+
+  let cardSvg = '';
+  el.nodes.forEach((nd, i) => {
+    const p = byId[nd.id];
+    const hot = emph.has(nd.id);
+    const labelY = hasDetail ? y + cardH * 0.52 : y + cardH * 0.60;
+    cardSvg += `<g>
+      <rect x="${round(p.x)}" y="${round(y)}" width="${round(cardW)}" height="${cardH}" rx="18"
+        fill="${C.surface}" stroke="${hot ? C.highlight : C.line}" stroke-width="${hot ? 3 : 2}"/>
+      <circle cx="${round(p.x + 30)}" cy="${round(y + 30)}" r="15" fill="${hot ? C.highlight : C.muted}"/>
+      <text x="${round(p.x + 30)}" y="${round(y + 36)}" text-anchor="middle" fill="${C.bg}"
+        font-size="17" font-weight="700" font-family='${fonts.display}'>${i + 1}</text>
+      <text x="${round(p.cx)}" y="${round(labelY)}" text-anchor="middle" fill="${hot ? C.textStrong : C.text}"
+        font-size="${hot ? scale.node + 2 : scale.node}" font-weight="${fonts.wDisplay}" font-family='${fonts.display}'>${esc(nd.label)}</text>
+      ${nd.detail ? `<text x="${round(p.cx)}" y="${round(labelY + scale.axis * 1.75)}" text-anchor="middle"
+        fill="${C.muted}" font-size="${scale.axis}" font-family='${fonts.body}'>${esc(nd.detail)}</text>` : ''}
+    </g>`;
+  });
+
+  return `<svg class="lead" viewBox="0 0 ${round(box.w)} ${round(box.h)}" width="${round(box.w)}" height="${round(box.h)}" role="img">
+    ${arrowDef}<g>${edgeSvg}</g><g>${cardSvg}</g></svg>`;
+}
+
 function renderDiagram(el, box, ctx) {
   const { C, fonts, scale } = ctx;
   const fs = scale.node;
   const emph = new Set(el.emphasis || []);
   const center = { x: box.w / 2, y: box.h / 2 };
 
-  // Layout: cycle → ellipse ring; everything else → a left-to-right row.
-  const maxPill = Math.max(...el.nodes.map((n) => pillSize(n.label, fs + 4).w), 140);
-  let pos;
-  if (el.form === 'flow.cycle') {
-    const rx = box.w / 2 - maxPill / 2 - 24;
-    const ry = box.h / 2 - fs * 1.4;
-    pos = el.nodes.map((n, i) => {
-      const ang = -Math.PI / 2 + (2 * Math.PI * i) / el.nodes.length;
-      return { ...n, x: center.x + rx * Math.cos(ang), y: center.y + ry * Math.sin(ang) };
-    });
-  } else {
-    const n = el.nodes.length;
-    const step = box.w / n;
-    pos = el.nodes.map((nd, i) => ({ ...nd, x: step * (i + 0.5), y: center.y }));
-  }
-  const byId = Object.fromEntries(pos.map((n) => [n.id, n]));
-
   const arrowDef = `<defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 z" fill="${C.line}"/>
     </marker></defs>`;
+
+  // Every non-cycle form reads as an ordered sequence → step cards.
+  if (el.form !== 'flow.cycle') return renderStepRow(el, box, ctx, arrowDef);
+
+  // cycle: pills on an ellipse ring, curved edges bulging outward.
+  const maxPill = Math.max(...el.nodes.map((n) => pillSize(n.label, fs + 4).w), 140);
+  const rx = box.w / 2 - maxPill / 2 - 24;
+  const ry = box.h / 2 - fs * 1.4;
+  const pos = el.nodes.map((n, i) => {
+    const ang = -Math.PI / 2 + (2 * Math.PI * i) / el.nodes.length;
+    return { ...n, x: center.x + rx * Math.cos(ang), y: center.y + ry * Math.sin(ang) };
+  });
+  const byId = Object.fromEntries(pos.map((n) => [n.id, n]));
 
   let edgeSvg = '';
   for (const edge of el.edges || []) {
@@ -416,7 +471,11 @@ function renderImagePlaceholder(el, ctx) {
 // ---------------------------------------------------------------------------
 function renderImage(el, ctx) {
   if (!el.src) return renderImagePlaceholder(el, ctx);
-  const rel = ctx.useAsset(path.resolve(ctx.deckDir, el.src), 'assets');
+  const abs = path.resolve(ctx.deckDir, el.src);
+  // src declared but file not delivered yet — fall back to the prompt
+  // placeholder instead of failing the whole render.
+  if (!fs.existsSync(abs)) return renderImagePlaceholder(el, ctx);
+  const rel = ctx.useAsset(abs, 'assets');
   const pos = { 'third-left': '33% 50%', 'third-right': '67% 50%' }[el.subject] || '50% 50%';
   const img = `<img class="photo" src="${esc(rel)}" alt="" style="object-position:${pos}">`;
   if (el.treatment === 'framed') return `<div class="photo-framed">${img}</div>`;
@@ -443,10 +502,12 @@ function renderRaw(el, ctx) {
 function statementStage(slide, ctx) {
   const stage = stageRect(ctx, slide.role);
   const el = slide.elements.find((e) => e.slot === 'statement');
+  const support = slide.elements.find((e) => e.slot === 'support');
   const token = (slide.role === 'opener' || slide.role === 'closer') ? 'hero' : 'big';
   const fs = ctx.scale[token];
   return `<div class="pane center" style="${boxStyle(stage)}">
     <div class="statement jp" style="font-size:${fs}px">${inlineText(el.text, el.emphasis)}</div>
+    ${support ? `<div class="support jp" style="font-size:${ctx.scale.subtitle}px">${inlineText(support.text, support.emphasis)}</div>` : ''}
   </div>`;
 }
 
@@ -502,13 +563,74 @@ function listStage(slide, ctx) {
 function quoteStage(slide, ctx) {
   const stage = stageRect(ctx, slide.role);
   const q = slide.elements.find((e) => e.slot === 'quote');
+  // A short quote is the slide's hero — scale it toward display size instead
+  // of leaving it at body-quote size (46px) inside an empty stage.
+  const len = cpLen(String(q.text).replace(/\n/g, ''));
+  const fs = len <= 12 ? Math.round(ctx.scale.quote * 1.7)
+    : len <= 24 ? Math.round(ctx.scale.quote * 1.35)
+    : ctx.scale.quote;
   return `<div class="pane center" style="${boxStyle(stage)}">
     <div class="quote-block">
       <div class="quote-mark">&ldquo;</div>
-      <div class="quote-text jp" style="font-size:${ctx.scale.quote}px">${inlineText(q.text)}</div>
+      <div class="quote-text jp" style="font-size:${fs}px">${inlineText(q.text)}</div>
       ${q.attribution ? `<div class="quote-attr" style="font-size:${ctx.scale.attribution}px">— ${esc(q.attribution)}</div>` : ''}
     </div>
   </div>`;
+}
+
+// Profile: self-introduction reference slide (SPEC §5.1 profile-stage).
+// Header = name + affiliation; left = round portrait + handle; right = bio
+// sections whose items may carry a "label ── body" prefix.
+function profileStage(slide, ctx) {
+  const stage = stageRect(ctx, slide.role);
+  const get = (slot) => slide.elements.find((e) => e.slot === slot);
+  const portrait = get('portrait');
+  const name = get('name');
+  const affiliation = get('affiliation');
+  const handle = get('handle');
+  const bio = get('bio');
+
+  const headH = Math.round(ctx.scale.heading * 1.5 + (affiliation ? ctx.scale.attribution * 1.7 : 0) + 20);
+  const gap = 44; // ゆとり: 肩書きと本文ブロックの間 (レビュー指摘 2026-07-06)
+  const header = { x: stage.x, y: stage.y, w: stage.w, h: headH };
+  const body = { x: stage.x, y: stage.y + headH + gap, w: stage.w, h: stage.h - headH - gap };
+  const leftW = Math.round(body.w * 0.42);
+  const colGap = 80;
+  const left = { x: body.x, y: body.y, w: leftW, h: body.h };
+  const right = { x: body.x + leftW + colGap, y: body.y, w: body.w - leftW - colGap, h: body.h };
+
+  const handleH = handle ? ctx.scale.node * 2 : 0;
+  const size = Math.round(Math.min(left.w - 24, left.h - handleH - 24, 330));
+  let portraitHtml = '';
+  if (portrait) {
+    const abs = portrait.src ? path.resolve(ctx.deckDir, portrait.src) : null;
+    if (abs && fs.existsSync(abs)) {
+      const rel = ctx.useAsset(abs, 'assets');
+      portraitHtml = `<img class="profile-portrait" src="${esc(rel)}" alt="" style="width:${size}px;height:${size}px">`;
+    } else {
+      portraitHtml = `<div class="profile-portrait ph jp" style="width:${size}px;height:${size}px">${esc(portrait.prompt || '')}</div>`;
+    }
+  }
+
+  const bioHtml = (bio?.items || []).map((it) => {
+    const parts = String(it).split('──');
+    const label = parts.length > 1 ? parts[0].trim() : null;
+    const bodyText = parts.length > 1 ? parts.slice(1).join('──').trim() : String(it);
+    return `<div class="profile-item">
+      ${label ? `<div class="profile-label">${esc(label)}</div>` : ''}
+      <div class="profile-body jp">${inlineText(bodyText)}</div></div>`;
+  }).join('');
+
+  return `
+    <div class="pane" style="${boxStyle(header)}">
+      <div class="profile-name jp" style="font-size:${Math.round(ctx.scale.heading * 1.2)}px">${inlineText(name.text, name.emphasis)}</div>
+      ${affiliation ? `<div class="profile-affil jp" style="font-size:${ctx.scale.attribution}px">${inlineText(affiliation.text)}</div>` : ''}
+    </div>
+    <div class="pane profile-left" style="${boxStyle(left)}">
+      ${portraitHtml}
+      ${handle ? `<div class="profile-handle jp" style="font-size:${ctx.scale.node}px">${inlineText(handle.text)}</div>` : ''}
+    </div>
+    <div class="pane profile-right" style="${boxStyle(right)}">${bioHtml}</div>`;
 }
 
 // Grid-direct: full-canvas grid, elements resolved by id (SPEC §5.2).
@@ -538,6 +660,7 @@ const PATTERNS = {
   'chart-stage': chartStage,
   'list-stage': listStage,
   'quote-stage': quoteStage,
+  'profile-stage': profileStage,
 };
 
 function renderSlideBody(slide, ctx) {
@@ -570,7 +693,10 @@ function renderSlide(slide, ctx) {
   const bgHtml = bg
     ? `<img class="bg" src="${esc(ctx.useAsset(path.resolve(ctx.themeDir, bg.src), 'theme-assets'))}" alt="">`
     : '';
-  return `<div class="slide${inverted ? ' inv' : ''}">${bgHtml}${renderSlideBody(slide, ctx)}${brandFrame(slide, ctx, inverted)}</div>`;
+  const chapter = slide.chapter && slide.role !== 'opener' && slide.role !== 'closer'
+    ? `<div class="chapter">${esc(slide.chapter)}</div>`
+    : '';
+  return `<div class="slide${inverted ? ' inv' : ''}">${bgHtml}${chapter}${renderSlideBody(slide, ctx)}${brandFrame(slide, ctx, inverted)}</div>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -592,6 +718,13 @@ svg.lead{display:block;max-width:100%;max-height:100%}
 
 .statement{font-family:${fonts.display};font-weight:${fonts.wDisplay};line-height:1.25;
   color:${C.textStrong};max-width:100%}
+.support{color:${C.muted};margin-top:30px;line-height:1.5;letter-spacing:.02em}
+
+.chapter{position:absolute;top:22px;left:20px;z-index:2;font-size:15px;color:${C.muted};
+  letter-spacing:.18em;font-family:${fonts.display};font-weight:${fonts.wDisplay};
+  background:${C.bg}d9;padding:5px 12px;border-radius:6px}
+.inv .chapter{color:rgba(255,255,255,.9);background:rgba(0,0,0,.18)}
+.inv .support{color:rgba(255,255,255,.85)}
 
 .title-band{align-items:flex-start;justify-content:flex-end}
 .title-accent{width:76px;height:6px;background:${C.highlight};border-radius:3px;margin-bottom:28px}
@@ -633,10 +766,24 @@ svg.lead{display:block;max-width:100%;max-height:100%}
 .img-corner.bl{bottom:14px;left:14px;border-right:0;border-top:0}
 .img-corner.br{bottom:14px;right:14px;border-left:0;border-top:0}
 
+.profile-name{font-family:${fonts.display};font-weight:${fonts.wDisplay};color:${C.textStrong};line-height:1.25}
+.profile-affil{color:${C.muted};margin-top:12px;letter-spacing:.03em}
+.profile-left{align-items:center;justify-content:center;gap:20px}
+.profile-portrait{border-radius:50%;object-fit:cover;box-shadow:0 6px 28px rgba(0,0,0,.16)}
+.profile-portrait.ph{background:${C.surface};border:2px dashed ${C.line};display:flex;
+  align-items:center;justify-content:center;color:${C.muted};font-size:16px;
+  line-height:1.6;padding:28px;text-align:center;box-shadow:none}
+.profile-handle{color:${C.text}}
+.profile-right{justify-content:center;gap:30px}
+.profile-label{color:${C.highlight};font-family:${fonts.display};font-weight:${fonts.wDisplay};
+  font-size:22px;letter-spacing:.08em;margin-bottom:7px}
+.profile-body{font-size:21px;line-height:1.65;color:${C.text}}
+
 .photo{width:100%;height:100%;object-fit:cover;display:block}
 .photo.contain{object-fit:contain}
-.photo-framed{width:100%;height:100%;padding:40px;background:${C.surface};display:flex}
-.photo-framed .photo{box-shadow:0 6px 28px rgba(0,0,0,.18)}
+.photo-framed{width:100%;height:100%;padding:48px;background:${C.surface};display:flex;
+  align-items:center;justify-content:center}
+.photo-framed .photo{width:100%;height:100%;object-fit:contain}
 .photo-cutout{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
 .raw-wrap{width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .raw-wrap svg{max-width:100%;max-height:100%}

@@ -212,9 +212,10 @@ function splitStage(ctx, stage, hasHeadline) {
   };
 }
 
-/** Box a lead element into 85% of the main slot's height (SPEC §8.3). */
-function leadBox(main) {
-  return { w: main.w, h: round(main.h * 0.85) };
+/** Box a lead element into ~85% of the main slot's height (SPEC §8.3 の目安)。
+ * chart は内部に軸ラベル分のパディングを抱えるため、やや高め (0.92) を使う。 */
+function leadBox(main, ratio = 0.85) {
+  return { w: main.w, h: round(main.h * ratio) };
 }
 
 // ---------------------------------------------------------------------------
@@ -245,8 +246,23 @@ function renderNodePill(n, ctx, fs, hot) {
   </g>`;
 }
 
+/**
+ * Arrowhead marker definition. The id is namespaced per slide — in the
+ * single-file SPA (ADR-0012) every slide's SVG lives in one document, so a
+ * shared id would collide across slides.
+ */
+function arrowDefFor(ctx, C) {
+  return `<defs>
+    <marker id="arrow-${ctx.slideKey}" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="9.5" markerHeight="9.5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="${C.muted}"/>
+    </marker></defs>`;
+}
+
+const markerRef = (ctx) => `url(#arrow-${ctx.slideKey})`;
+
 /** Curved arrow from a to b, bulging outward from the diagram centre. */
-function curvedEdge(a, b, center, C, trim) {
+function curvedEdge(a, b, center, ctx, trim) {
+  const { C } = ctx;
   const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
   let ox = mx - center.x, oy = my - center.y;
   const olen = Math.hypot(ox, oy) || 1;
@@ -262,7 +278,7 @@ function curvedEdge(a, b, center, C, trim) {
   };
   const s = trimPt(a), e = trimPt(b);
   const path = `<path d="M ${round(s.x)} ${round(s.y)} Q ${round(ctrl.x)} ${round(ctrl.y)} ${round(e.x)} ${round(e.y)}"
-    fill="none" stroke="${C.line}" stroke-width="2.5" marker-end="url(#arrow)"/>`;
+    fill="none" stroke="${C.muted}" stroke-width="3" marker-end="${markerRef(ctx)}"/>`;
   return { path, ctrl: { x: ctrl.x + ox * 14, y: ctrl.y + oy * 14 } };
 }
 
@@ -296,7 +312,7 @@ function renderStepRow(el, box, ctx, arrowDef) {
     const [l, r] = a.i < b.i ? [a, b] : [b, a];
     const x1 = l.x + cardW + 5, x2 = r.x - 7;
     if (x2 <= x1) continue;
-    edgeSvg += `<line x1="${round(x1)}" y1="${round(cy)}" x2="${round(x2)}" y2="${round(cy)}" stroke="${C.line}" stroke-width="2.5" marker-end="url(#arrow)"/>`;
+    edgeSvg += `<line x1="${round(x1)}" y1="${round(cy)}" x2="${round(x2)}" y2="${round(cy)}" stroke="${C.muted}" stroke-width="3" marker-end="${markerRef(ctx)}"/>`;
     if (edge.label) {
       edgeSvg += `<text x="${round((x1 + x2) / 2)}" y="${round(cy - 14)}" text-anchor="middle" fill="${C.muted}" font-size="${scale.axis}" font-family='${fonts.body}'>${esc(edge.label)}</text>`;
     }
@@ -330,10 +346,7 @@ function renderDiagram(el, box, ctx) {
   const emph = new Set(el.emphasis || []);
   const center = { x: box.w / 2, y: box.h / 2 };
 
-  const arrowDef = `<defs>
-    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M0,0 L10,5 L0,10 z" fill="${C.line}"/>
-    </marker></defs>`;
+  const arrowDef = arrowDefFor(ctx, C);
 
   // Every non-cycle form reads as an ordered sequence → step cards.
   if (el.form !== 'flow.cycle') return renderStepRow(el, box, ctx, arrowDef);
@@ -353,7 +366,7 @@ function renderDiagram(el, box, ctx) {
     const a = byId[edge.from], b = byId[edge.to];
     if (!a || !b) continue; // edge-ref lint reports this; render skips silently.
     const trim = pillSize(b.label, fs).h * 0.62;
-    const { path, ctrl } = curvedEdge(a, b, center, C, trim);
+    const { path, ctrl } = curvedEdge(a, b, center, ctx, trim);
     edgeSvg += path;
     if (edge.label) {
       edgeSvg += `<text x="${round(ctrl.x)}" y="${round(ctrl.y)}" text-anchor="middle"
@@ -387,16 +400,21 @@ function resolveYRange(el, ctx) {
 
 function renderChart(el, box, ctx) {
   const { C, fonts, scale } = ctx;
-  const pad = { l: 84, r: 60, t: 40, b: 66 };
+  const pad = { l: 84, r: 60, t: 26, b: 64 };
   const plot = { x: pad.l, y: pad.t, w: box.w - pad.l - pad.r, h: box.h - pad.t - pad.b };
   const cats = el.data.x;
   const { min: yMin, max: yMax } = resolveYRange(el, ctx);
   const ticks = 4;
   const isLine = el.intent === 'trend';
 
+  // Lines spread points edge to edge; bars sit in centred bands whose width is
+  // capped so few categories stay adjacent and comparable (and inside the plot).
   const xAt = (i) => cats.length === 1
     ? plot.x + plot.w / 2
     : plot.x + (plot.w * i) / (cats.length - 1);
+  const bandW = Math.min(plot.w / cats.length, 280);
+  const bandX0 = plot.x + (plot.w - bandW * cats.length) / 2;
+  const xPos = isLine ? xAt : (i) => bandX0 + bandW * (i + 0.5);
   const yAt = (v) => plot.y + plot.h * (1 - (v - yMin) / (yMax - yMin));
 
   // Background layer: faint gridlines + minimal axis labels (neutral.line).
@@ -410,7 +428,7 @@ function renderChart(el, box, ctx) {
   bg += `<line x1="${round(plot.x)}" y1="${round(plot.y)}" x2="${round(plot.x)}" y2="${round(plot.y + plot.h)}" stroke="${C.line}" stroke-width="1.5"/>`;
   bg += `<line x1="${round(plot.x)}" y1="${round(plot.y + plot.h)}" x2="${round(plot.x + plot.w)}" y2="${round(plot.y + plot.h)}" stroke="${C.line}" stroke-width="1.5"/>`;
   cats.forEach((c, i) => {
-    bg += `<text x="${round(xAt(i))}" y="${round(plot.y + plot.h + 32)}" text-anchor="middle" fill="${C.muted}" font-size="${scale.axis}" font-family='${fonts.body}'>${esc(c)}</text>`;
+    bg += `<text x="${round(xPos(i))}" y="${round(plot.y + plot.h + 36)}" text-anchor="middle" fill="${C.muted}" font-size="${scale.axis}" font-family='${fonts.body}'>${esc(c)}</text>`;
   });
 
   // Data layer: line (trend) or grouped bars (comparison/distribution).
@@ -422,10 +440,10 @@ function renderChart(el, box, ctx) {
       data += `<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/>`;
       s.values.forEach((v, i) => { data += `<circle cx="${round(xAt(i))}" cy="${round(yAt(v))}" r="5" fill="${col}"/>`; });
     } else {
-      const groupW = plot.w / cats.length * 0.62;
+      const groupW = bandW * 0.6;
       const barW = groupW / el.data.series.length;
       s.values.forEach((v, i) => {
-        const x = xAt(i) - groupW / 2 + barW * si;
+        const x = xPos(i) - groupW / 2 + barW * si;
         const y = yAt(v);
         data += `<rect x="${round(x)}" y="${round(y)}" width="${round(barW)}" height="${round(plot.y + plot.h - y)}" fill="${col}"/>`;
       });
@@ -438,7 +456,7 @@ function renderChart(el, box, ctx) {
   for (const ann of el.annotations || []) {
     let i = ann.at_index != null ? ann.at_index : cats.indexOf(ann.at);
     if (i < 0 || i >= cats.length) continue; // annotation-anchor lint reports mismatch.
-    const px = xAt(i), py = yAt(s0.values[i]);
+    const px = xPos(i), py = yAt(s0.values[i]);
     emph += `<circle cx="${round(px)}" cy="${round(py)}" r="13" fill="none" stroke="${C.highlight}" stroke-width="2" opacity="0.5"/>`;
     emph += `<circle cx="${round(px)}" cy="${round(py)}" r="7.5" fill="${C.highlight}"/>`;
     const ax = px + 20, ay = py + 74;
@@ -528,12 +546,12 @@ function headlineHtml(slide, ctx, box) {
   return `<div class="headline jp" style="${boxStyle(box)};font-size:${ctx.scale.heading}px">${inlineText(head.text, head.emphasis)}</div>`;
 }
 
-function leadStage(slide, ctx, slotName, renderFn) {
+function leadStage(slide, ctx, slotName, renderFn, ratio) {
   const stage = stageRect(ctx, slide.role);
   const hasHead = !!slide.elements.find((e) => e.slot === 'headline');
   const { headline, main } = splitStage(ctx, stage, hasHead);
   const el = slide.elements.find((e) => e.slot === slotName);
-  const box = leadBox(main);
+  const box = leadBox(main, ratio);
   const inner = renderFn(el, box, ctx);
   return `${hasHead ? headlineHtml(slide, ctx, headline) : ''}
     <div class="pane center" style="${boxStyle(main)}"><div class="lead-wrap" style="width:${round(box.w)}px;height:${round(box.h)}px">${inner}</div></div>`;
@@ -544,7 +562,7 @@ function diagramStage(slide, ctx) {
 }
 
 function chartStage(slide, ctx) {
-  return leadStage(slide, ctx, 'chart', renderChart);
+  return leadStage(slide, ctx, 'chart', renderChart, 0.92);
 }
 
 function listStage(slide, ctx) {
@@ -552,11 +570,24 @@ function listStage(slide, ctx) {
   const hasHead = !!slide.elements.find((e) => e.slot === 'headline');
   const { headline, main } = splitStage(ctx, stage, hasHead);
   const b = slide.elements.find((e) => e.slot === 'list');
+
+  // Fit the list inside its pane: estimate wrapped lines at a given size,
+  // shrink the font (floor 24px) if needed, then derive a gap that keeps the
+  // centred list from bleeding into the headline above.
+  const n = b.items.length;
+  const estH = (fs) => b.items.reduce((t, it) => {
+    const perLine = Math.max(4, Math.floor((main.w - fs * 2.2) / fs));
+    return t + Math.max(1, Math.ceil(cpLen(String(it)) / perLine)) * fs * 1.4;
+  }, 0);
+  let fs = ctx.scale.bullet;
+  while (fs > 24 && estH(fs) + (n - 1) * 14 > main.h) fs -= 2;
+  const gap = Math.max(14, Math.min(fs * 1.1, (main.h - estH(fs)) / n));
+
   const items = b.items.map((it) =>
     `<li><span class="dot"></span><span class="jp">${inlineText(it)}</span></li>`).join('');
   return `${hasHead ? headlineHtml(slide, ctx, headline) : ''}
     <div class="pane" style="${boxStyle(main)}">
-      <ul class="bullets" style="font-size:${ctx.scale.bullet}px">${items}</ul>
+      <ul class="bullets" style="font-size:${fs}px;gap:${round(gap)}px">${items}</ul>
     </div>`;
 }
 
@@ -688,6 +719,7 @@ function brandFrame(slide, ctx, inverted) {
 }
 
 function renderSlide(slide, ctx) {
+  ctx.slideKey = slide.id; // namespaces intra-SVG ids in the single-document SPA
   const bg = brandBackground(ctx, slide);
   const inverted = bg?.foreground === 'light';
   const bgHtml = bg

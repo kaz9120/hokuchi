@@ -1115,7 +1115,9 @@ function css(ctx) {
 .hi{color:${C.highlight};font-weight:${fonts.wDisplay}}
 .pane{position:absolute;display:flex;flex-direction:column}
 .pane.center{align-items:center;justify-content:center;text-align:center}
-svg.lead{display:block;max-width:100%;max-height:100%}
+/* overflow:visible — 箱の縁に接するカードの外周ストロークが viewBox で
+   半分に切られて線が細く見えるのを防ぐ (2026-07-08 レビュー指摘) */
+svg.lead{display:block;max-width:100%;max-height:100%;overflow:visible}
 
 .statement{font-family:${fonts.display};font-weight:${fonts.wDisplay};line-height:1.25;
   color:${C.textStrong};max-width:100%}

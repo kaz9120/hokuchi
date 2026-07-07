@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=1280">
+<title>layout-engine spike — cycle / trend の構図検証</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&amp;display=swap">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+.slide{width:1280px;height:720px;position:relative;overflow:hidden;
+  background:#fffbf9;color:#111827;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-weight:400;
+  -webkit-font-smoothing:antialiased;letter-spacing:.01em}
+.jp{word-break:keep-all;overflow-wrap:normal;line-break:strict}
+.hi{color:#fa6e78;font-weight:600}
+.pane{position:absolute;display:flex;flex-direction:column}
+.pane.center{align-items:center;justify-content:center;text-align:center}
+.lead-wrap{display:flex;align-items:center;justify-content:center}
+svg.lead{display:block;max-width:100%;max-height:100%}
+
+.statement{font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-weight:600;line-height:1.25;
+  color:#111827;max-width:100%}
+.support{color:#4b5563;margin-top:30px;line-height:1.5;letter-spacing:.02em}
+
+.chapter{position:absolute;top:22px;left:20px;z-index:2;font-size:15px;color:#4b5563;
+  letter-spacing:.18em;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-weight:600;
+  background:#fffbf9d9;padding:5px 12px;border-radius:6px}
+.inv .chapter{color:rgba(255,255,255,.9);background:rgba(0,0,0,.18)}
+.inv .support{color:rgba(255,255,255,.85)}
+
+.title-band{align-items:flex-start;justify-content:flex-end}
+.title-accent{width:76px;height:6px;background:#fa6e78;border-radius:3px;margin-bottom:28px}
+.title-main{font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-weight:600;line-height:1.18;
+  color:#111827;text-align:left}
+.title-sub{color:#4b5563;margin-top:22px;text-align:left;letter-spacing:.04em}
+
+.headline{position:absolute;display:flex;align-items:flex-end;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+  font-weight:600;color:#111827;text-align:left;line-height:1.3}
+
+.bullets{list-style:none;width:100%;display:flex;flex-direction:column;
+  justify-content:center;height:100%;gap:1.1em}
+.bullets li{display:flex;align-items:baseline;gap:24px;color:#111827;line-height:1.4}
+.bullets .dot{flex:0 0 auto;width:13px;height:13px;border-radius:50%;
+  background:#fa6e78;transform:translateY(-4px)}
+
+.quote-block{max-width:1000px;position:relative}
+.quote-mark{font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-size:130px;line-height:.7;color:#e5e0de;
+  position:absolute;top:-42px;left:-18px;user-select:none}
+.quote-text{font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-weight:600;line-height:1.5;
+  color:#111827;position:relative;text-align:left}
+.quote-attr{margin-top:34px;color:#4b5563;text-align:right}
+
+.grid-stage{position:absolute;inset:0;display:grid;gap:0}
+.grid-cell{position:relative;overflow:hidden;display:flex}
+.grid-caption{align-self:flex-end;padding:34px;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+  font-weight:600;font-size:38px;line-height:1.32;color:#111827}
+
+.img-ph{position:relative;width:100%;height:100%;background:#fef1f0;
+  display:flex;align-items:center;justify-content:center;overflow:hidden}
+.img-inner{display:flex;flex-direction:column;align-items:center;gap:22px;
+  padding:36px;max-width:88%;text-align:center}
+.img-prompt{color:#4b5563;font-size:20px;line-height:1.6}
+.img-badge{position:absolute;top:16px;left:16px;font-size:15px;letter-spacing:.14em;
+  color:#4b5563;text-transform:uppercase;border:1px solid #e5e0de;padding:4px 10px;border-radius:4px}
+.img-corner{position:absolute;width:22px;height:22px;border:2px solid #e5e0de;opacity:.9}
+.img-corner.tl{top:14px;left:14px;border-right:0;border-bottom:0}
+.img-corner.tr{top:14px;right:14px;border-left:0;border-bottom:0}
+.img-corner.bl{bottom:14px;left:14px;border-right:0;border-top:0}
+.img-corner.br{bottom:14px;right:14px;border-left:0;border-top:0}
+
+.profile-name{font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-weight:600;color:#111827;line-height:1.25}
+.profile-affil{color:#4b5563;margin-top:12px;letter-spacing:.03em}
+.profile-left{align-items:center;justify-content:center;gap:20px}
+.profile-portrait{border-radius:50%;object-fit:cover;box-shadow:0 6px 28px rgba(0,0,0,.16)}
+.profile-portrait.ph{background:#fef1f0;border:2px dashed #e5e0de;display:flex;
+  align-items:center;justify-content:center;color:#4b5563;font-size:16px;
+  line-height:1.6;padding:28px;text-align:center;box-shadow:none}
+.profile-handle{color:#111827}
+.inline-icon{height:.95em;width:.95em;vertical-align:-.12em;margin-right:.4em}
+.profile-right{justify-content:center;gap:30px}
+.profile-label{color:#fa6e78;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-weight:600;
+  font-size:22px;letter-spacing:.08em;margin-bottom:7px}
+.profile-body{font-size:21px;line-height:1.65;color:#111827}
+
+.photo{width:100%;height:100%;object-fit:cover;display:block}
+.photo.contain{object-fit:contain}
+.photo-framed{width:100%;height:100%;padding:48px;background:#fef1f0;display:flex;
+  align-items:center;justify-content:center}
+.photo-framed .photo{width:100%;height:100%;object-fit:contain}
+.photo-cutout{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+.raw-wrap{width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.raw-wrap svg{max-width:100%;max-height:100%}
+
+.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+.slide>.pane,.slide>.grid-stage,.slide>.headline{z-index:1}
+.brand-logo{position:absolute;top:25px;right:20px;z-index:2}
+.brand-footer{position:absolute;bottom:20px;right:20px;z-index:2;font-size:13px;
+  color:#4b5563;letter-spacing:.03em;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif}
+
+.inv{color:rgba(255,255,255,.94)}
+.inv .statement,.inv .title-main,.inv .quote-text,.inv .grid-caption,.inv .headline{color:#ffffff}
+.inv .hi{color:#ffffff}
+.inv .title-sub,.inv .quote-attr,.inv .brand-footer,.inv .img-prompt{color:rgba(255,255,255,.85)}
+.inv .quote-mark{color:rgba(255,255,255,.38)}
+.inv .bullets li{color:rgba(255,255,255,.94)}
+.inv .bullets .dot,.inv .title-accent{background:#ffffff}
+
+.err{color:#fa6e78;font-size:28px}
+html,body{height:100%}
+body{background:#eceef1;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif}
+.frame{width:1280px;height:720px;flex:0 0 auto}
+
+/* deck mode — one slide at a time, selected purely by :target */
+body.deck{overflow:hidden}
+body.deck .page{display:none}
+body.deck .page:target{display:flex;position:fixed;inset:0;align-items:center;justify-content:center}
+body.deck .page:target .frame{transform:scale(var(--s,1))}
+body.deck .cap,body.deck .deck-head{display:none}
+
+/* list mode (g key) — all slides stacked with captions, for review/annotation */
+body.list{overflow:auto;padding:56px 0}
+body.list .page{display:block;width:1280px;margin:0 auto 56px}
+body.list .cap{color:#4b5563;font-size:15px;margin-bottom:12px;letter-spacing:.03em;line-height:1.7}
+body.list .cap b{color:#111827;font-weight:600}
+body.list .cap .notes{white-space:pre-wrap;margin-top:6px;font-size:14px;opacity:.85}
+body.list .frame{box-shadow:0 6px 28px rgba(17,24,39,.14);border-radius:6px;overflow:hidden}
+body.list .deck-head{width:1280px;margin:0 auto 44px;color:#111827}
+.deck-head h1{font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-weight:600;font-size:40px;color:#111827}
+.deck-head p{color:#4b5563;margin-top:10px;font-size:18px}</style>
+</head><body class="deck" data-slides="2">
+  <div class="deck-head">
+    <h1>layout-engine spike — cycle / trend の構図検証</h1>
+    <p>レイアウトエンジンを再設計する開発者 — 全 2 枚 / 1280×720 · ← → でページ送り、g で一覧</p>
+  </div>
+<main>
+  <section class="page" id="p01" data-slide-id="diagram-cycle">
+    <div class="cap"><b>01 · diagram-cycle</b> &nbsp; diagram-stage · role:content<br>idea: diagram flow.cycle: 環状配置とエッジラベル<div class="notes">検証点: 環が正円に近いか (before は rx/ry ≈ 5.1)、縦予算の回復。</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-default.svg" alt=""><div class="headline jp" style="left:96px;top:162.66666666666669px;width:1088px;height:82px;;font-size:34px">循環 (flow.cycle) の<wbr>検証</div>
+    <div class="pane center" style="left:96px;top:244.66666666666669px;width:1088px;height:312.66666666666663px;"><div class="lead-wrap" style="width:1088px;height:287.65px"><svg class="lead" viewBox="0 0 1088 287.65" width="1088" height="287.65" role="img">
+    <defs>
+    <marker id="arrow-diagram-cycle" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="9.5" markerHeight="9.5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#4b5563"/>
+    </marker></defs><g><path d="M 663.3 73.82 A 432.8 72.82 0 0 1 885.05 98.99"
+    fill="none" stroke="#4b5563" stroke-width="3" marker-end="url(#arrow-diagram-cycle)"/><path d="M 804.47 201.99 A 432.8 72.82 0 0 1 289.61 202.74"
+    fill="none" stroke="#4b5563" stroke-width="3" marker-end="url(#arrow-diagram-cycle)"/><path d="M 176.96 105.23 A 432.8 72.82 0 0 1 424.7 73.82"
+    fill="none" stroke="#4b5563" stroke-width="3" marker-end="url(#arrow-diagram-cycle)"/></g><g><g>
+    <rect x="440.8" y="6" width="206.4" height="130" rx="18"
+      fill="#fef1f0" stroke="#e5e0de" stroke-width="2"/>
+    
+    
+    <text x="544" y="58.18" text-anchor="middle" fill="#111827"
+      font-size="24" font-weight="600" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>書く</text>
+    <text x="544" y="93.18" text-anchor="middle"
+      fill="#4b5563" font-size="20" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>意図を YAML に</text>
+  </g><g>
+    <rect x="815.62" y="115.24" width="206.4" height="130" rx="18"
+      fill="#fef1f0" stroke="#e5e0de" stroke-width="2"/>
+    
+    
+    <text x="918.82" y="167.42" text-anchor="middle" fill="#111827"
+      font-size="24" font-weight="600" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>描画する</text>
+    <text x="918.82" y="202.42" text-anchor="middle"
+      fill="#4b5563" font-size="20" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>配置は導出</text>
+  </g><g>
+    <rect x="65.98" y="115.24" width="206.4" height="130" rx="18"
+      fill="#fef1f0" stroke="#fa6e78" stroke-width="3"/>
+    
+    
+    <text x="169.18" y="188.56" text-anchor="middle" fill="#111827"
+      font-size="26" font-weight="600" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>目で見る</text>
+    
+  </g></g><g><text x="260.11" y="86.43" text-anchor="end"
+        fill="#4b5563" font-size="20" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>次の周へ</text></g></svg></div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p02" data-slide-id="chart-trend">
+    <div class="cap"><b>02 · chart-trend</b> &nbsp; chart-stage · role:content<br>idea: chart trend: 折れ線 + 注釈アンカー + 共有スケール<div class="notes">検証点: プロットの縦横比 (before は 4.78:1)、注釈の視認性。</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-default.svg" alt=""><div class="headline jp" style="left:96px;top:162.66666666666669px;width:1088px;height:82px;;font-size:34px">推移 (trend) と<wbr>注釈の<wbr>検証</div>
+    <div class="pane center" style="left:96px;top:244.66666666666669px;width:1088px;height:312.66666666666663px;"><div class="lead-wrap" style="width:1088px;height:287.65px"><svg class="lead" viewBox="0 0 1088 287.65" width="1088" height="287.65" role="img">
+    <g><line x1="84" y1="223.65" x2="1028" y2="223.65" stroke="#e5e0de" stroke-width="1" opacity="0.35"/><text x="68" y="229.65" text-anchor="end" fill="#4b5563" font-size="20" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>0</text><line x1="84" y1="174.24" x2="1028" y2="174.24" stroke="#e5e0de" stroke-width="1" opacity="0.35"/><text x="68" y="180.24" text-anchor="end" fill="#4b5563" font-size="20" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>25</text><line x1="84" y1="124.82" x2="1028" y2="124.82" stroke="#e5e0de" stroke-width="1" opacity="0.35"/><text x="68" y="130.82" text-anchor="end" fill="#4b5563" font-size="20" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>50</text><line x1="84" y1="75.41" x2="1028" y2="75.41" stroke="#e5e0de" stroke-width="1" opacity="0.35"/><text x="68" y="81.41" text-anchor="end" fill="#4b5563" font-size="20" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>75</text><line x1="84" y1="26" x2="1028" y2="26" stroke="#e5e0de" stroke-width="1" opacity="0.35"/><text x="68" y="32" text-anchor="end" fill="#4b5563" font-size="20" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>100</text><line x1="84" y1="26" x2="84" y2="223.65" stroke="#e5e0de" stroke-width="1.5"/><line x1="84" y1="223.65" x2="1028" y2="223.65" stroke="#e5e0de" stroke-width="1.5"/><text x="84" y="259.65" text-anchor="middle" fill="#4b5563" font-size="20" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>1月</text><text x="272.8" y="259.65" text-anchor="middle" fill="#4b5563" font-size="20" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>2月</text><text x="461.6" y="259.65" text-anchor="middle" fill="#4b5563" font-size="20" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>3月</text><text x="650.4" y="259.65" text-anchor="middle" fill="#4b5563" font-size="20" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>4月</text><text x="839.2" y="259.65" text-anchor="middle" fill="#4b5563" font-size="20" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>5月</text><text x="1028" y="259.65" text-anchor="middle" fill="#4b5563" font-size="20" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>6月</text></g><g><polyline points="84,61.58 272.8,69.48 461.6,65.53 650.4,114.94 839.2,148.54 1028,176.21" fill="none" stroke="#e0525d" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="84" cy="61.58" r="5" fill="#e0525d"/><circle cx="272.8" cy="69.48" r="5" fill="#e0525d"/><circle cx="461.6" cy="65.53" r="5" fill="#e0525d"/><circle cx="650.4" cy="114.94" r="5" fill="#e0525d"/><circle cx="839.2" cy="148.54" r="5" fill="#e0525d"/><circle cx="1028" cy="176.21" r="5" fill="#e0525d"/></g><g><circle cx="650.4" cy="114.94" r="13" fill="none" stroke="#fa6e78" stroke-width="2" opacity="0.5"/><circle cx="650.4" cy="114.94" r="7.5" fill="#fa6e78"/><line x1="650.4" y1="126.94" x2="670.4" y2="166.94" stroke="#fa6e78" stroke-width="1.5" opacity="0.8"/><text x="670.4" y="188.94" text-anchor="start" fill="#fa6e78" font-size="24" font-weight="600" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>レンダラ改修</text></g></svg></div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+</main><script>(()=>{const total=2,pad=n=>String(n).padStart(2,'0');
+const cur=()=>{const m=location.hash.match(/^#p(\d+)$/);return m?Number(m[1]):1};
+const go=n=>{if(n>=1&&n<=total)location.hash='#p'+pad(n)};
+const fit=()=>document.documentElement.style.setProperty('--s',Math.min(innerWidth/1280,innerHeight/720));
+if(!location.hash)location.replace('#p01');
+fit();addEventListener('resize',fit);
+addEventListener('keydown',e=>{if(e.defaultPrevented)return;const t=e.target;
+if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable))return;
+if(e.key==='g'){const b=document.body,list=b.classList.toggle('list');b.classList.toggle('deck',!list);
+if(list)document.getElementById('p'+pad(cur()))?.scrollIntoView({block:'start'});return}
+if(document.body.classList.contains('list'))return;
+if(e.key==='ArrowRight'||e.key===' ')go(cur()+1);
+else if(e.key==='ArrowLeft')go(cur()-1);
+else if(e.key==='Home')go(1);
+else if(e.key==='End')go(total)})})()</script></body></html>

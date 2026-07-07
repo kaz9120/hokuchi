@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=1280">
+<title>layout-engine spike (after)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&amp;display=swap">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+.slide{width:1280px;height:720px;position:relative;overflow:hidden;
+  background:#fffbf9;color:#111827;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-weight:400;
+  -webkit-font-smoothing:antialiased;letter-spacing:.01em}
+.jp{word-break:keep-all;overflow-wrap:normal;line-break:strict}
+.pane{position:absolute;display:flex;align-items:center;justify-content:center}
+.headline{position:absolute;display:flex;align-items:flex-end;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+  font-weight:600;color:#111827;text-align:left;line-height:1.3}
+.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+.slide>.pane,.slide>.headline{z-index:1}
+.brand-logo{position:absolute;top:25px;right:20px;z-index:2}
+.brand-footer{position:absolute;bottom:20px;right:20px;z-index:2;font-size:13px;
+  color:#4b5563;letter-spacing:.03em;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif}
+.page{display:none}
+.page:target{display:flex;position:fixed;inset:0;align-items:center;justify-content:center}
+.frame{width:1280px;height:720px;flex:0 0 auto}
+</style>
+</head><body class="deck" data-slides="2">
+<main>
+  <section class="page" id="p01" data-slide-id="diagram-cycle">
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-default.svg" alt="">
+    <div class="headline jp" style="left:96px;top:64px;width:1088px;height:44px;font-size:34px">循環 (flow.cycle) の検証</div>
+    <div class="pane" style="left:360.6px;top:148px;width:558.8px;height:508px"><svg viewBox="0 0 558.8 508" width="558.8" height="508" role="img">
+        <defs>
+  <marker id="arrow-diagram-cycle" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="9.5" markerHeight="9.5" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="#4b5563"/>
+  </marker></defs><g><path d="M 394.62 112.06 A 172.2 191 0 0 1 450.66 273.96"
+    fill="none" stroke="#4b5563" stroke-width="3" marker-end="url(#arrow-diagram-cycle)"/><path d="M 365.5 419.41 A 172.2 191 0 0 1 203.91 425.67"
+    fill="none" stroke="#4b5563" stroke-width="3" marker-end="url(#arrow-diagram-cycle)"/><path d="M 108.48 277.28 A 172.2 191 0 0 1 159.78 116.61"
+    fill="none" stroke="#4b5563" stroke-width="3" marker-end="url(#arrow-diagram-cycle)"/></g><g><g>
+    <rect x="176.2" y="4" width="206.4" height="118" rx="18"
+      fill="#fef1f0" stroke="#e5e0de" stroke-width="2"/>
+    <text x="279.4" y="50.18" text-anchor="middle" fill="#111827"
+      font-size="24" font-weight="600" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>書く</text>
+    <text x="279.4" y="85.18" text-anchor="middle"
+      fill="#4b5563" font-size="20" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>意図を YAML に</text>
+  </g><g>
+    <rect x="325.33" y="290.5" width="206.4" height="118" rx="18"
+      fill="#fef1f0" stroke="#e5e0de" stroke-width="2"/>
+    <text x="428.53" y="336.68" text-anchor="middle" fill="#111827"
+      font-size="24" font-weight="600" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>描画する</text>
+    <text x="428.53" y="371.68" text-anchor="middle"
+      fill="#4b5563" font-size="20" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>配置は導出</text>
+  </g><g>
+    <rect x="27.07" y="290.5" width="206.4" height="118" rx="18"
+      fill="#fef1f0" stroke="#fa6e78" stroke-width="3"/>
+    <text x="130.27" y="357.82" text-anchor="middle" fill="#111827"
+      font-size="26" font-weight="600" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>目で見る</text>
+    
+  </g></g><g><text x="94.74" y="177.47" text-anchor="end"
+            fill="#4b5563" font-size="20" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>次の周へ</text></g></svg></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p02" data-slide-id="chart-trend">
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-default.svg" alt="">
+    <div class="headline jp" style="left:96px;top:64px;width:1088px;height:44px;font-size:34px">推移 (trend) と注釈の検証</div>
+    <div class="pane" style="left:150px;top:148px;width:980px;height:508px"><svg viewBox="0 0 980 508" width="980" height="508" role="img">
+        <g><line x1="84" y1="444" x2="920" y2="444" stroke="#e5e0de" stroke-width="1" opacity="0.35"/><text x="68" y="450" text-anchor="end" fill="#4b5563" font-size="20" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>0</text><line x1="84" y1="339.5" x2="920" y2="339.5" stroke="#e5e0de" stroke-width="1" opacity="0.35"/><text x="68" y="345.5" text-anchor="end" fill="#4b5563" font-size="20" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>25</text><line x1="84" y1="235" x2="920" y2="235" stroke="#e5e0de" stroke-width="1" opacity="0.35"/><text x="68" y="241" text-anchor="end" fill="#4b5563" font-size="20" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>50</text><line x1="84" y1="130.5" x2="920" y2="130.5" stroke="#e5e0de" stroke-width="1" opacity="0.35"/><text x="68" y="136.5" text-anchor="end" fill="#4b5563" font-size="20" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>75</text><line x1="84" y1="26" x2="920" y2="26" stroke="#e5e0de" stroke-width="1" opacity="0.35"/><text x="68" y="32" text-anchor="end" fill="#4b5563" font-size="20" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>100</text><line x1="84" y1="26" x2="84" y2="444" stroke="#e5e0de" stroke-width="1.5"/><line x1="84" y1="444" x2="920" y2="444" stroke="#e5e0de" stroke-width="1.5"/><text x="84" y="480" text-anchor="middle" fill="#4b5563" font-size="20" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>1月</text><text x="251.2" y="480" text-anchor="middle" fill="#4b5563" font-size="20" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>2月</text><text x="418.4" y="480" text-anchor="middle" fill="#4b5563" font-size="20" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>3月</text><text x="585.6" y="480" text-anchor="middle" fill="#4b5563" font-size="20" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>4月</text><text x="752.8" y="480" text-anchor="middle" fill="#4b5563" font-size="20" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>5月</text><text x="920" y="480" text-anchor="middle" fill="#4b5563" font-size="20" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>6月</text></g><g><polyline points="84,101.24 251.2,117.96 418.4,109.6 585.6,214.1 752.8,285.16 920,343.68" fill="none" stroke="#e0525d" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="84" cy="101.24" r="5" fill="#e0525d"/><circle cx="251.2" cy="117.96" r="5" fill="#e0525d"/><circle cx="418.4" cy="109.6" r="5" fill="#e0525d"/><circle cx="585.6" cy="214.1" r="5" fill="#e0525d"/><circle cx="752.8" cy="285.16" r="5" fill="#e0525d"/><circle cx="920" cy="343.68" r="5" fill="#e0525d"/></g><g><circle cx="585.6" cy="214.1" r="13" fill="none" stroke="#fa6e78" stroke-width="2" opacity="0.5"/><circle cx="585.6" cy="214.1" r="7.5" fill="#fa6e78"/><line x1="585.6" y1="226.1" x2="565.6" y2="266.1" stroke="#fa6e78" stroke-width="1.5" opacity="0.8"/><text x="565.6" y="288.1" text-anchor="end" fill="#fa6e78" font-size="24" font-weight="600" font-family='"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'>レンダラ改修</text></g></svg></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+</main></body></html>

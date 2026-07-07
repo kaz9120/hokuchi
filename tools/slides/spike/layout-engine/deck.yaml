@@ -1,0 +1,59 @@
+# ADR-0014 spike 用ミニデッキ — coverage から問題の 2 枚 (cycle / trend) を抜粋。
+# 現行レンダラ (before) と measure/compose 試作 (after) の両方でこのデッキを描画し、
+# 構図の before/after を比較する。
+schema_version: "0.1.0"
+deck:
+  title: "layout-engine spike — cycle / trend の構図検証"
+  audience:
+    who: "レイアウトエンジンを再設計する開発者"
+    action: "before/after を見比べ、measure/compose 方式の採否を判断する"
+  scales:
+    shared-y:
+      y: { min: 0, max: 100 }
+  theme: ../../themes/mosh.yaml
+
+slides:
+  - id: diagram-cycle
+    role: content
+    idea: "diagram flow.cycle: 環状配置とエッジラベル"
+    layout: diagram-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "循環 (flow.cycle) の検証"
+      - kind: diagram
+        slot: diagram
+        form: flow.cycle
+        nodes:
+          - { id: write, label: "書く", detail: "意図を YAML に" }
+          - { id: render, label: "描画する", detail: "配置は導出" }
+          - { id: check, label: "目で見る" }
+        edges:
+          - write -> render
+          - render -> check
+          - { from: check, to: write, label: "次の周へ" }
+        emphasis: [check]
+    notes: |
+      検証点: 環が正円に近いか (before は rx/ry ≈ 5.1)、縦予算の回復。
+
+  - id: chart-trend
+    role: content
+    idea: "chart trend: 折れ線 + 注釈アンカー + 共有スケール"
+    layout: chart-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "推移 (trend) と注釈の検証"
+      - kind: chart
+        slot: chart
+        intent: trend
+        message: "4月の改修を境に処理時間が下がり続ける"
+        scale: shared-y
+        data:
+          x: ["1月", "2月", "3月", "4月", "5月", "6月"]
+          series:
+            - { label: "処理時間 (分)", values: [82, 78, 80, 55, 38, 24] }
+        annotations:
+          - { at: "4月", annotate: "レンダラ改修", style: highlight }
+    notes: |
+      検証点: プロットの縦横比 (before は 4.78:1)、注釈の視認性。

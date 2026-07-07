@@ -123,6 +123,9 @@ function cmdShot(outDir) {
       '--hide-scrollbars',
       '--force-device-scale-factor=1',
       '--window-size=1280,720',
+      // Webfont が届く前に撮るとフォント切替中の不整合な描画 (SVG text の
+      // アンカーずれ) を写してしまう。仮想時間でネットワーク静止まで待つ。
+      '--virtual-time-budget=10000',
       `--screenshot=${pngPath}`,
       `file://${indexPath}#p${nn}`,
     ], { stdio: 'ignore' });

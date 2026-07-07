@@ -958,7 +958,9 @@ function renderChart(el, box, ctx) {
       data += `<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/>`;
       s.values.forEach((v, i) => { data += `<circle cx="${round(xAt(i))}" cy="${round(yAt(v))}" r="5" fill="${col}"/>`; });
     } else {
-      const groupW = bandW * 0.6;
+      // comparison は棒同士を離して並べ、distribution はヒストグラムとして
+      // 隣接階級がほぼ接する (分布の連続性が読めるように)。
+      const groupW = bandW * (el.intent === 'distribution' ? 0.92 : 0.6);
       const barW = groupW / el.data.series.length;
       s.values.forEach((v, i) => {
         const x = xPos(i) - groupW / 2 + barW * si;

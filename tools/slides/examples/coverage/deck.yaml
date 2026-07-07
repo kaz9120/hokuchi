@@ -424,6 +424,26 @@ slides:
     notes: |
       検証点: 行間、ドット位置、長文項目の折り返し。
 
+  # chart-comparison と隣接させない (軸域が違うので axis-lock の共有対象ではない)
+  - id: chart-distribution
+    role: content
+    idea: "chart distribution: 階級が接するヒストグラム"
+    layout: chart-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "分布 (distribution) の検証"
+      - kind: chart
+        intent: distribution
+        slot: chart
+        message: "描画時間は 1〜2 秒の階級に集中する"
+        data:
+          x: ["<1s", "1-2s", "2-4s", "4-8s", ">8s"]
+          series:
+            - { label: "デッキ数", values: [4, 17, 11, 5, 2] }
+    notes: |
+      検証点: 隣接階級がほぼ接する棒 (comparison の離れた棒との差)。
+
   - id: image-src
     role: content
     idea: "image src: 実画像の full-bleed 描画と三分割配置"

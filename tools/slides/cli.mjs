@@ -125,7 +125,8 @@ function cmdShot(outDir) {
       '--window-size=1280,720',
       // Webfont が届く前に撮るとフォント切替中の不整合な描画 (SVG text の
       // アンカーずれ) を写してしまう。仮想時間でネットワーク静止まで待つ。
-      '--virtual-time-budget=10000',
+      // 10000 では Google Fonts の遅い回で取りこぼしたため 20000 (2026-07-08)。
+      '--virtual-time-budget=20000',
       `--screenshot=${pngPath}`,
       `file://${indexPath}#p${nn}`,
     ], { stdio: 'ignore' });

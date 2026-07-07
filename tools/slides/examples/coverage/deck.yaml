@@ -117,8 +117,8 @@ slides:
         slot: diagram
         form: flow.cycle
         nodes:
-          - { id: write, label: "書く" }
-          - { id: render, label: "描画する" }
+          - { id: write, label: "書く", detail: "意図を YAML に" }
+          - { id: render, label: "描画する", detail: "配置は導出" }
           - { id: check, label: "目で見る" }
         edges:
           - write -> render
@@ -126,7 +126,8 @@ slides:
           - { from: check, to: write, label: "次の周へ" }
         emphasis: [check]
     notes: |
-      検証点: 環状レイアウト、曲線エッジ、エッジラベル、強調ノードの視覚差。
+      検証点: 環状レイアウト (カード型)、detail 有り/無しの混在、曲線エッジ、
+      エッジラベル、強調ノードの視覚差。
 
   - id: diagram-linear
     role: content

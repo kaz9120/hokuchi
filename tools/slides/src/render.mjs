@@ -222,27 +222,26 @@ function leadBox(main, ratio = 0.85) {
 // Diagram rendering (SPEC §6.4)
 // ---------------------------------------------------------------------------
 
-/** Node pill footprint for a label at a given font size. */
-function pillSize(label, fs) {
-  const w = Math.max(120, cpLen(label) * fs * 1.05 + 44);
-  return { w, h: Math.round(fs * 2.1) };
-}
-
-function renderNodePill(n, ctx, fs, hot) {
-  const { C, fonts } = ctx;
-  const scale = hot ? 1.16 : 1;
-  const fsN = hot ? fs + 4 : fs;
-  const { w, h } = pillSize(n.label, fsN);
-  const W = w * scale, H = h * scale;
-  const stroke = hot ? C.highlight : C.line;
-  const sw = hot ? 3 : 2;
-  const tcol = hot ? C.textStrong : C.text;
-  const tw = hot ? fonts.wDisplay : fonts.wBody;
+/**
+ * One node card: rounded rect + optional number badge + label + optional
+ * `detail` sub-line. Shared by the step row (linear forms) and the cycle ring.
+ * (x, y) is the card's top-left corner.
+ */
+function nodeCard(ctx, { x, y, w, h, hot, label, detail, badge }) {
+  const { C, fonts, scale } = ctx;
+  const fsL = hot ? scale.node + 2 : scale.node;
+  const labelY = detail ? y + h * 0.40 + fsL * 0.34 : y + h / 2 + fsL * 0.34;
+  const cx = x + w / 2;
   return `<g>
-    <rect x="${round(n.x - W / 2)}" y="${round(n.y - H / 2)}" width="${round(W)}" height="${round(H)}" rx="${round(H / 2)}"
-      fill="${C.surface}" stroke="${stroke}" stroke-width="${sw}"/>
-    <text x="${round(n.x)}" y="${round(n.y + fsN * 0.34)}" text-anchor="middle"
-      fill="${tcol}" font-size="${fsN}" font-weight="${tw}" font-family='${fonts.display}'>${esc(n.label)}</text>
+    <rect x="${round(x)}" y="${round(y)}" width="${round(w)}" height="${round(h)}" rx="18"
+      fill="${C.surface}" stroke="${hot ? C.highlight : C.line}" stroke-width="${hot ? 3 : 2}"/>
+    ${badge != null ? `<circle cx="${round(x + 30)}" cy="${round(y + 30)}" r="15" fill="${hot ? C.highlight : C.muted}"/>
+    <text x="${round(x + 30)}" y="${round(y + 36)}" text-anchor="middle" fill="${C.bg}"
+      font-size="17" font-weight="700" font-family='${fonts.display}'>${badge}</text>` : ''}
+    <text x="${round(cx)}" y="${round(labelY)}" text-anchor="middle" fill="${hot ? C.textStrong : C.text}"
+      font-size="${fsL}" font-weight="${fonts.wDisplay}" font-family='${fonts.display}'>${esc(label)}</text>
+    ${detail ? `<text x="${round(cx)}" y="${round(labelY + scale.axis * 1.75)}" text-anchor="middle"
+      fill="${C.muted}" font-size="${scale.axis}" font-family='${fonts.body}'>${esc(detail)}</text>` : ''}
   </g>`;
 }
 
@@ -260,8 +259,12 @@ function arrowDefFor(ctx, C) {
 
 const markerRef = (ctx) => `url(#arrow-${ctx.slideKey})`;
 
-/** Curved arrow from a to b, bulging outward from the diagram centre. */
-function curvedEdge(a, b, center, ctx, trim) {
+/**
+ * Curved arrow between card centres, bulging outward from the diagram centre.
+ * Endpoints are trimmed to the card's rectangular border (+6px gap) along the
+ * direction of travel so the arrowhead touches the card edge.
+ */
+function curvedEdge(a, b, center, ctx, cardW, cardH) {
   const { C } = ctx;
   const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
   let ox = mx - center.x, oy = my - center.y;
@@ -270,16 +273,27 @@ function curvedEdge(a, b, center, ctx, trim) {
   const dist = Math.hypot(b.x - a.x, b.y - a.y);
   const bulge = dist * 0.16;
   const ctrl = { x: mx + ox * bulge, y: my + oy * bulge };
-  // Trim endpoints toward the control point so the arrow meets the pill edge.
   const trimPt = (p) => {
-    let dx = ctrl.x - p.x, dy = ctrl.y - p.y;
+    const dx = ctrl.x - p.x, dy = ctrl.y - p.y;
     const l = Math.hypot(dx, dy) || 1;
-    return { x: p.x + (dx / l) * trim, y: p.y + (dy / l) * trim };
+    const ux = dx / l, uy = dy / l;
+    const t = Math.min(
+      ux ? (cardW / 2 + 6) / Math.abs(ux) : Infinity,
+      uy ? (cardH / 2 + 6) / Math.abs(uy) : Infinity
+    );
+    return { x: p.x + ux * t, y: p.y + uy * t };
   };
   const s = trimPt(a), e = trimPt(b);
   const path = `<path d="M ${round(s.x)} ${round(s.y)} Q ${round(ctrl.x)} ${round(ctrl.y)} ${round(e.x)} ${round(e.y)}"
     fill="none" stroke="${C.muted}" stroke-width="3" marker-end="${markerRef(ctx)}"/>`;
-  return { path, ctrl: { x: ctrl.x + ox * 14, y: ctrl.y + oy * 14 } };
+  // Label position: outward of the curve, with the text extending away from
+  // the ring (anchor follows the outward normal) so it clears nearby cards.
+  const label = {
+    x: ctrl.x + ox * 28,
+    y: ctrl.y + oy * 28,
+    anchor: ox < -0.35 ? 'end' : ox > 0.35 ? 'start' : 'middle',
+  };
+  return { path, label };
 }
 
 /**
@@ -321,19 +335,10 @@ function renderStepRow(el, box, ctx, arrowDef) {
   let cardSvg = '';
   el.nodes.forEach((nd, i) => {
     const p = byId[nd.id];
-    const hot = emph.has(nd.id);
-    const labelY = hasDetail ? y + cardH * 0.52 : y + cardH * 0.60;
-    cardSvg += `<g>
-      <rect x="${round(p.x)}" y="${round(y)}" width="${round(cardW)}" height="${cardH}" rx="18"
-        fill="${C.surface}" stroke="${hot ? C.highlight : C.line}" stroke-width="${hot ? 3 : 2}"/>
-      <circle cx="${round(p.x + 30)}" cy="${round(y + 30)}" r="15" fill="${hot ? C.highlight : C.muted}"/>
-      <text x="${round(p.x + 30)}" y="${round(y + 36)}" text-anchor="middle" fill="${C.bg}"
-        font-size="17" font-weight="700" font-family='${fonts.display}'>${i + 1}</text>
-      <text x="${round(p.cx)}" y="${round(labelY)}" text-anchor="middle" fill="${hot ? C.textStrong : C.text}"
-        font-size="${hot ? scale.node + 2 : scale.node}" font-weight="${fonts.wDisplay}" font-family='${fonts.display}'>${esc(nd.label)}</text>
-      ${nd.detail ? `<text x="${round(p.cx)}" y="${round(labelY + scale.axis * 1.75)}" text-anchor="middle"
-        fill="${C.muted}" font-size="${scale.axis}" font-family='${fonts.body}'>${esc(nd.detail)}</text>` : ''}
-    </g>`;
+    cardSvg += nodeCard(ctx, {
+      x: p.x, y, w: cardW, h: cardH,
+      hot: emph.has(nd.id), label: nd.label, detail: nd.detail, badge: i + 1,
+    });
   });
 
   return `<svg class="lead" viewBox="0 0 ${round(box.w)} ${round(box.h)}" width="${round(box.w)}" height="${round(box.h)}" role="img">
@@ -351,10 +356,16 @@ function renderDiagram(el, box, ctx) {
   // Every non-cycle form reads as an ordered sequence → step cards.
   if (el.form !== 'flow.cycle') return renderStepRow(el, box, ctx, arrowDef);
 
-  // cycle: pills on an ellipse ring, curved edges bulging outward.
-  const maxPill = Math.max(...el.nodes.map((n) => pillSize(n.label, fs + 4).w), 140);
-  const rx = box.w / 2 - maxPill / 2 - 24;
-  const ry = box.h / 2 - fs * 1.4;
+  // cycle: cards on an ellipse ring, curved edges bulging outward. Cards get
+  // no number badge — a loop has no first step; sequence reads from arrows.
+  const hasDetail = el.nodes.some((nd) => nd.detail);
+  const cardH = hasDetail ? 130 : 96;
+  const cardW = Math.min(330, Math.max(180, ...el.nodes.map((nd) => Math.max(
+    cpLen(nd.label) * (fs + 2) * 1.05,
+    nd.detail ? cpLen(nd.detail) * scale.axis : 0
+  ) + 56)));
+  const rx = box.w / 2 - cardW / 2 - 10;
+  const ry = box.h / 2 - cardH / 2 - 10;
   const pos = el.nodes.map((n, i) => {
     const ang = -Math.PI / 2 + (2 * Math.PI * i) / el.nodes.length;
     return { ...n, x: center.x + rx * Math.cos(ang), y: center.y + ry * Math.sin(ang) };
@@ -362,23 +373,28 @@ function renderDiagram(el, box, ctx) {
   const byId = Object.fromEntries(pos.map((n) => [n.id, n]));
 
   let edgeSvg = '';
+  let labelSvg = ''; // labels sit on the top layer so cards never cover them
   for (const edge of el.edges || []) {
     const a = byId[edge.from], b = byId[edge.to];
     if (!a || !b) continue; // edge-ref lint reports this; render skips silently.
-    const trim = pillSize(b.label, fs).h * 0.62;
-    const { path, ctrl } = curvedEdge(a, b, center, ctx, trim);
+    const { path, label } = curvedEdge(a, b, center, ctx, cardW, cardH);
     edgeSvg += path;
     if (edge.label) {
-      edgeSvg += `<text x="${round(ctrl.x)}" y="${round(ctrl.y)}" text-anchor="middle"
+      labelSvg += `<text x="${round(label.x)}" y="${round(label.y)}" text-anchor="${label.anchor}"
         fill="${C.muted}" font-size="${scale.axis}" font-family='${fonts.body}'>${esc(edge.label)}</text>`;
     }
   }
 
   let nodeSvg = '';
-  for (const n of pos) nodeSvg += renderNodePill(n, ctx, fs, emph.has(n.id));
+  for (const n of pos) {
+    nodeSvg += nodeCard(ctx, {
+      x: n.x - cardW / 2, y: n.y - cardH / 2, w: cardW, h: cardH,
+      hot: emph.has(n.id), label: n.label, detail: n.detail, badge: null,
+    });
+  }
 
   return `<svg class="lead" viewBox="0 0 ${round(box.w)} ${round(box.h)}" width="${round(box.w)}" height="${round(box.h)}" role="img">
-    ${arrowDef}<g>${edgeSvg}</g><g>${nodeSvg}</g></svg>`;
+    ${arrowDef}<g>${edgeSvg}</g><g>${nodeSvg}</g><g>${labelSvg}</g></svg>`;
 }
 
 // ---------------------------------------------------------------------------

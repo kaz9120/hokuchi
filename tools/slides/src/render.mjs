@@ -119,6 +119,8 @@ const esc = (s) => String(s)
 
 const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const cpLen = (s) => [...s].length;
+/** Rough text width in px: CJK ≈ 1.04em, ASCII/half-width ≈ 0.56em. */
+const estW = (s, fs) => [...String(s)].reduce((t, ch) => t + (ch.codePointAt(0) < 0x2000 ? 0.56 : 1.04), 0) * fs;
 
 /**
  * Merge single-code-point phrases into a neighbour so that no line break can
@@ -215,7 +217,7 @@ function splitStage(ctx, stage, hasHeadline) {
 }
 
 /** Box a lead element into ~85% of the main slot's height (SPEC §8.3 の目安)。
- * chart は内部に軸ラベル分のパディングを抱えるため、やや高め (0.92) を使う。 */
+ * diagram / chart は内部に余白・軸ラベルを抱えるため、やや高め (0.92) を使う。 */
 function leadBox(main, ratio = 0.85) {
   return { w: main.w, h: round(main.h * ratio) };
 }
@@ -232,7 +234,13 @@ function leadBox(main, ratio = 0.85) {
  */
 function nodeCard(ctx, { x, y, w, h, hot, label, detail, icon, badge }) {
   const { C, fonts, scale } = ctx;
-  const fsL = hot ? scale.node + 2 : scale.node;
+  // Shrink text that would touch the card borders (keeps inner whitespace).
+  const fitFs = (base, text, avail) => {
+    const tw = estW(text, base);
+    return tw > avail ? Math.max(15, Math.floor(base * avail / tw)) : base;
+  };
+  const fsL = fitFs(hot ? scale.node + 2 : scale.node, label, w - 30);
+  const fsD = detail ? fitFs(scale.axis, detail, w - 26) : scale.axis;
   const cx = x + w / 2;
   const iconSize = 34, iconGap = 14;
   const detailGap = scale.axis * 1.75;
@@ -258,7 +266,7 @@ function nodeCard(ctx, { x, y, w, h, hot, label, detail, icon, badge }) {
     <text x="${round(cx)}" y="${round(labelY)}" text-anchor="middle" fill="${hot ? C.textStrong : C.text}"
       font-size="${fsL}" font-weight="${fonts.wDisplay}" font-family='${fonts.display}'>${esc(label)}</text>
     ${detail ? `<text x="${round(cx)}" y="${round(labelY + detailGap)}" text-anchor="middle"
-      fill="${C.muted}" font-size="${scale.axis}" font-family='${fonts.body}'>${esc(detail)}</text>` : ''}
+      fill="${C.muted}" font-size="${fsD}" font-family='${fonts.body}'>${esc(detail)}</text>` : ''}
   </g>`;
 }
 
@@ -277,38 +285,41 @@ function arrowDefFor(ctx, C) {
 const markerRef = (ctx) => `url(#arrow-${ctx.slideKey})`;
 
 /**
- * Curved arrow between card centres, bulging outward from the diagram centre.
- * Endpoints are trimmed to the card's rectangular border (+6px gap) along the
- * direction of travel so the arrowhead touches the card edge.
+ * Cycle edge as an arc of the ring ellipse itself (not a bulged curve):
+ * the arrow travels along the ring from where it leaves card `a` to where it
+ * reaches card `b`, so connections are tangent to the ring and the arrowhead
+ * never digs into a card. Entry/exit angles are found by walking the ellipse
+ * numerically until the point clears the card rectangle (+padding).
  */
-function curvedEdge(a, b, center, ctx, cardW, cardH) {
+function ringArcEdge(a, b, ring, rects, ctx) {
   const { C } = ctx;
-  const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
-  let ox = mx - center.x, oy = my - center.y;
-  const olen = Math.hypot(ox, oy) || 1;
-  ox /= olen; oy /= olen;
-  const dist = Math.hypot(b.x - a.x, b.y - a.y);
-  const bulge = dist * 0.16;
-  const ctrl = { x: mx + ox * bulge, y: my + oy * bulge };
-  const trimPt = (p) => {
-    const dx = ctrl.x - p.x, dy = ctrl.y - p.y;
-    const l = Math.hypot(dx, dy) || 1;
-    const ux = dx / l, uy = dy / l;
-    const t = Math.min(
-      ux ? (cardW / 2 + 6) / Math.abs(ux) : Infinity,
-      uy ? (cardH / 2 + 6) / Math.abs(uy) : Infinity
-    );
-    return { x: p.x + ux * t, y: p.y + uy * t };
-  };
-  const s = trimPt(a), e = trimPt(b);
-  const path = `<path d="M ${round(s.x)} ${round(s.y)} Q ${round(ctrl.x)} ${round(ctrl.y)} ${round(e.x)} ${round(e.y)}"
+  const TAU = 2 * Math.PI;
+  const ptAt = (t) => ({ x: ring.cx + ring.rx * Math.cos(t), y: ring.cy + ring.ry * Math.sin(t) });
+  const inRect = (p, r, pad) =>
+    p.x >= r.x - pad && p.x <= r.x + r.w + pad && p.y >= r.y - pad && p.y <= r.y + r.h + pad;
+
+  const step = Math.PI / 180;
+  let t0 = a.ang, guard = 0;
+  while (inRect(ptAt(t0), rects[a.id], 10) && guard++ < 360) t0 += step;
+  let t1 = a.ang + ((b.ang - a.ang + 2 * TAU) % TAU), guardB = 0;
+  while (inRect(ptAt(t1), rects[b.id], 16) && guardB++ < 360) t1 -= step; // extra room for the arrowhead
+  if (t1 - t0 < step * 4) return null; // cards (nearly) touch — no drawable arc
+
+  const s = ptAt(t0), e = ptAt(t1);
+  const large = t1 - t0 > Math.PI ? 1 : 0;
+  const path = `<path d="M ${round(s.x)} ${round(s.y)} A ${round(ring.rx)} ${round(ring.ry)} 0 ${large} 1 ${round(e.x)} ${round(e.y)}"
     fill="none" stroke="${C.muted}" stroke-width="3" marker-end="${markerRef(ctx)}"/>`;
-  // Label position: outward of the curve, with the text extending away from
-  // the ring (anchor follows the outward normal) so it clears nearby cards.
+
+  // Label at mid-arc, pushed outward along the ring normal; the anchor makes
+  // the text extend away from the ring so it clears neighbouring cards.
+  const pm = ptAt((t0 + t1) / 2);
+  let nx = pm.x - ring.cx, ny = pm.y - ring.cy;
+  const nl = Math.hypot(nx, ny) || 1;
+  nx /= nl; ny /= nl;
   const label = {
-    x: ctrl.x + ox * 28,
-    y: ctrl.y + oy * 28,
-    anchor: ox < -0.35 ? 'end' : ox > 0.35 ? 'start' : 'middle',
+    x: pm.x + nx * 24,
+    y: pm.y + ny * 24 + (ny > 0.3 ? 16 : ny < -0.3 ? -4 : 6),
+    anchor: nx < -0.35 ? 'end' : nx > 0.35 ? 'start' : 'middle',
   };
   return { path, label };
 }
@@ -324,8 +335,9 @@ function renderStepRow(el, box, ctx, arrowDef) {
   const n = el.nodes.length;
   const hasDetail = el.nodes.some((nd) => nd.detail);
   const hasIcon = el.nodes.some((nd) => nd.icon);
-  const gap = Math.min(64, box.w * 0.05);
-  const cardW = Math.min(350, (box.w - gap * (n - 1)) / n);
+  const usable = box.w * 0.94; // side margins keep the row off the stage edges
+  const gap = Math.min(56, usable * 0.05);
+  const cardW = Math.min(350, (usable - gap * (n - 1)) / n);
   const cardH = (hasDetail ? 150 : 108) + (hasIcon ? 44 : 0);
   const totalW = cardW * n + gap * (n - 1);
   const x0 = (box.w - totalW) / 2;
@@ -380,26 +392,31 @@ function renderDiagram(el, box, ctx) {
   const hasIcon = el.nodes.some((nd) => nd.icon);
   const cardH = (hasDetail ? 130 : 96) + (hasIcon ? 44 : 0);
   const cardW = Math.min(330, Math.max(180, ...el.nodes.map((nd) => Math.max(
-    cpLen(nd.label) * (fs + 2) * 1.05,
-    nd.detail ? cpLen(nd.detail) * scale.axis : 0
+    estW(nd.label, fs + 2),
+    nd.detail ? estW(nd.detail, scale.axis) : 0
   ) + 56)));
-  const rx = box.w / 2 - cardW / 2 - 10;
-  const ry = Math.max(40, box.h / 2 - cardH / 2 - 10);
+  const rx = box.w / 2 - cardW / 2 - 8;
+  const ry = Math.max(44, box.h / 2 - cardH / 2 - 6);
+  const ring = { cx: center.x, cy: center.y, rx, ry };
   const pos = el.nodes.map((n, i) => {
     const ang = -Math.PI / 2 + (2 * Math.PI * i) / el.nodes.length;
-    return { ...n, x: center.x + rx * Math.cos(ang), y: center.y + ry * Math.sin(ang) };
+    return { ...n, ang, x: center.x + rx * Math.cos(ang), y: center.y + ry * Math.sin(ang) };
   });
   const byId = Object.fromEntries(pos.map((n) => [n.id, n]));
+  const rects = Object.fromEntries(pos.map((n) => [
+    n.id, { x: n.x - cardW / 2, y: n.y - cardH / 2, w: cardW, h: cardH },
+  ]));
 
   let edgeSvg = '';
   let labelSvg = ''; // labels sit on the top layer so cards never cover them
   for (const edge of el.edges || []) {
     const a = byId[edge.from], b = byId[edge.to];
     if (!a || !b) continue; // edge-ref lint reports this; render skips silently.
-    const { path, label } = curvedEdge(a, b, center, ctx, cardW, cardH);
-    edgeSvg += path;
+    const arc = ringArcEdge(a, b, ring, rects, ctx);
+    if (!arc) continue;
+    edgeSvg += arc.path;
     if (edge.label) {
-      labelSvg += `<text x="${round(label.x)}" y="${round(label.y)}" text-anchor="${label.anchor}"
+      labelSvg += `<text x="${round(arc.label.x)}" y="${round(arc.label.y)}" text-anchor="${arc.label.anchor}"
         fill="${C.muted}" font-size="${scale.axis}" font-family='${fonts.body}'>${esc(edge.label)}</text>`;
     }
   }
@@ -593,7 +610,7 @@ function leadStage(slide, ctx, slotName, renderFn, ratio) {
 }
 
 function diagramStage(slide, ctx) {
-  return leadStage(slide, ctx, 'diagram', renderDiagram);
+  return leadStage(slide, ctx, 'diagram', renderDiagram, 0.92);
 }
 
 function chartStage(slide, ctx) {

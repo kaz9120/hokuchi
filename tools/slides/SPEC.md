@@ -290,7 +290,7 @@ opener / closer はレターボックスを外し、ロゴを許可します。�
 
 `profile-stage` は自己紹介の定型です (毎回の登壇の 2 枚目に置く運用)。`bio` の各項目は `ラベル ── 本文` の形で書くと、ラベルが highlight 色の見出しとして描画されます。自己紹介は聴衆が流し読みする参照情報であり読み上げ原稿ではないため、slideument lint の対象外とします (§9)。`name` / `affiliation` / `handle` の statement は従属スロットで、one-idea の主役級に数えません。
 
-主役スロット (diagram-stage の `diagram`、chart-stage の `chart`、list-stage の `list`、statement-stage の `statement`、quote-stage の `quote`) の要素は、舞台高さの 85% を目安にスケールします。収まらなければ縮小し、縮小が発生したことを shrink-report lint が報告します (ADR-0008-2、NOTES §2.4)。
+主役スロット (diagram-stage の `diagram`、chart-stage の `chart`、list-stage の `list`、statement-stage の `statement`、quote-stage の `quote`) の要素は、舞台高さの 85% を目安にスケールします (内部に余白や軸ラベルを抱える diagram / chart は 92%)。収まらなければ縮小し、縮小が発生したことを shrink-report lint が報告します (ADR-0008-2、NOTES §2.4)。
 
 ```yaml
 - id: how-it-works
@@ -576,7 +576,7 @@ role が舞台の枠を導出します (ADR-0008-6)。content / title / transiti
 
 ### 8.3 主役のスケール
 
-主役スロットの要素は舞台高さの 85% を目安にスケールします。舞台に収まらなければ縮小し、縮小が発生したことを shrink-report lint が情報として報告します (ADR-0008-2)。はみ出しやエラーにはしません。
+主役スロットの要素は舞台高さの 85% を目安にスケールします (内部に余白や軸ラベルを抱える diagram / chart は 92%)。舞台に収まらなければ縮小し、縮小が発生したことを shrink-report lint が情報として報告します (ADR-0008-2)。はみ出しやエラーにはしません。
 
 ### 8.4 チャートの 3 レイヤー
 

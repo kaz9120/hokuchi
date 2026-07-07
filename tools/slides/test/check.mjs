@@ -13,6 +13,7 @@ import { fileURLToPath } from 'node:url';
 import { loadDeck, loadTheme, normalizeEdge } from '../src/load.mjs';
 import { lint, hasError } from '../src/lint.mjs';
 import { renderDeck } from '../src/render.mjs';
+import { iconExists, promoteWeight } from '../src/icons.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(here, '..');
@@ -51,6 +52,21 @@ const errors = findings.filter((f) => f.severity === 'error');
 assert.equal(errors.length, 0, `expected 0 lint errors, got ${JSON.stringify(errors)}`);
 assert.equal(hasError(findings), false);
 ok(`examples/intent-talk lints with 0 errors (${findings.length} total findings)`);
+
+// (5) icon vocabulary (ADR-0013) — catalog membership, weight promotion,
+// and the icon-exists lint error on unknown names.
+assert.equal(iconExists('x-logo'), true, 'x-logo is in the Phosphor catalog');
+assert.equal(iconExists('no-such-icon-xyz'), false);
+assert.equal(promoteWeight('regular'), 'fill');
+ok('icon catalog resolves names and promotes weight for emphasis (ADR-0013)');
+
+const badDeck = structuredClone(deck);
+badDeck.slides.find((s) => s.id === 'how-it-works').elements
+  .find((e) => e.kind === 'diagram').nodes[0].icon = 'no-such-icon-xyz';
+const iconFindings = lint(badDeck, theme).filter((f) => f.id === 'icon-exists');
+assert.equal(iconFindings.length, 1, 'unknown icon name is an error');
+assert.equal(iconFindings[0].severity, 'error');
+ok('icon-exists lint flags unknown icon names');
 
 // (3) render — one self-contained SPA document (ADR-0012).
 const { pages, assets } = renderDeck(deck, theme, {

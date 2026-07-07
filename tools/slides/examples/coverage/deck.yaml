@@ -58,7 +58,8 @@ slides:
         text: "hokuchi 検証チーム"
       - kind: statement
         slot: handle
-        text: "X: @example"
+        text: "@example"
+        icon: "x-logo"
       - kind: bullets
         slot: bio
         items:
@@ -141,15 +142,16 @@ slides:
         slot: diagram
         form: flow.linear
         nodes:
-          - { id: a, label: "宣言", detail: "deck.yaml に意図を書く" }
-          - { id: b, label: "導出", detail: "render が配置を決める" }
-          - { id: c, label: "検証", detail: "lint と目視" }
-          - { id: d, label: "凍結", detail: "final/ にコミット" }
+          - { id: a, label: "宣言", detail: "deck.yaml に意図を書く", icon: "pencil-simple-line" }
+          - { id: b, label: "導出", detail: "render が配置を決める", icon: "flow-arrow" }
+          - { id: c, label: "検証", detail: "lint と目視", icon: "magnifying-glass" }
+          - { id: d, label: "凍結", detail: "final/ にコミット", icon: "snowflake" }
         edges: [a -> b, b -> c, c -> d]
         emphasis: [d]
     notes: |
       検証点: 横一列の等間隔、ノード幅のラベル追従、末尾ノードの強調、
-      detail (補足 1 行) 付きカードの高さ。
+      detail (補足 1 行) と icon (ADR-0013) 付きカード。強調ノードの
+      アイコンはウェイトが 1 段階昇格する (regular → fill)。
 
   - id: chart-trend
     role: content

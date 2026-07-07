@@ -121,7 +121,11 @@ theme.yaml   # schema/theme.schema.json で検証する
 | フィールド | 型 | 意味 |
 |-----------|----|------|
 | `iconography` | `isometric` \| `flat` \| `hand-drawn` | アイコン様式。混在させてはならない (p.188, p.192) |
+| `icon_set` | `phosphor` | 様式を実装するアイコンセット (ADR-0013)。デッキはアイコンを名前で参照し、セットを知らない |
+| `icon_weight` | `thin` \| `light` \| `regular` \| `bold` \| `fill` \| `duotone` | 通常時のウェイト (既定 `regular`)。emphasis されたノードは 1 段階重いウェイト (regular → fill など) に導出される |
 | `space` | `2d` \| `3d` | 空間表現。デッキ単位でどちらか一方に固定する (p.140) |
+
+`iconography` は様式の分類、`icon_set` + `icon_weight` はその実装という 2 層です。デッキにウェイトや色は書けません。アイコンの SVG はビルド時にインライン化され、出力は実行時依存を持ちません。
 
 ### 2.5 brand — ブランド枠 (ADR-0010)
 
@@ -356,6 +360,7 @@ opener / closer はレターボックスを外し、ロゴを許可します。�
 |-----------|----|----|------|
 | `text` | 文字列 | 必須 | 本文。サイズはスロットのタイプスケールから導出 |
 | `emphasis` | 文字列の配列 | 任意 | 強調する語。highlight 色が当たる |
+| `icon` | アイコン名 | 任意 | 行頭アイコン (ADR-0013)。現在描画されるのは profile-stage の `handle` スロットのみ (例: X ロゴ + ハンドル名)。名前はテーマの icon_set のカタログに存在すること (icon-exists lint) |
 
 `emphasis` は「強調語の配列」であり、diagram や chart の同名フィールドとは別物です (ADR-0007、NOTES §2.2)。
 
@@ -413,9 +418,9 @@ opener / closer はレターボックスを外し、ロゴを許可します。�
 | フィールド | 型 | 必須 | 意味 |
 |-----------|----|----|------|
 | `form` | `<family>.<subtype>` | 必須 | レイアウト戦略の指定。描画テンプレートの ID ではない (p.156) |
-| `nodes` | `{ id, label, detail? }` の配列 | 必須 | ノード。`detail` は補足 1 行で、非 cycle のカード型描画で label の下に muted で表示される |
+| `nodes` | `{ id, label, detail?, icon? }` の配列 | 必須 | ノード。`detail` は補足 1 行で、カード型描画 (linear の横並び・cycle の環状とも) で label の下に muted で表示される。`icon` はアイコン名 (ADR-0013) で、label の上に表示される |
 | `edges` | 構造化形または文字列糖衣の配列 | 任意 | ノード間の関係 |
-| `emphasis` | ノード id の配列 | 任意 | 強調ノード。サイズ・色は階層原則から導出 (p.119) |
+| `emphasis` | ノード id の配列 | 任意 | 強調ノード。サイズ・色は階層原則から導出 (p.119)。アイコンのウェイトも 1 段階昇格する |
 | `reveal` | `sequential` | 任意 | 複雑な図は段階的に示す (p.78)。省略時は一括表示 |
 
 `form` の family は次の 5 つとします。subtype はカタログを既定としつつ、網羅的ではありません (p.73)。
@@ -606,6 +611,7 @@ linter はエラーで止めず警告を中心とします。ただし逸脱は�
 | `deck-size` | info | 内容スライドが 10 枚超 (10/20/30 は文脈依存) | p.254 |
 | `annotation-anchor` | error | chart の `at` が x 配列の値と一致しない | ADR-0008-4 |
 | `edge-ref` | error | diagram の edge が存在しないノード id を参照 | ADR-0008-7 |
+| `icon-exists` | error | `icon` の名前がテーマの icon_set のカタログに存在しない | ADR-0013 |
 | `shrink-report` | info | 主役要素が舞台に収まらず縮小された | ADR-0008-2 |
 
 lint レポートは捨てられる副産物ではなく、逸脱の履歴を残す一級の成果物とします (ADR-0002)。

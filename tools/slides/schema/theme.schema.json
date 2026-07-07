@@ -99,6 +99,8 @@
           }
         },
         "iconography": { "enum": ["isometric", "flat", "hand-drawn"] },
+        "icon_set": { "enum": ["phosphor"], "description": "iconography 様式を実装するアイコンセット (ADR-0013)。デッキはアイコンを名前で参照する" },
+        "icon_weight": { "enum": ["thin", "light", "regular", "bold", "fill", "duotone"], "default": "regular", "description": "通常時のウェイト。emphasis されたノードは 1 段階重いウェイトに導出される" },
         "space": { "enum": ["2d", "3d"] },
         "brand": {
           "description": "組織テーマのブランド枠 (ADR-0010)。ロゴ・フッタ・背景アート。パスはテーマファイルからの相対。",

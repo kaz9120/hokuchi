@@ -181,7 +181,8 @@
         "slot": { "type": "string" },
         "id": { "type": "string" },
         "text": { "type": "string" },
-        "emphasis": { "type": "array", "items": { "type": "string" } }
+        "emphasis": { "type": "array", "items": { "type": "string" } },
+        "icon": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "行頭アイコン名 (ADR-0013)。現在描画されるのは profile-stage の handle スロットのみ" }
       }
     },
 
@@ -244,7 +245,8 @@
             "properties": {
               "id": { "type": "string" },
               "label": { "type": "string" },
-              "detail": { "type": "string", "description": "ノードの補足 1 行。カード型描画で label の下に muted で表示される" }
+              "detail": { "type": "string", "description": "ノードの補足 1 行。カード型描画で label の下に muted で表示される" },
+              "icon": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "アイコン名 (テーマの icon_set のカタログから。ADR-0013)。ウェイトはテーマと emphasis から導出される" }
             }
           }
         },

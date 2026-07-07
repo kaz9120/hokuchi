@@ -17,6 +17,7 @@
     "serve:coverage": "node cli.mjs serve out-coverage"
   },
   "dependencies": {
+    "@phosphor-icons/core": "^2.1.1",
     "ajv": "^8.17.1",
     "budoux": "^0.6.4",
     "js-yaml": "^4.1.0"

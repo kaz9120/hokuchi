@@ -45,4 +45,6 @@ theme:
       node: 24          # ダイアグラムのノードラベル
       axis: 20          # チャートの軸ラベル
   iconography: flat
+  icon_set: phosphor
+  icon_weight: regular
   space: 2d

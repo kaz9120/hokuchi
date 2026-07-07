@@ -1,4 +1,4 @@
-// lint.mjs — SPEC §9 linter. 14 rules, severity error / warn / info.
+// lint.mjs — SPEC §9 linter. 15 rules, severity error / warn / info.
 //
 // The linter never mutates; it returns a flat list of findings
 // { id, severity, slideId, message }. Errors are reserved for references that
@@ -9,6 +9,8 @@
 // gaze) judge from declared values alone, as the SPEC allows. Three rules
 // (pie-rules, logo-bumper, shrink-report) have no full declarative signal in the
 // current schema; see the notes on each for how far the static check reaches.
+
+import { iconExists } from './icons.mjs';
 
 const cpLen = (s) => [...String(s)].length;
 
@@ -172,6 +174,19 @@ export function lint(deckRoot, themeRoot) {
         } else if (!xs.includes(ann.at)) {
           add('annotation-anchor', 'error', s.id, `annotation at:"${ann.at}" が x 配列の値と一致しない`);
         }
+      }
+    }
+  }
+
+  // icon-exists — icon name not in the theme's icon set catalog (error):
+  // the render silently skips unknown icons, so the reference must not pass.
+  for (const s of slides) {
+    for (const el of s.elements) {
+      const refs = [];
+      if (el.icon) refs.push(el.icon);
+      if (Array.isArray(el.nodes)) for (const nd of el.nodes) if (nd.icon) refs.push(nd.icon);
+      for (const name of refs) {
+        if (!iconExists(name)) add('icon-exists', 'error', s.id, `icon:"${name}" がアイコンセットに存在しない`);
       }
     }
   }

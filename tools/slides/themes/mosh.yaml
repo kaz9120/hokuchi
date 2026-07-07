@@ -44,4 +44,6 @@ theme:
       transition: { src: ./assets/bg-section-cover.svg, foreground: light }
       content: { src: ./assets/bg-default.svg }
   iconography: flat
+  icon_set: phosphor
+  icon_weight: regular
   space: 2d

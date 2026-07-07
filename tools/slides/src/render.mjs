@@ -11,6 +11,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { loadDefaultJapaneseParser } from 'budoux';
+import { iconExists, iconInner, promoteWeight } from './icons.mjs';
 
 const parser = loadDefaultJapaneseParser();
 
@@ -75,6 +76,7 @@ function makeContext(deckRoot, themeRoot, opts = {}) {
     webfonts: T.type.webfonts || [],
     background: P.background,
     brand: T.brand || null,
+    iconWeight: T.icon_weight || 'regular',
     deckDir: opts.deckDir || process.cwd(),
     themeDir: opts.themeDir || process.cwd(),
     assets,
@@ -223,24 +225,39 @@ function leadBox(main, ratio = 0.85) {
 // ---------------------------------------------------------------------------
 
 /**
- * One node card: rounded rect + optional number badge + label + optional
- * `detail` sub-line. Shared by the step row (linear forms) and the cycle ring.
- * (x, y) is the card's top-left corner.
+ * One node card: rounded rect + optional number badge + a vertically centred
+ * stack of [icon] label [detail]. Shared by the step row (linear forms) and
+ * the cycle ring. (x, y) is the card's top-left corner. Icon weight derives
+ * from the theme; emphasis promotes it one step heavier (ADR-0013).
  */
-function nodeCard(ctx, { x, y, w, h, hot, label, detail, badge }) {
+function nodeCard(ctx, { x, y, w, h, hot, label, detail, icon, badge }) {
   const { C, fonts, scale } = ctx;
   const fsL = hot ? scale.node + 2 : scale.node;
-  const labelY = detail ? y + h * 0.40 + fsL * 0.34 : y + h / 2 + fsL * 0.34;
   const cx = x + w / 2;
+  const iconSize = 34, iconGap = 14;
+  const detailGap = scale.axis * 1.75;
+  const drawIcon = icon && iconExists(icon); // unknown names: icon-exists lint reports, render skips
+  const blockH = (drawIcon ? iconSize + iconGap : 0) + fsL + (detail ? detailGap + scale.axis * 0.3 : 0);
+  let cursor = y + (h - blockH) / 2;
+
+  let iconSvg = '';
+  if (drawIcon) {
+    const weight = hot ? promoteWeight(ctx.iconWeight) : ctx.iconWeight;
+    iconSvg = `<svg x="${round(cx - iconSize / 2)}" y="${round(cursor)}" width="${iconSize}" height="${iconSize}"
+      viewBox="0 0 256 256" fill="${hot ? C.highlight : C.text}">${iconInner(icon, weight)}</svg>`;
+    cursor += iconSize + iconGap;
+  }
+  const labelY = cursor + fsL * 0.82;
   return `<g>
     <rect x="${round(x)}" y="${round(y)}" width="${round(w)}" height="${round(h)}" rx="18"
       fill="${C.surface}" stroke="${hot ? C.highlight : C.line}" stroke-width="${hot ? 3 : 2}"/>
     ${badge != null ? `<circle cx="${round(x + 30)}" cy="${round(y + 30)}" r="15" fill="${hot ? C.highlight : C.muted}"/>
     <text x="${round(x + 30)}" y="${round(y + 36)}" text-anchor="middle" fill="${C.bg}"
       font-size="17" font-weight="700" font-family='${fonts.display}'>${badge}</text>` : ''}
+    ${iconSvg}
     <text x="${round(cx)}" y="${round(labelY)}" text-anchor="middle" fill="${hot ? C.textStrong : C.text}"
       font-size="${fsL}" font-weight="${fonts.wDisplay}" font-family='${fonts.display}'>${esc(label)}</text>
-    ${detail ? `<text x="${round(cx)}" y="${round(labelY + scale.axis * 1.75)}" text-anchor="middle"
+    ${detail ? `<text x="${round(cx)}" y="${round(labelY + detailGap)}" text-anchor="middle"
       fill="${C.muted}" font-size="${scale.axis}" font-family='${fonts.body}'>${esc(detail)}</text>` : ''}
   </g>`;
 }
@@ -306,9 +323,10 @@ function renderStepRow(el, box, ctx, arrowDef) {
   const emph = new Set(el.emphasis || []);
   const n = el.nodes.length;
   const hasDetail = el.nodes.some((nd) => nd.detail);
+  const hasIcon = el.nodes.some((nd) => nd.icon);
   const gap = Math.min(64, box.w * 0.05);
   const cardW = Math.min(350, (box.w - gap * (n - 1)) / n);
-  const cardH = hasDetail ? 150 : 108;
+  const cardH = (hasDetail ? 150 : 108) + (hasIcon ? 44 : 0);
   const totalW = cardW * n + gap * (n - 1);
   const x0 = (box.w - totalW) / 2;
   const cy = box.h / 2;
@@ -337,7 +355,7 @@ function renderStepRow(el, box, ctx, arrowDef) {
     const p = byId[nd.id];
     cardSvg += nodeCard(ctx, {
       x: p.x, y, w: cardW, h: cardH,
-      hot: emph.has(nd.id), label: nd.label, detail: nd.detail, badge: i + 1,
+      hot: emph.has(nd.id), label: nd.label, detail: nd.detail, icon: nd.icon, badge: i + 1,
     });
   });
 
@@ -359,13 +377,14 @@ function renderDiagram(el, box, ctx) {
   // cycle: cards on an ellipse ring, curved edges bulging outward. Cards get
   // no number badge — a loop has no first step; sequence reads from arrows.
   const hasDetail = el.nodes.some((nd) => nd.detail);
-  const cardH = hasDetail ? 130 : 96;
+  const hasIcon = el.nodes.some((nd) => nd.icon);
+  const cardH = (hasDetail ? 130 : 96) + (hasIcon ? 44 : 0);
   const cardW = Math.min(330, Math.max(180, ...el.nodes.map((nd) => Math.max(
     cpLen(nd.label) * (fs + 2) * 1.05,
     nd.detail ? cpLen(nd.detail) * scale.axis : 0
   ) + 56)));
   const rx = box.w / 2 - cardW / 2 - 10;
-  const ry = box.h / 2 - cardH / 2 - 10;
+  const ry = Math.max(40, box.h / 2 - cardH / 2 - 10);
   const pos = el.nodes.map((n, i) => {
     const ang = -Math.PI / 2 + (2 * Math.PI * i) / el.nodes.length;
     return { ...n, x: center.x + rx * Math.cos(ang), y: center.y + ry * Math.sin(ang) };
@@ -389,7 +408,7 @@ function renderDiagram(el, box, ctx) {
   for (const n of pos) {
     nodeSvg += nodeCard(ctx, {
       x: n.x - cardW / 2, y: n.y - cardH / 2, w: cardW, h: cardH,
-      hot: emph.has(n.id), label: n.label, detail: n.detail, badge: null,
+      hot: emph.has(n.id), label: n.label, detail: n.detail, icon: n.icon, badge: null,
     });
   }
 
@@ -675,7 +694,11 @@ function profileStage(slide, ctx) {
     </div>
     <div class="pane profile-left" style="${boxStyle(left)}">
       ${portraitHtml}
-      ${handle ? `<div class="profile-handle jp" style="font-size:${ctx.scale.node}px">${inlineText(handle.text)}</div>` : ''}
+      ${handle ? `<div class="profile-handle jp" style="font-size:${ctx.scale.node}px">${
+        handle.icon && iconExists(handle.icon)
+          ? `<svg class="inline-icon" viewBox="0 0 256 256" fill="currentColor">${iconInner(handle.icon, ctx.iconWeight)}</svg>`
+          : ''
+      }${inlineText(handle.text)}</div>` : ''}
     </div>
     <div class="pane profile-right" style="${boxStyle(right)}">${bioHtml}</div>`;
 }
@@ -822,6 +845,7 @@ svg.lead{display:block;max-width:100%;max-height:100%}
   align-items:center;justify-content:center;color:${C.muted};font-size:16px;
   line-height:1.6;padding:28px;text-align:center;box-shadow:none}
 .profile-handle{color:${C.text}}
+.inline-icon{height:.95em;width:.95em;vertical-align:-.12em;margin-right:.4em}
 .profile-right{justify-content:center;gap:30px}
 .profile-label{color:${C.highlight};font-family:${fonts.display};font-weight:${fonts.wDisplay};
   font-size:22px;letter-spacing:.08em;margin-bottom:7px}

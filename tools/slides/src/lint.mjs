@@ -204,15 +204,14 @@ export function lint(deckRoot, themeRoot) {
 
   // shrink-report — lead element likely exceeds the stage (static estimate).
   // True shrink detection is a render-time signal; here we flag the tractable
-  // case of a bullet list taller than the available stage height.
-  const rows = theme.grid.rows ?? 6;
-  const stageMargin = theme.grid.stage_margin ?? 1;
-  const rowH = (720 - 64 * 2) / rows;
+  // case of a bullet list taller than the available stage height. The height
+  // is a coarse snapshot of the renderer's stage (canvas − margins − headline
+  // band); composition itself is renderer-internal (ADR-0014).
   for (const s of slides) {
     if (s.layout !== 'list-stage') continue;
     const b = kinds(s, 'bullets')[0];
     if (!b) continue;
-    const stageH = 720 - 2 * (64 + stageMargin * rowH);
+    const stageH = 720 - 64 * 2 - 84;
     const bulletPx = (theme.type.scale?.bullet ?? 34);
     const estimate = b.items.length * bulletPx * 2.5; // line + gap per item
     if (estimate > stageH * 0.85) {

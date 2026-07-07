@@ -1,12 +1,15 @@
 // render.mjs — derive pixel layout from declared intent and emit static HTML/SVG.
 //
 // The write side declares intent (idea / text / nodes / message); this module
-// derives every pixel. It improves on the spike in five ways the SPEC calls for:
-//   (a) slot resolution — elements are found by slot/id, never by array order;
-//   (b) type scale      — font sizes come from theme.type.scale tokens;
-//   (c) JP line breaking — BudouX phrase wrapping + orphan guard (SPEC §8.5);
-//   (d) lead scaling     — hero elements fill ~85% of the stage height;
-//   (e) shared scales    — chart axes resolve deck.scales; annotations anchor on x.
+// derives every pixel. Layout is a measure/compose two-pass (ADR-0014):
+//   measure — each lead element reports the box it wants (ideal aspect or
+//             content-hugging height) given the available constraints;
+//   compose — the stage stacks headline + lead, hands the leftover height to
+//             whitespace at the optical centre, and never letterboxes.
+// Composition knowledge (ratios, optical centre, whitespace split) lives HERE
+// as implementation detail — never in the schema, the theme, or the SPEC.
+// Other renderer duties: slot resolution, type-scale tokens, BudouX phrase
+// wrapping (SPEC §8.6), shared chart scales.
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -16,11 +19,17 @@ import { iconExists, iconInner, promoteWeight } from './icons.mjs';
 const parser = loadDefaultJapaneseParser();
 
 // ---------------------------------------------------------------------------
-// Canvas + geometry constants (SPEC §8.1)
+// Canvas + composition constants (ADR-0014 — renderer-internal, not spec)
 // ---------------------------------------------------------------------------
 const CANVAS = { w: 1280, h: 720 };
-const MARGIN = { x: 96, y: 64 };
-const LETTERBOXED_ROLES = new Set(['content', 'title', 'transition']);
+const MARGIN = { x: 96, y: 64 }; // 外周のみ。レターボックスという概念は持たない
+
+const OPTICAL = 0.45;      // 使い残した高さの上:下 配分 (光学中心 — 幾何中心よりわずかに上)
+const HEAD_GAP = 40;       // headline 帯と主役の間
+const RING_ASPECT = 1.1;   // flow.cycle の箱の理想 w/h — カードが横長なぶん、わずかに横広が釣り合う
+const RING_ECC_MAX = 1.15; // 環の離心率上限。これ以内ならノードは正多角形の頂点に見える
+const PLOT_ASPECT = { trend: 2.0, comparison: 1.6, distribution: 1.6 }; // プロット領域の理想 w/h
+const CHART_PAD = { l: 84, r: 60, t: 26, b: 64 }; // 軸ラベルがプロットの外側に要する余白
 
 // Type-scale defaults mirror theme.schema.json so a theme that omits a token
 // still renders. Present tokens in the theme win.
@@ -64,7 +73,7 @@ function makeContext(deckRoot, themeRoot, opts = {}) {
   return {
     deck: deckRoot.deck,
     slides: deckRoot.slides,
-    grid: { rows: T.grid.rows ?? 6, stageMargin: T.grid.stage_margin ?? 1, pattern: T.grid.pattern },
+    grid: { rows: T.grid.rows ?? 6, pattern: T.grid.pattern },
     scale: { ...DEFAULT_SCALE, ...(T.type.scale || {}) },
     scales: deckRoot.deck.scales || {},
     fonts: {
@@ -104,11 +113,11 @@ function brandBackground(ctx, slide) {
   return ctx.brand?.backgrounds?.[roleGroup(slide.role)] || null;
 }
 
-/** Stage rectangle for a slide's role (letterbox on/off). */
-function stageRect(ctx, role) {
-  const rowH = (CANVAS.h - MARGIN.y * 2) / ctx.grid.rows;
-  const padY = MARGIN.y + (LETTERBOXED_ROLES.has(role) ? ctx.grid.stageMargin * rowH : 0);
-  return { x: MARGIN.x, y: padY, w: CANVAS.w - MARGIN.x * 2, h: CANVAS.h - padY * 2 };
+/** Stage rectangle: the canvas inset by the outer margin. How the inside is
+ * divided (headline band, lead box, whitespace) is decided by compose per
+ * pattern — letterboxing is not a concept any more (ADR-0014). */
+function stageRect() {
+  return { x: MARGIN.x, y: MARGIN.y, w: CANVAS.w - MARGIN.x * 2, h: CANVAS.h - MARGIN.y * 2 };
 }
 
 // ---------------------------------------------------------------------------
@@ -201,25 +210,17 @@ function inlineText(text, emphasis = []) {
 }
 
 // ---------------------------------------------------------------------------
-// Geometry helpers
+// Composition helpers (ADR-0014 — measure/compose)
 // ---------------------------------------------------------------------------
 const boxStyle = (r) => `left:${r.x}px;top:${r.y}px;width:${r.w}px;height:${r.h}px;`;
 const round = (n) => Math.round(n * 100) / 100;
 
-/** Split a stage into an optional headline band and the main slot below it. */
-function splitStage(ctx, stage, hasHeadline) {
-  if (!hasHeadline) return { headline: null, main: stage };
-  const headH = Math.round(ctx.scale.heading * 1.4 + 34);
-  return {
-    headline: { x: stage.x, y: stage.y, w: stage.w, h: headH },
-    main: { x: stage.x, y: stage.y + headH, w: stage.w, h: stage.h - headH },
-  };
-}
-
-/** Box a lead element into ~85% of the main slot's height (SPEC §8.3 の目安)。
- * diagram / chart は内部に余白・軸ラベルを抱えるため、やや高め (0.92) を使う。 */
-function leadBox(main, ratio = 0.85) {
-  return { w: main.w, h: round(main.h * ratio) };
+/** maxW×maxH に収まり、アスペクト (w/h) が ideal になる最大の矩形。
+ * 中身の申告 (measure) だけが箱の形を決める。 */
+function fitAspect(ideal, maxW, maxH) {
+  let w = maxW, h = w / ideal;
+  if (h > maxH) { h = maxH; w = h * ideal; }
+  return { w: round(w), h: round(h) };
 }
 
 // ---------------------------------------------------------------------------
@@ -375,7 +376,24 @@ function renderStepRow(el, box, ctx, arrowDef) {
     ${arrowDef}<g>${edgeSvg}</g><g>${cardSvg}</g></svg>`;
 }
 
-function renderDiagram(el, box, ctx) {
+/**
+ * Diagram measure (ADR-0014): report the box the form wants.
+ * cycle wants a near-square box (RING_ASPECT); every other form reads as an
+ * ordered step row that hugs its card height and spans the stage width.
+ */
+function measureDiagram(el, ctx, avail) {
+  if (el.form === 'flow.cycle') {
+    const box = fitAspect(RING_ASPECT, avail.w, avail.h);
+    return { ...box, render: (b) => renderCycle(el, b, ctx) };
+  }
+  const hasDetail = el.nodes.some((nd) => nd.detail);
+  const hasIcon = el.nodes.some((nd) => nd.icon);
+  const cardH = (hasDetail ? 150 : 108) + (hasIcon ? 44 : 0);
+  const h = Math.min(avail.h, cardH + 32);
+  return { w: avail.w, h, render: (b) => renderStepRow(el, b, ctx, arrowDefFor(ctx, ctx.C)) };
+}
+
+function renderCycle(el, box, ctx) {
   const { C, fonts, scale } = ctx;
   const fs = scale.node;
   const emph = new Set(el.emphasis || []);
@@ -383,11 +401,11 @@ function renderDiagram(el, box, ctx) {
 
   const arrowDef = arrowDefFor(ctx, C);
 
-  // Every non-cycle form reads as an ordered sequence → step cards.
-  if (el.form !== 'flow.cycle') return renderStepRow(el, box, ctx, arrowDef);
-
-  // cycle: cards on an ellipse ring, curved edges bulging outward. Cards get
-  // no number badge — a loop has no first step; sequence reads from arrows.
+  // cycle: cards on a near-circular ring, edges as arcs of the ring itself.
+  // Cards get no number badge — a loop has no first step; sequence reads from
+  // arrows. Nodes sit at regular-polygon vertices: the ring's eccentricity is
+  // capped (RING_ECC_MAX) so a 3-node cycle reads as an equilateral triangle,
+  // not a flattened one.
   const hasDetail = el.nodes.some((nd) => nd.detail);
   const hasIcon = el.nodes.some((nd) => nd.icon);
   const cardH = (hasDetail ? 130 : 96) + (hasIcon ? 44 : 0);
@@ -395,12 +413,16 @@ function renderDiagram(el, box, ctx) {
     estW(nd.label, fs + 2),
     nd.detail ? estW(nd.detail, scale.axis) : 0
   ) + 56)));
-  const rx = box.w / 2 - cardW / 2 - 8;
-  const ry = Math.max(44, box.h / 2 - cardH / 2 - 6);
-  const ring = { cx: center.x, cy: center.y, rx, ry };
+  const rx0 = box.w / 2 - cardW / 2 - 4;
+  const ry0 = Math.max(40, box.h / 2 - cardH / 2 - 4);
+  const r = Math.min(rx0, ry0);
+  const ring = {
+    cx: center.x, cy: center.y,
+    rx: Math.min(rx0, r * RING_ECC_MAX), ry: Math.min(ry0, r * RING_ECC_MAX),
+  };
   const pos = el.nodes.map((n, i) => {
     const ang = -Math.PI / 2 + (2 * Math.PI * i) / el.nodes.length;
-    return { ...n, ang, x: center.x + rx * Math.cos(ang), y: center.y + ry * Math.sin(ang) };
+    return { ...n, ang, x: ring.cx + ring.rx * Math.cos(ang), y: ring.cy + ring.ry * Math.sin(ang) };
   });
   const byId = Object.fromEntries(pos.map((n) => [n.id, n]));
   const rects = Object.fromEntries(pos.map((n) => [
@@ -450,9 +472,25 @@ function resolveYRange(el, ctx) {
   return { min: Math.min(0, ...all), max: niceCeil(Math.max(...all)) };
 }
 
+/**
+ * Chart measure (ADR-0014): the plot area wants an intent-specific aspect
+ * (PLOT_ASPECT); the axis-label padding sits outside the plot as constants,
+ * so the reported box is the padded plot.
+ */
+function measureChart(el, ctx, avail) {
+  const pad = CHART_PAD;
+  const ideal = PLOT_ASPECT[el.intent] ?? 1.6;
+  const plotH = Math.min(avail.h - pad.t - pad.b, (avail.w - pad.l - pad.r) / ideal);
+  return {
+    w: round(plotH * ideal + pad.l + pad.r),
+    h: round(plotH + pad.t + pad.b),
+    render: (b) => renderChart(el, b, ctx),
+  };
+}
+
 function renderChart(el, box, ctx) {
   const { C, fonts, scale } = ctx;
-  const pad = { l: 84, r: 60, t: 26, b: 64 };
+  const pad = CHART_PAD;
   const plot = { x: pad.l, y: pad.t, w: box.w - pad.l - pad.r, h: box.h - pad.t - pad.b };
   const cats = el.data.x;
   const { min: yMin, max: yMax } = resolveYRange(el, ctx);
@@ -511,9 +549,18 @@ function renderChart(el, box, ctx) {
     const px = xPos(i), py = yAt(s0.values[i]);
     emph += `<circle cx="${round(px)}" cy="${round(py)}" r="13" fill="none" stroke="${C.highlight}" stroke-width="2" opacity="0.5"/>`;
     emph += `<circle cx="${round(px)}" cy="${round(py)}" r="7.5" fill="${C.highlight}"/>`;
-    const ax = px + 20, ay = py + 74;
-    emph += `<line x1="${round(px)}" y1="${round(py + 12)}" x2="${round(ax)}" y2="${round(ay - 22)}" stroke="${C.highlight}" stroke-width="1.5" opacity="0.8"/>`;
-    emph += `<text x="${round(ax)}" y="${round(ay)}" text-anchor="start" fill="${C.highlight}" font-size="${scale.node}" font-weight="${fonts.wDisplay}" font-family='${fonts.display}'>${esc(ann.annotate)}</text>`;
+    // ラベルは折れ線が空けている側に置く。隣の点が高い側は線が上へ逃げる
+    // ぶん下が空く。右下 (読み方向) を優先、次に左下、両方塞がっていれば上。
+    const rightFree = isLine && i < cats.length - 1 && s0.values[i + 1] >= s0.values[i];
+    const leftFree = isLine && i > 0 && s0.values[i - 1] >= s0.values[i];
+    let ax, ay, anchor;
+    if (rightFree || !isLine) { ax = px + 20; ay = py + 74; anchor = 'start'; }
+    else if (leftFree) { ax = px - 20; ay = py + 74; anchor = 'end'; }
+    else { ax = px + 20; ay = py - 62; anchor = 'start'; }
+    const leaderY1 = ay > py ? py + 12 : py - 12;
+    const leaderY2 = ay > py ? ay - 22 : ay + 8;
+    emph += `<line x1="${round(px)}" y1="${round(leaderY1)}" x2="${round(ax)}" y2="${round(leaderY2)}" stroke="${C.highlight}" stroke-width="1.5" opacity="0.8"/>`;
+    emph += `<text x="${round(ax)}" y="${round(ay)}" text-anchor="${anchor}" fill="${C.highlight}" font-size="${scale.node}" font-weight="${fonts.wDisplay}" font-family='${fonts.display}'>${esc(ann.annotate)}</text>`;
   }
 
   return `<svg class="lead" viewBox="0 0 ${round(box.w)} ${round(box.h)}" width="${round(box.w)}" height="${round(box.h)}" role="img">
@@ -570,81 +617,99 @@ function renderRaw(el, ctx) {
 // Layout patterns (SPEC §5.1) — all resolve elements by slot, not order
 // ---------------------------------------------------------------------------
 function statementStage(slide, ctx) {
-  const stage = stageRect(ctx, slide.role);
+  const stage = stageRect();
+  // 光学中心: 箱の下端を 6% 削って flex 中央に置くと、内容の中心が
+  // 幾何中心よりわずかに上に来る
+  const pane = { ...stage, h: round(stage.h * 0.94) };
   const el = slide.elements.find((e) => e.slot === 'statement');
   const support = slide.elements.find((e) => e.slot === 'support');
   const token = (slide.role === 'opener' || slide.role === 'closer') ? 'hero' : 'big';
   const fs = ctx.scale[token];
-  return `<div class="pane center" style="${boxStyle(stage)}">
+  return `<div class="pane center" style="${boxStyle(pane)}">
     <div class="statement jp" style="font-size:${fs}px">${inlineText(el.text, el.emphasis)}</div>
     ${support ? `<div class="support jp" style="font-size:${ctx.scale.subtitle}px">${inlineText(support.text, support.emphasis)}</div>` : ''}
   </div>`;
 }
 
 function titleStage(slide, ctx) {
-  const stage = stageRect(ctx, slide.role);
+  const stage = stageRect();
+  // タイトル群の下端はキャンバスの黄金分割 (上から 61.8%) に置く
+  const band = { x: stage.x, y: stage.y, w: stage.w, h: round(CANVAS.h * 0.618 - stage.y) };
   const title = slide.elements.find((e) => e.slot === 'title');
   const sub = slide.elements.find((e) => e.slot === 'subtitle');
-  return `<div class="pane title-band" style="${boxStyle(stage)}">
+  return `<div class="pane title-band" style="${boxStyle(band)}">
     <div class="title-accent"></div>
     <div class="title-main jp" style="font-size:${ctx.scale.title}px">${inlineText(title.text, title.emphasis)}</div>
     ${sub ? `<div class="title-sub jp" style="font-size:${ctx.scale.subtitle}px">${inlineText(sub.text, sub.emphasis)}</div>` : ''}
   </div>`;
 }
 
-function headlineHtml(slide, ctx, box) {
+/**
+ * Headline band + one lead slot, composed by measure/compose (ADR-0014):
+ * the lead element reports the box it wants (measure), compose stacks
+ * headline + lead and hands the leftover height to whitespace at the
+ * optical centre (45:55).
+ */
+function leadStage(slide, ctx, slotName, measureFn, paneClass = 'pane center') {
+  const stage = stageRect();
   const head = slide.elements.find((e) => e.slot === 'headline');
-  if (!head) return '';
-  return `<div class="headline jp" style="${boxStyle(box)};font-size:${ctx.scale.heading}px">${inlineText(head.text, head.emphasis)}</div>`;
-}
-
-function leadStage(slide, ctx, slotName, renderFn, ratio) {
-  const stage = stageRect(ctx, slide.role);
-  const hasHead = !!slide.elements.find((e) => e.slot === 'headline');
-  const { headline, main } = splitStage(ctx, stage, hasHead);
   const el = slide.elements.find((e) => e.slot === slotName);
-  const box = leadBox(main, ratio);
-  const inner = renderFn(el, box, ctx);
-  return `${hasHead ? headlineHtml(slide, ctx, headline) : ''}
-    <div class="pane center" style="${boxStyle(main)}"><div class="lead-wrap" style="width:${round(box.w)}px;height:${round(box.h)}px">${inner}</div></div>`;
+  const headH = head ? Math.round(ctx.scale.heading * 1.3) : 0;
+  const avail = { w: stage.w, h: stage.h - (head ? headH + HEAD_GAP : 0) };
+  const m = measureFn(el, ctx, avail);
+  const used = (head ? headH + HEAD_GAP : 0) + m.h;
+  let y = stage.y + Math.max(0, stage.h - used) * OPTICAL;
+  let html = '';
+  if (head) {
+    html += `<div class="headline jp" style="left:${stage.x}px;top:${round(y)}px;width:${stage.w}px;height:${headH}px;font-size:${ctx.scale.heading}px">${inlineText(head.text, head.emphasis)}</div>`;
+    y += headH + HEAD_GAP;
+  }
+  const box = { x: round(stage.x + (stage.w - m.w) / 2), y: round(y), w: round(m.w), h: round(m.h) };
+  html += `<div class="${paneClass}" style="${boxStyle(box)}">${m.render({ w: m.w, h: m.h })}</div>`;
+  return html;
 }
 
 function diagramStage(slide, ctx) {
-  return leadStage(slide, ctx, 'diagram', renderDiagram, 0.92);
+  return leadStage(slide, ctx, 'diagram', measureDiagram);
 }
 
 function chartStage(slide, ctx) {
-  return leadStage(slide, ctx, 'chart', renderChart, 0.92);
+  return leadStage(slide, ctx, 'chart', measureChart);
+}
+
+/**
+ * List measure: estimate wrapped lines, shrink the font (floor 24px) until the
+ * list fits, and hug the content height — leftover space goes to whitespace,
+ * not to inflated gaps.
+ */
+function measureList(el, ctx, avail) {
+  const n = el.items.length;
+  const estH = (fs) => el.items.reduce((t, it) => {
+    const perLine = Math.max(4, Math.floor((avail.w - fs * 2.2) / fs));
+    return t + Math.max(1, Math.ceil(cpLen(String(it)) / perLine)) * fs * 1.4;
+  }, 0);
+  const gapFor = (fs) => fs * 1.05;
+  let fs = ctx.scale.bullet;
+  while (fs > 24 && estH(fs) + (n - 1) * gapFor(fs) > avail.h) fs -= 2;
+  const gap = gapFor(fs);
+  const h = Math.min(avail.h, estH(fs) + (n - 1) * gap);
+  return {
+    w: avail.w, h: round(h),
+    render: () => {
+      const items = el.items.map((it) =>
+        `<li><span class="dot"></span><span class="jp">${inlineText(it)}</span></li>`).join('');
+      return `<ul class="bullets" style="font-size:${fs}px;gap:${round(gap)}px">${items}</ul>`;
+    },
+  };
 }
 
 function listStage(slide, ctx) {
-  const stage = stageRect(ctx, slide.role);
-  const hasHead = !!slide.elements.find((e) => e.slot === 'headline');
-  const { headline, main } = splitStage(ctx, stage, hasHead);
-  const b = slide.elements.find((e) => e.slot === 'list');
-
-  // Fit the list inside its pane: estimate wrapped lines at a given size,
-  // shrink the font (floor 24px) if needed, then derive a gap that keeps the
-  // centred list from bleeding into the headline above.
-  const n = b.items.length;
-  const estH = (fs) => b.items.reduce((t, it) => {
-    const perLine = Math.max(4, Math.floor((main.w - fs * 2.2) / fs));
-    return t + Math.max(1, Math.ceil(cpLen(String(it)) / perLine)) * fs * 1.4;
-  }, 0);
-  let fs = ctx.scale.bullet;
-  while (fs > 24 && estH(fs) + (n - 1) * 14 > main.h) fs -= 2;
-  const gap = Math.max(14, Math.min(fs * 1.1, (main.h - estH(fs)) / n));
-
-  const items = b.items.map((it) =>
-    `<li><span class="dot"></span><span class="jp">${inlineText(it)}</span></li>`).join('');
-  return `${hasHead ? headlineHtml(slide, ctx, headline) : ''}
-    <div class="pane" style="${boxStyle(main)}">
-      <ul class="bullets" style="font-size:${fs}px;gap:${round(gap)}px">${items}</ul>
-    </div>`;
+  return leadStage(slide, ctx, 'list', measureList, 'pane');
 }
 
 function quoteStage(slide, ctx) {
-  const stage = stageRect(ctx, slide.role);
+  const stage = stageRect();
+  const pane = { ...stage, h: round(stage.h * 0.94) }; // 光学中心 (statementStage と同じ)
   const q = slide.elements.find((e) => e.slot === 'quote');
   // A short quote is the slide's hero — scale it toward display size instead
   // of leaving it at body-quote size (46px) inside an empty stage.
@@ -652,7 +717,7 @@ function quoteStage(slide, ctx) {
   const fs = len <= 12 ? Math.round(ctx.scale.quote * 1.7)
     : len <= 24 ? Math.round(ctx.scale.quote * 1.35)
     : ctx.scale.quote;
-  return `<div class="pane center" style="${boxStyle(stage)}">
+  return `<div class="pane center" style="${boxStyle(pane)}">
     <div class="quote-block">
       <div class="quote-mark">&ldquo;</div>
       <div class="quote-text jp" style="font-size:${fs}px">${inlineText(q.text)}</div>
@@ -665,7 +730,7 @@ function quoteStage(slide, ctx) {
 // Header = name + affiliation; left = round portrait + handle; right = bio
 // sections whose items may carry a "label ── body" prefix.
 function profileStage(slide, ctx) {
-  const stage = stageRect(ctx, slide.role);
+  const stage = stageRect();
   const get = (slot) => slide.elements.find((e) => e.slot === slot);
   const portrait = get('portrait');
   const name = get('name');
@@ -801,7 +866,6 @@ function css(ctx) {
 .hi{color:${C.highlight};font-weight:${fonts.wDisplay}}
 .pane{position:absolute;display:flex;flex-direction:column}
 .pane.center{align-items:center;justify-content:center;text-align:center}
-.lead-wrap{display:flex;align-items:center;justify-content:center}
 svg.lead{display:block;max-width:100%;max-height:100%}
 
 .statement{font-family:${fonts.display};font-weight:${fonts.wDisplay};line-height:1.25;

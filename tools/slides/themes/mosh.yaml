@@ -2,12 +2,11 @@
 # 一次ソース: https://github.com/TheMoshInc/marp-slide-template (mosh.css + assets)
 # ブランドカラー #FA6E78 / 黒 #111827 / グレー #4B5563 / Nunito / ライト背景。
 # ロゴは全ページ右上、コピーライトは右下 (企業テンプレートの要件。placement: all で明示的に逸脱)。
-schema_version: "0.2.0"
+schema_version: "0.3.0"
 theme:
   grid:
     pattern: col-4
     rows: 6
-    stage_margin: 1
   palette:
     # core[0] はブランドコーラルを少し深めた #e0525d。#fa6e78 のままだと
     # ライト背景とのコントラスト比 2.7 で contrast lint (閾値 3.0) にかかる。

@@ -19,8 +19,7 @@
           "required": ["pattern"],
           "properties": {
             "pattern": { "enum": ["col-3", "col-4", "col-5", "fibonacci"] },
-            "rows": { "type": "integer", "minimum": 1, "default": 6 },
-            "stage_margin": { "type": "integer", "minimum": 0, "default": 1 }
+            "rows": { "type": "integer", "minimum": 1, "default": 6 }
           }
         },
         "palette": {

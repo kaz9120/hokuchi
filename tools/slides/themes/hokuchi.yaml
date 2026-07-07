@@ -1,12 +1,11 @@
-# hokuchi デフォルトテーマ (schema_version 0.1.0)
+# hokuchi デフォルトテーマ (schema_version 0.3.0)
 # 導出元: BRAND.md §6 / hidoko/packages/ui/src/tokens.css
 # 値は spike/theme.yaml を踏襲し、SPEC §2 の新形式へ移行した。
-schema_version: "0.1.0"
+schema_version: "0.3.0"
 theme:
   grid:
     pattern: col-4        # 4 カラム
     rows: 6               # grid-direct のセル行番号の基準 (ADR-0008-1)
-    stage_margin: 1       # 上下 1 行を空ける「映画スクリーン」効果
   palette:
     # core: 本体コンテンツ・データ系列の色 (落ち着いた補助色)
     core:

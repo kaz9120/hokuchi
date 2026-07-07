@@ -153,6 +153,133 @@ slides:
       detail (補足 1 行) と icon (ADR-0013) 付きカード。強調ノードの
       アイコンはウェイトが 1 段階昇格する (regular → fill)。
 
+  - id: diagram-layer
+    role: content
+    idea: "diagram structure.layer: 積層の帯"
+    layout: diagram-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "積層 (structure.layer) の検証"
+      - kind: diagram
+        slot: diagram
+        form: structure.layer
+        nodes:
+          - { id: talk, label: "発表", detail: "final/ に凍結" }
+          - { id: deck, label: "deck.yaml", detail: "意図の宣言" }
+          - { id: render, label: "レンダラ", detail: "配置を導出" }
+          - { id: schema, label: "スキーマ", detail: "正しさの床" }
+        emphasis: [render]
+    notes: |
+      検証点: 帯の等幅・等間隔・宣言順 (上から下)、強調帯の視覚差。
+      edges は描かれない (隣接が意味を持つ form)。
+
+  - id: diagram-matrix
+    role: content
+    idea: "diagram structure.matrix: 2×2 の四象限"
+    layout: diagram-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "四象限 (structure.matrix) の検証"
+      - kind: diagram
+        slot: diagram
+        form: structure.matrix
+        nodes:
+          - { id: a, label: "意図 × 導出", detail: "このツール" }
+          - { id: b, label: "意図 × 手作業", detail: "デザイナー" }
+          - { id: c, label: "見た目 × 導出", detail: "Marp" }
+          - { id: d, label: "見た目 × 手作業", detail: "PowerPoint" }
+        emphasis: [a]
+    notes: |
+      検証点: 2×2 グリッドの整列、カード等寸、強調セル。
+
+  - id: diagram-branch
+    role: content
+    idea: "diagram flow.branch: 1 → 3 の分岐"
+    layout: diagram-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "分岐 (flow.branch) の検証"
+      - kind: diagram
+        slot: diagram
+        form: flow.branch
+        nodes:
+          - { id: lint, label: "lint", icon: "magnifying-glass" }
+          - { id: ok, label: "指摘なし", detail: "render へ", icon: "check" }
+          - { id: warn, label: "警告", detail: "レポートに残る", icon: "warning" }
+          - { id: err, label: "エラー", detail: "render を止める", icon: "x-circle" }
+        edges: [lint -> ok, lint -> warn, lint -> err]
+        emphasis: [err]
+    notes: |
+      検証点: 分岐元の縦中央、分岐先 3 枚の縦積み、斜め矢印、アイコン付きカード。
+
+  - id: diagram-converge
+    role: content
+    idea: "diagram flow.converge: 3 → 1 の合流"
+    layout: diagram-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "合流 (flow.converge) の検証"
+      - kind: diagram
+        slot: diagram
+        form: flow.converge
+        nodes:
+          - { id: brand, label: "BRAND.md" }
+          - { id: tokens, label: "tokens.css" }
+          - { id: spec, label: "SPEC" }
+          - { id: theme, label: "テーマ", detail: "スロットに固定" }
+        edges: [brand -> theme, tokens -> theme, spec -> theme]
+        emphasis: [theme]
+    notes: |
+      検証点: 合流先の縦中央、合流元 3 枚の縦積み、矢印の集約。
+
+  - id: diagram-tree
+    role: content
+    idea: "diagram structure.tree: 深さ 3 の階層"
+    layout: diagram-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "階層 (structure.tree) の検証"
+      - kind: diagram
+        slot: diagram
+        form: structure.tree
+        nodes:
+          - { id: root, label: "hokuchi" }
+          - { id: talks, label: "talks/" }
+          - { id: tools, label: "tools/" }
+          - { id: adr, label: "docs/adr/" }
+          - { id: slides, label: "slides/", detail: "レンダラ本体" }
+        edges: [root -> talks, root -> tools, root -> adr, tools -> slides]
+        emphasis: [slides]
+    notes: |
+      検証点: 深さでカラムが決まる (0/1/2 の 3 列)、列内の宣言順、孫への矢印。
+
+  - id: diagram-radial
+    role: content
+    idea: "diagram radial.core: 中心と 5 つの周辺"
+    layout: diagram-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "中心と広がり (radial.core) の検証"
+      - kind: diagram
+        slot: diagram
+        form: radial.core
+        nodes:
+          - { id: idea, label: "One Big Idea" }
+          - { id: who, label: "聴衆" }
+          - { id: story, label: "構成" }
+          - { id: visual, label: "視覚" }
+          - { id: words, label: "言葉" }
+          - { id: time, label: "時間" }
+        emphasis: [idea]
+    notes: |
+      検証点: nodes[0] が中心、残りが正多角形の頂点、edges 省略時の素のスポーク。
+
   - id: chart-trend
     role: content
     idea: "chart trend: 折れ線 + 注釈アンカー + 共有スケール"

@@ -376,21 +376,276 @@ function renderStepRow(el, box, ctx, arrowDef) {
     ${arrowDef}<g>${edgeSvg}</g><g>${cardSvg}</g></svg>`;
 }
 
-/**
- * Diagram measure (ADR-0014): report the box the form wants.
- * cycle wants a near-square box (RING_ASPECT); every other form reads as an
- * ordered step row that hugs its card height and spans the stage width.
- */
-function measureDiagram(el, ctx, avail) {
-  if (el.form === 'flow.cycle') {
-    const box = fitAspect(RING_ASPECT, avail.w, avail.h);
-    return { ...box, render: (b) => renderCycle(el, b, ctx) };
-  }
+/** Uniform card metrics for a node set (matrix / dag / radial / cycle). */
+function cardMetrics(el, ctx, { minW = 180, maxW = 330 } = {}) {
+  const { scale } = ctx;
   const hasDetail = el.nodes.some((nd) => nd.detail);
   const hasIcon = el.nodes.some((nd) => nd.icon);
-  const cardH = (hasDetail ? 150 : 108) + (hasIcon ? 44 : 0);
-  const h = Math.min(avail.h, cardH + 32);
-  return { w: avail.w, h, render: (b) => renderStepRow(el, b, ctx, arrowDefFor(ctx, ctx.C)) };
+  const w = Math.min(maxW, Math.max(minW, ...el.nodes.map((nd) => Math.max(
+    estW(nd.label, scale.node + 2),
+    nd.detail ? estW(nd.detail, scale.axis) : 0
+  ) + 56)));
+  const h = (hasDetail ? 130 : 96) + (hasIcon ? 44 : 0);
+  return { w, h };
+}
+
+/** Point where the segment from rect-centre p toward q exits p's padded rect. */
+function exitRect(p, q, rect, pad) {
+  const dx = q.x - p.x, dy = q.y - p.y;
+  const tx = dx > 0 ? (rect.x + rect.w + pad - p.x) / dx : dx < 0 ? (rect.x - pad - p.x) / dx : Infinity;
+  const ty = dy > 0 ? (rect.y + rect.h + pad - p.y) / dy : dy < 0 ? (rect.y - pad - p.y) / dy : Infinity;
+  const t = Math.min(tx, ty);
+  return { x: p.x + dx * t, y: p.y + dy * t };
+}
+
+/**
+ * Diagram measure (ADR-0014): report the box the form wants.
+ *   flow.cycle                          → near-square ring (RING_ASPECT)
+ *   radial.core                         → near-square, hub + spokes
+ *   structure.layer                     → stacked bands hugging their height
+ *   structure.matrix                    → 2-column card grid
+ *   structure.tree / flow.branch / flow.converge → depth-columned DAG
+ *   everything else                     → ordered step row spanning the stage
+ */
+function measureDiagram(el, ctx, avail) {
+  switch (el.form) {
+    case 'flow.cycle': {
+      const box = fitAspect(RING_ASPECT, avail.w, avail.h);
+      return { ...box, render: (b) => renderCycle(el, b, ctx) };
+    }
+    case 'radial.core': {
+      // ハブの左右に周辺カードが並ぶぶん、箱の幅はカード寸法から導出する
+      // (中心 + 左右 1 枚ずつ = 3 カード幅 + 間隔)。高さは使い切って環を稼ぐ。
+      const card = cardMetrics(el, ctx);
+      const w = Math.min(avail.w, card.w * 3 + 120);
+      return { w, h: avail.h, render: (b) => renderRadial(el, b, ctx, card) };
+    }
+    case 'structure.layer': return measureLayer(el, ctx, avail);
+    case 'structure.matrix': return measureMatrix(el, ctx, avail);
+    case 'structure.tree':
+    case 'flow.branch':
+    case 'flow.converge': return measureDag(el, ctx, avail);
+    default: {
+      const hasDetail = el.nodes.some((nd) => nd.detail);
+      const hasIcon = el.nodes.some((nd) => nd.icon);
+      const cardH = (hasDetail ? 150 : 108) + (hasIcon ? 44 : 0);
+      const h = Math.min(avail.h, cardH + 32);
+      return { w: avail.w, h, render: (b) => renderStepRow(el, b, ctx, arrowDefFor(ctx, ctx.C)) };
+    }
+  }
+}
+
+const svgLead = (box, inner) =>
+  `<svg class="lead" viewBox="0 0 ${round(box.w)} ${round(box.h)}" width="${round(box.w)}" height="${round(box.h)}" role="img">${inner}</svg>`;
+
+/**
+ * structure.layer — full-width bands stacked in declaration order (top→down).
+ * A layer diagram reads by adjacency, not by arrows, so edges are not drawn.
+ */
+function measureLayer(el, ctx, avail) {
+  const { scale } = ctx;
+  const hasDetail = el.nodes.some((nd) => nd.detail);
+  const hasIcon = el.nodes.some((nd) => nd.icon);
+  const bandH = (hasDetail ? 108 : 76) + (hasIcon ? 44 : 0);
+  const bandW = Math.min(820, Math.max(460, ...el.nodes.map((nd) => Math.max(
+    estW(nd.label, scale.node + 2),
+    nd.detail ? estW(nd.detail, scale.axis) : 0
+  ) + 140)));
+  const gap = 16;
+  const n = el.nodes.length;
+  const h = Math.min(avail.h, n * bandH + (n - 1) * gap);
+  return {
+    w: bandW, h,
+    render: (box) => {
+      const emph = new Set(el.emphasis || []);
+      // measure が高さで切り詰めた場合は帯を等率で縮める
+      const bh = Math.min(bandH, (box.h - (n - 1) * gap) / n);
+      let svg = '';
+      el.nodes.forEach((nd, i) => {
+        svg += nodeCard(ctx, {
+          x: 0, y: i * (bh + gap), w: box.w, h: bh,
+          hot: emph.has(nd.id), label: nd.label, detail: nd.detail, icon: nd.icon, badge: null,
+        });
+      });
+      return svgLead(box, svg);
+    },
+  };
+}
+
+/** structure.matrix — cards in a 2-column grid (2×2 for the canonical four). */
+function measureMatrix(el, ctx, avail) {
+  const card = cardMetrics(el, ctx, { minW: 240, maxW: 360 });
+  const rows = Math.ceil(el.nodes.length / 2);
+  const { cardH, gap } = fitRows(rows, card.h, 22, avail.h);
+  const w = card.w * 2 + gap;
+  const h = Math.min(avail.h, rows * cardH + (rows - 1) * gap);
+  return {
+    w, h,
+    render: (box) => {
+      const emph = new Set(el.emphasis || []);
+      let svg = '';
+      el.nodes.forEach((nd, i) => {
+        svg += nodeCard(ctx, {
+          x: (i % 2) * (card.w + gap), y: Math.floor(i / 2) * (cardH + gap),
+          w: card.w, h: cardH,
+          hot: emph.has(nd.id), label: nd.label, detail: nd.detail, icon: nd.icon, badge: null,
+        });
+      });
+      return svgLead(box, svg);
+    },
+  };
+}
+
+/**
+ * Depth columns for tree / branch / converge: a node's column is the longest
+ * edge path from a root. Declaration order is preserved inside a column.
+ */
+function dagColumns(el) {
+  const memo = new Map();
+  const incoming = new Map(el.nodes.map((n) => [n.id, []]));
+  for (const e of el.edges || []) {
+    if (incoming.has(e.to) && incoming.has(e.from)) incoming.get(e.to).push(e.from);
+  }
+  const depth = (id, seen) => {
+    if (memo.has(id)) return memo.get(id);
+    if (seen.has(id)) return 0; // サイクルは深さ 0 に落として描画は続ける (form の誤用)
+    seen.add(id);
+    const ins = incoming.get(id);
+    const d = ins.length ? Math.max(...ins.map((f) => depth(f, seen))) + 1 : 0;
+    memo.set(id, d);
+    return d;
+  };
+  const cols = [];
+  for (const n of el.nodes) (cols[depth(n.id, new Set())] ??= []).push(n);
+  return cols.filter(Boolean);
+}
+
+/** 縦に rows 枚積んだとき avail.h に収まる (cardH, gap)。gap → cardH の順に縮める。 */
+function fitRows(rows, cardH, gap, availH, { minGap = 16, minCardH = 88 } = {}) {
+  if (rows * cardH + (rows - 1) * gap <= availH) return { cardH, gap };
+  if (rows > 1) gap = Math.max(minGap, (availH - rows * cardH) / (rows - 1));
+  if (rows * cardH + (rows - 1) * gap > availH) {
+    cardH = Math.max(minCardH, (availH - (rows - 1) * gap) / rows);
+  }
+  return { cardH, gap };
+}
+
+function measureDag(el, ctx, avail) {
+  const cols = dagColumns(el);
+  const card = cardMetrics(el, ctx, { minW: 190, maxW: 300 });
+  let colGap = 90, cardW = card.w;
+  const nCols = cols.length;
+  if (nCols > 1 && nCols * cardW + (nCols - 1) * colGap > avail.w) {
+    colGap = Math.max(48, (avail.w - nCols * cardW) / (nCols - 1));
+    if (nCols * cardW + (nCols - 1) * colGap > avail.w) {
+      cardW = (avail.w - (nCols - 1) * colGap) / nCols;
+    }
+  }
+  const maxRows = Math.max(...cols.map((c) => c.length));
+  const { cardH, gap: rowGap } = fitRows(maxRows, card.h, 26, avail.h);
+  const w = Math.min(avail.w, nCols * cardW + (nCols - 1) * colGap);
+  const h = Math.min(avail.h, maxRows * cardH + (maxRows - 1) * rowGap);
+  return {
+    w, h,
+    render: (box) => renderDag(el, box, ctx, { cols, cardW, cardH, colGap, rowGap }),
+  };
+}
+
+function renderDag(el, box, ctx, { cols, cardW, cardH, colGap, rowGap }) {
+  const { C, fonts, scale } = ctx;
+  const emph = new Set(el.emphasis || []);
+  const pos = {};
+  cols.forEach((col, ci) => {
+    const colH = col.length * cardH + (col.length - 1) * rowGap;
+    const y0 = (box.h - colH) / 2;
+    col.forEach((nd, ri) => {
+      pos[nd.id] = { ...nd, x: ci * (cardW + colGap), y: y0 + ri * (cardH + rowGap) };
+    });
+  });
+
+  // 同じノードへ流入するエッジは、左辺の同じ点に刺さると矢印が団子になる。
+  // 流入数で左辺を等分し、宣言順に上から割り当てる (converge の視認性)。
+  const inCount = {}, inSeen = {};
+  for (const e of el.edges || []) {
+    if (pos[e.from] && pos[e.to]) inCount[e.to] = (inCount[e.to] || 0) + 1;
+  }
+  let edgeSvg = '';
+  for (const e of el.edges || []) {
+    const a = pos[e.from], b = pos[e.to];
+    if (!a || !b) continue; // edge-ref lint reports this; render skips silently.
+    const slot = (inSeen[e.to] = (inSeen[e.to] || 0) + 1);
+    const x1 = a.x + cardW + 5, y1 = a.y + cardH / 2;
+    const x2 = b.x - 7, y2 = b.y + (cardH * slot) / (inCount[e.to] + 1);
+    if (x2 <= x1) continue; // 同列・逆行は描かない (form の誤用)
+    edgeSvg += `<line x1="${round(x1)}" y1="${round(y1)}" x2="${round(x2)}" y2="${round(y2)}" stroke="${C.muted}" stroke-width="3" marker-end="${markerRef(ctx)}"/>`;
+    if (e.label) {
+      edgeSvg += `<text x="${round((x1 + x2) / 2)}" y="${round((y1 + y2) / 2 - 10)}" text-anchor="middle" fill="${C.muted}" font-size="${scale.axis}" font-family='${fonts.body}'>${esc(e.label)}</text>`;
+    }
+  }
+
+  let cardSvg = '';
+  for (const id of Object.keys(pos)) {
+    const p = pos[id];
+    cardSvg += nodeCard(ctx, {
+      x: p.x, y: p.y, w: cardW, h: cardH,
+      hot: emph.has(id), label: p.label, detail: p.detail, icon: p.icon, badge: null,
+    });
+  }
+  return svgLead(box, `${arrowDefFor(ctx, C)}<g>${edgeSvg}</g><g>${cardSvg}</g>`);
+}
+
+/**
+ * radial.core — nodes[0] is the hub, the rest sit at regular-polygon vertices
+ * on the ring. Unlike cycle, the ring's eccentricity is not capped: the hub
+ * occupies the middle, so satellites need the full horizontal reach to clear
+ * it. Declared edges are drawn as arrows; with no edges the geometry itself
+ * supplies plain spokes.
+ */
+function renderRadial(el, box, ctx, card) {
+  const { C } = ctx;
+  const [core, ...sats] = el.nodes;
+  const emph = new Set(el.emphasis || []);
+  const cx = box.w / 2, cy = box.h / 2;
+  const ring = {
+    rx: box.w / 2 - card.w / 2 - 4,
+    ry: Math.max(40, box.h / 2 - card.h / 2 - 4),
+  };
+
+  const rectFor = (p) => ({ x: p.x - card.w / 2, y: p.y - card.h / 2, w: card.w, h: card.h });
+  const pts = { [core.id]: { ...core, x: cx, y: cy } };
+  sats.forEach((n, i) => {
+    const ang = -Math.PI / 2 + (2 * Math.PI * i) / sats.length;
+    pts[n.id] = { ...n, x: cx + ring.rx * Math.cos(ang), y: cy + ring.ry * Math.sin(ang) };
+  });
+
+  let lineSvg = '';
+  if ((el.edges || []).length > 0) {
+    for (const e of el.edges) {
+      const a = pts[e.from], b = pts[e.to];
+      if (!a || !b) continue;
+      const p1 = exitRect(a, b, rectFor(a), 8);
+      const p2 = exitRect(b, a, rectFor(b), 14);
+      lineSvg += `<line x1="${round(p1.x)}" y1="${round(p1.y)}" x2="${round(p2.x)}" y2="${round(p2.y)}" stroke="${C.muted}" stroke-width="3" marker-end="${markerRef(ctx)}"/>`;
+    }
+  } else {
+    for (const n of sats) {
+      const p = pts[n.id];
+      const p1 = exitRect(pts[core.id], p, rectFor(pts[core.id]), 8);
+      const p2 = exitRect(p, pts[core.id], rectFor(p), 8);
+      lineSvg += `<line x1="${round(p1.x)}" y1="${round(p1.y)}" x2="${round(p2.x)}" y2="${round(p2.y)}" stroke="${C.muted}" stroke-width="2" opacity="0.6"/>`;
+    }
+  }
+
+  let cardSvg = '';
+  for (const n of el.nodes) {
+    const p = pts[n.id];
+    const rc = rectFor(p);
+    cardSvg += nodeCard(ctx, {
+      x: rc.x, y: rc.y, w: rc.w, h: rc.h,
+      hot: emph.has(n.id), label: n.label, detail: n.detail, icon: n.icon, badge: null,
+    });
+  }
+  return svgLead(box, `${arrowDefFor(ctx, C)}<g>${lineSvg}</g><g>${cardSvg}</g>`);
 }
 
 function renderCycle(el, box, ctx) {
@@ -406,13 +661,7 @@ function renderCycle(el, box, ctx) {
   // arrows. Nodes sit at regular-polygon vertices: the ring's eccentricity is
   // capped (RING_ECC_MAX) so a 3-node cycle reads as an equilateral triangle,
   // not a flattened one.
-  const hasDetail = el.nodes.some((nd) => nd.detail);
-  const hasIcon = el.nodes.some((nd) => nd.icon);
-  const cardH = (hasDetail ? 130 : 96) + (hasIcon ? 44 : 0);
-  const cardW = Math.min(330, Math.max(180, ...el.nodes.map((nd) => Math.max(
-    estW(nd.label, fs + 2),
-    nd.detail ? estW(nd.detail, scale.axis) : 0
-  ) + 56)));
+  const { w: cardW, h: cardH } = cardMetrics(el, ctx);
   const rx0 = box.w / 2 - cardW / 2 - 4;
   const ry0 = Math.max(40, box.h / 2 - cardH / 2 - 4);
   const r = Math.min(rx0, ry0);

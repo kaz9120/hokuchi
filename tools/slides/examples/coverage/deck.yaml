@@ -258,6 +258,88 @@ slides:
     notes: |
       検証点: 深さでカラムが決まる (0/1/2 の 3 列)、列内の宣言順、孫への矢印。
 
+  - id: diagram-overlap
+    role: content
+    idea: "diagram cluster.overlap: 3 円のベン図"
+    layout: diagram-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "重なり (cluster.overlap) の検証"
+      - kind: diagram
+        slot: diagram
+        form: cluster.overlap
+        nodes:
+          - { id: human, label: "人間", detail: "レビュー" }
+          - { id: claude, label: "Claude", detail: "生成" }
+          - { id: render, label: "レンダラ", detail: "配置" }
+        emphasis: [render]
+    notes: |
+      検証点: 3 円の正三角形配置、重なりの濃度、外向きに逃げたラベル、強調円。
+
+  - id: diagram-enclosed
+    role: content
+    idea: "diagram cluster.enclosed: 枠と 3 つの中身"
+    layout: diagram-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "包含 (cluster.enclosed) の検証"
+      - kind: diagram
+        slot: diagram
+        form: cluster.enclosed
+        nodes:
+          - { id: repo, label: "hokuchi", detail: "発信のリポジトリ" }
+          - { id: talks, label: "talks/" }
+          - { id: tools, label: "tools/" }
+          - { id: adr, label: "docs/adr/" }
+        emphasis: [tools]
+    notes: |
+      検証点: nodes[0] が枠 (ラベル + detail)、中身カードの等間隔、強調カード。
+
+  - id: diagram-closure
+    role: content
+    idea: "diagram cluster.closure: 境界を描かない群"
+    layout: diagram-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "閉合 (cluster.closure) の検証"
+      - kind: diagram
+        slot: diagram
+        form: cluster.closure
+        nodes:
+          - { id: simple, label: "簡潔" }
+          - { id: active, label: "能動" }
+          - { id: concrete, label: "具体" }
+          - { id: consistent, label: "一貫" }
+    notes: |
+      検証点: 環状配置のみで群を知覚させる (線も境界も無い)、正多角形の頂点。
+
+  - id: diagram-linked
+    role: content
+    idea: "diagram cluster.linked: 部分的なつながり"
+    layout: diagram-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "連結 (cluster.linked) の検証"
+      - kind: diagram
+        slot: diagram
+        form: cluster.linked
+        nodes:
+          - { id: skill, label: "skill" }
+          - { id: deck, label: "deck.yaml" }
+          - { id: render, label: "render" }
+          - { id: serve, label: "serve" }
+        edges:
+          - skill -> deck
+          - deck -> render
+          - { from: render, to: serve, label: "注釈" }
+        emphasis: [deck]
+    notes: |
+      検証点: 環配置 + 矢印なしの連結線、エッジラベル、つながらないペアがあること。
+
   - id: diagram-radial
     role: content
     idea: "diagram radial.core: 中心と 5 つの周辺"

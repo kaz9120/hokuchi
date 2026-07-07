@@ -425,6 +425,16 @@ function measureDiagram(el, ctx, avail) {
     case 'structure.tree':
     case 'flow.branch':
     case 'flow.converge': return measureDag(el, ctx, avail);
+    case 'cluster.overlap': return measureOverlap(el, ctx, avail);
+    case 'cluster.enclosed': return measureEnclosed(el, ctx, avail);
+    case 'cluster.closure':
+    case 'cluster.linked': {
+      // 環の正多角形頂点に置く。closure は境界も線も描かず、配置だけで
+      // 群を知覚させる (ゲシュタルトの閉合)。linked は宣言された edges を
+      // 矢印なしの線で結ぶ。
+      const box = fitAspect(RING_ASPECT, avail.w, avail.h);
+      return { ...box, render: (b) => renderRingCluster(el, b, ctx) };
+    }
     default: {
       const hasDetail = el.nodes.some((nd) => nd.detail);
       const hasIcon = el.nodes.some((nd) => nd.icon);
@@ -602,6 +612,162 @@ function renderDag(el, box, ctx, { cols, cardW, cardH, colGap, rowGap }) {
 }
 
 /**
+ * cluster.overlap — translucent circles sharing an overlap (Venn)。
+ * 3 nodes take the classic triangle arrangement; any other count reads as a
+ * horizontal chain where each circle overlaps its neighbour.
+ */
+function measureOverlap(el, ctx, avail) {
+  const { scale } = ctx;
+  const n = el.nodes.length;
+  const DIST = 1.35; // 中心間距離 / 半径 — 重なり ~30%
+  let r, w, h;
+  if (n === 3) {
+    const side = (rr) => rr * DIST;
+    r = Math.min(210, (avail.h) / (2 + DIST * 0.866), (avail.w) / (2 + DIST));
+    w = 2 * r + side(r);
+    h = 2 * r + side(r) * 0.866;
+  } else {
+    r = Math.min(210, avail.h / 2, avail.w / (2 + (n - 1) * DIST));
+    w = 2 * r + (n - 1) * DIST * r;
+    h = 2 * r;
+  }
+  return {
+    w: round(w), h: round(h),
+    render: (box) => renderOverlap(el, box, ctx, { r, DIST }),
+  };
+}
+
+function renderOverlap(el, box, ctx, { r, DIST }) {
+  const { C, fonts, scale } = ctx;
+  const emph = new Set(el.emphasis || []);
+  const n = el.nodes.length;
+  const s = DIST * r;
+
+  let centers;
+  if (n === 3) {
+    const cx = box.w / 2;
+    centers = [
+      { x: cx, y: r },
+      { x: cx - s / 2, y: r + s * 0.866 },
+      { x: cx + s / 2, y: r + s * 0.866 },
+    ];
+  } else {
+    centers = el.nodes.map((_, i) => ({ x: r + i * s, y: box.h / 2 }));
+  }
+  // ラベルは重心から外向きに逃がすと、重なり領域と喧嘩しない
+  const gx = centers.reduce((t, c) => t + c.x, 0) / n;
+  const gy = centers.reduce((t, c) => t + c.y, 0) / n;
+
+  let circleSvg = '', labelSvg = '';
+  el.nodes.forEach((nd, i) => {
+    const c = centers[i];
+    const hot = emph.has(nd.id);
+    circleSvg += `<circle cx="${round(c.x)}" cy="${round(c.y)}" r="${round(r)}"
+      fill="${C.surface}" fill-opacity="0.55" stroke="${hot ? C.highlight : C.line}" stroke-width="${hot ? 3 : 2.5}"/>`;
+    let dx = c.x - gx, dy = c.y - gy;
+    const dl = Math.hypot(dx, dy) || 1;
+    const lx = c.x + (dx / dl) * r * 0.32;
+    const ly = c.y + (dy / dl) * r * 0.32;
+    const fitFs = (base, text) => {
+      const tw = estW(text, base);
+      const availW = r * 1.3;
+      return tw > availW ? Math.max(15, Math.floor(base * availW / tw)) : base;
+    };
+    const fsL = fitFs(hot ? scale.node + 2 : scale.node, nd.label);
+    labelSvg += `<text x="${round(lx)}" y="${round(ly)}" text-anchor="middle" fill="${hot ? C.textStrong : C.text}"
+      font-size="${fsL}" font-weight="${fonts.wDisplay}" font-family='${fonts.display}'>${esc(nd.label)}</text>`;
+    if (nd.detail) {
+      labelSvg += `<text x="${round(lx)}" y="${round(ly + scale.axis * 1.6)}" text-anchor="middle" fill="${C.muted}"
+        font-size="${fitFs(scale.axis, nd.detail)}" font-family='${fonts.body}'>${esc(nd.detail)}</text>`;
+    }
+  });
+  return svgLead(box, `<g>${circleSvg}</g><g>${labelSvg}</g>`);
+}
+
+/**
+ * cluster.enclosed — nodes[0] is the boundary (a labelled container), the
+ * rest sit inside as a row of member cards.
+ */
+function measureEnclosed(el, ctx, avail) {
+  const [group, ...members] = el.nodes;
+  const card = cardMetrics({ nodes: members }, ctx, { minW: 170, maxW: 280 });
+  const gap = 24, padX = 36, padB = 32;
+  const headH = group.detail ? 96 : 66;
+  const k = members.length;
+  let cardW = card.w;
+  let w = k * cardW + (k - 1) * gap + padX * 2;
+  if (w > avail.w) {
+    cardW = (avail.w - padX * 2 - (k - 1) * gap) / k;
+    w = avail.w;
+  }
+  const h = Math.min(avail.h, headH + card.h + padB);
+  return {
+    w: round(w), h: round(h),
+    render: (box) => renderEnclosed(el, box, ctx, { members, cardW, cardH: card.h, gap, padX, headH }),
+  };
+}
+
+function renderEnclosed(el, box, ctx, { members, cardW, cardH, gap, padX, headH }) {
+  const { C, fonts, scale } = ctx;
+  const [group] = el.nodes;
+  const emph = new Set(el.emphasis || []);
+  const hotGroup = emph.has(group.id);
+  const cx = box.w / 2;
+  let svg = `<rect x="0" y="0" width="${round(box.w)}" height="${round(box.h)}" rx="22"
+    fill="${C.surface}" fill-opacity="0.45" stroke="${hotGroup ? C.highlight : C.line}" stroke-width="${hotGroup ? 3 : 2}"/>`;
+  svg += `<text x="${round(cx)}" y="${round(headH - (group.detail ? scale.axis * 1.9 : 0) - 24)}" text-anchor="middle"
+    fill="${hotGroup ? C.textStrong : C.text}" font-size="${scale.node + 2}" font-weight="${fonts.wDisplay}"
+    font-family='${fonts.display}'>${esc(group.label)}</text>`;
+  if (group.detail) {
+    svg += `<text x="${round(cx)}" y="${round(headH - 26)}" text-anchor="middle" fill="${C.muted}"
+      font-size="${scale.axis}" font-family='${fonts.body}'>${esc(group.detail)}</text>`;
+  }
+  const rowW = members.length * cardW + (members.length - 1) * gap;
+  const x0 = (box.w - rowW) / 2;
+  members.forEach((nd, i) => {
+    svg += nodeCard(ctx, {
+      x: x0 + i * (cardW + gap), y: headH, w: cardW, h: cardH,
+      hot: emph.has(nd.id), label: nd.label, detail: nd.detail, icon: nd.icon, badge: null,
+    });
+  });
+  return svgLead(box, svg);
+}
+
+/** cluster.closure / linked — ring placement; linked draws undirected lines. */
+function renderRingCluster(el, box, ctx) {
+  const { C, fonts, scale } = ctx;
+  const card = cardMetrics(el, ctx);
+  const emph = new Set(el.emphasis || []);
+  const { pos } = ringPositions(el, box, card.w, card.h);
+  const byId = Object.fromEntries(pos.map((n) => [n.id, n]));
+  const rectFor = (p) => ({ x: p.x - card.w / 2, y: p.y - card.h / 2, w: card.w, h: card.h });
+
+  let lineSvg = '';
+  for (const e of el.edges || []) {
+    const a = byId[e.from], b = byId[e.to];
+    if (!a || !b) continue; // edge-ref lint reports this; render skips silently.
+    const p1 = exitRect(a, b, rectFor(a), 6);
+    const p2 = exitRect(b, a, rectFor(b), 6);
+    lineSvg += `<line x1="${round(p1.x)}" y1="${round(p1.y)}" x2="${round(p2.x)}" y2="${round(p2.y)}"
+      stroke="${C.muted}" stroke-width="2.5" opacity="0.7"/>`;
+    if (e.label) {
+      lineSvg += `<text x="${round((p1.x + p2.x) / 2)}" y="${round((p1.y + p2.y) / 2 - 8)}" text-anchor="middle"
+        fill="${C.muted}" font-size="${scale.axis}" font-family='${fonts.body}'>${esc(e.label)}</text>`;
+    }
+  }
+
+  let cardSvg = '';
+  for (const n of pos) {
+    const rc = rectFor(n);
+    cardSvg += nodeCard(ctx, {
+      x: rc.x, y: rc.y, w: rc.w, h: rc.h,
+      hot: emph.has(n.id), label: n.label, detail: n.detail, icon: n.icon, badge: null,
+    });
+  }
+  return svgLead(box, `<g>${lineSvg}</g><g>${cardSvg}</g>`);
+}
+
+/**
  * radial.core — nodes[0] is the hub, the rest sit at regular-polygon vertices
  * on the ring. Unlike cycle, the ring's eccentricity is not capped: the hub
  * occupies the middle, so satellites need the full horizontal reach to clear
@@ -655,31 +821,37 @@ function renderRadial(el, box, ctx, card) {
   return svgLead(box, `${arrowDefFor(ctx, C)}<g>${lineSvg}</g><g>${cardSvg}</g>`);
 }
 
-function renderCycle(el, box, ctx) {
-  const { C, fonts, scale } = ctx;
-  const fs = scale.node;
-  const emph = new Set(el.emphasis || []);
-  const center = { x: box.w / 2, y: box.h / 2 };
-
-  const arrowDef = arrowDefFor(ctx, C);
-
-  // cycle: cards on a near-circular ring, edges as arcs of the ring itself.
-  // Cards get no number badge — a loop has no first step; sequence reads from
-  // arrows. Nodes sit at regular-polygon vertices: the ring's eccentricity is
-  // capped (RING_ECC_MAX) so a 3-node cycle reads as an equilateral triangle,
-  // not a flattened one.
-  const { w: cardW, h: cardH } = cardMetrics(el, ctx);
+/**
+ * Cards at regular-polygon vertices on a near-circular ring (eccentricity
+ * capped by RING_ECC_MAX). Shared by cycle / closure / linked.
+ */
+function ringPositions(el, box, cardW, cardH) {
   const rx0 = box.w / 2 - cardW / 2 - 4;
   const ry0 = Math.max(40, box.h / 2 - cardH / 2 - 4);
   const r = Math.min(rx0, ry0);
   const ring = {
-    cx: center.x, cy: center.y,
+    cx: box.w / 2, cy: box.h / 2,
     rx: Math.min(rx0, r * RING_ECC_MAX), ry: Math.min(ry0, r * RING_ECC_MAX),
   };
   const pos = el.nodes.map((n, i) => {
     const ang = -Math.PI / 2 + (2 * Math.PI * i) / el.nodes.length;
     return { ...n, ang, x: ring.cx + ring.rx * Math.cos(ang), y: ring.cy + ring.ry * Math.sin(ang) };
   });
+  return { ring, pos };
+}
+
+function renderCycle(el, box, ctx) {
+  const { C, fonts, scale } = ctx;
+  const emph = new Set(el.emphasis || []);
+
+  const arrowDef = arrowDefFor(ctx, C);
+
+  // cycle: cards on a near-circular ring, edges as arcs of the ring itself.
+  // Cards get no number badge — a loop has no first step; sequence reads from
+  // arrows. Nodes sit at regular-polygon vertices so a 3-node cycle reads as
+  // an equilateral triangle, not a flattened one.
+  const { w: cardW, h: cardH } = cardMetrics(el, ctx);
+  const { ring, pos } = ringPositions(el, box, cardW, cardH);
   const byId = Object.fromEntries(pos.map((n) => [n.id, n]));
   const rects = Object.fromEntries(pos.map((n) => [
     n.id, { x: n.x - cardW / 2, y: n.y - cardH / 2, w: cardW, h: cardH },

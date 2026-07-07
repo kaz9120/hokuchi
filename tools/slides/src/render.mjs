@@ -533,10 +533,13 @@ function fitRows(rows, cardH, gap, availH, { minGap = 16, minCardH = 88 } = {}) 
 function measureDag(el, ctx, avail) {
   const cols = dagColumns(el);
   const card = cardMetrics(el, ctx, { minW: 190, maxW: 300 });
-  let colGap = 90, cardW = card.w;
+  let cardW = card.w;
   const nCols = cols.length;
-  if (nCols > 1 && nCols * cardW + (nCols - 1) * colGap > avail.w) {
-    colGap = Math.max(48, (avail.w - nCols * cardW) / (nCols - 1));
+  // カラム間はステージ幅へ向けて広げる (上限 240 — S 字カーブの見せ場と
+  // 呼吸の余白。2026-07-08 レビュー指摘)。入り切らなければ詰め、次にカード幅を縮める。
+  let colGap = 90;
+  if (nCols > 1) {
+    colGap = Math.max(48, Math.min(240, (avail.w - nCols * cardW) / (nCols - 1)));
     if (nCols * cardW + (nCols - 1) * colGap > avail.w) {
       cardW = (avail.w - (nCols - 1) * colGap) / nCols;
     }
@@ -577,9 +580,13 @@ function renderDag(el, box, ctx, { cols, cardW, cardH, colGap, rowGap }) {
     const x1 = a.x + cardW + 5, y1 = a.y + cardH / 2;
     const x2 = b.x - 7, y2 = b.y + (cardH * slot) / (inCount[e.to] + 1);
     if (x2 <= x1) continue; // 同列・逆行は描かない (form の誤用)
-    edgeSvg += `<line x1="${round(x1)}" y1="${round(y1)}" x2="${round(x2)}" y2="${round(y2)}" stroke="${C.muted}" stroke-width="3" marker-end="${markerRef(ctx)}"/>`;
+    // 高さが変わるエッジは S 字カーブ: 水平に出て水平に入る (制御点は中間 x)。
+    // 矢印はカードへ水平に刺さり、斜めの直線より視線の流れが柔らかい。
+    const mx = round((x1 + x2) / 2);
+    edgeSvg += `<path d="M ${round(x1)} ${round(y1)} C ${mx} ${round(y1)}, ${mx} ${round(y2)}, ${round(x2)} ${round(y2)}"
+      fill="none" stroke="${C.muted}" stroke-width="3" marker-end="${markerRef(ctx)}"/>`;
     if (e.label) {
-      edgeSvg += `<text x="${round((x1 + x2) / 2)}" y="${round((y1 + y2) / 2 - 10)}" text-anchor="middle" fill="${C.muted}" font-size="${scale.axis}" font-family='${fonts.body}'>${esc(e.label)}</text>`;
+      edgeSvg += `<text x="${mx}" y="${round((y1 + y2) / 2 - 10)}" text-anchor="middle" fill="${C.muted}" font-size="${scale.axis}" font-family='${fonts.body}'>${esc(e.label)}</text>`;
     }
   }
 

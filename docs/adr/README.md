@@ -60,4 +60,4 @@ hokuchi における意思決定の記録。決定に至る過程（選択肢・
 | [0010](0010-theme-brand-frame.md) | テーマにブランド枠 (brand) を追加し、組織テーマの運用を始める | 承認 | tools/slides |
 | [0011](0011-serve-annotation-loop.md) | serve モードと agentation でアノテーション・フィードバックループを作る | 承認 | tools/slides |
 | [0012](0012-single-file-spa-output.md) | render の出力を単一ファイル SPA (index.html) に統合する | 承認 | tools/slides |
-| [0013](0013-diagram-node-icons.md) | diagram ノードにアイコン語彙を追加する | 提案 | tools/slides |
+| [0013](0013-diagram-node-icons.md) | diagram ノードにアイコン語彙を追加する | 承認 | tools/slides |

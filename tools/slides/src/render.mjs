@@ -761,7 +761,13 @@ function renderRingCluster(el, box, ctx) {
     lineSvg += `<line x1="${round(p1.x)}" y1="${round(p1.y)}" x2="${round(p2.x)}" y2="${round(p2.y)}"
       stroke="${C.muted}" stroke-width="2.5" opacity="0.7"/>`;
     if (e.label) {
-      lineSvg += `<text x="${round((p1.x + p2.x) / 2)}" y="${round((p1.y + p2.y) / 2 - 8)}" text-anchor="middle"
+      // ラベルは線上ではなく、線の法線方向・環の外側へ逃がす (レビュー指摘 2026-07-08)
+      const mx = (p1.x + p2.x) / 2, my = (p1.y + p2.y) / 2;
+      const dx = p2.x - p1.x, dy = p2.y - p1.y;
+      const dl = Math.hypot(dx, dy) || 1;
+      let nx = -dy / dl, ny = dx / dl;
+      if (nx * (mx - box.w / 2) + ny * (my - box.h / 2) < 0) { nx = -nx; ny = -ny; }
+      lineSvg += `<text x="${round(mx + nx * 18)}" y="${round(my + ny * 18 + 6)}" text-anchor="middle"
         fill="${C.muted}" font-size="${scale.axis}" font-family='${fonts.body}'>${esc(e.label)}</text>`;
     }
   }

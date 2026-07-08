@@ -1130,8 +1130,11 @@ function chartStage(slide, ctx) {
  */
 function measureList(el, ctx, avail) {
   const n = el.items.length;
+  // headline と左端が揃いすぎると本文が飛び出して見えるため、
+  // リスト全体を見出しからわずかに下げる (レビュー指摘 2026-07-08)
+  const indent = 28;
   const estH = (fs) => el.items.reduce((t, it) => {
-    const perLine = Math.max(4, Math.floor((avail.w - fs * 2.2) / fs));
+    const perLine = Math.max(4, Math.floor((avail.w - indent - fs * 2.2) / fs));
     return t + Math.max(1, Math.ceil(cpLen(String(it)) / perLine)) * fs * 1.4;
   }, 0);
   const gapFor = (fs) => fs * 1.05;
@@ -1144,7 +1147,7 @@ function measureList(el, ctx, avail) {
     render: () => {
       const items = el.items.map((it) =>
         `<li><span class="dot"></span><span class="jp">${inlineText(it)}</span></li>`).join('');
-      return `<ul class="bullets" style="font-size:${fs}px;gap:${round(gap)}px">${items}</ul>`;
+      return `<ul class="bullets" style="font-size:${fs}px;gap:${round(gap)}px;padding-left:${indent}px">${items}</ul>`;
     },
   };
 }

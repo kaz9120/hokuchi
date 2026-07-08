@@ -13,7 +13,8 @@ Phase 5 で「伝えたいこと」を要素と form に翻訳するための判
 | 他者の言葉の権威で語らせる | quote | quote-stage |
 | 要素間の関係・構造・流れ | diagram | diagram-stage |
 | 数値の意味 (比較・変化・分布) | chart | chart-stage |
-| 情景・感情・被写体・世界観 | image | grid-direct (full-bleed) |
+| スクリーンショット・図版を見出し付きで紹介 | image | image-stage (箱は実画像の縦横比から導出。ADR-0015) |
+| 情景・感情・被写体・世界観 (フルブリード) | image | grid-direct (full-bleed) |
 | 上のどれでもなく、並列な短い項目 | bullets | list-stage |
 
 箇条書きは最後の手段。「関係があるなら diagram、数値なら chart、1 点を刺すなら statement」で置き換えられないかを先に考える。並列性のない項目 (時系列・因果) を bullets にすると流れが消える。`bullets.items` は 5 項目まで (`bullet-count` lint)、ネストは書けない (p.171)。
@@ -54,6 +55,15 @@ subtype カタログは網羅ではない (p.73)。「これらのサンプル�
 - `edges` は `{ from, to, label? }`。糖衣で `"a -> b"` とも書ける (糖衣では label 不可)
 - 参照するノード id は必ず `nodes` に存在させる (無いと `edge-ref` エラー)
 - 複雑な図は `reveal: sequential` で段階的に開示する (p.78)
+
+cluster と radial の使い分けの勘所。
+
+- `cluster.overlap` の主役はしばしば交差領域 (「A でも B でもある」)。そのときは `shared: { label: "...", emphasis: true }` で全円の共通部分にラベルと強調を宣言する (ADR-0015)
+- nodes[0] が特別な意味を持つ form が 2 つある。`radial.core` は nodes[0] が中心 (ハブ)、`cluster.enclosed` は nodes[0] が枠 (ラベル付きの境界) になり、残りが中身
+- `cluster.closure` は「順序も階層も関係もない、ただの仲間」を配置だけで見せる。位置に意味を持たせたい (象限で分類したい) なら `structure.matrix`。円環の知覚が立つのは 5 ノード以上で、4 以下だと matrix と紛らわしい
+- `cluster.linked` は「関係はあるが流れではない」対称な関連 (線に矢印が付かない)。方向・因果・時系列があるなら flow 系を使う
+
+専用描画を持つ form は cycle / linear / branch / converge / matrix / tree / layer / overlap / closure / enclosed / linked / radial.core。それ以外 (`flow.network`、`radial.semi` / `coreless`、`pictogram.*`) は現状 step-row (横並びカード) に落ちるので、頼るなら見た目を必ず確認する。
 
 ---
 

@@ -93,12 +93,13 @@ theme.yaml   # schema/theme.schema.json で検証する
 
 ### 2.3 type
 
-書体スロットは `display` と `body` の 2 つだけとします。3 書体目を書けないことをスキーマが保証します (ADR-0002、p.163)。
+声の書体スロットは `display` と `body` の 2 つだけとします。3 つ目の声を書けないことをスキーマが保証します (ADR-0002、p.163)。`mono` は声ではなく、コード引用のための素材書体です (アイコンセットと同じ実装層。ADR-0016)。
 
 | スロット | フィールド | 意味 |
 |---------|-----------|------|
 | `display` | `family`, `weight` | 見出し系 |
 | `body` | `family`, `weight`, `min_size_pt` | 本文系。`min_size_pt` は本文の下限サイズ (p.172-173) |
+| `mono` | `family`, `weight` | コード引用の素材書体 (任意、ADR-0016)。未指定はレンダラ既定の mono スタックに落ちる |
 
 `type.webfonts` (任意) は `<link>` で読み込む Web フォント CSS の URL 配列です (ADR-0010)。オフライン描画時はフォールバックフォントに落ちます。
 
@@ -116,6 +117,8 @@ theme.yaml   # schema/theme.schema.json で検証する
 | `attribution` | 24 | 引用の出典 |
 | `node` | 24 | ダイアグラムのノードラベル |
 | `axis` | 20 | チャートの軸ラベル |
+| `code` | 22 | code 要素の本文 (ADR-0016) |
+| `stat` | 160 | stat 要素の数字 (ADR-0016) |
 
 ### 2.4 iconography と space
 
@@ -289,12 +292,30 @@ opener / closer はレターボックスを外し、ロゴを許可します。�
 | | `bio` | bullets | `node` 相当 | 任意 |
 | `image-stage` | `headline` | statement | `heading` | 任意 |
 | | `image` | image | — (実画像の縦横比で描画) | 必須 |
+| `code-stage` | `headline` | statement | `heading` | 任意 |
+| | `code` | code | `code` | 必須 |
+| `post-stage` | `headline` | statement | `heading` | 任意 |
+| | `post` | post | `quote` ×0.7 (本文) / `attribution` (メタ) | 必須 |
+| `link-stage` | `headline` | statement | `heading` | 任意 |
+| | `link` | link | `bullet` (タイトル) / `attribution` (URL) | 必須 |
+| `stat-stage` | `headline` | statement | `heading` | 任意 |
+| | `stat` | stat | `stat` (数字) / `subtitle` (ラベル) | 必須 |
+| `table-stage` | `headline` | statement | `heading` | 任意 |
+| | `table` | table | `node` (セル) | 必須 |
+| `versus-stage` | `headline` | statement | `heading` | 任意 |
+| | `versus` | versus | `bullet` ×0.8 (項目) / `heading` (側ラベル) | 必須 |
+| `agenda-stage` | `headline` | statement | `heading` | 任意 |
+| | `agenda` | agenda | `bullet` (章題) | 必須 |
+| `video-stage` | `headline` | statement | `heading` | 任意 |
+| | `video` | video | — (16:9 の箱) | 必須 |
 
 `profile-stage` は自己紹介の定型です (毎回の登壇の 2 枚目に置く運用)。`bio` の各項目は `ラベル ── 本文` の形で書くと、ラベルが highlight 色の見出しとして描画されます。自己紹介は聴衆が流し読みする参照情報であり読み上げ原稿ではないため、slideument lint の対象外とします (§9)。`name` / `affiliation` / `handle` の statement は従属スロットで、one-idea の主役級に数えません。
 
 `image-stage` はスクリーンショットや図版を見出し付きで見せる定型です (ADR-0015)。画像の箱は実画像の縦横比から導出され、フルブリードにしたい場合 (情景写真など) は grid-direct を使います。
 
-主役スロット (diagram-stage の `diagram`、chart-stage の `chart`、list-stage の `list`、statement-stage の `statement`、quote-stage の `quote`、image-stage の `image`) の要素は舞台に収まるようにレンダラが配置し、収まらなければ縮小して shrink-report lint が報告します (ADR-0008-2)。具体的な比率・余白の配分はレンダラ内部の構図ポリシーです (§8、ADR-0014)。
+`code-stage` 以下の 8 パターンは ADR-0016 の追加です。いずれも headline (任意) + 主役 (必須) の形で、主役の measure が申告した箱を compose が他パターンと同じ余白・光学中心に置きます (ADR-0014)。
+
+主役スロット (各パターンの表で「必須」となっている主役 — diagram-stage の `diagram`、chart-stage の `chart` など) の要素は舞台に収まるようにレンダラが配置し、収まらなければ縮小して shrink-report lint が報告します (ADR-0008-2)。具体的な比率・余白の配分はレンダラ内部の構図ポリシーです (§8、ADR-0014)。
 
 ```yaml
 - id: how-it-works
@@ -356,7 +377,9 @@ opener / closer はレターボックスを外し、ロゴを許可します。�
 
 ## 6. Element 仕様
 
-要素は 7 種です。要素は常に `slot` (名前付きパターン内) または `id` (grid-direct 参照用) を、どちらか一方だけ持ちます (ADR-0007、NOTES §2.7)。両方を持ってはならない。
+要素は 15 種です。要素は常に `slot` (名前付きパターン内) または `id` (grid-direct 参照用) を、どちらか一方だけ持ちます (ADR-0007、NOTES §2.7)。両方を持ってはならない。
+
+§6.1〜6.6 は slide:ology の語彙 (言葉・関係・データ) を写した初版からの要素、§6.7〜6.14 は技術登壇の一次資料と紹介のための追加要素 (ADR-0016)、§6.15 の raw が最後の脱出口です。
 
 ### 6.1 statement — 1 文を大きく見せる (第 7 章)
 
@@ -432,11 +455,13 @@ opener / closer はレターボックスを外し、ロゴを許可します。�
 
 | family | subtype カタログ | 表すもの |
 |--------|-----------------|---------|
-| `flow` | linear / cycle / branch / converge / network | プロセス・手順 (p.66-67) |
+| `flow` | linear / cycle / branch / converge / network / timeline | プロセス・手順 (p.66-67)。timeline は日付つきの経緯 (ADR-0016) |
 | `structure` | matrix / tree / layer | 階層・並置 (p.68-69) |
 | `cluster` | overlap / closure / enclosed / linked | まとまり・共有 (p.70-71) |
 | `radial` | semi / core / coreless | 中心と広がり (p.72-73) |
 | `pictogram` | process / cutaway / route / location / influence | 具体物の図解 (p.74-76) |
+
+`flow.timeline` は日付を持つ経緯・ロードマップの型です (ADR-0016)。node の `label` に出来事、`detail` に日付を書きます。ノードは等間隔に置き、日付には比例させません (スライドは年表ではなく、読める間隔が優先)。
 
 `edges` の正準形は `{ from, to, label? }` です。`"a -> b"` の文字列は読み込み時に正準形へ展開される糖衣とします (ADR-0008-7)。存在しないノード id への参照は edge-ref lint がエラーとして検出します (NOTES §2.9)。`emphasis` はノード id の配列です (statement の強調語とは別物、ADR-0007)。
 
@@ -468,7 +493,7 @@ opener / closer はレターボックスを外し、ロゴを許可します。�
 
 | フィールド | 型 | 必須 | 意味 |
 |-----------|----|----|------|
-| `intent` | `comparison` \| `trend` \| `distribution` | 必須 | 何を言いたいか (p.77) |
+| `intent` | `comparison` \| `trend` \| `distribution` \| `composition` | 必須 | 何を言いたいか (p.77)。composition は ADR-0016 |
 | `message` | 文字列 | 必須 | データの意味。message のない chart は書けない (C5、p.84) |
 | `data` | 正準形または source 糖衣 | 必須 | データ本体 |
 | `annotations` | 注釈オブジェクトの配列 | 任意 | 第 3 レイヤー。意味を語る |
@@ -478,6 +503,8 @@ opener / closer はレターボックスを外し、ロゴを許可します。�
 `data` の正準形は `{ x: [...], series: [{ label, values }] }` です。外部ソース `{ source: file.csv, x: 列名, y: 列名 }` は、描画前に正準形へ解決される入力糖衣とします (ADR-0008-3、NOTES §2.5)。
 
 `annotations` の各要素は `{ at | at_index, annotate, style }` です。`at` は x 配列の値との完全一致で解決します。表記ゆれで黙って壊れることを防ぐため、解決できない `at` は annotation-anchor lint がエラーとして検出します (ADR-0008-4)。位置で指したい場合は `at_index` (0 起点の整数) を使います。`at` と `at_index` はどちらか一方だけ持ちます。`style` は `highlight` とします (色値リテラルは書けません)。
+
+`composition` は全体に占める割合を言います (p.91、ADR-0016)。単一系列は円 (ドーナツ) に、複数系列は 100% 積み上げ棒に導出されます。円は 12 時起点・時計回り・8 項目以内で (§8.4)、逸脱は pie-rules lint が警告します。
 
 背景レイヤー (目盛・グリッド線) を書き手は触りません。3D・グラデーション・枠線などのチャートジャンク (p.94) は、そもそも指定する場所がありません (ADR-0002)。
 
@@ -510,7 +537,162 @@ opener / closer はレターボックスを外し、ロゴを許可します。�
   attribution: "ナンシー・デュアルテ『slide:ology』"
 ```
 
-### 6.7 raw — 脱出口
+### 6.7 code — コードを一次資料として見せる (ADR-0016)
+
+技術登壇のコードは読み上げる文章ではなく、参照される素材です。画像に焼くとテーマ追従・再レンダリング・handout での可読性が失われるため、テキストのまま宣言します。
+
+| フィールド | 型 | 必須 | 意味 |
+|-----------|----|----|------|
+| `code` | 文字列 | どちらか一方 | コード本体 (インライン) |
+| `src` | 文字列 | どちらか一方 | コードを読み込むファイルへの相対パス |
+| `lang` | 文字列 | 任意 (既定 `plaintext`) | ハイライトの言語。`console` (端末セッション) と `diff` (差分) を含む — 端末や diff を別要素にはしない (違いは色付けだけ) |
+| `filename` | 文字列 | 任意 | 面の上に添えるファイル名ラベル |
+| `emphasis` | (整数 \| `"n-m"`) の配列 | 任意 | 強調する行。1 起点 (エディタの行番号と揃える)。ハイライト帯で示す |
+
+行番号は描画しません (読み手に不要なジャンク)。シンタックスハイライトの配色はパレットから導出するレンダラ専有の知識で、テーマ・デッキに配色語彙はありません (ADR-0014)。17 行以上または 81 桁以上は code-budget lint が警告します。code のテキストは slideument の可視テキストに数えません (参照素材。profile-stage の免除と同じ理由)。
+
+```yaml
+- kind: code
+  slot: code
+  lang: javascript
+  filename: render.mjs
+  code: |
+    export function measureCode(el, ctx, avail) {
+      const lines = el.code.split('\n');
+      return { w: avail.w, h: lines.length * LH, render };
+    }
+  emphasis: ["2-3"]
+```
+
+### 6.8 post — SNS ポストの引用 (ADR-0016)
+
+X などのポストを、スクリーンショットではなく構造で貼ります。quote が「言葉の権威」で語らせるのに対し、post は「その発言が実際にあった」という事実を、発言者・日付ごと見せます。
+
+| フィールド | 型 | 必須 | 意味 |
+|-----------|----|----|------|
+| `text` | 文字列 | 必須 | ポスト本文 |
+| `author` | 文字列 | 必須 | 発言者の表示名 |
+| `handle` | 文字列 | 任意 | `@` 付きのアカウント名 |
+| `date` | 文字列 | 任意 | 投稿日 |
+| `avatar` | 文字列 | 任意 | アイコン画像のローカルパス |
+| `source` | 文字列 | 任意 | ポストの URL。スライドには描画せず handout に載る |
+
+```yaml
+- kind: post
+  slot: post
+  text: "38 時間回した探索、ようやく収束した。原因は評価関数ではなく置換表だった"
+  author: "Kazumasa Yamamoto"
+  handle: "@kyamamoto"
+  date: "2015-04-12"
+```
+
+### 6.9 link — 記事・資料の紹介 (ADR-0016)
+
+Zenn や note の記事、公開資料を「OGP カード + QR」の定型で紹介します。QR コードは `url` からレンダラが常に生成します。QR を貼りたいから link を書くのであり、書き手に QR の有無を選ばせません (導出の思想)。
+
+| フィールド | 型 | 必須 | 意味 |
+|-----------|----|----|------|
+| `url` | 文字列 | 必須 | 紹介先の URL。QR の導出元 |
+| `title` | 文字列 | 任意 | 記事タイトル |
+| `description` | 文字列 | 任意 | 1 行の紹介文 |
+| `image` | 文字列 | 任意 | OGP 画像のローカルパス |
+
+```yaml
+- kind: link
+  slot: link
+  url: "https://zenn.dev/kyamamoto/articles/deck-as-code"
+  title: "スライドを意図宣言型 YAML で書く"
+  image: assets/ogp-deck-as-code.png
+```
+
+### 6.10 stat — 大きな数字 1 つ (ADR-0016)
+
+数字 1 つで刺したいとき、1 点のために chart を作りません (軸もグリッドもジャンクになる)。
+
+| フィールド | 型 | 必須 | 意味 |
+|-----------|----|----|------|
+| `value` | 文字列 | 必須 | 数字。単位込みで書く (`"42%"`、`"3.2 倍"`) |
+| `label` | 文字列 | 任意 | 何の数字か |
+| `context` | 文字列 | 任意 | 比較や出典の 1 行。muted で描画される |
+
+```yaml
+- kind: stat
+  slot: stat
+  value: "38 時間"
+  label: "最長の探索検証"
+  context: "2015 年 4 月、世界コンピュータ将棋選手権の 3 週間前"
+```
+
+### 6.11 table — 非数値の比較表 (ADR-0016)
+
+セルに言葉が入る表です。数値の意味を言うなら chart、2 軸の分類なら `structure.matrix`、それ以外の一覧比較 (機能 × 製品の ✓ 表など) が table に残ります。
+
+| フィールド | 型 | 必須 | 意味 |
+|-----------|----|----|------|
+| `columns` | 文字列の配列 (2〜6) | 必須 | ヘッダ行。列数上限はスキーマが保証する |
+| `rows` | 文字列の配列の配列 | 必須 | データ行。各行は columns と同数のセル |
+| `emphasis` | `{ rows?: 整数の配列, cols?: 整数の配列 }` | 任意 | 強調する行・列 (1 起点) |
+
+罫線・縞模様・セル背景は書けません (表のジャンク)。データ行が 8 行以上になると table-size lint が警告します。セルのテキストは slideument に数えます。
+
+```yaml
+- kind: table
+  slot: table
+  columns: ["", "画像で貼る", "構造で書く"]
+  rows:
+    - ["テーマ追従", "—", "✓"]
+    - ["再レンダリング", "—", "✓"]
+    - ["handout の可読性", "—", "✓"]
+  emphasis: { cols: [3] }
+```
+
+### 6.12 versus — 対比 (ADR-0016)
+
+従来 vs 提案、Before/After のような二項対立を左右のパネルで見せます。分類 (matrix) でも表 (table) でもなく、対立そのものが主役のときに使います。
+
+| フィールド | 型 | 必須 | 意味 |
+|-----------|----|----|------|
+| `sides` | side の配列 (ちょうど 2 つ) | 必須 | 左・右のパネル |
+
+side は `{ label (必須), items (必須、1〜4 項目), emphasis? (bool) }` です。`emphasis: true` の側が推し (結論の側) として強調されます。
+
+```yaml
+- kind: versus
+  slot: versus
+  sides:
+    - label: "画像を作って貼る"
+      items: ["見た目は自由", "テーマから切断される", "直すたび作り直し"]
+    - label: "構造で宣言する"
+      items: ["語彙の範囲に縛られる", "テーマに追従する", "deck.yaml だけ直せばよい"]
+      emphasis: true
+```
+
+### 6.13 agenda — 目次 (ADR-0016)
+
+フィールドを持ちません。`role: transition` のスライドの statement を章題として集め、この agenda より前にある最後の transition の章を現在地として強調します。前に transition が無ければ強調なし (冒頭の純粋な目次)。章題を手書きさせないのは、transition との二重管理が必ずズレるからです。transition が 1 枚も無いデッキの agenda は agenda-source lint がエラーにします。
+
+```yaml
+- kind: agenda
+  slot: agenda
+```
+
+### 6.14 video — 動画 (ADR-0016)
+
+| フィールド | 型 | 必須 | 意味 |
+|-----------|----|----|------|
+| `src` | 文字列 | 必須 | 動画ファイルのローカルパス |
+| `poster` | 文字列 | 任意 | ポスターフレームの静止画パス |
+
+静的出力 (render / shot / handout) では、poster (無ければ surface の面 + ファイル名) に再生グリフを重ねたプレースホルダを描画します。実再生は SPA プレゼンテーションモードの実装と同時に対応します (§11 未決事項)。
+
+```yaml
+- kind: video
+  slot: video
+  src: assets/demo-annotation-loop.mp4
+  poster: assets/demo-poster.png
+```
+
+### 6.15 raw — 脱出口
 
 | フィールド | 型 | 必須 | 意味 |
 |-----------|----|----|------|
@@ -601,8 +783,8 @@ linter はエラーで止めず警告を中心とします。ただし逸脱は�
 
 | id | 重大度 | 検出条件 | 出典 |
 |----|-------|---------|------|
-| `slideument` | warn (100字) / error (150字) | 可視テキスト合計が閾値超過 (英語 50/75 語相当。換算は要検証)。profile-stage は参照情報のため対象外 (§5.1) | p.26, p.164 |
-| `one-idea` | warn | 主役級要素 (diagram/chart/statement) が 1 枚に 2 つ以上。従属スロット (headline / subtitle / attribution) に入った statement は主役級に数えない | p.109, p.256 |
+| `slideument` | warn (100字) / error (150字) | 可視テキスト合計が閾値超過 (英語 50/75 語相当。換算は要検証)。profile-stage と code のテキストは参照素材のため対象外 (§5.1、§6.7)。post / link / stat / table / versus のテキストは数える | p.26, p.164 |
+| `one-idea` | warn | 主役級要素 (statement のほか diagram / chart / code / post / link / stat / table / versus / agenda / video) が 1 枚に 2 つ以上。従属スロット (headline / subtitle / attribution) に入った statement は主役級に数えない | p.109, p.256 |
 | `bullet-count` | warn | `bullets.items` が 5 項目超 | p.171 |
 | `pie-rules` | warn | 円グラフが 9 項目以上、または合計が 100% でない | p.91 |
 | `axis-lock` | warn | 連続する chart 間で軸位置が揃わない (共有 `scale` 未指定) | p.90 |
@@ -616,6 +798,9 @@ linter はエラーで止めず警告を中心とします。ただし逸脱は�
 | `edge-ref` | error | diagram の edge が存在しないノード id を参照 | ADR-0008-7 |
 | `icon-exists` | error | `icon` の名前がテーマの icon_set のカタログに存在しない | ADR-0013 |
 | `shrink-report` | info | 主役要素が舞台に収まらず縮小された | ADR-0008-2 |
+| `code-budget` | warn | code が 17 行以上、または 81 桁以上の行を含む | ADR-0016 |
+| `table-size` | warn | table のデータ行が 8 行以上 (列上限 6 はスキーマが保証) | ADR-0016 |
+| `agenda-source` | error | `role: transition` が 1 枚も無いデッキに agenda 要素がある | ADR-0016 |
 
 lint レポートは捨てられる副産物ではなく、逸脱の履歴を残す一級の成果物とします (ADR-0002)。
 
@@ -642,9 +827,12 @@ design.md §8 から次を引き継ぎます。
 
 初版実装 (0.1.0) で見つかった仕様の穴を追加で引き継ぎます。
 
-4. 円グラフを宣言する経路が無い。chart の `intent` は comparison / trend / distribution のみで、書き手が円グラフを選ぶフィールドが存在しない。§8.4 と pie-rules lint は宣言経路ができるまで実質 no-op
-5. 「ロゴ要素」が未定義。logo-bumper lint (p.137) は、ロゴを表す要素種別かフィールドが定義されるまで実質 no-op
-6. shrink-report の真の判定はレンダラの実縮小に紐づく。lint の静的推定は list-stage の高さ超過など追跡可能なケースに限る
+4. 「ロゴ要素」が未定義。logo-bumper lint (p.137) は、ロゴを表す要素種別かフィールドが定義されるまで実質 no-op
+5. shrink-report の真の判定はレンダラの実縮小に紐づく。lint の静的推定は list-stage の高さ超過など追跡可能なケースに限る
+6. video の実再生 (SPA プレゼンテーションモード) は ADR-0012 の進化と同時に設計する。それまで video はプレースホルダ描画のみ (ADR-0016)
+7. code の段階的ハイライト (emphasis を build で進める walk-through) は、実デッキで必要になった時点で reveal 語彙を設計する (ADR-0016)
+
+なお初版の未決事項 4 (円グラフの宣言経路) は、chart intent `composition` の追加で解消した (ADR-0016)。
 
 再生成と手編集のマージ戦略は運用後に設計します。安定キーとしてスライド `id` を先行して必須化済みです (ADR-0004)。
 
@@ -658,3 +846,5 @@ design.md §8 から次を引き継ぎます。
 - `0.2.0` (theme のみ) — ADR-0010。`theme.brand` (logo / footer / backgrounds) と `theme.type.webfonts` を任意フィールドとして追加。後方互換 (0.1.0 のテーマはそのまま妥当)。deck スキーマは 0.1.0 のまま
 - `0.3.0` (theme のみ) — ADR-0014。`grid.stage_margin` を撤去。レターボックスを含む余白配分はレンダラ内部の構図ポリシーに移った。破壊的変更: stage_margin を書いた 0.2.0 以前のテーマは妥当でなくなる (該当行を削除するだけで移行完了)。deck スキーマは 0.1.0 のまま
 - `0.2.0` (deck のみ) — ADR-0015。`layout` に `image-stage` (headline 任意 + image 必須) を追加。`diagram` に `shared: { label?, emphasis? }` (cluster.overlap の交差領域) を追加。後方互換 (0.1.0 のデッキはそのまま妥当)
+- `0.3.0` (deck) — ADR-0016。要素 8 種 (code / post / link / stat / table / versus / agenda / video) と対応する 8 つの `*-stage`、chart intent `composition` を追加。lint に code-budget / table-size / agenda-source を追加し pie-rules が実働化。後方互換 (0.2.0 のデッキはそのまま妥当)
+- `0.4.0` (theme) — ADR-0016。`type.mono` (任意) と scale トークン `code` / `stat` を追加。後方互換 (0.3.0 のテーマはそのまま妥当)

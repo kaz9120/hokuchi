@@ -63,3 +63,4 @@ hokuchi における意思決定の記録。決定に至る過程（選択肢・
 | [0013](0013-diagram-node-icons.md) | diagram ノードにアイコン語彙を追加する | 承認 | tools/slides |
 | [0014](0014-renderer-owned-composition.md) | 構図の知識はレンダラが専有し、レイアウトを measure/compose の 2 パスに再設計する | 承認 | tools/slides |
 | [0015](0015-image-stage-and-overlap-shared.md) | deck スキーマ 0.2.0 — image-stage パターンと overlap の交差語彙 (shared) を追加する | 承認 | tools/slides |
+| [0016](0016-tech-material-vocabulary.md) | deck スキーマ 0.3.0 / theme 0.4.0 — 技術素材・紹介・数値の語彙を追加する | 承認 | tools/slides |

@@ -1,6 +1,6 @@
 # 要素と form の選択ガイド
 
-Phase 5 で「伝えたいこと」を要素と form に翻訳するための判断表。要素は 7 種 (statement / bullets / image / diagram / chart / quote / raw)。slide:ology 第 3〜4 章と SPEC 第 6 章に対応する。
+Phase 5 で「伝えたいこと」を要素と form に翻訳するための判断表。要素は 15 種 (statement / bullets / image / diagram / chart / quote / code / post / link / stat / table / versus / agenda / video / raw)。slide:ology 第 3〜4 章、SPEC 第 6 章、ADR-0016 に対応する。
 
 ## 0. まず何を選ぶか — 判断の入口
 
@@ -9,17 +9,27 @@ Phase 5 で「伝えたいこと」を要素と form に翻訳するための判
 | 伝えたいこと | 要素 | レイアウトパターン |
 |------------|------|------------------|
 | 1 文で刺す主張・キャッチコピー | statement | statement-stage (opener/closer/content), title-stage (タイトル) |
+| 数字 1 つで刺す | stat | stat-stage |
 | 自己紹介 (顔写真+名前+略歴) | image + statement + bullets の定型 | profile-stage (slideument 対象外) |
 | 他者の言葉の権威で語らせる | quote | quote-stage |
+| SNS ポストの発言を事実として見せる | post | post-stage (スクショ貼付の代替) |
+| 記事・資料を URL つきで紹介する | link | link-stage (QR は url から自動生成) |
+| コード・端末セッション・diff | code | code-stage (画像化しない) |
 | 要素間の関係・構造・流れ | diagram | diagram-stage |
-| 数値の意味 (比較・変化・分布) | chart | chart-stage |
+| 数値の意味 (比較・変化・分布・割合) | chart | chart-stage |
+| 二項対立 (従来 vs 提案、Before/After) | versus | versus-stage |
+| セルに言葉が入る一覧比較 (✓ 表など) | table | table-stage |
+| 目次・いまどの章か | agenda | agenda-stage (transition から導出。手書きしない) |
+| 動画・デモ映像 | video | video-stage (静的出力はプレースホルダ) |
 | スクリーンショット・図版を見出し付きで紹介 | image | image-stage (箱は実画像の縦横比から導出。ADR-0015) |
 | 情景・感情・被写体・世界観 (フルブリード) | image | grid-direct (full-bleed) |
 | 上のどれでもなく、並列な短い項目 | bullets | list-stage |
 
-箇条書きは最後の手段。「関係があるなら diagram、数値なら chart、1 点を刺すなら statement」で置き換えられないかを先に考える。並列性のない項目 (時系列・因果) を bullets にすると流れが消える。`bullets.items` は 5 項目まで (`bullet-count` lint)、ネストは書けない (p.171)。
+箇条書きは最後の手段。「関係があるなら diagram、数値なら chart、対立なら versus、1 点を刺すなら statement か stat」で置き換えられないかを先に考える。並列性のない項目 (時系列・因果) を bullets にすると流れが消える。`bullets.items` は 5 項目まで (`bullet-count` lint)、ネストは書けない (p.171)。
 
-主役級の要素 (diagram / chart / statement) は 1 枚に 1 つ。2 つ以上あると `one-idea` lint が warn を出す。2 つ要るならスライドを分ける。
+同様に、画像も最後の手段に近い。コードのスクショは code、ポストのスクショは post、OGP のスクショは link で書けないかを先に疑う。画像に焼いた瞬間、テーマ追従・再レンダリング・handout の可読性が失われる (ADR-0016)。
+
+主役級の要素 (diagram / chart / statement のほか code / post / link / stat / table / versus / agenda / video) は 1 枚に 1 つ。2 つ以上あると `one-idea` lint が warn を出す。2 つ要るならスライドを分ける。
 
 ---
 
@@ -45,6 +55,7 @@ Phase 5 で「伝えたいこと」を要素と form に翻訳するための判
 | 起点から一方向に広がる | `radial.semi` | 根の広がり、波及 |
 | 中心 (親) と周辺 (子) | `radial.core` | ハブ&スポーク、太陽と惑星 |
 | 中心なしに引き合う集まり | `radial.coreless` | 対等な相互引力 |
+| 日付つきの経緯・ロードマップ | `flow.timeline` | 沿革、プロジェクトの歩み (label = 出来事、detail = 日付。等間隔配置) |
 | 具体物の手順・内部・経路・位置・影響 | `pictogram.process` / `.cutaway` / `.route` / `.location` / `.influence` | 組立手順、断面図、道案内、地図ピン、因果 |
 
 subtype カタログは網羅ではない (p.73)。「これらのサンプルはけっして網羅的ではない」ので、近い family を選び、subtype はカタログから最も近いものを当てる。
@@ -63,7 +74,7 @@ cluster と radial の使い分けの勘所。
 - `cluster.closure` は「順序も階層も関係もない、ただの仲間」を配置だけで見せる。位置に意味を持たせたい (象限で分類したい) なら `structure.matrix`。円環の知覚が立つのは 5 ノード以上で、4 以下だと matrix と紛らわしい
 - `cluster.linked` は「関係はあるが流れではない」対称な関連 (線に矢印が付かない)。方向・因果・時系列があるなら flow 系を使う
 
-専用描画を持つ form は cycle / linear / branch / converge / matrix / tree / layer / overlap / closure / enclosed / linked / radial.core。それ以外 (`flow.network`、`radial.semi` / `coreless`、`pictogram.*`) は現状 step-row (横並びカード) に落ちるので、頼るなら見た目を必ず確認する。
+専用描画を持つ form は cycle / linear / branch / converge / timeline / matrix / tree / layer / overlap / closure / enclosed / linked / radial.core。それ以外 (`flow.network`、`radial.semi` / `coreless`、`pictogram.*`) は現状 step-row (横並びカード) に落ちるので、頼るなら見た目を必ず確認する。
 
 ---
 
@@ -73,9 +84,10 @@ cluster と radial の使い分けの勘所。
 
 | intent | 言いたいこと | 典型 | 例 |
 |--------|------------|------|----|
-| `comparison` | 2 組以上を並べて違いを見せる | 棒・円 | 部門別売上、選択肢 A/B/C |
+| `comparison` | 2 組以上を並べて違いを見せる | 棒 | 部門別売上、選択肢 A/B/C |
 | `trend` | 時間による変化・推移 | 折れ線・面 | 月次の売上推移、成長曲線 |
 | `distribution` | ばらつきの中のパターン | 散布・ヒストグラム | 相関、正規分布 |
+| `composition` | 全体に占める割合 | 円 (単一系列)・100% 積み上げ棒 (複数系列) | シェア、時間配分 (ADR-0016) |
 
 - `message` にはデータそのものではなく「データの意味」を書く (p.84)。例: 「3 月の研修開始と売上の底が一致する」
 - 意味を語る第 3 レイヤーは `annotations: [{ at, annotate, style: highlight }]`。`at` は x 配列の値と完全一致 (ずれると `annotation-anchor` エラー)。位置指定なら `at_index`
@@ -100,6 +112,21 @@ cluster と radial の使い分けの勘所。
 
 ---
 
-## 4. raw — 脱出口
+## 4. 技術素材と紹介系 — 8 要素の使い分け (ADR-0016)
+
+「画像を作って貼る」前に、この 8 要素で書けないかを疑う。
+
+| 要素 | 選ぶ基準 | 紛らわしい相手との境界 |
+|------|---------|---------------------|
+| code | コード・端末 (`lang: console`)・diff (`lang: diff`) を見せる | 17 行/81 桁を超えるなら抜粋する (`code-budget` lint)。強調行は `emphasis: ["3-5"]` (1 起点) |
+| post | SNS の発言が「実際にあった」ことを見せる | 発言者の権威で語らせるだけなら quote。日付・アカウント名が効くなら post |
+| link | 記事・資料へ誘導する (QR は自動) | OGP 画像は `image:` にローカルパスで渡す。URL を読ませたいだけなら statement にしない — QR が要るなら常に link |
+| stat | 数字 1 つで刺す | 比較や推移を語るなら chart。単位は value に含める (`"3.2 倍"`) |
+| table | セルに言葉が入る一覧比較 | 数値の意味なら chart、2 軸の分類なら structure.matrix、対立が主役なら versus |
+| versus | 二項対立そのものが主張 | 対等な並置 (どちらも推さない) なら table か bullets ×2 枚。推す側に `emphasis: true` |
+| agenda | 目次・現在地 | フィールドなし。transition の statement から導出される。章題を手書きしたくなったら transition 側を直す |
+| video | デモ映像 | 静的出力 (PNG / Google Slides 運用) では再生されない。プレースホルダ描画のみと知って使う |
+
+## 5. raw — 脱出口
 
 語彙で表せない 1 枚のためだけの口 (p.135「一貫したデザインを 20 枚見せた後の意図的な 1 枚」)。`svg` か `html` の少なくとも一方と、`waiver` (逸脱の理由) が必須。デッキの 1 割を超えると `raw-budget` warn。安易に使わない。raw に頼りたくなったら、まず diagram / chart / image で表せないかを疑う。

@@ -1,7 +1,9 @@
 # カバレッジデッキ — レンダラ改善の検証台。
 # 全 role (opener/title/transition/content/closer)、全レイアウトパターン、
-# 全要素 7 種 (statement/bullets/image/diagram/chart/quote/raw)、
+# 要素 8 種 (statement/bullets/image/diagram/chart/quote/raw/code)、
 # ブランド枠 (ロゴ・フッタ・背景・反転前景) を 1 デッキで踏む。
+# code 以外の ADR-0016 追加要素 (post/link/stat/table/versus/agenda/video) は
+# 未実装のため未収録 (後続ワーカーが追加する)。
 # レンダラを変えたら、まずこのデッキを render / shot して全種の見た目を確認する。
 schema_version: "0.2.0"
 deck:
@@ -495,6 +497,29 @@ slides:
         treatment: framed
     notes: |
       検証点: プレースホルダの枠・バッジ・プロンプト表示。
+
+  - id: code-javascript
+    role: content
+    idea: "code: シンタックスハイライトと行強調 (ADR-0016)"
+    layout: code-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "コードステージ (code-stage) の検証"
+      - kind: code
+        slot: code
+        lang: javascript
+        filename: render.mjs
+        code: |
+          export function measureCode(el, ctx, avail) {
+            // 行数 × 行高と最長行の推定幅から箱を申告する
+            const lines = el.code.split('\n');
+            return { w: avail.w, h: lines.length * LH, render };
+          }
+        emphasis: ["2-3"]
+    notes: |
+      検証点: mono 書体、keyword/string/comment の配色、ファイル名ラベル帯、
+      2-3 行目の強調帯と非強調行の dim。
 
   - id: raw
     role: content

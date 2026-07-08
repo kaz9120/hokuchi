@@ -14,6 +14,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { loadDefaultJapaneseParser } from 'budoux';
+import hljs from 'highlight.js';
 import { iconExists, iconInner, promoteWeight } from './icons.mjs';
 
 const parser = loadDefaultJapaneseParser();
@@ -36,7 +37,12 @@ const CHART_PAD = { l: 84, r: 60, t: 26, b: 64 }; // 軸ラベルがプロット
 const DEFAULT_SCALE = {
   hero: 80, title: 74, big: 70, quote: 46, heading: 34,
   bullet: 34, subtitle: 30, attribution: 24, node: 24, axis: 20,
+  code: 22,
 };
+
+// theme.type.mono is a material typeface, not a voice slot (ADR-0016, SPEC
+// §2.3) — an unset theme falls back to this renderer-owned mono stack.
+const DEFAULT_MONO_STACK = '"SF Mono", "Consolas", "DejaVu Sans Mono", monospace';
 
 // Named-pattern slot maps (SPEC §5.1). Elements enter a slot by `slot:`.
 const PATTERN_SLOTS = {
@@ -90,6 +96,8 @@ function makeContext(deckRoot, themeRoot, opts = {}) {
       body: T.type.body.family,
       wDisplay: T.type.display.weight,
       wBody: T.type.body.weight,
+      mono: T.type.mono?.family || DEFAULT_MONO_STACK,
+      wMono: T.type.mono?.weight || 400,
     },
     webfonts: T.type.webfonts || [],
     background: P.background,
@@ -1082,6 +1090,152 @@ function renderImage(el, ctx) {
 }
 
 // ---------------------------------------------------------------------------
+// Code rendering (SPEC §6.7, ADR-0016) — code is a referenced material, not a
+// voice: it gets its own mono typeface (theme.type.mono, DEFAULT_MONO_STACK
+// otherwise) and a small, fixed syntax palette derived from the theme rather
+// than a declared one (ADR-0014's "renderer owns composition" extended to
+// "renderer owns highlight colour").
+// ---------------------------------------------------------------------------
+
+/** Monospace text width in px: half-width ≈ 0.6em, full-width (CJK) ≈ 1.0em
+ * — coarser than estW's proportional-font ratios because mono glyphs are
+ * fixed-width, but comments/filenames may still carry Japanese. */
+const monoEstW = (s, fs) =>
+  [...String(s)].reduce((t, ch) => t + (ch.codePointAt(0) < 0x2000 ? 0.6 : 1.0), 0) * fs;
+
+/**
+ * 1 起点の行番号 / "n-m" 範囲 (SPEC §6.7) を 0 起点の行インデックス集合に展開する。
+ */
+function expandLineRanges(ranges) {
+  const set = new Set();
+  for (const r of ranges || []) {
+    if (typeof r === 'number') { set.add(r - 1); continue; }
+    const [a, b] = String(r).split('-').map(Number);
+    for (let i = a; i <= b; i++) set.add(i - 1);
+  }
+  return set;
+}
+
+/**
+ * Split highlight.js's single-string output back into per-source-line HTML
+ * fragments without breaking a <span> that a multi-line construct (block
+ * comment, template string) leaves open across a line boundary: track the
+ * open-tag stack and close/reopen it at each newline. This lets every source
+ * line become its own element (needed for emphasis bands and per-line dim),
+ * while still highlighting the snippet as one contiguous parse (needed for
+ * multi-line tokens to resolve correctly).
+ */
+function splitHighlightedLines(html) {
+  const tokens = html.split(/(<span class="[^"]*">|<\/span>)/);
+  const lines = [];
+  const stack = [];
+  let cur = '';
+  for (const tok of tokens) {
+    if (!tok) continue;
+    if (tok === '</span>') { cur += tok; stack.pop(); continue; }
+    const m = /^<span class="([^"]*)">$/.exec(tok);
+    if (m) { cur += tok; stack.push(m[1]); continue; }
+    const parts = tok.split('\n');
+    parts.forEach((part, i) => {
+      cur += part;
+      if (i < parts.length - 1) {
+        for (let j = stack.length - 1; j >= 0; j--) cur += '</span>';
+        lines.push(cur);
+        cur = stack.map((cls) => `<span class="${cls}">`).join('');
+      }
+    });
+  }
+  lines.push(cur);
+  return lines;
+}
+
+/**
+ * Per-line HTML for a general (non console/diff) language: highlight.js
+ * tokenizes the whole snippet at once (so multi-line constructs stay
+ * correct) and already HTML-escapes its output; an unregistered/plaintext
+ * language falls back to one escaped line each, no tokenization.
+ */
+function highlightedLines(code, lang) {
+  if (lang && lang !== 'plaintext' && hljs.getLanguage(lang)) {
+    try {
+      return splitHighlightedLines(hljs.highlight(code, { language: lang, ignoreIllegals: true }).value);
+    } catch { /* fall through to the plain-text path below */ }
+  }
+  return code.split('\n').map((l) => esc(l));
+}
+
+/**
+ * Code measure (ADR-0014): report the box the panel wants from line count ×
+ * line height and the longest line's estimated mono width, shrinking the
+ * font (floor 15px) toward avail and — past the floor — accepting the box
+ * getting capped rather than clipping content (the shrink philosophy shared
+ * with measureList / cardMetrics).
+ */
+function measureCode(el, ctx, avail) {
+  const { scale } = ctx;
+  const raw = String(el.code ?? '').replace(/\n$/, '');
+  const lines = raw.length ? raw.split('\n') : [''];
+  const lang = el.lang || 'plaintext';
+  const padX = 34, padY = 26;
+  const labelH = el.filename ? 44 : 0;
+  const minFs = 15;
+  const lineHFor = (f) => Math.round(f * 1.5);
+  const widthAt = (f) => Math.max(...lines.map((l) => monoEstW(l, f)));
+
+  let fs = scale.code;
+  while (fs > minFs && widthAt(fs) + padX * 2 > avail.w) fs -= 1;
+  while (fs > minFs && lines.length * lineHFor(fs) + padY * 2 + labelH > avail.h) fs -= 1;
+
+  const w = Math.min(avail.w, Math.max(480, widthAt(fs) + padX * 2));
+  const h = Math.min(avail.h, lines.length * lineHFor(fs) + padY * 2 + labelH);
+  return {
+    w: round(w), h: round(h),
+    render: () => renderCode(el, ctx, { lines, lang, fs, lineH: lineHFor(fs), padX, padY, labelH }),
+  };
+}
+
+function renderCode(el, ctx, { lines, lang, fs, lineH, padX, padY, labelH }) {
+  const { fonts } = ctx;
+  const emphSet = expandLineRanges(el.emphasis);
+  const hasEmphasis = emphSet.size > 0;
+
+  let htmlLines, extraCls;
+  if (lang === 'console') {
+    // $ 行はプロンプト (text_strong)、それ以外は出力 (muted) として描き分ける
+    // (SPEC §6.7)。トークン単位のハイライトはしない — 端末セッションは
+    // コマンド言語を問わないため。
+    htmlLines = lines.map((l) => esc(l));
+    extraCls = (i) => (/^\s*\$/.test(lines[i]) ? 'cl-prompt' : 'cl-output');
+  } else if (lang === 'diff') {
+    // 先頭 1 文字で追加/削除を判定する (unified diff の素朴な読み方)。
+    // ファイルヘッダ (+++/---) は対象外。
+    htmlLines = lines.map((l) => esc(l));
+    extraCls = (i) => {
+      const l = lines[i];
+      if (l.startsWith('+') && !l.startsWith('+++')) return 'cl-add';
+      if (l.startsWith('-') && !l.startsWith('---')) return 'cl-del';
+      return '';
+    };
+  } else {
+    htmlLines = highlightedLines(lines.join('\n'), lang);
+    extraCls = () => '';
+  }
+
+  const body = htmlLines.map((html, i) => {
+    const cls = ['cl', extraCls(i)].filter(Boolean);
+    if (emphSet.has(i)) cls.push('cl-em');
+    else if (hasEmphasis) cls.push('cl-dim');
+    return `<div class="${cls.join(' ')}" style="height:${lineH}px;line-height:${lineH}px">${html}</div>`;
+  }).join('');
+
+  const fileBar = el.filename
+    ? `<div class="code-file" style="height:${labelH}px;line-height:${labelH}px">${esc(el.filename)}</div>`
+    : '';
+
+  return `<div class="code-panel">${fileBar}<div class="code-body" style="font-family:${fonts.mono};font-weight:${fonts.wMono};font-size:${fs}px;padding:${padY}px ${padX}px">${body}</div></div>`;
+}
+
+// ---------------------------------------------------------------------------
 // Raw escape hatch (SPEC §6.15) — svg file / inline svg / inline html
 // ---------------------------------------------------------------------------
 function renderRaw(el, ctx) {
@@ -1251,6 +1405,10 @@ function imageStage(slide, ctx) {
   return leadStage(slide, ctx, 'image', measureImage);
 }
 
+function codeStage(slide, ctx) {
+  return leadStage(slide, ctx, 'code', measureCode);
+}
+
 function quoteStage(slide, ctx) {
   const stage = stageRect();
   const pane = { ...stage, h: round(stage.h * 0.94) }; // 光学中心 (statementStage と同じ)
@@ -1358,6 +1516,7 @@ const PATTERNS = {
   'quote-stage': quoteStage,
   'profile-stage': profileStage,
   'image-stage': imageStage,
+  'code-stage': codeStage,
 };
 
 function renderSlideBody(slide, ctx) {
@@ -1489,6 +1648,36 @@ svg.lead{display:block;max-width:100%;max-height:100%;overflow:visible}
 .photo-cutout{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
 .raw-wrap{width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .raw-wrap svg{max-width:100%;max-height:100%}
+
+/* code (SPEC §6.7, ADR-0016) — surface panel + hairline + optional filename
+   label bar. Palette derivation (renderer-owned, ADR-0014): keyword-ish
+   tokens take the brand highlight colour (reads as "this declares
+   something"); string/number-ish tokens take core[1] (second core slot —
+   moss/green for hokuchi, chosen positionally since "green" cannot be found
+   in an arbitrary theme's palette by name); comments take muted. Everything
+   else inherits the panel's default text colour, keeping the budget to 3
+   non-text colours + text (SPEC §6.7). console/diff skip tokenization
+   entirely and colour whole lines instead (prompt vs output; added vs
+   removed) — a terminal session or a diff is not "a language". */
+.code-panel{width:100%;height:100%;background:${C.surface};border:1px solid ${C.line};
+  border-radius:14px;overflow:hidden;display:flex;flex-direction:column;text-align:left}
+.code-file{flex:0 0 auto;padding:0 24px;color:${C.muted};background:${C.bg}80;
+  border-bottom:1px solid ${C.line};font-family:${fonts.body};font-size:16px;letter-spacing:.02em}
+.code-body{flex:1 1 auto;overflow:hidden}
+.cl{white-space:pre;color:${C.text}}
+.cl-prompt{color:${C.textStrong};font-weight:${fonts.wDisplay}}
+.cl-output{color:${C.muted}}
+/* diff bands: addition = core[1] (moss/green for hokuchi), deletion =
+   highlight (ember/coral) — both at ~18% alpha via a hex alpha suffix */
+.cl-add{background:${C.core[1] ?? C.core[0]}2e}
+.cl-del{background:${C.highlight}2e}
+.cl-dim{opacity:.55}
+/* emphasis band (~15% alpha) is defined after cl-add/cl-del so it wins on
+   a line that is both a diff line and emphasized */
+.cl-em{background:${C.highlight}26}
+.code-body .hljs-keyword,.code-body .hljs-built_in,.code-body .hljs-type,.code-body .hljs-literal{color:${C.highlight}}
+.code-body .hljs-string,.code-body .hljs-number,.code-body .hljs-regexp{color:${C.core[1] ?? C.core[0]}}
+.code-body .hljs-comment,.code-body .hljs-quote,.code-body .hljs-doctag{color:${C.muted}}
 
 .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
 .slide>.pane,.slide>.grid-stage,.slide>.headline{z-index:1}

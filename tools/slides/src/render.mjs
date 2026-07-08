@@ -761,6 +761,7 @@ function renderOverlap(el, box, ctx, { r, DIST }) {
 const TL_MARGIN_X = 60; // 両端のノードを画面端から離す
 const TL_DOT_R = 8;
 const TL_GAP = 18; // 基線から文字までの最短距離
+const TL_FIT = 0.95; // ラベル幅がこの割合 (対・間隔) を超えたら 1 段に収まらないとみなす
 
 /**
  * Timeline measure: nodes sit at equal intervals along a horizontal
@@ -768,7 +769,9 @@ const TL_GAP = 18; // 基線から文字までの最短距離
  * elapsed time — SPEC §6.4 explicitly prioritises a readable interval over
  * a proportional one). Font shrinks first (fitRows 相当の思想) when labels
  * would collide; if shrinking alone cannot clear the collision, labels
- * stagger onto a second row below the line.
+ * stagger onto a second row below the line. 千鳥は最後の手段なので、縮小の
+ * 閾値と千鳥判定の閾値は同じ基準 (TL_FIT) を使う — 閾値がずれていると、
+ * まだ縮小の余地があるのに千鳥へ逃げてしまう。
  */
 function measureTimeline(el, ctx, avail) {
   const { scale } = ctx;
@@ -780,7 +783,7 @@ function measureTimeline(el, ctx, avail) {
   let fsLabel = scale.node, fsDetail = scale.axis;
   const minFsLabel = 16, minFsDetail = 14;
   const labelWidth = (fs) => Math.max(0, ...el.nodes.map((nd) => estW(nd.label, fs)));
-  while (fsLabel > minFsLabel && labelWidth(fsLabel) > spacing * 1.6) {
+  while (fsLabel > minFsLabel && labelWidth(fsLabel) > spacing * TL_FIT) {
     fsLabel -= 1;
     fsDetail = Math.max(minFsDetail, fsDetail - 1);
   }
@@ -788,7 +791,7 @@ function measureTimeline(el, ctx, avail) {
   // 千鳥に逃がす。detail (日付) は基線の上に固定したまま動かさない — 日付が
   // 「常に上」であることが読み手の基準点になるため (SPEC は千鳥配置を label
   // に限って許可している。可読性を label 側の自由度だけで確保する)。
-  const stagger = labelWidth(fsLabel) > spacing * 0.95;
+  const stagger = labelWidth(fsLabel) > spacing * TL_FIT;
 
   const labelRowH = Math.round(fsLabel * 1.4);
   const labelH = TL_GAP + labelRowH * (stagger ? 2 : 1);
@@ -808,6 +811,15 @@ function renderTimeline(el, box, ctx, { fsLabel, fsDetail, stagger, labelRowH, d
   const usableW = box.w - TL_MARGIN_X * 2;
   const baseY = detailH + TL_DOT_R;
   const xAt = (i) => TL_MARGIN_X + (n > 1 ? (usableW * i) / (n - 1) : usableW / 2);
+  // ノードの中心にそのままテキストを置くと、両端のノードは舞台の外へ
+  // はみ出す (中心から margin 分しか余白がないため)。中心付近のノードは
+  // 動かさず、はみ出す分だけ内側へ寄せる。dot・基線は真の等間隔位置を保つ
+  // — ずらすのはテキストの見た目の位置だけ。
+  const clampTextX = (cx, textW) => {
+    const half = textW / 2, pad = 4;
+    const lo = half + pad, hi = box.w - half - pad;
+    return lo <= hi ? Math.min(Math.max(cx, lo), hi) : box.w / 2;
+  };
 
   let svg = `<line x1="${round(TL_MARGIN_X)}" y1="${round(baseY)}" x2="${round(box.w - TL_MARGIN_X)}" y2="${round(baseY)}" stroke="${C.line}" stroke-width="2"/>`;
   el.nodes.forEach((nd, i) => {
@@ -815,11 +827,13 @@ function renderTimeline(el, box, ctx, { fsLabel, fsDetail, stagger, labelRowH, d
     const hot = emph.has(nd.id);
     svg += `<circle cx="${round(x)}" cy="${round(baseY)}" r="${hot ? TL_DOT_R + 2 : TL_DOT_R}" fill="${hot ? C.highlight : C.core[0]}"/>`;
     if (nd.detail) {
-      svg += `<text x="${round(x)}" y="${round(baseY - TL_DOT_R - TL_GAP + fsDetail * 0.35)}" text-anchor="middle" fill="${C.muted}" font-size="${fsDetail}" font-family='${fonts.body}'>${esc(nd.detail)}</text>`;
+      const dx = clampTextX(x, estW(nd.detail, fsDetail));
+      svg += `<text x="${round(dx)}" y="${round(baseY - TL_DOT_R - TL_GAP + fsDetail * 0.35)}" text-anchor="middle" fill="${C.muted}" font-size="${fsDetail}" font-family='${fonts.body}'>${esc(nd.detail)}</text>`;
     }
     const row = stagger ? i % 2 : 0;
     const ly = baseY + TL_DOT_R + TL_GAP + labelRowH * row + fsLabel * 0.85;
-    svg += `<text x="${round(x)}" y="${round(ly)}" text-anchor="middle" fill="${hot ? C.textStrong : C.text}" font-weight="${hot ? fonts.wDisplay : fonts.wBody}" font-size="${fsLabel}" font-family='${fonts.display}'>${esc(nd.label)}</text>`;
+    const lx = clampTextX(x, estW(nd.label, fsLabel));
+    svg += `<text x="${round(lx)}" y="${round(ly)}" text-anchor="middle" fill="${hot ? C.textStrong : C.text}" font-weight="${hot ? fonts.wDisplay : fonts.wBody}" font-size="${fsLabel}" font-family='${fonts.display}'>${esc(nd.label)}</text>`;
   });
   return svgLead(box, svg);
 }

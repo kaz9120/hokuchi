@@ -1,11 +1,10 @@
 # カバレッジデッキ — レンダラ改善の検証台。
 # 全 role (opener/title/transition/content/closer)、全レイアウトパターン、
-# 要素 8 種 (statement/bullets/image/diagram/chart/quote/raw/code)、
-# ブランド枠 (ロゴ・フッタ・背景・反転前景) を 1 デッキで踏む。
-# code 以外の ADR-0016 追加要素 (post/link/stat/table/versus/agenda/video) は
-# 未実装のため未収録 (後続ワーカーが追加する)。
+# 要素 13 種 (statement/bullets/image/diagram/chart/quote/raw/code/post/link/
+# stat/table/versus)、ブランド枠 (ロゴ・フッタ・背景・反転前景) を 1 デッキで踏む。
+# agenda/video (ADR-0016) は未実装のため未収録 (後続ワーカーが追加する)。
 # レンダラを変えたら、まずこのデッキを render / shot して全種の見た目を確認する。
-schema_version: "0.2.0"
+schema_version: "0.3.0"
 deck:
   title: "カバレッジデッキ — 全種の見た目検証"
   audience:
@@ -520,6 +519,99 @@ slides:
     notes: |
       検証点: mono 書体、keyword/string/comment の配色、ファイル名ラベル帯、
       2-3 行目の強調帯と非強調行の dim。
+
+  - id: post-x
+    role: content
+    idea: "post: SNS ポストの引用をスクリーンショットの代わりに構造で貼る (ADR-0016)"
+    layout: post-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "ポスト (post-stage) の検証"
+      - kind: post
+        slot: post
+        text: "38 時間回した探索、ようやく収束した。原因は評価関数ではなく置換表だった"
+        author: "架空 太郎"
+        handle: "@example"
+        date: "2015-04-12"
+        avatar: ./assets/sample-photo.svg
+    notes: |
+      検証点: avatar 画像の丸抜き、author (text_strong) と handle/date (muted)
+      のヘッダ行、本文量から導出したカード幅 (最大 stage 幅の 7 割以内)。
+
+  - id: link-zenn
+    role: content
+    idea: "link: 記事紹介を OGP カード + QR の定型で見せる (ADR-0016)"
+    layout: link-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "リンク (link-stage) の検証"
+      - kind: link
+        slot: link
+        url: "https://zenn.dev/kyamamoto/articles/deck-as-code"
+        title: "スライドを意図宣言型 YAML で書く"
+        description: "ピクセルではなく意図を宣言し、レンダラが配置を導出する"
+    notes: |
+      検証点: url から常に導出する QR (誤り訂正 M、白面固定)、image 未指定時に
+      テキストのみでカードが成立すること、url のドメイン表示。
+
+  - id: stat-big
+    role: content
+    idea: "stat: 数字 1 つで刺す (ADR-0016)"
+    layout: stat-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "統計 (stat-stage) の検証"
+      - kind: stat
+        slot: stat
+        value: "38 時間"
+        label: "最長の探索検証"
+        context: "2015 年 4 月、世界コンピュータ将棋選手権の 3 週間前"
+    notes: |
+      検証点: scale.stat (160) を基準にした数字の大きさ、display 書体と
+      text_strong 色、label/context の階層。
+
+  - id: table-compare
+    role: content
+    idea: "table: 罫線最小の比較表 (ADR-0016)"
+    layout: table-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "表 (table-stage) の検証"
+      - kind: table
+        slot: table
+        columns: ["", "画像で貼る", "構造で書く"]
+        rows:
+          - ["テーマ追従", "—", "✓"]
+          - ["再レンダリング", "—", "✓"]
+          - ["handout の可読性", "—", "✓"]
+        emphasis: { cols: [3] }
+    notes: |
+      検証点: ヘッダ行の下罫線のみ (外枠・縞・セル背景は無し)、強調列の
+      highlight 帯、列幅がセル内容から導出されること。
+
+  - id: versus-approach
+    role: content
+    idea: "versus: 従来と提案の対比を左右のパネルで見せる (ADR-0016)"
+    layout: versus-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "対比 (versus-stage) の検証"
+      - kind: versus
+        slot: versus
+        sides:
+          - label: "画像を作って貼る"
+            items: ["見た目は自由", "テーマから切断される", "直すたび作り直し"]
+          - label: "構造で宣言する"
+            items: ["語彙の範囲に縛られる", "テーマに追従する", "deck.yaml だけ直せばよい"]
+            emphasis: true
+    notes: |
+      検証点: 左右対称の 2 パネル、emphasis: true 側の highlight 枠、
+      もう片方の dim。
 
   - id: raw
     role: content

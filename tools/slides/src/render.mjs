@@ -15,6 +15,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { loadDefaultJapaneseParser } from 'budoux';
 import hljs from 'highlight.js';
+import qrcode from 'qrcode-generator';
 import { iconExists, iconInner, promoteWeight } from './icons.mjs';
 
 const parser = loadDefaultJapaneseParser();
@@ -37,7 +38,7 @@ const CHART_PAD = { l: 84, r: 60, t: 26, b: 64 }; // 軸ラベルがプロット
 const DEFAULT_SCALE = {
   hero: 80, title: 74, big: 70, quote: 46, heading: 34,
   bullet: 34, subtitle: 30, attribution: 24, node: 24, axis: 20,
-  code: 22,
+  code: 22, stat: 160,
 };
 
 // theme.type.mono is a material typeface, not a voice slot (ADR-0016, SPEC
@@ -147,6 +148,21 @@ const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const cpLen = (s) => [...s].length;
 /** Rough text width in px: CJK ≈ 1.04em, ASCII/half-width ≈ 0.56em. */
 const estW = (s, fs) => [...String(s)].reduce((t, ch) => t + (ch.codePointAt(0) < 0x2000 ? 0.56 : 1.04), 0) * fs;
+
+/**
+ * Rough wrapped-line count for a text block at font size fs within a given
+ * width, using estW's per-character width model. This is a measure-time
+ * estimate only (no BudouX phrase awareness) — the actual render still goes
+ * through inlineText for real wrapping, so a few px of drift between the
+ * estimate and the browser's layout is expected and harmless (same
+ * tolerance measureList already accepts).
+ */
+function estimateWrappedLines(text, fs, width) {
+  return String(text).split('\n').reduce((total, line) => {
+    if (!line) return total + 1;
+    return total + Math.max(1, Math.ceil(estW(line, fs) / Math.max(1, width)));
+  }, 0);
+}
 
 /**
  * Merge single-code-point phrases into a neighbour so that no line break can
@@ -1236,6 +1252,314 @@ function renderCode(el, ctx, { lines, lang, fs, lineH, padX, padY, labelH }) {
 }
 
 // ---------------------------------------------------------------------------
+// post — SNS post quotation (SPEC §6.8, ADR-0016). A surface card (own
+// opaque background), so — like code-panel — it needs no .inv override:
+// the card supplies its own contrast regardless of the slide background.
+// ---------------------------------------------------------------------------
+
+/**
+ * post measure: the card hugs its content rather than filling the stage.
+ * Width is derived from body length via a target card *area* (chars × fs²
+ * × a constant), then sqrt'd back to a width — short posts get a compact,
+ * near-square card; long posts grow toward the 70%-of-stage cap and let
+ * the remainder become extra lines instead of an ever-wider ribbon.
+ */
+function measurePost(el, ctx, avail) {
+  const { scale } = ctx;
+  const fsBody = Math.round(scale.quote * 0.7);
+  const fsAuthor = 24, fsMeta = 18;
+  const padX = 44, padY = 38;
+  const avatarSize = 72;
+  const headGap = 20;
+  const headBodyGap = 26;
+
+  const maxW = Math.max(460, Math.round(avail.w * 0.7));
+  const minW = 440;
+  const bodyChars = cpLen(String(el.text).replace(/\n/g, ''));
+  // sqrt(chars) targets a card whose text area grows sub-linearly with
+  // length — see doc comment above.
+  let bodyW = Math.round(Math.sqrt(bodyChars) * fsBody * 1.9);
+  bodyW = Math.max(minW - padX * 2, Math.min(maxW - padX * 2, bodyW));
+
+  const bodyLines = estimateWrappedLines(el.text, fsBody, bodyW);
+  const bodyH = bodyLines * Math.round(fsBody * 1.6);
+  const headH = Math.max(avatarSize, fsAuthor + fsMeta + 10);
+
+  const w = bodyW + padX * 2;
+  const h = Math.min(avail.h, headH + headBodyGap + bodyH + padY * 2);
+  return {
+    w: round(w), h: round(h),
+    render: () => renderPost(el, ctx, { fsBody, fsAuthor, fsMeta, avatarSize, headGap }),
+  };
+}
+
+function renderPost(el, ctx, { fsBody, fsAuthor, fsMeta, avatarSize, headGap }) {
+  let avatarHtml = '';
+  if (el.avatar) {
+    const abs = path.resolve(ctx.deckDir, el.avatar);
+    if (fs.existsSync(abs)) {
+      const rel = ctx.useAsset(abs, 'assets');
+      avatarHtml = `<img class="post-avatar" src="${esc(rel)}" alt="" style="width:${avatarSize}px;height:${avatarSize}px">`;
+    }
+  }
+  if (!avatarHtml) {
+    // avatar 未指定/未解決 → イニシャル円で代替 (SPEC §6.8)
+    const initial = [...String(el.author || '?')][0] || '?';
+    avatarHtml = `<div class="post-avatar post-avatar-fallback" style="width:${avatarSize}px;height:${avatarSize}px;font-size:${Math.round(avatarSize * 0.4)}px">${esc(initial)}</div>`;
+  }
+  const meta = [el.handle, el.date].filter(Boolean).map(esc).join('　·　');
+  return `<div class="post-card">
+    <div class="post-head" style="gap:${headGap}px">
+      ${avatarHtml}
+      <div class="post-head-text">
+        <div class="post-author jp" style="font-size:${fsAuthor}px">${inlineText(el.author)}</div>
+        ${meta ? `<div class="post-meta" style="font-size:${fsMeta}px">${meta}</div>` : ''}
+      </div>
+    </div>
+    <div class="post-body jp" style="font-size:${fsBody}px">${inlineText(el.text)}</div>
+  </div>`;
+}
+
+// ---------------------------------------------------------------------------
+// link — OGP card + QR (SPEC §6.9, ADR-0016). QR is always derived from
+// `url` (never a schema field) and always rendered white-face/black-module
+// so it reads on camera regardless of theme (ADR-0016 決定).
+// ---------------------------------------------------------------------------
+
+/** Hostname without a leading www., for the attribution-scale domain line. */
+function urlDomain(url) {
+  try { return new URL(String(url)).hostname.replace(/^www\./, ''); }
+  catch { return String(url).replace(/^https?:\/\//, '').split('/')[0]; }
+}
+
+/**
+ * QR SVG (error correction M, quiet zone via `margin`, ADR-0016). The
+ * generator's own background rect (white) and module path (black) are the
+ * spec-mandated colours, so no theme colour is threaded through here —
+ * cellSize is a fixed drawing unit; the wrapping CSS scales the SVG to the
+ * box link-qr reserves.
+ */
+function renderQr(url) {
+  const qr = qrcode(0, 'M');
+  qr.addData(String(url));
+  qr.make();
+  return qr.createSvgTag({ cellSize: 4, margin: 4 });
+}
+
+/**
+ * link measure: a left text column (image on top if declared, then title /
+ * description / domain) beside a fixed-size QR panel. Left column width is
+ * content-driven like post's, capped so the QR never gets squeezed out.
+ */
+function measureLink(el, ctx, avail) {
+  const { scale } = ctx;
+  const padX = 40, padY = 36, gap = 32;
+  const qrBox = Math.min(190, Math.round(avail.h * 0.55));
+  const fsTitle = scale.bullet;
+  const fsDesc = Math.round(scale.attribution * 1.15);
+  const fsUrl = scale.attribution;
+  const imgGap = 22, textGap = 14;
+
+  const maxLeftW = Math.max(280, avail.w - qrBox - gap - padX * 2);
+  let leftW = Math.min(560, maxLeftW);
+  const titleChars = el.title ? cpLen(el.title) : 0;
+  if (titleChars) leftW = Math.min(leftW, Math.max(320, Math.round(Math.sqrt(titleChars) * fsTitle * 2.4)));
+  leftW = Math.min(leftW, maxLeftW);
+
+  const hasImage = !!el.image;
+  const abs = hasImage ? path.resolve(ctx.deckDir, el.image) : null;
+  const dims = abs && fs.existsSync(abs) ? imageDims(abs) : null;
+  const imgAspect = dims && dims.w > 0 && dims.h > 0 ? dims.w / dims.h : 1.91; // OGP 標準比
+  const imgH = hasImage ? Math.round(leftW / imgAspect) : 0;
+
+  const titleLines = el.title ? estimateWrappedLines(el.title, fsTitle, leftW) : 0;
+  const descLines = el.description ? estimateWrappedLines(el.description, fsDesc, leftW) : 0;
+
+  const contentH = (hasImage ? imgH + imgGap : 0)
+    + (el.title ? titleLines * Math.round(fsTitle * 1.3) + textGap : 0)
+    + (el.description ? descLines * Math.round(fsDesc * 1.5) + textGap : 0)
+    + Math.round(fsUrl * 1.4);
+
+  const w = Math.min(avail.w, padX * 2 + leftW + gap + qrBox);
+  const h = Math.min(avail.h, Math.max(contentH, qrBox) + padY * 2);
+  return {
+    w: round(w), h: round(h),
+    render: () => renderLink(el, ctx, {
+      leftW, qrBox, hasImage, abs, imgH, fsTitle, fsDesc, fsUrl, gap,
+    }),
+  };
+}
+
+function renderLink(el, ctx, { leftW, qrBox, hasImage, abs, imgH, fsTitle, fsDesc, fsUrl, gap }) {
+  let imgHtml = '';
+  if (hasImage && abs && fs.existsSync(abs)) {
+    const rel = ctx.useAsset(abs, 'assets');
+    imgHtml = `<img class="link-img" src="${esc(rel)}" alt="" style="width:${leftW}px;height:${imgH}px">`;
+  }
+  const domain = urlDomain(el.url);
+  return `<div class="link-card" style="gap:${gap}px">
+    <div class="link-left jp" style="width:${leftW}px">
+      ${imgHtml}
+      ${el.title ? `<div class="link-title" style="font-size:${fsTitle}px">${inlineText(el.title)}</div>` : ''}
+      ${el.description ? `<div class="link-desc" style="font-size:${fsDesc}px">${inlineText(el.description)}</div>` : ''}
+      <div class="link-domain" style="font-size:${fsUrl}px">${esc(domain)}</div>
+    </div>
+    <div class="link-qr" style="width:${qrBox}px;height:${qrBox}px">${renderQr(el.url)}</div>
+  </div>`;
+}
+
+// ---------------------------------------------------------------------------
+// stat — one big number (SPEC §6.10, ADR-0016). Bare text on the slide
+// background (no card), so it needs the same .inv handling as statement.
+// ---------------------------------------------------------------------------
+function measureStat(el, ctx, avail) {
+  const { scale } = ctx;
+  const valueText = String(el.value);
+  const minFs = 60;
+  let fs = scale.stat;
+  while (fs > minFs && estW(valueText, fs) > avail.w * 0.92) fs -= 4;
+
+  const fsLabel = scale.subtitle;
+  const fsContext = scale.attribution;
+  const valueH = Math.round(fs * 1.15);
+  const labelH = el.label ? Math.round(fsLabel * 1.3) + 20 : 0;
+  const contextH = el.context ? Math.round(fsContext * 1.5) + 16 : 0;
+
+  const w = Math.min(avail.w, Math.max(
+    estW(valueText, fs),
+    el.label ? estW(el.label, fsLabel) : 0,
+    el.context ? estW(el.context, fsContext) : 0,
+  ) + 40);
+  const h = Math.min(avail.h, valueH + labelH + contextH);
+  return {
+    w: round(w), h: round(h),
+    render: () => renderStat(el, ctx, { fs, fsLabel, fsContext }),
+  };
+}
+
+function renderStat(el, ctx, { fs, fsLabel, fsContext }) {
+  return `<div class="stat-block">
+    <div class="stat-value" style="font-size:${fs}px">${esc(el.value)}</div>
+    ${el.label ? `<div class="stat-label jp" style="font-size:${fsLabel}px">${inlineText(el.label)}</div>` : ''}
+    ${el.context ? `<div class="stat-context jp" style="font-size:${fsContext}px">${inlineText(el.context)}</div>` : ''}
+  </div>`;
+}
+
+// ---------------------------------------------------------------------------
+// table — hairline-minimal comparison table (SPEC §6.11, ADR-0016). No
+// outer frame, no cell backgrounds, no zebra striping — rows separate by
+// whitespace, not rules. Bare on the slide background, so — like stat and
+// bullets — it needs .inv handling.
+// ---------------------------------------------------------------------------
+
+/**
+ * table measure: column widths come from the widest cell per column
+ * (estW, cells never wrap), shrinking the shared font size (floor 16px)
+ * until the whole grid fits avail.
+ */
+function measureTable(el, ctx, avail) {
+  const { scale } = ctx;
+  const cellPadX = 28;
+  const minFs = 16;
+  const rowHFor = (f) => Math.round(f * 2.2);
+  const headHFor = (f) => Math.round(f * 2.5);
+  const colWidthsFor = (f) => el.columns.map((c, ci) => Math.max(
+    estW(c, f),
+    ...el.rows.map((r) => estW(r[ci] ?? '', f)),
+  ) + cellPadX);
+
+  let fs = scale.node;
+  let cw = colWidthsFor(fs);
+  let totalW = cw.reduce((a, b) => a + b, 0);
+  let totalH = headHFor(fs) + el.rows.length * rowHFor(fs);
+  while (fs > minFs && (totalW > avail.w || totalH > avail.h)) {
+    fs -= 1;
+    cw = colWidthsFor(fs);
+    totalW = cw.reduce((a, b) => a + b, 0);
+    totalH = headHFor(fs) + el.rows.length * rowHFor(fs);
+  }
+
+  return {
+    w: round(Math.min(avail.w, totalW)), h: round(Math.min(avail.h, totalH)),
+    render: () => renderTable(el, ctx, { fs, colWidths: cw, rowH: rowHFor(fs), headH: headHFor(fs) }),
+  };
+}
+
+function renderTable(el, ctx, { fs, colWidths, rowH, headH }) {
+  const emphRows = new Set(el.emphasis?.rows || []);
+  const emphCols = new Set(el.emphasis?.cols || []);
+  const gridCols = colWidths.map((w) => `${round(w)}px`).join(' ');
+
+  let html = `<div class="table-grid" style="grid-template-columns:${gridCols};font-size:${fs}px">`;
+  el.columns.forEach((c, ci) => {
+    const em = emphCols.has(ci + 1) ? ' table-em' : '';
+    html += `<div class="table-cell table-head${em}" style="height:${headH}px;line-height:${headH}px">${esc(c)}</div>`;
+  });
+  el.rows.forEach((row, ri) => {
+    row.forEach((cell, ci) => {
+      const em = (emphRows.has(ri + 1) || emphCols.has(ci + 1)) ? ' table-em' : '';
+      html += `<div class="table-cell${em}" style="height:${rowH}px;line-height:${rowH}px">${esc(cell)}</div>`;
+    });
+  });
+  html += '</div>';
+  return html;
+}
+
+// ---------------------------------------------------------------------------
+// versus — two-panel contrast (SPEC §6.12, ADR-0016). Panels are surface
+// cards (own opaque background), so — like post/link — no .inv handling.
+// ---------------------------------------------------------------------------
+
+/**
+ * versus measure: both panels share one height (the taller side's content
+ * height), so the pair reads as symmetric even when item counts differ.
+ */
+function measureVersus(el, ctx, avail) {
+  const { scale } = ctx;
+  const fsLabel = scale.heading;
+  const fsItem = Math.round(scale.bullet * 0.8);
+  const padX = 40, padY = 36, labelGap = 26, itemGap = Math.round(fsItem * 0.9);
+  const dividerW = 64;
+
+  const panelInnerW = Math.max(260, Math.min(420, Math.round((avail.w - dividerW) / 2) - padX * 2));
+
+  const contentH = (side) => {
+    const labelLines = estimateWrappedLines(side.label, fsLabel, panelInnerW);
+    const itemsH = side.items.reduce((t, it) => {
+      const lines = estimateWrappedLines(it, fsItem, panelInnerW - 26); // ドット分を差し引く
+      return t + lines * Math.round(fsItem * 1.5);
+    }, 0) + (side.items.length - 1) * itemGap;
+    return labelLines * Math.round(fsLabel * 1.3) + labelGap + itemsH;
+  };
+  const panelH = Math.max(...el.sides.map(contentH)) + padY * 2;
+  const panelW = panelInnerW + padX * 2;
+
+  const w = Math.min(avail.w, panelW * 2 + dividerW);
+  const h = Math.min(avail.h, panelH);
+  return {
+    w: round(w), h: round(h),
+    render: () => renderVersus(el, ctx, { panelW, panelH: h, fsLabel, fsItem, padX, padY, labelGap, itemGap, dividerW }),
+  };
+}
+
+function renderVersus(el, ctx, { panelW, panelH, fsLabel, fsItem, padX, padY, labelGap, itemGap, dividerW }) {
+  const hasEmphasis = el.sides.some((s) => s.emphasis);
+  const panels = el.sides.map((side) => {
+    const items = side.items.map((it) =>
+      `<li><span class="dot"></span><span class="jp">${inlineText(it)}</span></li>`).join('');
+    const cls = ['versus-panel'];
+    if (side.emphasis) cls.push('versus-em');
+    else if (hasEmphasis) cls.push('versus-dim');
+    return `<div class="${cls.join(' ')}" style="width:${panelW}px;height:${panelH}px;padding:${padY}px ${padX}px">
+      <div class="versus-label jp" style="font-size:${fsLabel}px">${inlineText(side.label)}</div>
+      <ul class="versus-items" style="font-size:${fsItem}px;gap:${itemGap}px;margin-top:${labelGap}px">${items}</ul>
+    </div>`;
+  });
+  const divider = `<div class="versus-divider" style="width:${dividerW}px;height:${panelH}px"></div>`;
+  return `<div class="versus-row">${panels.join(divider)}</div>`;
+}
+
+// ---------------------------------------------------------------------------
 // Raw escape hatch (SPEC §6.15) — svg file / inline svg / inline html
 // ---------------------------------------------------------------------------
 function renderRaw(el, ctx) {
@@ -1409,6 +1733,26 @@ function codeStage(slide, ctx) {
   return leadStage(slide, ctx, 'code', measureCode);
 }
 
+function postStage(slide, ctx) {
+  return leadStage(slide, ctx, 'post', measurePost);
+}
+
+function linkStage(slide, ctx) {
+  return leadStage(slide, ctx, 'link', measureLink);
+}
+
+function statStage(slide, ctx) {
+  return leadStage(slide, ctx, 'stat', measureStat);
+}
+
+function tableStage(slide, ctx) {
+  return leadStage(slide, ctx, 'table', measureTable);
+}
+
+function versusStage(slide, ctx) {
+  return leadStage(slide, ctx, 'versus', measureVersus);
+}
+
 function quoteStage(slide, ctx) {
   const stage = stageRect();
   const pane = { ...stage, h: round(stage.h * 0.94) }; // 光学中心 (statementStage と同じ)
@@ -1517,6 +1861,11 @@ const PATTERNS = {
   'profile-stage': profileStage,
   'image-stage': imageStage,
   'code-stage': codeStage,
+  'post-stage': postStage,
+  'link-stage': linkStage,
+  'stat-stage': statStage,
+  'table-stage': tableStage,
+  'versus-stage': versusStage,
 };
 
 function renderSlideBody(slide, ctx) {
@@ -1679,6 +2028,61 @@ svg.lead{display:block;max-width:100%;max-height:100%;overflow:visible}
 .code-body .hljs-string,.code-body .hljs-number,.code-body .hljs-regexp{color:${C.core[1] ?? C.core[0]}}
 .code-body .hljs-comment,.code-body .hljs-quote,.code-body .hljs-doctag{color:${C.muted}}
 
+/* post (SPEC §6.8, ADR-0016) — surface card, own opaque background so it
+   needs no .inv handling (same reasoning as code-panel). */
+.post-card{width:100%;height:100%;box-sizing:border-box;background:${C.surface};
+  border:1px solid ${C.line};border-radius:18px;padding:38px 44px;display:flex;
+  flex-direction:column;text-align:left}
+.post-head{display:flex;align-items:center}
+.post-avatar{border-radius:50%;object-fit:cover;flex:0 0 auto}
+.post-avatar-fallback{background:${C.line};color:${C.textStrong};display:flex;
+  align-items:center;justify-content:center;font-family:${fonts.display};font-weight:${fonts.wDisplay}}
+.post-author{color:${C.textStrong};font-weight:${fonts.wDisplay};font-family:${fonts.display}}
+.post-meta{color:${C.muted};margin-top:5px;letter-spacing:.02em}
+.post-body{color:${C.text};line-height:1.6;margin-top:26px}
+
+/* link (SPEC §6.9, ADR-0016) — OGP card + QR. QR keeps its own white face
+   (baked into the generated SVG) regardless of theme (ADR-0016 決定), so
+   .link-qr needs no colour override either. */
+.link-card{width:100%;height:100%;display:flex;align-items:center}
+.link-left{display:flex;flex-direction:column;text-align:left}
+.link-img{border-radius:10px;object-fit:cover;margin-bottom:22px;border:1px solid ${C.line}}
+.link-title{color:${C.textStrong};font-weight:${fonts.wDisplay};font-family:${fonts.display};line-height:1.35}
+.link-desc{color:${C.text};line-height:1.55;margin-top:14px}
+.link-domain{color:${C.muted};margin-top:14px;letter-spacing:.03em}
+.link-qr{flex:0 0 auto;background:#fff;border-radius:12px;padding:10px;
+  display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(0,0,0,.14)}
+.link-qr svg{display:block;width:100%;height:100%}
+
+/* stat (SPEC §6.10, ADR-0016) — bare on the slide background, like
+   statement: needs the same .inv treatment. */
+.stat-block{display:flex;flex-direction:column;align-items:center;text-align:center}
+.stat-value{font-family:${fonts.display};font-weight:${fonts.wDisplay};color:${C.textStrong};line-height:1}
+.stat-label{color:${C.text};margin-top:20px}
+.stat-context{color:${C.muted};margin-top:16px}
+
+/* table (SPEC §6.11, ADR-0016) — no outer frame, no cell fills, no zebra:
+   rows separate by whitespace, the header's hairline is the only rule.
+   Bare on the slide background, so it needs .inv handling like bullets. */
+.table-grid{display:grid;text-align:left}
+.table-cell{padding:0 14px;white-space:nowrap;color:${C.text};font-family:${fonts.body}}
+.table-head{color:${C.textStrong};font-weight:${fonts.wDisplay};font-family:${fonts.display};
+  border-bottom:2px solid ${C.line}}
+.table-em{background:${C.highlight}1f}
+
+/* versus (SPEC §6.12, ADR-0016) — two surface-card panels, own opaque
+   background so no .inv handling (same reasoning as post/code). */
+.versus-row{display:flex;align-items:stretch}
+.versus-panel{box-sizing:border-box;background:${C.surface};border:2px solid ${C.line};
+  border-radius:16px;display:flex;flex-direction:column;text-align:left}
+.versus-em{border-color:${C.highlight};border-width:3px}
+.versus-dim{opacity:.6}
+.versus-label{font-family:${fonts.display};font-weight:${fonts.wDisplay};color:${C.textStrong};line-height:1.3}
+.versus-items{list-style:none;display:flex;flex-direction:column}
+.versus-items li{display:flex;align-items:baseline;gap:16px;color:${C.text};line-height:1.4}
+.versus-items .dot{flex:0 0 auto;width:10px;height:10px;border-radius:50%;
+  background:${C.highlight};transform:translateY(-3px)}
+
 .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
 .slide>.pane,.slide>.grid-stage,.slide>.headline{z-index:1}
 .brand-logo{position:absolute;top:25px;right:20px;z-index:2}
@@ -1686,12 +2090,15 @@ svg.lead{display:block;max-width:100%;max-height:100%;overflow:visible}
   color:${C.muted};letter-spacing:.03em;font-family:${fonts.body}}
 
 .inv{color:rgba(255,255,255,.94)}
-.inv .statement,.inv .title-main,.inv .quote-text,.inv .grid-caption,.inv .headline{color:#ffffff}
+.inv .statement,.inv .title-main,.inv .quote-text,.inv .grid-caption,.inv .headline,
+.inv .stat-value,.inv .table-head{color:#ffffff}
 .inv .hi{color:#ffffff}
-.inv .title-sub,.inv .quote-attr,.inv .brand-footer,.inv .img-prompt{color:rgba(255,255,255,.85)}
+.inv .title-sub,.inv .quote-attr,.inv .brand-footer,.inv .img-prompt,
+.inv .stat-context{color:rgba(255,255,255,.85)}
 .inv .quote-mark{color:rgba(255,255,255,.38)}
-.inv .bullets li{color:rgba(255,255,255,.94)}
+.inv .bullets li,.inv .stat-label,.inv .table-cell{color:rgba(255,255,255,.94)}
 .inv .bullets .dot,.inv .title-accent{background:#ffffff}
+.inv .table-head{border-bottom-color:rgba(255,255,255,.5)}
 
 .err{color:${C.highlight};font-size:28px}`;
 }

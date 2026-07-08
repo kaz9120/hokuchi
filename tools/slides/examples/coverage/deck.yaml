@@ -1,8 +1,9 @@
 # カバレッジデッキ — レンダラ改善の検証台。
 # 全 role (opener/title/transition/content/closer)、全レイアウトパターン、
-# 要素 13 種 (statement/bullets/image/diagram/chart/quote/raw/code/post/link/
-# stat/table/versus)、ブランド枠 (ロゴ・フッタ・背景・反転前景) を 1 デッキで踏む。
-# agenda/video (ADR-0016) は未実装のため未収録 (後続ワーカーが追加する)。
+# 要素 15 種 (statement/bullets/image/diagram/chart/quote/raw/code/post/link/
+# stat/table/versus/agenda/video)、chart intent の composition (単一系列
+# ドーナツ・複数系列 100% 積み上げ)、diagram flow.timeline、ブランド枠
+# (ロゴ・フッタ・背景・反転前景) を 1 デッキで踏む (ADR-0016)。
 # レンダラを変えたら、まずこのデッキを render / shot して全種の見た目を確認する。
 schema_version: "0.3.0"
 deck:
@@ -364,6 +365,28 @@ slides:
     notes: |
       検証点: nodes[0] が中心、残りが正多角形の頂点、edges 省略時の素のスポーク。
 
+  - id: diagram-timeline
+    role: content
+    idea: "diagram flow.timeline: 日付つきの経緯 (ADR-0016)"
+    layout: diagram-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "経緯 (flow.timeline) の検証"
+      - kind: diagram
+        slot: diagram
+        form: flow.timeline
+        nodes:
+          - { id: v1, label: "初版", detail: "2026-01" }
+          - { id: v2, label: "image-stage", detail: "2026-03" }
+          - { id: v3, label: "code/post/link", detail: "2026-05" }
+          - { id: v4, label: "stat/table/versus", detail: "2026-06" }
+          - { id: v5, label: "composition/timeline", detail: "2026-07" }
+        emphasis: [v5]
+    notes: |
+      検証点: 等間隔配置 (日付には比例しない)、日付 (detail) が基線の上、
+      出来事 (label) が基線の下、強調ノードの highlight 色。
+
   - id: chart-trend
     role: content
     idea: "chart trend: 折れ線 + 注釈アンカー + 共有スケール"
@@ -556,6 +579,19 @@ slides:
       検証点: url から常に導出する QR (誤り訂正 M、白面固定)、image 未指定時に
       テキストのみでカードが成立すること、url のドメイン表示。
 
+  - id: transition-second
+    role: transition
+    idea: "転換: agenda が現在地を判定するための 2 つ目の章 (ADR-0016)"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "ここから、応用の話"
+        emphasis: ["応用"]
+    notes: |
+      検証点: このスライド自体は他の transition-inverted と同じ描画。
+      後方の agenda-check がこの章を「現在地」として強調するための布石。
+
   - id: stat-big
     role: content
     idea: "stat: 数字 1 つで刺す (ADR-0016)"
@@ -612,6 +648,81 @@ slides:
     notes: |
       検証点: 左右対称の 2 パネル、emphasis: true 側の highlight 枠、
       もう片方の dim。
+
+  - id: chart-composition-single
+    role: content
+    idea: "chart composition (単一系列): ドーナツと annotations の強調 (ADR-0016)"
+    layout: chart-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "構成比 (composition, 単一系列) の検証"
+      - kind: chart
+        slot: chart
+        intent: composition
+        message: "レンダラの改修時間は diagram 系の作業が半分を占める"
+        data:
+          x: ["diagram", "chart", "素材要素", "その他"]
+          series:
+            - { label: "改修時間の割合", values: [50, 20, 20, 10] }
+        annotations:
+          - { at: "diagram", annotate: "最多", style: highlight }
+    notes: |
+      検証点: 12 時起点・時計回りの扇形、各扇形の外側ラベル (カテゴリ + %)、
+      annotations の style: highlight が指す項目が highlight 色になること。
+
+  - id: chart-composition-multi
+    role: content
+    idea: "chart composition (複数系列): 100% 積み上げ棒 (ADR-0016)"
+    layout: chart-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "構成比 (composition, 複数系列) の検証"
+      - kind: chart
+        slot: chart
+        intent: composition
+        message: "新要素の実装は card 系の描画がどのリリースでも過半数を占める"
+        data:
+          x: ["0.3.0-a", "0.3.0-b", "0.3.0-c"]
+          series:
+            - { label: "card 系", values: [3, 2, 0] }
+            - { label: "chart/diagram 系", values: [1, 1, 2] }
+            - { label: "その他", values: [1, 1, 2] }
+    notes: |
+      検証点: 棒ごとに 100% へ正規化された積み上げ、層の色が core の宣言順に
+      揃うこと (系列間の絶対量ではなく割合が主題)。
+
+  - id: agenda-check
+    role: content
+    idea: "agenda: role: transition の statement から導出した目次と現在地の強調 (ADR-0016)"
+    layout: agenda-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "目次 (agenda-stage) の検証"
+      - kind: agenda
+        slot: agenda
+    notes: |
+      検証点: transition-inverted と transition-second の 2 章が文書順に
+      列挙されること、このスライドの直前にある transition-second のみが
+      現在地として highlight 色 + text_strong で強調され、transition-inverted
+      は対等 (非強調) のままであること。
+
+  - id: video-placeholder
+    role: content
+    idea: "video: poster なしのプレースホルダ描画 (ADR-0016)"
+    layout: video-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "動画 (video-stage) の検証"
+      - kind: video
+        slot: video
+        src: assets/demo-annotation-loop.mp4
+    notes: |
+      検証点: poster 未指定時に surface の面 + ファイル名で代替すること、
+      16:9 の箱、線描 (塗りベタでない) の再生グリフが中央に重なること。
 
   - id: raw
     role: content

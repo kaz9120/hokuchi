@@ -30,8 +30,9 @@ const OPTICAL = 0.45;      // 使い残した高さの上:下 配分 (光学中�
 const HEAD_GAP = 40;       // headline 帯と主役の間
 const RING_ASPECT = 1.1;   // flow.cycle の箱の理想 w/h — カードが横長なぶん、わずかに横広が釣り合う
 const RING_ECC_MAX = 1.15; // 環の離心率上限。これ以内ならノードは正多角形の頂点に見える
-const PLOT_ASPECT = { trend: 2.0, comparison: 1.6, distribution: 1.6 }; // プロット領域の理想 w/h
+const PLOT_ASPECT = { trend: 2.0, comparison: 1.6, distribution: 1.6, composition: 1.0 }; // プロット領域の理想 w/h。composition は円なので正方形寄り
 const CHART_PAD = { l: 84, r: 60, t: 26, b: 64 }; // 軸ラベルがプロットの外側に要する余白
+const DONUT_PAD = 110; // 扇形の外側に置くラベル (カテゴリ + %) 用の余白
 
 // Type-scale defaults mirror theme.schema.json so a theme that omits a token
 // still renders. Present tokens in the theme win.
@@ -459,6 +460,7 @@ function measureDiagram(el, ctx, avail) {
     case 'flow.branch':
     case 'flow.converge': return measureDag(el, ctx, avail);
     case 'cluster.overlap': return measureOverlap(el, ctx, avail);
+    case 'flow.timeline': return measureTimeline(el, ctx, avail);
     case 'cluster.enclosed': return measureEnclosed(el, ctx, avail);
     case 'cluster.closure':
     case 'cluster.linked': {
@@ -753,6 +755,75 @@ function renderOverlap(el, box, ctx, { r, DIST }) {
   return svgLead(box, `<g>${circleSvg}</g><g>${sharedSvg}</g><g>${labelSvg}</g>`);
 }
 
+// ---------------------------------------------------------------------------
+// flow.timeline — dated progression (SPEC §6.4, ADR-0016)
+// ---------------------------------------------------------------------------
+const TL_MARGIN_X = 60; // 両端のノードを画面端から離す
+const TL_DOT_R = 8;
+const TL_GAP = 18; // 基線から文字までの最短距離
+
+/**
+ * Timeline measure: nodes sit at equal intervals along a horizontal
+ * baseline spanning the available width (dates are not proportional to
+ * elapsed time — SPEC §6.4 explicitly prioritises a readable interval over
+ * a proportional one). Font shrinks first (fitRows 相当の思想) when labels
+ * would collide; if shrinking alone cannot clear the collision, labels
+ * stagger onto a second row below the line.
+ */
+function measureTimeline(el, ctx, avail) {
+  const { scale } = ctx;
+  const n = el.nodes.length;
+  const usableW = Math.max(200, avail.w - TL_MARGIN_X * 2);
+  const spacing = n > 1 ? usableW / (n - 1) : usableW;
+  const hasDetail = el.nodes.some((nd) => nd.detail);
+
+  let fsLabel = scale.node, fsDetail = scale.axis;
+  const minFsLabel = 16, minFsDetail = 14;
+  const labelWidth = (fs) => Math.max(0, ...el.nodes.map((nd) => estW(nd.label, fs)));
+  while (fsLabel > minFsLabel && labelWidth(fsLabel) > spacing * 1.6) {
+    fsLabel -= 1;
+    fsDetail = Math.max(minFsDetail, fsDetail - 1);
+  }
+  // 縮小してもラベル幅が間隔を超えるほどノードが密集する場合は、上下 2 段の
+  // 千鳥に逃がす。detail (日付) は基線の上に固定したまま動かさない — 日付が
+  // 「常に上」であることが読み手の基準点になるため (SPEC は千鳥配置を label
+  // に限って許可している。可読性を label 側の自由度だけで確保する)。
+  const stagger = labelWidth(fsLabel) > spacing * 0.95;
+
+  const labelRowH = Math.round(fsLabel * 1.4);
+  const labelH = TL_GAP + labelRowH * (stagger ? 2 : 1);
+  const detailH = TL_GAP + (hasDetail ? Math.round(fsDetail * 1.3) : 0);
+  const h = Math.min(avail.h, detailH + TL_DOT_R * 2 + labelH);
+
+  return {
+    w: round(avail.w), h: round(h),
+    render: (box) => renderTimeline(el, box, ctx, { fsLabel, fsDetail, stagger, labelRowH, detailH }),
+  };
+}
+
+function renderTimeline(el, box, ctx, { fsLabel, fsDetail, stagger, labelRowH, detailH }) {
+  const { C, fonts } = ctx;
+  const emph = new Set(el.emphasis || []);
+  const n = el.nodes.length;
+  const usableW = box.w - TL_MARGIN_X * 2;
+  const baseY = detailH + TL_DOT_R;
+  const xAt = (i) => TL_MARGIN_X + (n > 1 ? (usableW * i) / (n - 1) : usableW / 2);
+
+  let svg = `<line x1="${round(TL_MARGIN_X)}" y1="${round(baseY)}" x2="${round(box.w - TL_MARGIN_X)}" y2="${round(baseY)}" stroke="${C.line}" stroke-width="2"/>`;
+  el.nodes.forEach((nd, i) => {
+    const x = xAt(i);
+    const hot = emph.has(nd.id);
+    svg += `<circle cx="${round(x)}" cy="${round(baseY)}" r="${hot ? TL_DOT_R + 2 : TL_DOT_R}" fill="${hot ? C.highlight : C.core[0]}"/>`;
+    if (nd.detail) {
+      svg += `<text x="${round(x)}" y="${round(baseY - TL_DOT_R - TL_GAP + fsDetail * 0.35)}" text-anchor="middle" fill="${C.muted}" font-size="${fsDetail}" font-family='${fonts.body}'>${esc(nd.detail)}</text>`;
+    }
+    const row = stagger ? i % 2 : 0;
+    const ly = baseY + TL_DOT_R + TL_GAP + labelRowH * row + fsLabel * 0.85;
+    svg += `<text x="${round(x)}" y="${round(ly)}" text-anchor="middle" fill="${hot ? C.textStrong : C.text}" font-weight="${hot ? fonts.wDisplay : fonts.wBody}" font-size="${fsLabel}" font-family='${fonts.display}'>${esc(nd.label)}</text>`;
+  });
+  return svgLead(box, svg);
+}
+
 /**
  * cluster.enclosed — nodes[0] is the boundary (a labelled container), the
  * rest sit inside as a row of member cards.
@@ -975,12 +1046,143 @@ function resolveYRange(el, ctx) {
   return { min: Math.min(0, ...all), max: niceCeil(Math.max(...all)) };
 }
 
+/** {x, y} on a circle of radius r centred at (cx, cy), angle in radians
+ * (SVG convention: 0 = 3 o'clock, increasing = clockwise since y grows down). */
+function polarPt(cx, cy, r, theta) {
+  return { x: cx + r * Math.cos(theta), y: cy + r * Math.sin(theta) };
+}
+
+/** Donut-slice path: an annulus wedge between rInner/rOuter and startAngle/endAngle. */
+function donutSlicePath(cx, cy, rOuter, rInner, a0, a1) {
+  const large = a1 - a0 > Math.PI ? 1 : 0;
+  const p1 = polarPt(cx, cy, rOuter, a0), p2 = polarPt(cx, cy, rOuter, a1);
+  const p3 = polarPt(cx, cy, rInner, a1), p4 = polarPt(cx, cy, rInner, a0);
+  return `M ${round(p1.x)} ${round(p1.y)} A ${round(rOuter)} ${round(rOuter)} 0 ${large} 1 ${round(p2.x)} ${round(p2.y)}
+    L ${round(p3.x)} ${round(p3.y)} A ${round(rInner)} ${round(rInner)} 0 ${large} 0 ${round(p4.x)} ${round(p4.y)} Z`;
+}
+
+/**
+ * composition intent, single series → donut (SPEC §6.5, §8.4, ADR-0016).
+ * 12 時起点・時計回り (angle -90° を起点に増分)。box は円 + 外側ラベル帯
+ * (DONUT_PAD) を含めて申告する — CHART_PAD が軸ラベル分を外側に確保するのと
+ * 同じ考え方。annotations の style: highlight が指す項目は highlight 色、
+ * それ以外は core を宣言順に巡回する。
+ */
+function measureDonut(el, ctx, avail) {
+  const ideal = PLOT_ASPECT.composition;
+  const inner = { w: Math.max(120, avail.w - DONUT_PAD * 2), h: Math.max(120, avail.h - DONUT_PAD * 2) };
+  const ring = fitAspect(ideal, inner.w, inner.h);
+  return {
+    w: round(ring.w + DONUT_PAD * 2), h: round(ring.h + DONUT_PAD * 2),
+    render: (b) => renderDonut(el, b, ctx),
+  };
+}
+
+function renderDonut(el, box, ctx) {
+  const { C, fonts, scale } = ctx;
+  const cats = el.data.x;
+  const values = el.data.series[0].values;
+  const total = values.reduce((a, b) => a + b, 0) || 1;
+  const cx = box.w / 2, cy = box.h / 2;
+  const rOuter = Math.min(box.w, box.h) / 2 - DONUT_PAD;
+  const rInner = rOuter * 0.55;
+
+  const hot = new Set();
+  for (const ann of el.annotations || []) {
+    if (ann.style !== 'highlight') continue;
+    const i = ann.at_index != null ? ann.at_index : cats.indexOf(ann.at);
+    if (i >= 0 && i < cats.length) hot.add(i); // annotation-anchor lint reports an unresolved `at`.
+  }
+
+  let sliceSvg = '', labelSvg = '';
+  let angle = -Math.PI / 2; // 12 時起点
+  values.forEach((v, i) => {
+    const frac = v / total;
+    const a0 = angle, a1 = angle + frac * 2 * Math.PI; // 時計回り (角度増加方向)
+    angle = a1;
+    const mid = (a0 + a1) / 2;
+    const col = hot.has(i) ? C.highlight : C.core[i % C.core.length];
+    sliceSvg += `<path d="${donutSlicePath(cx, cy, rOuter, rInner, a0, a1)}" fill="${col}"/>`;
+
+    const lp = polarPt(cx, cy, rOuter + 30, mid);
+    const anchor = Math.cos(mid) > 0.2 ? 'start' : Math.cos(mid) < -0.2 ? 'end' : 'middle';
+    const pct = Math.round(frac * 100);
+    labelSvg += `<text x="${round(lp.x)}" y="${round(lp.y)}" text-anchor="${anchor}"
+      fill="${hot.has(i) ? C.textStrong : C.text}" font-size="${scale.node}" font-family='${fonts.body}'>${esc(cats[i])}
+      <tspan fill="${C.muted}" dx="6">${pct}%</tspan></text>`;
+  });
+
+  return svgLead(box, `<g>${sliceSvg}</g><g>${labelSvg}</g>`);
+}
+
+/**
+ * composition intent, multiple series → 100% 積み上げ棒 (SPEC §6.5, ADR-0016)。
+ * x が各棒、series が層。層ごとの割合は棒単位 (カテゴリ単位) で合計を
+ * 100% に正規化する — 系列間の絶対量は composition の主題ではない。
+ */
+function measureStackedComposition(el, ctx, avail) {
+  const pad = CHART_PAD;
+  const ideal = PLOT_ASPECT.comparison; // 棒グラフの一種として、比較と同じ横広めの理想比を使う
+  const plotH = Math.min(avail.h - pad.t - pad.b, (avail.w - pad.l - pad.r) / ideal);
+  return {
+    w: round(plotH * ideal + pad.l + pad.r),
+    h: round(plotH + pad.t + pad.b),
+    render: (b) => renderStackedComposition(el, b, ctx),
+  };
+}
+
+function renderStackedComposition(el, box, ctx) {
+  const { C, fonts, scale } = ctx;
+  const pad = CHART_PAD;
+  const plot = { x: pad.l, y: pad.t, w: box.w - pad.l - pad.r, h: box.h - pad.t - pad.b };
+  const cats = el.data.x;
+  const series = el.data.series;
+  const bandW = Math.min(plot.w / cats.length, 280);
+  const bandX0 = plot.x + (plot.w - bandW * cats.length) / 2;
+  const barW = bandW * 0.6;
+
+  // 背景レイヤー: 0/50/100% の目盛とカテゴリラベルのみ (composition に
+  // annotations は適用しない — 主役は割合の内訳であり、単一の注目点ではない)。
+  let bg = '';
+  [0, 50, 100].forEach((pct) => {
+    const y = plot.y + plot.h * (1 - pct / 100);
+    bg += `<line x1="${round(plot.x)}" y1="${round(y)}" x2="${round(plot.x + plot.w)}" y2="${round(y)}" stroke="${C.line}" stroke-width="1" opacity="0.35"/>`;
+    bg += `<text x="${round(plot.x - 16)}" y="${round(y + 6)}" text-anchor="end" fill="${C.muted}" font-size="${scale.axis}" font-family='${fonts.body}'>${pct}%</text>`;
+  });
+  cats.forEach((c, i) => {
+    bg += `<text x="${round(bandX0 + bandW * (i + 0.5))}" y="${round(plot.y + plot.h + 36)}" text-anchor="middle" fill="${C.muted}" font-size="${scale.axis}" font-family='${fonts.body}'>${esc(c)}</text>`;
+  });
+
+  let data = '';
+  cats.forEach((c, i) => {
+    const total = series.reduce((t, s) => t + (s.values[i] || 0), 0) || 1;
+    let acc = 0;
+    const x = bandX0 + bandW * (i + 0.5) - barW / 2;
+    series.forEach((s, si) => {
+      const frac = (s.values[i] || 0) / total;
+      const yTop = plot.y + plot.h * (1 - (acc + frac));
+      const yBot = plot.y + plot.h * (1 - acc);
+      data += `<rect x="${round(x)}" y="${round(yTop)}" width="${round(barW)}" height="${round(yBot - yTop)}" fill="${C.core[si % C.core.length]}"/>`;
+      acc += frac;
+    });
+  });
+
+  return svgLead(box, `<g>${bg}</g><g>${data}</g>`);
+}
+
 /**
  * Chart measure (ADR-0014): the plot area wants an intent-specific aspect
  * (PLOT_ASPECT); the axis-label padding sits outside the plot as constants,
- * so the reported box is the padded plot.
+ * so the reported box is the padded plot. composition dispatches to its own
+ * measure/render pair — a donut or a 100% stacked bar share nothing with the
+ * axis-driven trend/comparison/distribution family (ADR-0016).
  */
 function measureChart(el, ctx, avail) {
+  if (el.intent === 'composition') {
+    return (el.data.series || []).length === 1
+      ? measureDonut(el, ctx, avail)
+      : measureStackedComposition(el, ctx, avail);
+  }
   const pad = CHART_PAD;
   const ideal = PLOT_ASPECT[el.intent] ?? 1.6;
   const plotH = Math.min(avail.h - pad.t - pad.b, (avail.w - pad.l - pad.r) / ideal);
@@ -1560,6 +1762,95 @@ function renderVersus(el, ctx, { panelW, panelH, fsLabel, fsItem, padX, padY, la
 }
 
 // ---------------------------------------------------------------------------
+// agenda — table of contents derived from role: transition (SPEC §6.13,
+// ADR-0016). agenda carries no fields; the chapter list is read out of the
+// deck itself, so this element needs the whole slides array and the current
+// slide's position (ctx.slides / ctx.slideIndex, set once per slide in
+// renderDeck — the same slide-scoped-context pattern as ctx.slideKey).
+// ---------------------------------------------------------------------------
+
+/** role: transition slides, in document order, with their statement text. */
+function transitionChapters(slides) {
+  return slides
+    .map((s, index) => ({ s, index }))
+    .filter(({ s }) => s.role === 'transition')
+    .map(({ s, index }) => {
+      const el = s.elements.find((e) => e.kind === 'statement');
+      return { index, text: el ? el.text : s.idea };
+    });
+}
+
+/**
+ * Agenda measure: a numbered vertical list, sized like measureList (shrink
+ * font toward avail, hug content height). The chapter strictly before this
+ * agenda slide (by document position) is the "current" one and is drawn
+ * with the highlight/text_strong treatment; with none before it, every
+ * chapter reads as equally weighted (SPEC §6.13).
+ */
+function measureAgenda(el, ctx, avail) {
+  const { scale } = ctx;
+  const chapters = transitionChapters(ctx.slides);
+  let currentIdx = -1;
+  chapters.forEach((c, i) => { if (c.index < ctx.slideIndex) currentIdx = i; });
+
+  const n = chapters.length;
+  const numW = 76; // 番号帯の固定幅
+  const gapNum = 26;
+  const textW = Math.max(200, avail.w - numW - gapNum);
+
+  const estH = (fs) => chapters.reduce((t, c) => t + estimateWrappedLines(c.text, fs, textW) * fs * 1.4, 0);
+  const rowGap = (fs) => fs * 0.9;
+  let fs = scale.bullet;
+  while (fs > 22 && estH(fs) + (n - 1) * rowGap(fs) > avail.h) fs -= 2;
+  const gap = rowGap(fs);
+  const h = Math.min(avail.h, estH(fs) + (n - 1) * gap);
+
+  return {
+    w: avail.w, h: round(h),
+    render: () => renderAgenda(chapters, currentIdx, ctx, { fs, numW, gapNum, gap }),
+  };
+}
+
+function renderAgenda(chapters, currentIdx, ctx, { fs, numW, gapNum, gap }) {
+  const items = chapters.map((c, i) => {
+    const hot = i === currentIdx;
+    const num = String(i + 1).padStart(2, '0');
+    return `<li style="gap:${gapNum}px">
+      <span class="agenda-num${hot ? ' agenda-num-hot' : ''}" style="width:${numW}px;font-size:${fs}px">${num}</span>
+      <span class="agenda-text jp${hot ? ' agenda-text-hot' : ''}" style="font-size:${fs}px">${inlineText(c.text)}</span>
+    </li>`;
+  }).join('');
+  return `<ul class="agenda-list" style="gap:${round(gap)}px">${items}</ul>`;
+}
+
+// ---------------------------------------------------------------------------
+// video — static placeholder (SPEC §6.14, ADR-0016). No real playback until
+// the SPA presentation mode exists (ADR-0012); render/shot/handout always
+// show poster (or a surface panel + filename) with a play glyph overlaid.
+// ---------------------------------------------------------------------------
+function measureVideo(el, ctx, avail) {
+  const box = fitAspect(16 / 9, avail.w, avail.h);
+  return { ...box, render: () => renderVideo(el, ctx) };
+}
+
+function renderVideo(el, ctx) {
+  const { C } = ctx;
+  const abs = el.poster ? path.resolve(ctx.deckDir, el.poster) : null;
+  const hasPoster = abs && fs.existsSync(abs);
+  const bgHtml = hasPoster
+    ? `<img class="video-poster" src="${esc(ctx.useAsset(abs, 'assets'))}" alt="">`
+    : `<div class="video-fallback jp">${esc(path.basename(el.src))}</div>`;
+  // 再生グリフは線描のみ (三角 + 円環)。ベタ塗りにしない (SPEC §6.14) — 背後の
+  // 円 (半透明の黒) はポスター写真の上でも線が読める最低限のコントラスト土台。
+  const glyph = `<svg class="video-glyph" viewBox="0 0 100 100" width="88" height="88">
+    <circle cx="50" cy="50" r="46" fill="rgba(0,0,0,.3)"/>
+    <circle cx="50" cy="50" r="40" fill="none" stroke="${C.text}" stroke-width="3"/>
+    <path d="M43 33 L71 50 L43 67 Z" fill="none" stroke="${C.text}" stroke-width="3" stroke-linejoin="round"/>
+  </svg>`;
+  return `<div class="video-box">${bgHtml}${glyph}</div>`;
+}
+
+// ---------------------------------------------------------------------------
 // Raw escape hatch (SPEC §6.15) — svg file / inline svg / inline html
 // ---------------------------------------------------------------------------
 function renderRaw(el, ctx) {
@@ -1753,6 +2044,14 @@ function versusStage(slide, ctx) {
   return leadStage(slide, ctx, 'versus', measureVersus);
 }
 
+function agendaStage(slide, ctx) {
+  return leadStage(slide, ctx, 'agenda', measureAgenda);
+}
+
+function videoStage(slide, ctx) {
+  return leadStage(slide, ctx, 'video', measureVideo);
+}
+
 function quoteStage(slide, ctx) {
   const stage = stageRect();
   const pane = { ...stage, h: round(stage.h * 0.94) }; // 光学中心 (statementStage と同じ)
@@ -1866,6 +2165,8 @@ const PATTERNS = {
   'stat-stage': statStage,
   'table-stage': tableStage,
   'versus-stage': versusStage,
+  'agenda-stage': agendaStage,
+  'video-stage': videoStage,
 };
 
 function renderSlideBody(slide, ctx) {
@@ -2083,6 +2384,25 @@ svg.lead{display:block;max-width:100%;max-height:100%;overflow:visible}
 .versus-items .dot{flex:0 0 auto;width:10px;height:10px;border-radius:50%;
   background:${C.highlight};transform:translateY(-3px)}
 
+/* agenda (SPEC §6.13, ADR-0016) — bare on the slide background like bullets
+   and stat, so it needs .inv handling. */
+.agenda-list{list-style:none;width:100%;display:flex;flex-direction:column}
+.agenda-list li{display:flex;align-items:baseline}
+.agenda-num{flex:0 0 auto;color:${C.muted};font-family:${fonts.display};
+  font-weight:${fonts.wDisplay};letter-spacing:.02em}
+.agenda-num-hot{color:${C.highlight}}
+.agenda-text{color:${C.text};line-height:1.4}
+.agenda-text-hot{color:${C.textStrong};font-weight:${fonts.wDisplay}}
+
+/* video (SPEC §6.14, ADR-0016) — own opaque panel (poster or surface fill),
+   so no .inv handling (same reasoning as code/post/versus). */
+.video-box{position:relative;width:100%;height:100%;border-radius:14px;
+  overflow:hidden;background:${C.surface};display:flex;align-items:center;justify-content:center}
+.video-poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.video-fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  color:${C.muted};font-size:20px;font-family:${fonts.body}}
+.video-glyph{position:relative;z-index:1}
+
 .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
 .slide>.pane,.slide>.grid-stage,.slide>.headline{z-index:1}
 .brand-logo{position:absolute;top:25px;right:20px;z-index:2}
@@ -2091,14 +2411,15 @@ svg.lead{display:block;max-width:100%;max-height:100%;overflow:visible}
 
 .inv{color:rgba(255,255,255,.94)}
 .inv .statement,.inv .title-main,.inv .quote-text,.inv .grid-caption,.inv .headline,
-.inv .stat-value,.inv .table-head{color:#ffffff}
+.inv .stat-value,.inv .table-head,.inv .agenda-text-hot{color:#ffffff}
 .inv .hi{color:#ffffff}
 .inv .title-sub,.inv .quote-attr,.inv .brand-footer,.inv .img-prompt,
 .inv .stat-context{color:rgba(255,255,255,.85)}
 .inv .quote-mark{color:rgba(255,255,255,.38)}
-.inv .bullets li,.inv .stat-label,.inv .table-cell{color:rgba(255,255,255,.94)}
+.inv .bullets li,.inv .stat-label,.inv .table-cell,.inv .agenda-text{color:rgba(255,255,255,.94)}
 .inv .bullets .dot,.inv .title-accent{background:#ffffff}
 .inv .table-head{border-bottom-color:rgba(255,255,255,.5)}
+.inv .agenda-num{color:rgba(255,255,255,.65)}
 
 .err{color:${C.highlight};font-size:28px}`;
 }
@@ -2171,11 +2492,17 @@ export function renderDeck(deckRoot, themeRoot, opts = {}) {
   const ctx = makeContext(deckRoot, themeRoot, opts);
   const total = ctx.slides.length;
 
-  const sections = ctx.slides.map((s, i) => `
+  // ctx.slideIndex is scoped per slide (agenda needs its own document
+  // position to find the chapter strictly before it) — same one-context,
+  // set-before-use pattern as ctx.slideKey below in renderSlide.
+  const sections = ctx.slides.map((s, i) => {
+    ctx.slideIndex = i;
+    return `
   <section class="page" id="p${num(i)}" data-slide-id="${esc(s.id)}">
     <div class="cap"><b>${num(i)} · ${esc(s.id)}</b> &nbsp; ${esc(typeof s.layout === 'object' ? 'grid-direct' : s.layout)} · role:${esc(s.role)}<br>idea: ${esc(s.idea)}${s.notes ? `<div class="notes">${esc(String(s.notes).trim())}</div>` : ''}</div>
     <div class="frame">${renderSlide(s, ctx)}</div>
-  </section>`).join('');
+  </section>`;
+  }).join('');
 
   const head = `
   <div class="deck-head">

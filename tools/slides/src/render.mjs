@@ -1326,8 +1326,8 @@ svg.lead{display:block;max-width:100%;max-height:100%;overflow:visible}
   background:${C.highlight};transform:translateY(-4px)}
 
 .quote-block{max-width:1000px;position:relative}
-.quote-mark{font-family:${fonts.display};font-size:130px;line-height:.7;color:${C.line};
-  position:absolute;top:-42px;left:-18px;user-select:none}
+.quote-mark{font-family:${fonts.display};font-size:180px;line-height:.7;color:${C.line};
+  position:absolute;top:-64px;left:-26px;user-select:none}
 .quote-text{font-family:${fonts.display};font-weight:${fonts.wDisplay};line-height:1.5;
   color:${C.textStrong};position:relative;text-align:left}
 .quote-attr{margin-top:34px;color:${C.muted};text-align:right}

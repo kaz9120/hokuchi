@@ -787,7 +787,7 @@ linter はエラーで止めず警告を中心とします。ただし逸脱は�
 | `one-idea` | warn | 主役級要素 (statement のほか diagram / chart / code / post / link / stat / table / versus / agenda / video) が 1 枚に 2 つ以上。従属スロット (headline / subtitle / attribution) に入った statement は主役級に数えない | p.109, p.256 |
 | `bullet-count` | warn | `bullets.items` が 5 項目超 | p.171 |
 | `pie-rules` | warn | 円グラフが 9 項目以上、または合計が 100% でない | p.91 |
-| `axis-lock` | warn | 連続する chart 間で軸位置が揃わない (共有 `scale` 未指定) | p.90 |
+| `axis-lock` | warn | 連続する chart 間で軸位置が揃わない (共有 `scale` 未指定)。軸を持たない composition が絡むペアは対象外 (ADR-0016) | p.90 |
 | `contrast` | warn | 背景とのコントラスト不足、グレースケール変換で判別不能な系列 | p.152, p.156 |
 | `whitespace` | warn | `whitespace_min` を既定値 0.3 未満に下げた | p.126-127 |
 | `gaze` | warn | 人物画像の視線がコンテンツと逆向き (`gaze: away-from-content`) | p.117 |

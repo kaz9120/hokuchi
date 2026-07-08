@@ -576,27 +576,37 @@ function renderDag(el, box, ctx, { cols, cardW, cardH, colGap, rowGap }) {
     });
   });
 
-  // 同じノードへ流入するエッジは、左辺の同じ点に刺さると矢印が団子になる。
-  // 流入数で左辺を等分し、宣言順に上から割り当てる (converge の視認性)。
-  const inCount = {}, inSeen = {};
+  // 同じノードへ流入する複数エッジは、手前の合流点で 1 本に束ねる。
+  // 各カードの矢尻が 1 つになり (複数の矢尻は団子に見える。レビュー指摘
+  // 2026-07-08)、到達点も左辺の中央 1 点に揃う。
+  const inCount = {};
   for (const e of el.edges || []) {
     if (pos[e.from] && pos[e.to]) inCount[e.to] = (inCount[e.to] || 0) + 1;
   }
   let edgeSvg = '';
+  const junctionDrawn = new Set();
   for (const e of el.edges || []) {
     const a = pos[e.from], b = pos[e.to];
     if (!a || !b) continue; // edge-ref lint reports this; render skips silently.
-    const slot = (inSeen[e.to] = (inSeen[e.to] || 0) + 1);
     const x1 = a.x + cardW + 5, y1 = a.y + cardH / 2;
-    const x2 = b.x - 7, y2 = b.y + (cardH * slot) / (inCount[e.to] + 1);
-    if (x2 <= x1) continue; // 同列・逆行は描かない (form の誤用)
+    const xEnd = b.x - 7, yEnd = b.y + cardH / 2;
+    if (xEnd <= x1) continue; // 同列・逆行は描かない (form の誤用)
+    const merged = inCount[e.to] >= 2;
+    // 合流点: カード左辺の少し手前。ここまでは矢尻なしの曲線で集め、
+    // 合流点からカードへの短い直線 1 本だけが矢尻を持つ
+    const x2 = merged ? xEnd - 30 : xEnd;
     // 高さが変わるエッジは S 字カーブ: 水平に出て水平に入る (制御点は中間 x)。
     // 矢印はカードへ水平に刺さり、斜めの直線より視線の流れが柔らかい。
     const mx = round((x1 + x2) / 2);
-    edgeSvg += `<path d="M ${round(x1)} ${round(y1)} C ${mx} ${round(y1)}, ${mx} ${round(y2)}, ${round(x2)} ${round(y2)}"
-      fill="none" stroke="${C.muted}" stroke-width="3" marker-end="${markerRef(ctx)}"/>`;
+    edgeSvg += `<path d="M ${round(x1)} ${round(y1)} C ${mx} ${round(y1)}, ${mx} ${round(yEnd)}, ${round(x2)} ${round(yEnd)}"
+      fill="none" stroke="${C.muted}" stroke-width="3"${merged ? '' : ` marker-end="${markerRef(ctx)}"`}/>`;
+    if (merged && !junctionDrawn.has(e.to)) {
+      junctionDrawn.add(e.to);
+      edgeSvg += `<line x1="${round(x2)}" y1="${round(yEnd)}" x2="${round(xEnd)}" y2="${round(yEnd)}"
+        stroke="${C.muted}" stroke-width="3" marker-end="${markerRef(ctx)}"/>`;
+    }
     if (e.label) {
-      edgeSvg += `<text x="${mx}" y="${round((y1 + y2) / 2 - 10)}" text-anchor="middle" fill="${C.muted}" font-size="${scale.axis}" font-family='${fonts.body}'>${esc(e.label)}</text>`;
+      edgeSvg += `<text x="${mx}" y="${round((y1 + yEnd) / 2 - 10)}" text-anchor="middle" fill="${C.muted}" font-size="${scale.axis}" font-family='${fonts.body}'>${esc(e.label)}</text>`;
     }
   }
 

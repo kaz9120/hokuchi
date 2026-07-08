@@ -1,7 +1,7 @@
-# hokuchi デフォルトテーマ (schema_version 0.3.0)
+# hokuchi デフォルトテーマ (schema_version 0.4.0)
 # 導出元: BRAND.md §6 / hidoko/packages/ui/src/tokens.css
 # 値は spike/theme.yaml を踏襲し、SPEC §2 の新形式へ移行した。
-schema_version: "0.3.0"
+schema_version: "0.4.0"
 theme:
   grid:
     pattern: col-4        # 4 カラム
@@ -31,6 +31,8 @@ theme:
       family: '"LINE Seed JP", "Inter", sans-serif'
       weight: 400
       min_size_pt: 24
+    # mono (任意、ADR-0016): コード引用の素材書体。未指定のためレンダラ既定の
+    # mono スタックに落ちる。
     # タイプスケール: 役割ごとのフォントサイズ (px)。spike NOTES §1 の実測表 (ADR-0007)
     scale:
       hero: 80          # opener / closer の statement
@@ -43,6 +45,8 @@ theme:
       attribution: 24   # 引用の出典
       node: 24          # ダイアグラムのノードラベル
       axis: 20          # チャートの軸ラベル
+      code: 22          # code 要素の本文 (ADR-0016)
+      stat: 160         # stat 要素の数字 (ADR-0016)
   iconography: flat
   icon_set: phosphor
   icon_weight: regular

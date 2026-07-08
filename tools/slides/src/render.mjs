@@ -48,6 +48,14 @@ const PATTERN_SLOTS = {
   'quote-stage': ['quote'],
   'profile-stage': ['portrait', 'name', 'affiliation', 'handle', 'bio'],
   'image-stage': ['headline', 'image'],
+  'code-stage': ['headline', 'code'],
+  'post-stage': ['headline', 'post'],
+  'link-stage': ['headline', 'link'],
+  'stat-stage': ['headline', 'stat'],
+  'table-stage': ['headline', 'table'],
+  'versus-stage': ['headline', 'versus'],
+  'agenda-stage': ['headline', 'agenda'],
+  'video-stage': ['headline', 'video'],
 };
 
 // ---------------------------------------------------------------------------
@@ -1074,7 +1082,7 @@ function renderImage(el, ctx) {
 }
 
 // ---------------------------------------------------------------------------
-// Raw escape hatch (SPEC §6.7) — svg file / inline svg / inline html
+// Raw escape hatch (SPEC §6.15) — svg file / inline svg / inline html
 // ---------------------------------------------------------------------------
 function renderRaw(el, ctx) {
   if (el.html) return `<div class="raw-wrap">${el.html}</div>`;

@@ -79,6 +79,16 @@
                 "min_size_pt": { "type": "number", "exclusiveMinimum": 0 }
               }
             },
+            "mono": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["family"],
+              "description": "コード引用のための素材書体 (任意、ADR-0016)。声のスロットではない。未指定はレンダラ既定の mono スタックに落ちる",
+              "properties": {
+                "family": { "type": "string" },
+                "weight": { "type": "integer", "minimum": 1, "maximum": 1000 }
+              }
+            },
             "scale": {
               "type": "object",
               "additionalProperties": false,
@@ -92,7 +102,9 @@
                 "subtitle": { "type": "integer", "minimum": 1, "default": 30 },
                 "attribution": { "type": "integer", "minimum": 1, "default": 24 },
                 "node": { "type": "integer", "minimum": 1, "default": 24 },
-                "axis": { "type": "integer", "minimum": 1, "default": 20 }
+                "axis": { "type": "integer", "minimum": 1, "default": 20 },
+                "code": { "type": "integer", "minimum": 1, "default": 22 },
+                "stat": { "type": "integer", "minimum": 1, "default": 160 }
               }
             }
           }

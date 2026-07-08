@@ -2,7 +2,7 @@
 # 一次ソース: https://github.com/TheMoshInc/marp-slide-template (mosh.css + assets)
 # ブランドカラー #FA6E78 / 黒 #111827 / グレー #4B5563 / Nunito / ライト背景。
 # ロゴは全ページ右上、コピーライトは右下 (企業テンプレートの要件。placement: all で明示的に逸脱)。
-schema_version: "0.3.0"
+schema_version: "0.4.0"
 theme:
   grid:
     pattern: col-4
@@ -30,6 +30,11 @@ theme:
       family: '"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif'
       weight: 400
       min_size_pt: 24
+    # mono (任意、ADR-0016) は未指定。他のトークンはレンダラ既定に委ねたまま、
+    # code / stat のみ ADR-0016 の既定値を明示する。
+    scale:
+      code: 22
+      stat: 160
   brand:
     logo:
       src: ./assets/logo-mosh.svg

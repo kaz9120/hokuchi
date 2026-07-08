@@ -75,15 +75,33 @@ function normalizeChart(el) {
   return el;
 }
 
-function normalizeElement(el) {
-  if (el.kind === 'diagram') return normalizeDiagram(el);
-  if (el.kind === 'chart') return normalizeChart(el);
+// code.src → code.code (ADR-0016). Mirrors the chart source-sugar resolution
+// site, but resolves eagerly instead of deferring: unlike a chart with no
+// data, a code element with an unread src still has a well-formed empty
+// render, and downstream consumers (code-budget lint) need the text now.
+// A missing file is not an error here — same tolerance as image's src
+// fallback to its prompt placeholder — it just leaves el.code unset, and
+// code-budget skips elements it cannot measure.
+function normalizeCode(el, deckDir) {
+  if (el.src && !el.code) {
+    const abs = path.resolve(deckDir, el.src);
+    if (fs.existsSync(abs)) {
+      el.code = fs.readFileSync(abs, 'utf8');
+    }
+  }
   return el;
 }
 
-function normalizeDeck(root) {
+function normalizeElement(el, deckDir) {
+  if (el.kind === 'diagram') return normalizeDiagram(el);
+  if (el.kind === 'chart') return normalizeChart(el);
+  if (el.kind === 'code') return normalizeCode(el, deckDir);
+  return el;
+}
+
+function normalizeDeck(root, deckDir) {
   for (const slide of root.slides || []) {
-    for (const el of slide.elements || []) normalizeElement(el);
+    for (const el of slide.elements || []) normalizeElement(el, deckDir);
   }
   return root;
 }
@@ -110,7 +128,7 @@ export function loadDeck(deckPath) {
   const absTheme = path.resolve(path.dirname(absDeck), themeRel);
   const theme = loadTheme(absTheme);
 
-  const deck = normalizeDeck(rawDeck);
+  const deck = normalizeDeck(rawDeck, path.dirname(absDeck));
   return { deck, theme, deckPath: absDeck, themePath: absTheme };
 }
 

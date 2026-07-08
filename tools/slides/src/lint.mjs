@@ -1,4 +1,4 @@
-// lint.mjs — SPEC §9 linter. 15 rules, severity error / warn / info.
+// lint.mjs — SPEC §9 linter. 18 rules, severity error / warn / info.
 //
 // The linter never mutates; it returns a flat list of findings
 // { id, severity, slideId, message }. Errors are reserved for references that
@@ -6,9 +6,11 @@
 // a deviation is logged, not forbidden (ADR-0002).
 //
 // Static-only stance: rules that would need image analysis (contrast grayscale,
-// gaze) judge from declared values alone, as the SPEC allows. Three rules
-// (pie-rules, logo-bumper, shrink-report) have no full declarative signal in the
-// current schema; see the notes on each for how far the static check reaches.
+// gaze) judge from declared values alone, as the SPEC allows. logo-bumper has
+// no declarative signal in the current schema (no logo element exists yet) and
+// stays a no-op; shrink-report's static estimate covers only the tractable
+// list-stage case. pie-rules became fully declarative with chart intent
+// composition (ADR-0016) and no longer needs this caveat.
 
 import { iconExists } from './icons.mjs';
 
@@ -43,8 +45,15 @@ const kinds = (slide, k) => slide.elements.filter((e) => e.kind === k);
 // not statements competing for the slide's one idea.
 const SUBORDINATE_SLOTS = new Set(['headline', 'subtitle', 'support', 'name', 'affiliation', 'handle']);
 const isLeadSlot = (e) => !SUBORDINATE_SLOTS.has(e.slot);
+// Lead-level kinds that always count toward one-idea regardless of slot
+// (SPEC §9 one-idea; ADR-0016 extends this to the 8 new elements). code
+// counts here even though its text is excluded from slideument — it is
+// still a competing focal point on the slide, just not spoken-word text.
+const LEAD_KINDS = new Set(['diagram', 'chart', 'code', 'post', 'link', 'stat', 'table', 'versus', 'agenda', 'video']);
 
-/** Visible text total: text / items / label / annotate (SPEC §9 slideument). */
+/** Visible text total: text / items / label / annotate (SPEC §9 slideument).
+ * code is deliberately excluded — it is reference material, not spoken-word
+ * text (same exemption as profile-stage, SPEC §6.7). */
 function visibleTextCount(slide) {
   let n = 0;
   for (const el of slide.elements) {
@@ -55,6 +64,26 @@ function visibleTextCount(slide) {
     if (el.shared && el.shared.label) n += cpLen(el.shared.label);
     if (el.data && Array.isArray(el.data.series)) for (const s of el.data.series) n += cpLen(s.label);
     if (Array.isArray(el.annotations)) for (const a of el.annotations) n += cpLen(a.annotate);
+    if (el.kind === 'post' && el.author) n += cpLen(el.author);
+    if (el.kind === 'link') {
+      if (el.title) n += cpLen(el.title);
+      if (el.description) n += cpLen(el.description);
+    }
+    if (el.kind === 'stat') {
+      if (el.value) n += cpLen(el.value);
+      if (el.label) n += cpLen(el.label);
+      if (el.context) n += cpLen(el.context);
+    }
+    if (el.kind === 'table') {
+      for (const c of el.columns || []) n += cpLen(c);
+      for (const row of el.rows || []) for (const cell of row) n += cpLen(cell);
+    }
+    if (el.kind === 'versus') {
+      for (const side of el.sides || []) {
+        n += cpLen(side.label);
+        for (const it of side.items || []) n += cpLen(it);
+      }
+    }
   }
   return n;
 }
@@ -78,12 +107,13 @@ export function lint(deckRoot, themeRoot) {
     else if (n > 100) add('slideument', 'warn', s.id, `可視テキスト ${n} 字が目安 100 字を超えている`);
   }
 
-  // one-idea — 2+ lead-level elements (diagram / chart / lead statement) on one slide.
+  // one-idea — 2+ lead-level elements (diagram / chart / code / post / link /
+  // stat / table / versus / agenda / video / lead statement) on one slide.
   // Headline and subtitle statements are structurally subordinate, so they are
   // not counted as separate ideas (see report note).
   for (const s of slides) {
     const lead = s.elements.filter(
-      (e) => e.kind === 'diagram' || e.kind === 'chart' || (e.kind === 'statement' && isLeadSlot(e))
+      (e) => LEAD_KINDS.has(e.kind) || (e.kind === 'statement' && isLeadSlot(e))
     ).length;
     if (lead >= 2) add('one-idea', 'warn', s.id, `主役級要素が ${lead} 個ある。1 枚 1 アイデアに分割を検討`);
   }
@@ -95,8 +125,62 @@ export function lint(deckRoot, themeRoot) {
     }
   }
 
-  // pie-rules — 円グラフの項目数 / 合計。現行スキーマに円グラフの宣言経路が無いため、
-  // 静的には検出対象が生じない (報告の SPEC ギャップ参照)。
+  // code-budget — code text 17+ lines, or any line 81+ columns wide (ADR-0016).
+  // Only measures el.code (already resolved from src by load.mjs); an
+  // unresolved src (file not yet delivered) has nothing to measure, so it is
+  // skipped rather than flagged.
+  for (const s of slides) {
+    for (const c of kinds(s, 'code')) {
+      if (!c.code) continue;
+      const lines = c.code.replace(/\n$/, '').split('\n');
+      const maxWidth = Math.max(0, ...lines.map(cpLen));
+      if (lines.length >= 17 || maxWidth >= 81) {
+        add('code-budget', 'warn', s.id, `code が ${lines.length} 行・最長 ${maxWidth} 桁。17 行 / 81 桁が目安`);
+      }
+    }
+  }
+
+  // table-size — 8+ data rows (column cap of 6 is schema-enforced, ADR-0016).
+  for (const s of slides) {
+    for (const t of kinds(s, 'table')) {
+      if (t.rows.length >= 8) {
+        add('table-size', 'warn', s.id, `table のデータ行が ${t.rows.length} 行。8 行以上は読みにくい`);
+      }
+    }
+  }
+
+  // agenda-source — agenda has no role: transition slide to derive its items
+  // from (ADR-0016). agenda itself carries no fields, so a deck-wide check.
+  {
+    const hasTransition = slides.some((s) => s.role === 'transition');
+    if (!hasTransition) {
+      for (const s of slides) {
+        if (kinds(s, 'agenda').length > 0) {
+          add('agenda-source', 'error', s.id, 'agenda 要素があるが role: transition のスライドが 1 枚も無い');
+        }
+      }
+    }
+  }
+
+  // pie-rules — composition intent の単一系列の項目数 / 合計 (ADR-0016)。
+  // 複数系列の composition は 100% 積み上げ棒に導出されるため、円グラフの規則
+  // (8 項目以内・合計 100%) の対象外。
+  for (const s of slides) {
+    for (const ch of kinds(s, 'chart')) {
+      if (ch.intent !== 'composition') continue;
+      const series = ch.data.series || [];
+      if (series.length !== 1) continue;
+      const xs = ch.data.x || [];
+      const values = series[0].values || [];
+      const sum = values.reduce((a, b) => a + b, 0);
+      if (xs.length >= 9) {
+        add('pie-rules', 'warn', s.id, `円グラフの項目が ${xs.length} 個。8 項目以内を推奨`);
+      }
+      if (Math.abs(sum - 100) > 2) {
+        add('pie-rules', 'warn', s.id, `円グラフの合計が ${sum} で 100±2 を外れている`);
+      }
+    }
+  }
 
   // axis-lock — consecutive chart slides that do not share a scale.
   for (let i = 1; i < slides.length; i++) {

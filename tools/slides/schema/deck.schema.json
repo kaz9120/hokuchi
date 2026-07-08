@@ -95,7 +95,15 @@
             "list-stage",
             "quote-stage",
             "profile-stage",
-            "image-stage"
+            "image-stage",
+            "code-stage",
+            "post-stage",
+            "link-stage",
+            "stat-stage",
+            "table-stage",
+            "versus-stage",
+            "agenda-stage",
+            "video-stage"
           ]
         },
         {
@@ -161,6 +169,14 @@
             { "$ref": "#/$defs/diagram" },
             { "$ref": "#/$defs/chart" },
             { "$ref": "#/$defs/quote" },
+            { "$ref": "#/$defs/code" },
+            { "$ref": "#/$defs/post" },
+            { "$ref": "#/$defs/link" },
+            { "$ref": "#/$defs/stat" },
+            { "$ref": "#/$defs/table" },
+            { "$ref": "#/$defs/versus" },
+            { "$ref": "#/$defs/agenda" },
+            { "$ref": "#/$defs/video" },
             { "$ref": "#/$defs/raw" }
           ]
         },
@@ -294,7 +310,7 @@
         "kind": { "const": "chart" },
         "slot": { "type": "string" },
         "id": { "type": "string" },
-        "intent": { "enum": ["comparison", "trend", "distribution"] },
+        "intent": { "enum": ["comparison", "trend", "distribution", "composition"] },
         "message": { "type": "string", "minLength": 1 },
         "data": {
           "oneOf": [
@@ -370,6 +386,170 @@
         "id": { "type": "string" },
         "text": { "type": "string" },
         "attribution": { "type": "string" }
+      }
+    },
+
+    "code": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "oneOf": [
+        { "required": ["code"] },
+        { "required": ["src"] }
+      ],
+      "properties": {
+        "kind": { "const": "code" },
+        "slot": { "type": "string" },
+        "id": { "type": "string" },
+        "code": { "type": "string" },
+        "src": { "type": "string" },
+        "lang": { "type": "string", "default": "plaintext" },
+        "filename": { "type": "string" },
+        "emphasis": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              { "type": "integer", "minimum": 1 },
+              { "type": "string", "pattern": "^\\d+-\\d+$" }
+            ]
+          }
+        }
+      }
+    },
+
+    "post": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "text", "author"],
+      "properties": {
+        "kind": { "const": "post" },
+        "slot": { "type": "string" },
+        "id": { "type": "string" },
+        "text": { "type": "string" },
+        "author": { "type": "string" },
+        "handle": { "type": "string" },
+        "date": { "type": "string" },
+        "avatar": { "type": "string" },
+        "source": { "type": "string" }
+      }
+    },
+
+    "link": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "url"],
+      "properties": {
+        "kind": { "const": "link" },
+        "slot": { "type": "string" },
+        "id": { "type": "string" },
+        "url": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "image": { "type": "string" }
+      }
+    },
+
+    "stat": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "value"],
+      "properties": {
+        "kind": { "const": "stat" },
+        "slot": { "type": "string" },
+        "id": { "type": "string" },
+        "value": { "type": "string" },
+        "label": { "type": "string" },
+        "context": { "type": "string" }
+      }
+    },
+
+    "table": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "columns", "rows"],
+      "properties": {
+        "kind": { "const": "table" },
+        "slot": { "type": "string" },
+        "id": { "type": "string" },
+        "columns": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 6,
+          "items": { "type": "string" }
+        },
+        "rows": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "emphasis": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "rows": { "type": "array", "items": { "type": "integer", "minimum": 1 } },
+            "cols": { "type": "array", "items": { "type": "integer", "minimum": 1 } }
+          }
+        }
+      }
+    },
+
+    "versus": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "sides"],
+      "properties": {
+        "kind": { "const": "versus" },
+        "slot": { "type": "string" },
+        "id": { "type": "string" },
+        "sides": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": { "$ref": "#/$defs/versusSide" }
+        }
+      }
+    },
+
+    "versusSide": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "items"],
+      "properties": {
+        "label": { "type": "string" },
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 4,
+          "items": { "type": "string" }
+        },
+        "emphasis": { "type": "boolean" }
+      }
+    },
+
+    "agenda": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": { "const": "agenda" },
+        "slot": { "type": "string" },
+        "id": { "type": "string" }
+      }
+    },
+
+    "video": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "src"],
+      "properties": {
+        "kind": { "const": "video" },
+        "slot": { "type": "string" },
+        "id": { "type": "string" },
+        "src": { "type": "string" },
+        "poster": { "type": "string" }
       }
     },
 

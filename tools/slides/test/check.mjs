@@ -241,6 +241,22 @@ assert.equal(pieSumFindings.length, 1);
 assert.match(pieSumFindings[0].message, /合計/);
 ok('pie-rules lint flags single-series composition charts whose total is off by 100±2');
 
+// intent: composition charts (donut / 100% stacked bar) have no axis, so a
+// consecutive pair where either side is composition must not fire axis-lock
+// even without a shared scale.
+const axisLockCompositionDeck = structuredClone(deck);
+axisLockCompositionDeck.slides.push(
+  baseSlide('s-axis-composition-a', 'chart-stage', [
+    { kind: 'chart', slot: 'chart', intent: 'composition', message: '検証用', data: { x: ['a', 'b'], series: [{ label: '割合', values: [60, 40] }] } },
+  ]),
+  baseSlide('s-axis-composition-b', 'chart-stage', [
+    { kind: 'chart', slot: 'chart', intent: 'trend', message: '検証用', data: { x: ['a', 'b'], series: [{ label: '値', values: [1, 2] }] } },
+  ]),
+);
+const axisLockFindings = lint(axisLockCompositionDeck, theme).filter((f) => f.id === 'axis-lock');
+assert.equal(axisLockFindings.length, 0);
+ok('axis-lock lint does not fire when either chart in a consecutive pair is intent: composition');
+
 // (3) render — one self-contained SPA document (ADR-0012).
 const { pages, assets } = renderDeck(deck, theme, {
   deckDir: path.dirname(deckPath),

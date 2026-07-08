@@ -105,7 +105,7 @@ slides:
 
 ### 層 3: Element — 表現力の核
 
-要素は 7 種。それぞれが slide:ology の章に対応します。
+要素は 7 種。それぞれが slide:ology の章に対応します(書籍の章に対応しない拡張語彙 — image-stage の対象や overlap の shared (ADR-0015)、技術素材・紹介・数値の 8 種 code/post/link/stat/table/versus/agenda/video (ADR-0016) — は SPEC.md と `.claude/skills/crafting-presentation/references/element-guide.md` を参照)。
 
 #### statement / bullets — テキスト (第 7 章)
 
@@ -240,10 +240,13 @@ build:
 | ルール | 内容 | 出典 |
 |--------|------|------|
 | slideument | 可視テキスト合計が閾値超過。日本語は 100 字で警告、150 字でエラー (50 語/75 語相当。換算係数は要検証) | p.26, p.164 |
-| one-idea | 主役級要素 (diagram/chart/statement) が 1 枚に 2 つ以上 | p.109, p.256 |
+| one-idea | 主役級要素 (diagram/chart/statement のほか code/post/link/stat/table/versus/agenda/video、ADR-0016) が 1 枚に 2 つ以上 | p.109, p.256 |
 | bullet-count | bullets.items が 5 項目超 | p.171 |
-| pie-rules | 円グラフ 9 項目以上・合計が 100% でない (12 時起点・時計回りはレンダラが保証) | p.91 |
-| axis-lock | 連続する chart スライド間で軸位置が揃わないデータ範囲 | p.90 |
+| pie-rules | 円グラフ (chart intent: composition の単一系列) が 9 項目以上・合計が 100% でない (12 時起点・時計回りはレンダラが保証、ADR-0016) | p.91 |
+| axis-lock | 連続する chart スライド間で軸位置が揃わないデータ範囲。軸を持たない composition が絡むペアは対象外 (ADR-0016) | p.90 |
+| code-budget | code が 17 行以上、または 1 行が 81 桁以上 (ADR-0016) | — |
+| table-size | table.rows が 8 行以上 (ADR-0016) | — |
+| agenda-source | agenda を置いたデッキに role: transition のスライドが 1 枚もない (ADR-0016) | — |
 | contrast | 背景とのコントラスト不足、およびグレースケール変換で判別不能な系列 (色覚対応) | p.152, p.156 |
 | whitespace | whitespace_min を既定値未満に下げた | p.126-127 |
 | gaze | 人物画像の視線がコンテンツと逆向き (subject/gaze 宣言から判定) | p.117 |

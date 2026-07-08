@@ -1837,17 +1837,18 @@ function renderVideo(el, ctx) {
   const { C } = ctx;
   const abs = el.poster ? path.resolve(ctx.deckDir, el.poster) : null;
   const hasPoster = abs && fs.existsSync(abs);
-  const bgHtml = hasPoster
-    ? `<img class="video-poster" src="${esc(ctx.useAsset(abs, 'assets'))}" alt="">`
-    : `<div class="video-fallback jp">${esc(path.basename(el.src))}</div>`;
+  const bgHtml = hasPoster ? `<img class="video-poster" src="${esc(ctx.useAsset(abs, 'assets'))}" alt="">` : '';
+  const fallbackHtml = hasPoster ? '' : `<div class="video-fallback jp">${esc(path.basename(el.src))}</div>`;
   // 再生グリフは線描のみ (三角 + 円環)。ベタ塗りにしない (SPEC §6.14) — 背後の
   // 円 (半透明の黒) はポスター写真の上でも線が読める最低限のコントラスト土台。
+  // fallback のファイル名はグリフの下に縦積みする (同じ中心に重ねると文字が
+  // グリフを貫通して読めない — レビュー指摘 2026-07-08)。
   const glyph = `<svg class="video-glyph" viewBox="0 0 100 100" width="88" height="88">
     <circle cx="50" cy="50" r="46" fill="rgba(0,0,0,.3)"/>
     <circle cx="50" cy="50" r="40" fill="none" stroke="${C.text}" stroke-width="3"/>
     <path d="M43 33 L71 50 L43 67 Z" fill="none" stroke="${C.text}" stroke-width="3" stroke-linejoin="round"/>
   </svg>`;
-  return `<div class="video-box">${bgHtml}${glyph}</div>`;
+  return `<div class="video-box">${bgHtml}<div class="video-center">${glyph}${fallbackHtml}</div></div>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -2397,11 +2398,12 @@ svg.lead{display:block;max-width:100%;max-height:100%;overflow:visible}
 /* video (SPEC §6.14, ADR-0016) — own opaque panel (poster or surface fill),
    so no .inv handling (same reasoning as code/post/versus). */
 .video-box{position:relative;width:100%;height:100%;border-radius:14px;
-  overflow:hidden;background:${C.surface};display:flex;align-items:center;justify-content:center}
+  overflow:hidden;background:${C.surface}}
 .video-poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.video-fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  color:${C.muted};font-size:20px;font-family:${fonts.body}}
-.video-glyph{position:relative;z-index:1}
+.video-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:20px;z-index:1}
+.video-fallback{color:${C.muted};font-size:20px;font-family:${fonts.body}}
+.video-glyph{position:relative}
 
 .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
 .slide>.pane,.slide>.grid-stage,.slide>.headline{z-index:1}

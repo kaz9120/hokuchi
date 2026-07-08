@@ -183,10 +183,13 @@ export function lint(deckRoot, themeRoot) {
   }
 
   // axis-lock — consecutive chart slides that do not share a scale.
+  // intent: composition (ドーナツ / 100% 積み上げ棒) は軸を持たない (ADR-0016)。
+  // ペアのどちらかが composition なら、そもそも揃えるべき軸がないので対象外にする。
   for (let i = 1; i < slides.length; i++) {
     const a = kinds(slides[i - 1], 'chart')[0];
     const b = kinds(slides[i], 'chart')[0];
     if (a && b) {
+      if (a.intent === 'composition' || b.intent === 'composition') continue;
       if (!a.scale || !b.scale || a.scale !== b.scale) {
         add('axis-lock', 'warn', slides[i].id, '連続する chart が共有 scale を指定していない。軸位置が揃わない');
       }

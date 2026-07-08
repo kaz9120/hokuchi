@@ -47,6 +47,7 @@ const PATTERN_SLOTS = {
   'list-stage': ['headline', 'list'],
   'quote-stage': ['quote'],
   'profile-stage': ['portrait', 'name', 'affiliation', 'handle', 'bio'],
+  'image-stage': ['headline', 'image'],
 };
 
 // ---------------------------------------------------------------------------
@@ -668,6 +669,31 @@ function renderOverlap(el, box, ctx, { r, DIST }) {
   const gx = centers.reduce((t, c) => t + c.x, 0) / n;
   const gy = centers.reduce((t, c) => t + c.y, 0) / n;
 
+  // 交差領域 (ADR-0015): shared 宣言があれば、全円の共通部分を clipPath の
+  // 入れ子で塗り、ラベルを領域の中心に置く。ベン図の主役はしばしばここ。
+  let sharedSvg = '';
+  if (el.shared) {
+    // 円の重心 = 共通部分のほぼ中心 (2 円は中点、3 円は重心)。ベースライン
+    // 描画なので、視覚中心に合わせてわずかに下げる
+    const sx = gx, sy = gy + 8;
+    if (el.shared.emphasis) {
+      let inner = `<circle cx="${round(centers[n - 1].x)}" cy="${round(centers[n - 1].y)}" r="${round(r)}"
+        fill="${C.highlight}" fill-opacity="0.16"/>`;
+      let defs = '';
+      for (let i = 0; i < n - 1; i++) {
+        const id = `ov-${ctx.slideKey}-${i}`;
+        defs += `<clipPath id="${id}"><circle cx="${round(centers[i].x)}" cy="${round(centers[i].y)}" r="${round(r)}"/></clipPath>`;
+        inner = `<g clip-path="url(#${id})">${inner}</g>`;
+      }
+      sharedSvg += `<defs>${defs}</defs>${inner}`;
+    }
+    if (el.shared.label) {
+      sharedSvg += `<text x="${round(sx)}" y="${round(sy + 7)}" text-anchor="middle"
+        fill="${el.shared.emphasis ? C.highlight : C.muted}" font-size="${scale.axis}"
+        font-weight="${el.shared.emphasis ? fonts.wDisplay : 'inherit'}" font-family='${fonts.display}'>${esc(el.shared.label)}</text>`;
+    }
+  }
+
   let circleSvg = '', labelSvg = '';
   el.nodes.forEach((nd, i) => {
     const c = centers[i];
@@ -691,7 +717,8 @@ function renderOverlap(el, box, ctx, { r, DIST }) {
         font-size="${fitFs(scale.axis, nd.detail)}" font-family='${fonts.body}'>${esc(nd.detail)}</text>`;
     }
   });
-  return svgLead(box, `<g>${circleSvg}</g><g>${labelSvg}</g>`);
+  // 描画順: 円 → 交差の塗り (円の上) → ラベル (最前面)
+  return svgLead(box, `<g>${circleSvg}</g><g>${sharedSvg}</g><g>${labelSvg}</g>`);
 }
 
 /**
@@ -1156,6 +1183,66 @@ function listStage(slide, ctx) {
   return leadStage(slide, ctx, 'list', measureList, 'pane');
 }
 
+/** 画像ファイルの実寸 (px)。png / jpeg / svg のみ。読めなければ null。 */
+function imageDims(absPath) {
+  try {
+    const buf = fs.readFileSync(absPath);
+    // PNG: シグネチャ 8B + IHDR。width/height は offset 16/20 の BE32
+    if (buf.length > 24 && buf.readUInt32BE(0) === 0x89504e47) {
+      return { w: buf.readUInt32BE(16), h: buf.readUInt32BE(20) };
+    }
+    // JPEG: SOF0/1/2 セグメントに height/width
+    if (buf.length > 4 && buf[0] === 0xff && buf[1] === 0xd8) {
+      let off = 2;
+      while (off + 9 < buf.length && buf[off] === 0xff) {
+        const marker = buf[off + 1];
+        const len = buf.readUInt16BE(off + 2);
+        if (marker >= 0xc0 && marker <= 0xc2) {
+          return { h: buf.readUInt16BE(off + 5), w: buf.readUInt16BE(off + 7) };
+        }
+        off += 2 + len;
+      }
+      return null;
+    }
+    // SVG: width/height 属性、なければ viewBox
+    const head = buf.toString('utf8', 0, Math.min(buf.length, 2048));
+    if (head.includes('<svg')) {
+      const wh = head.match(/<svg[^>]*\swidth="(\d+(?:\.\d+)?)(?:px)?"[^>]*\sheight="(\d+(?:\.\d+)?)(?:px)?"/);
+      if (wh) return { w: Number(wh[1]), h: Number(wh[2]) };
+      const vb = head.match(/viewBox="[\d.\s-]*?([\d.]+)\s+([\d.]+)"\s*/);
+      if (vb) return { w: Number(vb[1]), h: Number(vb[2]) };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * image-stage の measure (ADR-0015): 実画像の縦横比を読んで箱を申告する。
+ * 読めない場合 (プレースホルダ・未対応形式) は 16:9 とみなす。
+ */
+function measureImage(el, ctx, avail) {
+  const abs = el.src ? path.resolve(ctx.deckDir, el.src) : null;
+  const dims = abs && fs.existsSync(abs) ? imageDims(abs) : null;
+  const aspect = dims && dims.w > 0 && dims.h > 0 ? dims.w / dims.h : 16 / 9;
+  const box = fitAspect(aspect, avail.w, avail.h);
+  return {
+    ...box,
+    render: () => {
+      if (!abs || !fs.existsSync(abs)) return renderImagePlaceholder(el, ctx);
+      const rel = ctx.useAsset(abs, 'assets');
+      const img = `<img class="stage-photo" src="${esc(rel)}" alt="">`;
+      // framed はスクリーンショットに面のパネルを敷く既存の見た目を流用
+      return el.treatment === 'framed' ? `<div class="photo-framed">${img}</div>` : img;
+    },
+  };
+}
+
+function imageStage(slide, ctx) {
+  return leadStage(slide, ctx, 'image', measureImage);
+}
+
 function quoteStage(slide, ctx) {
   const stage = stageRect();
   const pane = { ...stage, h: round(stage.h * 0.94) }; // 光学中心 (statementStage と同じ)
@@ -1262,6 +1349,7 @@ const PATTERNS = {
   'list-stage': listStage,
   'quote-stage': quoteStage,
   'profile-stage': profileStage,
+  'image-stage': imageStage,
 };
 
 function renderSlideBody(slide, ctx) {
@@ -1384,6 +1472,8 @@ svg.lead{display:block;max-width:100%;max-height:100%;overflow:visible}
 .profile-body{font-size:21px;line-height:1.65;color:${C.text}}
 
 .photo{width:100%;height:100%;object-fit:cover;display:block}
+.stage-photo{width:100%;height:100%;object-fit:contain;display:block;border-radius:10px;
+  border:1px solid ${C.line};box-shadow:0 10px 36px rgba(0,0,0,.12)}
 .photo.contain{object-fit:contain}
 .photo-framed{width:100%;height:100%;padding:48px;background:${C.surface};display:flex;
   align-items:center;justify-content:center}

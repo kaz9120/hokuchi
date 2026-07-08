@@ -94,7 +94,8 @@
             "chart-stage",
             "list-stage",
             "quote-stage",
-            "profile-stage"
+            "profile-stage",
+            "image-stage"
           ]
         },
         {
@@ -234,6 +235,15 @@
         "form": {
           "type": "string",
           "pattern": "^(flow|structure|cluster|radial|pictogram)\\.[a-z][a-z-]*$"
+        },
+        "shared": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "cluster.overlap 専用 (ADR-0015)。全円の共通部分のラベルと強調",
+          "properties": {
+            "label": { "type": "string" },
+            "emphasis": { "type": "boolean" }
+          }
         },
         "nodes": {
           "type": "array",

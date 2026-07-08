@@ -3,7 +3,7 @@
 # 全要素 7 種 (statement/bullets/image/diagram/chart/quote/raw)、
 # ブランド枠 (ロゴ・フッタ・背景・反転前景) を 1 デッキで踏む。
 # レンダラを変えたら、まずこのデッキを render / shot して全種の見た目を確認する。
-schema_version: "0.1.0"
+schema_version: "0.2.0"
 deck:
   title: "カバレッジデッキ — 全種の見た目検証"
   audience:
@@ -273,9 +273,10 @@ slides:
           - { id: human, label: "人間", detail: "レビュー" }
           - { id: claude, label: "Claude", detail: "生成" }
           - { id: render, label: "レンダラ", detail: "配置" }
-        emphasis: [render]
+        shared: { label: "1 枚の合意", emphasis: true }
     notes: |
-      検証点: 3 円の正三角形配置、重なりの濃度、外向きに逃げたラベル、強調円。
+      検証点: 3 円の正三角形配置、外向きに逃げたラベル、共通部分の塗りと
+      ラベル (shared、ADR-0015)。
 
   - id: diagram-enclosed
     role: content
@@ -464,6 +465,21 @@ slides:
         text: "実画像は src、意図は prompt に残す"
     notes: |
       検証点: src 画像のコピーと参照、object-fit cover、subject の寄せ。
+
+  - id: image-stage
+    role: content
+    idea: "image-stage: 見出し + 実寸比の画像 (ADR-0015)"
+    layout: image-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "画像ステージ (image-stage) の検証"
+      - kind: image
+        slot: image
+        src: assets/sample-photo.svg
+    notes: |
+      検証点: 実画像の縦横比 (960×720 = 4:3) で箱が決まること、角丸と
+      ヘアライン枠、他パターンと揃った余白。
 
   - id: image-placeholder
     role: content

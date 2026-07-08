@@ -52,6 +52,7 @@ function visibleTextCount(slide) {
     if (Array.isArray(el.items)) for (const it of el.items) n += cpLen(it);
     if (Array.isArray(el.nodes)) for (const nd of el.nodes) n += cpLen(nd.label);
     if (Array.isArray(el.edges)) for (const ed of el.edges) if (ed.label) n += cpLen(ed.label);
+    if (el.shared && el.shared.label) n += cpLen(el.shared.label);
     if (el.data && Array.isArray(el.data.series)) for (const s of el.data.series) n += cpLen(s.label);
     if (Array.isArray(el.annotations)) for (const a of el.annotations) n += cpLen(a.annotate);
   }

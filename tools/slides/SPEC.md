@@ -48,7 +48,7 @@ theme.yaml   # schema/theme.schema.json で検証する
 - MINOR — 後方互換の追加 (任意フィールドの追加、enum への値追加)
 - PATCH — 仕様の明確化。スキーマの受理集合は変えない
 
-スキーマを進化させるときは、本書末尾の「付録 A: マイグレーションノート」に変更点を追記します。現行版は deck スキーマが `0.1.0`、theme スキーマが `0.3.0` (stage_margin 撤去、ADR-0014) です。1.0.0 未満のため、破壊的変更が MINOR で起こりうる不安定版として扱います。
+スキーマを進化させるときは、本書末尾の「付録 A: マイグレーションノート」に変更点を追記します。現行版は deck スキーマが `0.2.0` (image-stage と overlap の shared、ADR-0015)、theme スキーマが `0.3.0` (stage_margin 撤去、ADR-0014) です。1.0.0 未満のため、破壊的変更が MINOR で起こりうる不安定版として扱います。
 
 ---
 
@@ -287,10 +287,14 @@ opener / closer はレターボックスを外し、ロゴを許可します。�
 | | `affiliation` | statement | `attribution` | 任意 |
 | | `handle` | statement | `node` | 任意 |
 | | `bio` | bullets | `node` 相当 | 任意 |
+| `image-stage` | `headline` | statement | `heading` | 任意 |
+| | `image` | image | — (実画像の縦横比で描画) | 必須 |
 
 `profile-stage` は自己紹介の定型です (毎回の登壇の 2 枚目に置く運用)。`bio` の各項目は `ラベル ── 本文` の形で書くと、ラベルが highlight 色の見出しとして描画されます。自己紹介は聴衆が流し読みする参照情報であり読み上げ原稿ではないため、slideument lint の対象外とします (§9)。`name` / `affiliation` / `handle` の statement は従属スロットで、one-idea の主役級に数えません。
 
-主役スロット (diagram-stage の `diagram`、chart-stage の `chart`、list-stage の `list`、statement-stage の `statement`、quote-stage の `quote`) の要素は、舞台高さの 85% を目安にスケールします (内部に余白や軸ラベルを抱える diagram / chart は 92%)。収まらなければ縮小し、縮小が発生したことを shrink-report lint が報告します (ADR-0008-2、NOTES §2.4)。
+`image-stage` はスクリーンショットや図版を見出し付きで見せる定型です (ADR-0015)。画像の箱は実画像の縦横比から導出され、フルブリードにしたい場合 (情景写真など) は grid-direct を使います。
+
+主役スロット (diagram-stage の `diagram`、chart-stage の `chart`、list-stage の `list`、statement-stage の `statement`、quote-stage の `quote`、image-stage の `image`) の要素は舞台に収まるようにレンダラが配置し、収まらなければ縮小して shrink-report lint が報告します (ADR-0008-2)。具体的な比率・余白の配分はレンダラ内部の構図ポリシーです (§8、ADR-0014)。
 
 ```yaml
 - id: how-it-works
@@ -421,6 +425,7 @@ opener / closer はレターボックスを外し、ロゴを許可します。�
 | `nodes` | `{ id, label, detail?, icon? }` の配列 | 必須 | ノード。`detail` は補足 1 行で、カード型描画 (linear の横並び・cycle の環状とも) で label の下に muted で表示される。`icon` はアイコン名 (ADR-0013) で、label の上に表示される |
 | `edges` | 構造化形または文字列糖衣の配列 | 任意 | ノード間の関係 |
 | `emphasis` | ノード id の配列 | 任意 | 強調ノード。サイズ・色は階層原則から導出 (p.119)。アイコンのウェイトも 1 段階昇格する |
+| `shared` | `{ label?, emphasis? }` | 任意 | `cluster.overlap` 専用 (ADR-0015)。全円の共通部分のラベルと強調。ベン図の主役はしばしば交差領域であり、ノード id では指せないため専用の語彙を持つ |
 | `reveal` | `sequential` | 任意 | 複雑な図は段階的に示す (p.78)。省略時は一括表示 |
 
 `form` の family は次の 5 つとします。subtype はカタログを既定としつつ、網羅的ではありません (p.73)。
@@ -652,3 +657,4 @@ design.md §8 から次を引き継ぎます。
 - `0.1.0` — 初版。spike (`0.0.1-spike`) を ADR-0007 (スロット制・emphasis 分割・タイプスケール昇格) と ADR-0008 (グリッド行数・chart 正準形・注釈アンカー・scales・role/layout 分担・edges 構造化・文節改行・主役スケール) で確定した正式版
 - `0.2.0` (theme のみ) — ADR-0010。`theme.brand` (logo / footer / backgrounds) と `theme.type.webfonts` を任意フィールドとして追加。後方互換 (0.1.0 のテーマはそのまま妥当)。deck スキーマは 0.1.0 のまま
 - `0.3.0` (theme のみ) — ADR-0014。`grid.stage_margin` を撤去。レターボックスを含む余白配分はレンダラ内部の構図ポリシーに移った。破壊的変更: stage_margin を書いた 0.2.0 以前のテーマは妥当でなくなる (該当行を削除するだけで移行完了)。deck スキーマは 0.1.0 のまま
+- `0.2.0` (deck のみ) — ADR-0015。`layout` に `image-stage` (headline 任意 + image 必須) を追加。`diagram` に `shared: { label?, emphasis? }` (cluster.overlap の交差領域) を追加。後方互換 (0.1.0 のデッキはそのまま妥当)

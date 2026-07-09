@@ -119,8 +119,8 @@ cluster と radial の使い分けの勘所。
 | 要素 | 選ぶ基準 | 紛らわしい相手との境界 |
 |------|---------|---------------------|
 | code | コード・端末 (`lang: console`)・diff (`lang: diff`) を見せる | 17 行/81 桁を超えるなら抜粋する (`code-budget` lint)。強調行は `emphasis: ["3-5"]` (1 起点) |
-| post | SNS の発言が「実際にあった」ことを見せる | 発言者の権威で語らせるだけなら quote。日付・アカウント名が効くなら post |
-| link | 記事・資料へ誘導する (QR は自動) | OGP 画像は `image:` にローカルパスで渡す。URL を読ませたいだけなら statement にしない — QR が要るなら常に link |
+| post | SNS の発言が「実際にあった」ことを見せる | 発言者の権威で語らせるだけなら quote。日付・アカウント名が効くなら post。`source` を書いておくと SPA では実埋め込みになる (ADR-0017) |
+| link | 記事・資料へ誘導する (QR は自動) | title / image 未指定なら render 時に OGP を自動解決し `assets/ogp/` にキャッシュする (ADR-0017)。URL を読ませたいだけなら statement にしない — QR が要るなら常に link |
 | stat | 数字 1 つで刺す | 比較や推移を語るなら chart。単位は value に含める (`"3.2 倍"`) |
 | table | セルに言葉が入る一覧比較 | 数値の意味なら chart、2 軸の分類なら structure.matrix、対立が主役なら versus |
 | versus | 二項対立そのものが主張 | 対等な並置 (どちらも推さない) なら table か bullets ×2 枚。推す側に `emphasis: true` |

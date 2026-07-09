@@ -27,6 +27,11 @@ const CANVAS = { w: 1280, h: 720 };
 const MARGIN = { x: 96, y: 64 }; // 外周のみ。レターボックスという概念は持たない
 
 const OPTICAL = 0.45;      // 使い残した高さの上:下 配分 (光学中心 — 幾何中心よりわずかに上)
+// profile-stage 専用の上:下 配分。OPTICAL (0.45) は「ほぼ中央、わずかに上」の
+// 光学中心だが、写真+略歴という縦に短いコンテンツを縦長の body 領域の中で
+// 使うと 0.45 でも中央寄りに沈んで見える (レビュー指摘 2026-07-09)。もっと
+// 上詰めに振った専用値として 0.25 を使う。
+const PROFILE_TOP = 0.25;
 const HEAD_GAP = 40;       // headline 帯と主役の間
 const RING_ASPECT = 1.1;   // flow.cycle の箱の理想 w/h — カードが横長なぶん、わずかに横広が釣り合う
 const RING_ECC_MAX = 1.15; // 環の離心率上限。これ以内ならノードは正多角形の頂点に見える
@@ -808,20 +813,30 @@ function renderTimeline(el, box, ctx, { fsLabel, fsDetail, stagger, labelRowH, d
   const { C, fonts } = ctx;
   const emph = new Set(el.emphasis || []);
   const n = el.nodes.length;
-  const usableW = box.w - TL_MARGIN_X * 2;
   const baseY = detailH + TL_DOT_R;
-  const xAt = (i) => TL_MARGIN_X + (n > 1 ? (usableW * i) / (n - 1) : usableW / 2);
-  // ノードの中心にそのままテキストを置くと、両端のノードは舞台の外へ
-  // はみ出す (中心から margin 分しか余白がないため)。中心付近のノードは
-  // 動かさず、はみ出す分だけ内側へ寄せる。dot・基線は真の等間隔位置を保つ
-  // — ずらすのはテキストの見た目の位置だけ。
+  // 端ノードのラベル/日付が枠外へ落ちないよう、基線の始点・終点を
+  // 実測半幅ぶん内側に取る (以前は等間隔の基線をそのまま使い、はみ出す
+  // 端ラベルだけ clampTextX で内側へ寄せていたが、マーカー中央寄せの他
+  // ラベルと置き場所が揃わず違和感があった — レビュー指摘 2026-07-09)。
+  // これで全ノードが dot の真下/真上に text-anchor:middle で揃う。
+  const halfW = (nd) => Math.max(
+    estW(nd.label, fsLabel) / 2,
+    nd.detail ? estW(nd.detail, fsDetail) / 2 : 0,
+  );
+  const marginL = Math.max(TL_MARGIN_X, halfW(el.nodes[0]));
+  const marginR = Math.max(TL_MARGIN_X, halfW(el.nodes[n - 1]));
+  const x0 = marginL, x1 = box.w - marginR;
+  const usableW = Math.max(0, x1 - x0);
+  const xAt = (i) => n > 1 ? x0 + (usableW * i) / (n - 1) : box.w / 2;
+  // 安全弁: 千鳥判定などの後でなおラベルが枠をはみ出す場合だけ、テキストの
+  // 見た目位置を内側へ寄せる (通常は x0/x1 の時点で発生しないはず)。
   const clampTextX = (cx, textW) => {
     const half = textW / 2, pad = 4;
     const lo = half + pad, hi = box.w - half - pad;
     return lo <= hi ? Math.min(Math.max(cx, lo), hi) : box.w / 2;
   };
 
-  let svg = `<line x1="${round(TL_MARGIN_X)}" y1="${round(baseY)}" x2="${round(box.w - TL_MARGIN_X)}" y2="${round(baseY)}" stroke="${C.line}" stroke-width="2"/>`;
+  let svg = `<line x1="${round(x0)}" y1="${round(baseY)}" x2="${round(x1)}" y2="${round(baseY)}" stroke="${C.line}" stroke-width="2"/>`;
   el.nodes.forEach((nd, i) => {
     const x = xAt(i);
     const hot = emph.has(nd.id);
@@ -1408,10 +1423,14 @@ function measureCode(el, ctx, avail) {
   const raw = String(el.code ?? '').replace(/\n$/, '');
   const lines = raw.length ? raw.split('\n') : [''];
   const lang = el.lang || 'plaintext';
-  const padX = 34, padY = 26;
+  // 余白が詰まって見えたため padX/padY を 28〜32px 幅に、行間を 1.5 → 1.65 に
+  // それぞれ広げた (レビュー指摘 2026-07-09)。パネルは lines.length × lineH +
+  // padY*2 (+ labelH) をそのまま申告し、code-body 側は flex:1 1 auto で
+  // その高さぴったりに収まる (over-report は無し — 実測で確認済み)。
+  const padX = 32, padY = 30;
   const labelH = el.filename ? 44 : 0;
   const minFs = 15;
-  const lineHFor = (f) => Math.round(f * 1.5);
+  const lineHFor = (f) => Math.round(f * 1.65);
   const widthAt = (f) => Math.max(...lines.map((l) => monoEstW(l, f)));
 
   let fs = scale.code;
@@ -1427,7 +1446,6 @@ function measureCode(el, ctx, avail) {
 }
 
 function renderCode(el, ctx, { lines, lang, fs, lineH, padX, padY, labelH }) {
-  const { fonts } = ctx;
   const emphSet = expandLineRanges(el.emphasis);
   const hasEmphasis = emphSet.size > 0;
 
@@ -1464,7 +1482,11 @@ function renderCode(el, ctx, { lines, lang, fs, lineH, padX, padY, labelH }) {
     ? `<div class="code-file" style="height:${labelH}px;line-height:${labelH}px">${esc(el.filename)}</div>`
     : '';
 
-  return `<div class="code-panel">${fileBar}<div class="code-body" style="font-family:${fonts.mono};font-weight:${fonts.wMono};font-size:${fs}px;padding:${padY}px ${padX}px">${body}</div></div>`;
+  // font-family は inline style に書かない — mono スタックは値に二重引用符を
+  // 含み ("SF Mono" など)、style="..." 属性がそこで途切れて font-size /
+  // padding ごと落ちていた (レビュー指摘 2026-07-09 「余白が少ない」の根本
+  // 原因)。書体は css() の .code-body 規則で当てる。
+  return `<div class="code-panel">${fileBar}<div class="code-body" style="font-size:${fs}px;padding:${padY}px ${padX}px">${body}</div></div>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -1675,7 +1697,8 @@ function renderStat(el, ctx, { fs, fsLabel, fsContext }) {
  */
 function measureTable(el, ctx, avail) {
   const { scale } = ctx;
-  const cellPadX = 28;
+  const cellPadX = 40; // セル内側の左右余白 (20px ずつ)
+  const colGap = 56;   // 列と列の間の最小ギャップ (レビュー指摘 2026-07-09)
   const minFs = 16;
   const rowHFor = (f) => Math.round(f * 2.2);
   const headHFor = (f) => Math.round(f * 2.5);
@@ -1683,41 +1706,65 @@ function measureTable(el, ctx, avail) {
     estW(c, f),
     ...el.rows.map((r) => estW(r[ci] ?? '', f)),
   ) + cellPadX);
+  const gapTotal = () => colGap * (el.columns.length - 1);
 
   let fs = scale.node;
   let cw = colWidthsFor(fs);
-  let totalW = cw.reduce((a, b) => a + b, 0);
+  let totalW = cw.reduce((a, b) => a + b, 0) + gapTotal();
   let totalH = headHFor(fs) + el.rows.length * rowHFor(fs);
   while (fs > minFs && (totalW > avail.w || totalH > avail.h)) {
     fs -= 1;
     cw = colWidthsFor(fs);
-    totalW = cw.reduce((a, b) => a + b, 0);
+    totalW = cw.reduce((a, b) => a + b, 0) + gapTotal();
     totalH = headHFor(fs) + el.rows.length * rowHFor(fs);
   }
 
   return {
     w: round(Math.min(avail.w, totalW)), h: round(Math.min(avail.h, totalH)),
-    render: () => renderTable(el, ctx, { fs, colWidths: cw, rowH: rowHFor(fs), headH: headHFor(fs) }),
+    render: () => renderTable(el, ctx, { fs, colWidths: cw, rowH: rowHFor(fs), headH: headHFor(fs), colGap }),
   };
 }
 
-function renderTable(el, ctx, { fs, colWidths, rowH, headH }) {
+function renderTable(el, ctx, { fs, colWidths, rowH, headH, colGap }) {
   const emphRows = new Set(el.emphasis?.rows || []);
   const emphCols = new Set(el.emphasis?.cols || []);
   const gridCols = colWidths.map((w) => `${round(w)}px`).join(' ');
+  const totalW = colWidths.reduce((a, b) => a + b, 0) + colGap * (colWidths.length - 1);
+  const totalH = headH + el.rows.length * rowH;
+  const colX = [];
+  { let acc = 0; colWidths.forEach((w) => { colX.push(acc); acc += w + colGap; }); }
 
-  let html = `<div class="table-grid" style="grid-template-columns:${gridCols};font-size:${fs}px">`;
+  // 1 列目 (行ラベル) は左揃え、データ列はヘッダ・セルとも中央揃えにする
+  // (レビュー指摘 2026-07-09)。emphasis はセルごとの塗りではなく、対象列/行
+  // の全長を覆う 1 枚の角丸帯として描く — セルごとの塗りだと列間ギャップで
+  // 帯が途切れて見える。ヘッダ下罫線も個々のセル border ではなく表の実幅
+  // ぴったりの 1 本の rule として描き、ギャップで途切れないようにする。
+  const bandPad = 16;
+  let decor = `<div class="table-rule" style="left:0px;top:${round(headH - 2)}px;width:${round(totalW)}px"></div>`;
+  emphCols.forEach((c) => {
+    const ci = c - 1;
+    if (ci < 0 || ci >= colWidths.length) return;
+    decor += `<div class="table-em-band" style="left:${round(colX[ci] - bandPad)}px;top:0px;width:${round(colWidths[ci] + bandPad * 2)}px;height:${round(totalH)}px"></div>`;
+  });
+  emphRows.forEach((r) => {
+    const ri = r - 1;
+    if (ri < 0 || ri >= el.rows.length) return;
+    decor += `<div class="table-em-band" style="left:${round(-bandPad)}px;top:${round(headH + ri * rowH)}px;width:${round(totalW + bandPad * 2)}px;height:${round(rowH)}px"></div>`;
+  });
+
+  let html = `<div class="table-wrap" style="width:${round(totalW)}px;height:${round(totalH)}px">${decor}<div class="table-grid" style="grid-template-columns:${gridCols};column-gap:${colGap}px;font-size:${fs}px">`;
   el.columns.forEach((c, ci) => {
-    const em = emphCols.has(ci + 1) ? ' table-em' : '';
-    html += `<div class="table-cell table-head${em}" style="height:${headH}px;line-height:${headH}px">${esc(c)}</div>`;
+    const align = ci === 0 ? '' : ' table-col-data';
+    html += `<div class="table-cell table-head${align}" style="height:${headH}px;line-height:${headH}px">${esc(c)}</div>`;
   });
   el.rows.forEach((row, ri) => {
     row.forEach((cell, ci) => {
-      const em = (emphRows.has(ri + 1) || emphCols.has(ci + 1)) ? ' table-em' : '';
-      html += `<div class="table-cell${em}" style="height:${rowH}px;line-height:${rowH}px">${esc(cell)}</div>`;
+      const align = ci === 0 ? '' : ' table-col-data';
+      const mark = cell === '✓' ? ' table-mark-yes' : cell === '—' ? ' table-mark-no' : '';
+      html += `<div class="table-cell${align}${mark}" style="height:${rowH}px;line-height:${rowH}px">${esc(cell)}</div>`;
     });
   });
-  html += '</div>';
+  html += '</div></div>';
   return html;
 }
 
@@ -1736,13 +1783,17 @@ function measureVersus(el, ctx, avail) {
   const fsItem = Math.round(scale.bullet * 0.8);
   const padX = 40, padY = 36, labelGap = 26, itemGap = Math.round(fsItem * 0.9);
   const dividerW = 64;
+  // ラベル (見出し行) と左端が揃うとドットが見出しより左にはみ出て見えるため、
+  // bullets の修正 (コミット a6f5233) と同じ考え方で項目全体を内側へ寄せる
+  // (レビュー指摘 2026-07-09)。
+  const itemIndent = 26;
 
   const panelInnerW = Math.max(260, Math.min(420, Math.round((avail.w - dividerW) / 2) - padX * 2));
 
   const contentH = (side) => {
     const labelLines = estimateWrappedLines(side.label, fsLabel, panelInnerW);
     const itemsH = side.items.reduce((t, it) => {
-      const lines = estimateWrappedLines(it, fsItem, panelInnerW - 26); // ドット分を差し引く
+      const lines = estimateWrappedLines(it, fsItem, panelInnerW - itemIndent - 26); // インデント + ドット分を差し引く
       return t + lines * Math.round(fsItem * 1.5);
     }, 0) + (side.items.length - 1) * itemGap;
     return labelLines * Math.round(fsLabel * 1.3) + labelGap + itemsH;
@@ -1754,11 +1805,11 @@ function measureVersus(el, ctx, avail) {
   const h = Math.min(avail.h, panelH);
   return {
     w: round(w), h: round(h),
-    render: () => renderVersus(el, ctx, { panelW, panelH: h, fsLabel, fsItem, padX, padY, labelGap, itemGap, dividerW }),
+    render: () => renderVersus(el, ctx, { panelW, panelH: h, fsLabel, fsItem, padX, padY, labelGap, itemGap, itemIndent, dividerW }),
   };
 }
 
-function renderVersus(el, ctx, { panelW, panelH, fsLabel, fsItem, padX, padY, labelGap, itemGap, dividerW }) {
+function renderVersus(el, ctx, { panelW, panelH, fsLabel, fsItem, padX, padY, labelGap, itemGap, itemIndent, dividerW }) {
   const hasEmphasis = el.sides.some((s) => s.emphasis);
   const panels = el.sides.map((side) => {
     const items = side.items.map((it) =>
@@ -1768,7 +1819,7 @@ function renderVersus(el, ctx, { panelW, panelH, fsLabel, fsItem, padX, padY, la
     else if (hasEmphasis) cls.push('versus-dim');
     return `<div class="${cls.join(' ')}" style="width:${panelW}px;height:${panelH}px;padding:${padY}px ${padX}px">
       <div class="versus-label jp" style="font-size:${fsLabel}px">${inlineText(side.label)}</div>
-      <ul class="versus-items" style="font-size:${fsItem}px;gap:${itemGap}px;margin-top:${labelGap}px">${items}</ul>
+      <ul class="versus-items" style="font-size:${fsItem}px;gap:${itemGap}px;margin-top:${labelGap}px;padding-left:${itemIndent}px">${items}</ul>
     </div>`;
   });
   const divider = `<div class="versus-divider" style="width:${dividerW}px;height:${panelH}px"></div>`;
@@ -2135,14 +2186,20 @@ function profileStage(slide, ctx) {
       ${affiliation ? `<div class="profile-affil jp" style="font-size:${ctx.scale.attribution}px">${inlineText(affiliation.text)}</div>` : ''}
     </div>
     <div class="pane profile-left" style="${boxStyle(left)}">
+      <div style="flex:${PROFILE_TOP} 0 0"></div>
       ${portraitHtml}
       ${handle ? `<div class="profile-handle jp" style="font-size:${ctx.scale.node}px">${
         handle.icon && iconExists(handle.icon)
           ? `<svg class="inline-icon" viewBox="0 0 256 256" fill="currentColor">${iconInner(handle.icon, ctx.iconWeight)}</svg>`
           : ''
       }${inlineText(handle.text)}</div>` : ''}
+      <div style="flex:${1 - PROFILE_TOP} 0 0"></div>
     </div>
-    <div class="pane profile-right" style="${boxStyle(right)}">${bioHtml}</div>`;
+    <div class="pane profile-right" style="${boxStyle(right)}">
+      <div style="flex:${PROFILE_TOP} 0 0"></div>
+      ${bioHtml}
+      <div style="flex:${1 - PROFILE_TOP} 0 0"></div>
+    </div>`;
 }
 
 // Grid-direct: full-canvas grid, elements resolved by id (SPEC §5.2).
@@ -2291,14 +2348,17 @@ svg.lead{display:block;max-width:100%;max-height:100%;overflow:visible}
 
 .profile-name{font-family:${fonts.display};font-weight:${fonts.wDisplay};color:${C.textStrong};line-height:1.25}
 .profile-affil{color:${C.muted};margin-top:12px;letter-spacing:.03em}
-.profile-left{align-items:center;justify-content:center;gap:20px}
-.profile-portrait{border-radius:50%;object-fit:cover;box-shadow:0 6px 28px rgba(0,0,0,.16)}
+/* justify-content は使わない — 上下の空きは PROFILE_TOP 比率のスペーサー div
+   (flex-grow 25:75) で配分する。中央寄せだと写真が低く沈んで見えたため
+   (レビュー指摘 2026-07-09)。 */
+.profile-left{align-items:center;gap:20px}
+.profile-portrait{flex:0 0 auto;border-radius:50%;object-fit:cover;box-shadow:0 6px 28px rgba(0,0,0,.16)}
 .profile-portrait.ph{background:${C.surface};border:2px dashed ${C.line};display:flex;
   align-items:center;justify-content:center;color:${C.muted};font-size:16px;
   line-height:1.6;padding:28px;text-align:center;box-shadow:none}
 .profile-handle{color:${C.text}}
 .inline-icon{height:.95em;width:.95em;vertical-align:-.12em;margin-right:.4em}
-.profile-right{justify-content:center;gap:30px}
+.profile-right{gap:30px}
 .profile-label{color:${C.highlight};font-family:${fonts.display};font-weight:${fonts.wDisplay};
   font-size:22px;letter-spacing:.08em;margin-bottom:7px}
 .profile-body{font-size:21px;line-height:1.65;color:${C.text}}
@@ -2315,20 +2375,20 @@ svg.lead{display:block;max-width:100%;max-height:100%;overflow:visible}
 .raw-wrap svg{max-width:100%;max-height:100%}
 
 /* code (SPEC §6.7, ADR-0016) — surface panel + hairline + optional filename
-   label bar. Palette derivation (renderer-owned, ADR-0014): keyword-ish
-   tokens take the brand highlight colour (reads as "this declares
-   something"); string/number-ish tokens take core[1] (second core slot —
-   moss/green for hokuchi, chosen positionally since "green" cannot be found
-   in an arbitrary theme's palette by name); comments take muted. Everything
-   else inherits the panel's default text colour, keeping the budget to 3
-   non-text colours + text (SPEC §6.7). console/diff skip tokenization
-   entirely and colour whole lines instead (prompt vs output; added vs
-   removed) — a terminal session or a diff is not "a language". */
+   label bar. Palette derivation (renderer-owned, ADR-0014), widened from 3
+   token buckets to 5 — 3〜4 色だと配色が貧弱で自作感が出ていた (レビュー
+   指摘 2026-07-09) — but still positional, no hardcoded hex: keyword/literal
+   → highlight (「宣言・分岐」を示す); string → core[1] (moss/green for
+   hokuchi); number/attr → core[0] (moon/blue for hokuchi); title/function
+   (宣言・呼び出し名) → text_strong; comment → muted; それ以外は既定の text。
+   console/diff skip tokenization entirely and colour whole lines instead
+   (prompt vs output; added vs removed) — a terminal session or a diff is
+   not "a language". */
 .code-panel{width:100%;height:100%;background:${C.surface};border:1px solid ${C.line};
   border-radius:14px;overflow:hidden;display:flex;flex-direction:column;text-align:left}
-.code-file{flex:0 0 auto;padding:0 24px;color:${C.muted};background:${C.bg}80;
+.code-file{flex:0 0 auto;padding:0 32px;color:${C.muted};background:${C.bg}80;
   border-bottom:1px solid ${C.line};font-family:${fonts.body};font-size:16px;letter-spacing:.02em}
-.code-body{flex:1 1 auto;overflow:hidden}
+.code-body{flex:1 1 auto;overflow:hidden;font-family:${fonts.mono};font-weight:${fonts.wMono}}
 .cl{white-space:pre;color:${C.text}}
 .cl-prompt{color:${C.textStrong};font-weight:${fonts.wDisplay}}
 .cl-output{color:${C.muted}}
@@ -2340,8 +2400,10 @@ svg.lead{display:block;max-width:100%;max-height:100%;overflow:visible}
 /* emphasis band (~15% alpha) is defined after cl-add/cl-del so it wins on
    a line that is both a diff line and emphasized */
 .cl-em{background:${C.highlight}26}
-.code-body .hljs-keyword,.code-body .hljs-built_in,.code-body .hljs-type,.code-body .hljs-literal{color:${C.highlight}}
-.code-body .hljs-string,.code-body .hljs-number,.code-body .hljs-regexp{color:${C.core[1] ?? C.core[0]}}
+.code-body .hljs-keyword,.code-body .hljs-literal{color:${C.highlight}}
+.code-body .hljs-string,.code-body .hljs-regexp,.code-body .hljs-symbol{color:${C.core[1] ?? C.core[0]}}
+.code-body .hljs-number,.code-body .hljs-attr,.code-body .hljs-attribute{color:${C.core[0]}}
+.code-body .hljs-title,.code-body .hljs-section,.code-body .hljs-name{color:${C.textStrong};font-weight:${fonts.wDisplay}}
 .code-body .hljs-comment,.code-body .hljs-quote,.code-body .hljs-doctag{color:${C.muted}}
 
 /* post (SPEC §6.8, ADR-0016) — surface card, own opaque background so it
@@ -2379,12 +2441,21 @@ svg.lead{display:block;max-width:100%;max-height:100%;overflow:visible}
 
 /* table (SPEC §6.11, ADR-0016) — no outer frame, no cell fills, no zebra:
    rows separate by whitespace, the header's hairline is the only rule.
-   Bare on the slide background, so it needs .inv handling like bullets. */
+   Bare on the slide background, so it needs .inv handling like bullets.
+   table-wrap is the positioning root for the header rule and emphasis
+   bands, which are drawn as their own absolutely-positioned layers instead
+   of per-cell borders/fills — a column-gap now separates the cells, so a
+   per-cell border or fill would visibly break at every gap (レビュー指摘
+   2026-07-09)。 */
+.table-wrap{position:relative}
+.table-rule{position:absolute;height:2px;background:${C.line}}
+.table-em-band{position:absolute;z-index:-1;background:${C.highlight}1f;border-radius:8px}
 .table-grid{display:grid;text-align:left}
-.table-cell{padding:0 14px;white-space:nowrap;color:${C.text};font-family:${fonts.body}}
-.table-head{color:${C.textStrong};font-weight:${fonts.wDisplay};font-family:${fonts.display};
-  border-bottom:2px solid ${C.line}}
-.table-em{background:${C.highlight}1f}
+.table-cell{padding:0 20px;white-space:nowrap;color:${C.text};font-family:${fonts.body}}
+.table-col-data{text-align:center}
+.table-head{color:${C.textStrong};font-weight:${fonts.wDisplay};font-family:${fonts.display}}
+.table-mark-yes{color:${C.textStrong}}
+.table-mark-no{color:${C.muted}}
 
 /* versus (SPEC §6.12, ADR-0016) — two surface-card panels, own opaque
    background so no .inv handling (same reasoning as post/code). */
@@ -2434,7 +2505,7 @@ svg.lead{display:block;max-width:100%;max-height:100%;overflow:visible}
 .inv .quote-mark{color:rgba(255,255,255,.38)}
 .inv .bullets li,.inv .stat-label,.inv .table-cell,.inv .agenda-text{color:rgba(255,255,255,.94)}
 .inv .bullets .dot,.inv .title-accent{background:#ffffff}
-.inv .table-head{border-bottom-color:rgba(255,255,255,.5)}
+.inv .table-rule{background:rgba(255,255,255,.5)}
 .inv .agenda-num{color:rgba(255,255,255,.65)}
 
 .err{color:${C.highlight};font-size:28px}`;

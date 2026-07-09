@@ -4,6 +4,11 @@
 // (2) examples/intent-talk lints with zero errors
 // (3) render produces a single-file SPA containing every slide (ADR-0012)
 // (4) edge sugar ("a -> b" string) normalizes to { from, to }
+// (9) resolveLinkOgp fills missing link fields from OGP, caches under
+//     assets/ogp/, skips the network on a cache hit, and never throws on
+//     failure (ADR-0017)
+// (10) post SPA embed markup: only decks with a `source` post get the
+//      widgets.js boot script and .post-embed overlay (ADR-0017)
 
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -14,6 +19,7 @@ import Ajv2020 from 'ajv/dist/2020.js';
 import { loadDeck, loadTheme, normalizeEdge } from '../src/load.mjs';
 import { lint, hasError } from '../src/lint.mjs';
 import { renderDeck } from '../src/render.mjs';
+import { resolveLinkOgp } from '../src/ogp.mjs';
 import { iconExists, promoteWeight } from '../src/icons.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -280,5 +286,147 @@ for (const [name, html] of Object.entries(pages)) fs.writeFileSync(path.join(tmp
 assert.equal(fs.readdirSync(tmp).filter((f) => f.endsWith('.html')).length, 1);
 fs.rmSync(tmp, { recursive: true, force: true });
 ok('render output writes to disk cleanly');
+
+// ---------------------------------------------------------------------------
+// (9) resolveLinkOgp (ADR-0017) — stubbed fetchImpl, no real network.
+// ---------------------------------------------------------------------------
+
+const OGP_URL = 'https://example.com/deck-as-code';
+const OGP_IMAGE_URL = 'https://example.com/og-image.png';
+const OGP_HTML = `<html><head>
+  <meta property="og:title" content="スライドを意図宣言型 YAML で書く">
+  <meta property="og:description" content="ピクセルではなく意図を宣言する">
+  <meta property="og:image" content="${OGP_IMAGE_URL}">
+</head><body></body></html>`;
+const OGP_IMAGE_BYTES = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0, 0, 0, 0]); // PNG シグネチャのみのダミー
+
+function fakeResponse({ ok = true, status = 200, text, bytes, contentType }) {
+  return {
+    ok, status,
+    text: async () => text,
+    arrayBuffer: async () => bytes,
+    headers: { get: (k) => (k.toLowerCase() === 'content-type' ? contentType : null) },
+  };
+}
+
+function makeCountingFetch() {
+  const calls = [];
+  const fetchImpl = async (url) => {
+    calls.push(String(url));
+    if (String(url) === OGP_URL) return fakeResponse({ text: OGP_HTML });
+    if (String(url) === OGP_IMAGE_URL) {
+      return fakeResponse({ bytes: OGP_IMAGE_BYTES, contentType: 'image/png' });
+    }
+    throw new Error(`unexpected fetch: ${url}`);
+  };
+  return { fetchImpl, calls };
+}
+
+const ogpDeckDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hokuchi-ogp-'));
+
+// (9a) missing title/description/image are all filled from OGP, and cached.
+{
+  const deckRoot = { slides: [{ elements: [{ kind: 'link', url: OGP_URL }] }] };
+  const { fetchImpl, calls } = makeCountingFetch();
+  await resolveLinkOgp(deckRoot, ogpDeckDir, { fetchImpl });
+  const el = deckRoot.slides[0].elements[0];
+  assert.equal(el.title, 'スライドを意図宣言型 YAML で書く');
+  assert.equal(el.description, 'ピクセルではなく意図を宣言する');
+  assert.match(el.image, /^assets\/ogp\/[0-9a-f]{12}\.png$/);
+  assert.equal(calls.length, 2, 'fetched the page once and the image once');
+
+  const cacheDir = path.join(ogpDeckDir, 'assets', 'ogp');
+  const hash = el.image.match(/\/([0-9a-f]{12})\.png$/)[1];
+  const metaOnDisk = JSON.parse(fs.readFileSync(path.join(cacheDir, `${hash}.json`), 'utf8'));
+  assert.equal(metaOnDisk.title, el.title);
+  assert.ok(fs.existsSync(path.join(ogpDeckDir, el.image)), 'cached image file exists at the resolved path');
+  ok('resolveLinkOgp fills missing title/description/image from OGP and caches them under assets/ogp/');
+}
+
+// (9b) cache hit — a second link element pointing at the same URL resolves
+// with zero additional network calls.
+{
+  const deckRoot = { slides: [{ elements: [{ kind: 'link', url: OGP_URL }] }] };
+  const { fetchImpl, calls } = makeCountingFetch();
+  await resolveLinkOgp(deckRoot, ogpDeckDir, { fetchImpl });
+  const el = deckRoot.slides[0].elements[0];
+  assert.equal(calls.length, 0, 'cache hit makes no network calls at all');
+  assert.equal(el.title, 'スライドを意図宣言型 YAML で書く');
+  assert.match(el.image, /^assets\/ogp\/[0-9a-f]{12}\.png$/);
+  ok('resolveLinkOgp does not re-fetch once the URL is cached');
+}
+
+// (9c) hand-written fields always win — only the missing ones are filled.
+{
+  const deckRoot = {
+    slides: [{
+      elements: [{
+        kind: 'link', url: OGP_URL,
+        title: '手書きのタイトル',
+        image: './assets/handwritten.png',
+      }],
+    }],
+  };
+  const { fetchImpl, calls } = makeCountingFetch();
+  await resolveLinkOgp(deckRoot, ogpDeckDir, { fetchImpl });
+  const el = deckRoot.slides[0].elements[0];
+  assert.equal(el.title, '手書きのタイトル', 'hand-written title is untouched');
+  assert.equal(el.image, './assets/handwritten.png', 'hand-written image is untouched');
+  assert.equal(el.description, 'ピクセルではなく意図を宣言する', 'missing description is still filled');
+  assert.equal(calls.length, 0, 'metadata was already cached from (9a), so still no network call');
+  ok('resolveLinkOgp only fills fields the deck author left blank');
+}
+
+// (9d) network failure does not throw and leaves the element unresolved —
+// render must be able to fall back to a text-only card (SPEC §6.9).
+{
+  const deckRoot = { slides: [{ elements: [{ kind: 'link', url: 'https://example.com/unreachable' }] }] };
+  const failingFetch = async () => { throw new Error('ECONNREFUSED (simulated)'); };
+  await assert.doesNotReject(resolveLinkOgp(deckRoot, ogpDeckDir, { fetchImpl: failingFetch }));
+  const el = deckRoot.slides[0].elements[0];
+  assert.equal(el.title, undefined);
+  assert.equal(el.description, undefined);
+  assert.equal(el.image, undefined);
+  ok('resolveLinkOgp swallows fetch failures and leaves the link element unresolved');
+}
+
+fs.rmSync(ogpDeckDir, { recursive: true, force: true });
+
+// ---------------------------------------------------------------------------
+// (10) post SPA embed (ADR-0017) — widgets.js boot script and .post-embed
+// overlay appear only for decks that actually have a `source` post.
+// ---------------------------------------------------------------------------
+const postEmbedDeck = {
+  schema_version: '0.3.0',
+  deck: { title: 'post embed 検証', audience: { who: 'テスト', action: 'テスト' }, theme: './theme.yaml' },
+  slides: [
+    { id: 's-post-source', role: 'content', idea: 'source 付き post', layout: 'post-stage', elements: [
+      { kind: 'post', slot: 'post', text: 'x', author: 'y', source: 'https://x.com/example/status/1' },
+    ] },
+  ],
+};
+const { pages: embedPages } = renderDeck(postEmbedDeck, theme, {
+  deckDir: path.dirname(deckPath), themeDir: path.dirname(themePath),
+});
+assert.ok(embedPages['index.html'].includes('platform.twitter.com/widgets.js'),
+  'deck with a source post gets the widgets.js boot script');
+assert.ok(embedPages['index.html'].includes('class="post-embed"'),
+  'deck with a source post gets the .post-embed overlay markup');
+assert.ok(embedPages['index.html'].includes('twitter-tweet'),
+  'the embed overlay contains a blockquote.twitter-tweet for widgets.js to expand');
+ok('renderDeck emits the widgets.js boot script and post-embed overlay for a source post');
+
+const noSourceDeck = structuredClone(postEmbedDeck);
+delete noSourceDeck.slides[0].elements[0].source;
+const { pages: noEmbedPages } = renderDeck(noSourceDeck, theme, {
+  deckDir: path.dirname(deckPath), themeDir: path.dirname(themePath),
+});
+assert.ok(!noEmbedPages['index.html'].includes('platform.twitter.com/widgets.js'),
+  'deck with no source post gets no widgets.js boot script at all');
+assert.ok(!noEmbedPages['index.html'].includes('class="post-embed"'),
+  'deck with no source post gets no .post-embed overlay markup at all');
+assert.ok(!noEmbedPages['index.html'].includes('twitter-tweet'),
+  'deck with no source post gets no blockquote.twitter-tweet at all');
+ok('renderDeck adds no embed-related output when the deck has no source post (ADR-0017 決定 4)');
 
 console.log(`\n${passed} checks passed.`);

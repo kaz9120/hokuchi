@@ -558,9 +558,12 @@ slides:
         handle: "@example"
         date: "2015-04-12"
         avatar: ./assets/sample-photo.svg
+        source: "https://x.com/example/status/123456789"
     notes: |
       検証点: avatar 画像の丸抜き、author (text_strong) と handle/date (muted)
       のヘッダ行、本文量から導出したカード幅 (最大 stage 幅の 7 割以内)。
+      source を持つが、静的出力 (shot) はカードのまま変わらない (ADR-0017 —
+      SPA 実埋め込みは file:// では動かない漸進的強化)。
 
   - id: link-zenn
     role: content

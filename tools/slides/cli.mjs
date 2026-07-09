@@ -14,6 +14,7 @@ import { execFileSync } from 'node:child_process';
 import { loadDeck } from './src/load.mjs';
 import { lint, hasError } from './src/lint.mjs';
 import { renderDeck } from './src/render.mjs';
+import { resolveLinkOgp } from './src/ogp.mjs';
 
 const SEV_ORDER = { error: 0, warn: 1, info: 2 };
 const SEV_LABEL = { error: 'ERROR', warn: 'WARN ', info: 'INFO ' };
@@ -59,8 +60,11 @@ function cmdLint(deckPath) {
 // ---------------------------------------------------------------------------
 // render
 // ---------------------------------------------------------------------------
-function cmdRender(deckPath, outDirArg) {
+async function cmdRender(deckPath, outDirArg) {
   const { deck, theme, deckPath: absDeck, themePath } = loadDeck(deckPath);
+  // OGP 解決 (ADR-0017) — link の title/description/image の欠けを render 前
+  // に補う。ネットワーク失敗は警告を出すだけで render は止めない。
+  await resolveLinkOgp(deck, path.dirname(absDeck));
   const outDir = outDirArg ?? path.join(path.dirname(absDeck), 'out');
   const { pages, assets } = renderDeck(deck, theme, {
     deckDir: path.dirname(absDeck),
@@ -147,7 +151,7 @@ async function main(argv) {
     } else if (cmd === 'render') {
       const { deckPath, outDir } = parseRenderArgs(rest);
       if (!deckPath) usage();
-      cmdRender(deckPath, outDir);
+      await cmdRender(deckPath, outDir);
     } else if (cmd === 'shot') {
       if (!rest[0]) usage();
       cmdShot(rest[0]);

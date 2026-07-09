@@ -1546,7 +1546,7 @@ function renderPost(el, ctx, { fsBody, fsAuthor, fsMeta, avatarSize, headGap }) 
     avatarHtml = `<div class="post-avatar post-avatar-fallback" style="width:${avatarSize}px;height:${avatarSize}px;font-size:${Math.round(avatarSize * 0.4)}px">${esc(initial)}</div>`;
   }
   const meta = [el.handle, el.date].filter(Boolean).map(esc).join('　·　');
-  return `<div class="post-card">
+  const card = `<div class="post-card">
     <div class="post-head" style="gap:${headGap}px">
       ${avatarHtml}
       <div class="post-head-text">
@@ -1556,6 +1556,16 @@ function renderPost(el, ctx, { fsBody, fsAuthor, fsMeta, avatarSize, headGap }) 
     </div>
     <div class="post-body jp" style="font-size:${fsBody}px">${inlineText(el.text)}</div>
   </div>`;
+
+  // 漸進的強化 (ADR-0017): source を持つ post だけ、カードの上に X の実埋め込み
+  // を重ねる下地を出す。静的出力 (shot / file://) では postEmbedScript が動か
+  // ないため .post-embed は常に visibility:hidden のままで、カードがそのまま
+  // 写る — フォールバックではなく初期表示がカード (決定 3)。
+  if (!el.source) return card;
+  const embed = `<div class="post-embed" data-post-source="${esc(el.source)}">
+    <blockquote class="twitter-tweet"><a href="${esc(el.source)}"></a></blockquote>
+  </div>`;
+  return `<div class="post-wrap">${card}${embed}</div>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -1563,12 +1573,6 @@ function renderPost(el, ctx, { fsBody, fsAuthor, fsMeta, avatarSize, headGap }) 
 // `url` (never a schema field) and always rendered white-face/black-module
 // so it reads on camera regardless of theme (ADR-0016 決定).
 // ---------------------------------------------------------------------------
-
-/** Hostname without a leading www., for the attribution-scale domain line. */
-function urlDomain(url) {
-  try { return new URL(String(url)).hostname.replace(/^www\./, ''); }
-  catch { return String(url).replace(/^https?:\/\//, '').split('/')[0]; }
-}
 
 /**
  * QR SVG (error correction M, quiet zone via `margin`, ADR-0016). The
@@ -1586,8 +1590,11 @@ function renderQr(url) {
 
 /**
  * link measure: a left text column (image on top if declared, then title /
- * description / domain) beside a fixed-size QR panel. Left column width is
- * content-driven like post's, capped so the QR never gets squeezed out.
+ * description / full URL) beside a fixed-size QR panel. Left column width is
+ * content-driven like post's, capped so the QR never gets squeezed out. The
+ * URL is shown in full (not just the domain) and wraps like title/description
+ * — a reader should be able to read where the QR points without scanning it
+ * (ADR-0017).
  */
 function measureLink(el, ctx, avail) {
   const { scale } = ctx;
@@ -1612,11 +1619,12 @@ function measureLink(el, ctx, avail) {
 
   const titleLines = el.title ? estimateWrappedLines(el.title, fsTitle, leftW) : 0;
   const descLines = el.description ? estimateWrappedLines(el.description, fsDesc, leftW) : 0;
+  const urlLines = estimateWrappedLines(el.url, fsUrl, leftW);
 
   const contentH = (hasImage ? imgH + imgGap : 0)
     + (el.title ? titleLines * Math.round(fsTitle * 1.3) + textGap : 0)
     + (el.description ? descLines * Math.round(fsDesc * 1.5) + textGap : 0)
-    + Math.round(fsUrl * 1.4);
+    + urlLines * Math.round(fsUrl * 1.4);
 
   const w = Math.min(avail.w, padX * 2 + leftW + gap + qrBox);
   const h = Math.min(avail.h, Math.max(contentH, qrBox) + padY * 2);
@@ -1634,13 +1642,12 @@ function renderLink(el, ctx, { leftW, qrBox, hasImage, abs, imgH, fsTitle, fsDes
     const rel = ctx.useAsset(abs, 'assets');
     imgHtml = `<img class="link-img" src="${esc(rel)}" alt="" style="width:${leftW}px;height:${imgH}px">`;
   }
-  const domain = urlDomain(el.url);
   return `<div class="link-card" style="gap:${gap}px">
     <div class="link-left jp" style="width:${leftW}px">
       ${imgHtml}
       ${el.title ? `<div class="link-title" style="font-size:${fsTitle}px">${inlineText(el.title)}</div>` : ''}
       ${el.description ? `<div class="link-desc" style="font-size:${fsDesc}px">${inlineText(el.description)}</div>` : ''}
-      <div class="link-domain" style="font-size:${fsUrl}px">${esc(domain)}</div>
+      <div class="link-url" style="font-size:${fsUrl}px">${esc(el.url)}</div>
     </div>
     <div class="link-qr" style="width:${qrBox}px;height:${qrBox}px">${renderQr(el.url)}</div>
   </div>`;
@@ -2406,11 +2413,22 @@ svg.lead{display:block;max-width:100%;max-height:100%;overflow:visible}
 .code-body .hljs-title,.code-body .hljs-section,.code-body .hljs-name{color:${C.textStrong};font-weight:${fonts.wDisplay}}
 .code-body .hljs-comment,.code-body .hljs-quote,.code-body .hljs-doctag{color:${C.muted}}
 
-/* post (SPEC §6.8, ADR-0016) — surface card, own opaque background so it
-   needs no .inv handling (same reasoning as code-panel). */
+/* post (SPEC §6.8, ADR-0017) — surface card, own opaque background so it
+   needs no .inv handling (same reasoning as code-panel). post-wrap only
+   exists for source posts (renderPost) — it stacks the static card and the
+   SPA embed overlay so they occupy the same box instead of the default
+   .pane flex-column stacking. */
+.post-wrap{position:relative;width:100%;height:100%}
 .post-card{width:100%;height:100%;box-sizing:border-box;background:${C.surface};
   border:1px solid ${C.line};border-radius:18px;padding:38px 44px;display:flex;
   flex-direction:column;text-align:left}
+.post-wrap>.post-card{position:absolute;inset:0}
+/* 漸進的強化の埋め込み下地 (ADR-0017)。widgets.js が実際にツイートを iframe
+   化して 'rendered' を発火するまでは visibility:hidden のまま — file://
+   (shot) やオフラインでは一切見えず、カードだけが写る (決定 3・4)。 */
+.post-embed{position:absolute;inset:0;visibility:hidden;overflow:hidden;
+  border-radius:18px;display:flex;align-items:center;justify-content:center}
+.post-embed.post-embed-active{visibility:visible;background:${C.bg}}
 .post-head{display:flex;align-items:center}
 .post-avatar{border-radius:50%;object-fit:cover;flex:0 0 auto}
 .post-avatar-fallback{background:${C.line};color:${C.textStrong};display:flex;
@@ -2419,7 +2437,7 @@ svg.lead{display:block;max-width:100%;max-height:100%;overflow:visible}
 .post-meta{color:${C.muted};margin-top:5px;letter-spacing:.02em}
 .post-body{color:${C.text};line-height:1.6;margin-top:26px}
 
-/* link (SPEC §6.9, ADR-0016) — OGP card + QR. QR keeps its own white face
+/* link (SPEC §6.9, ADR-0017) — OGP card + QR. QR keeps its own white face
    (baked into the generated SVG) regardless of theme (ADR-0016 決定), so
    .link-qr needs no colour override either. */
 .link-card{width:100%;height:100%;display:flex;align-items:center}
@@ -2427,7 +2445,10 @@ svg.lead{display:block;max-width:100%;max-height:100%;overflow:visible}
 .link-img{border-radius:10px;object-fit:cover;margin-bottom:22px;border:1px solid ${C.line}}
 .link-title{color:${C.textStrong};font-weight:${fonts.wDisplay};font-family:${fonts.display};line-height:1.35}
 .link-desc{color:${C.text};line-height:1.55;margin-top:14px}
-.link-domain{color:${C.muted};margin-top:14px;letter-spacing:.03em}
+/* URL 全体を見せる (ADR-0017) — .link-left は .jp (word-break:keep-all;
+   overflow-wrap:normal) を継承するが、URL はスペースを持たない一続きの文字
+   列なので keep-all のままでは折り返せず箱からあふれる。ここだけ上書きする。 */
+.link-url{color:${C.muted};margin-top:14px;letter-spacing:.01em;word-break:break-all;overflow-wrap:anywhere}
 .link-qr{flex:0 0 auto;background:#fff;border-radius:12px;padding:10px;
   display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(0,0,0,.14)}
 .link-qr svg{display:block;width:100%;height:100%}
@@ -2570,6 +2591,30 @@ else if(e.key==='End')go(total)})})()</script>`;
 }
 
 /**
+ * post 実埋め込みの起動スクリプト (SPEC §6.8, ADR-0017 決定 3・4)。
+ *
+ * - file:// (shot / handout) では location.protocol が http/https ではない
+ *   ため、widgets.js を一切読み込まない — カードが常に写る。
+ * - http/https では widgets.js を動的注入する。読み込みそのものが失敗して
+ *   も (オフライン等) 何も起きず、カードが見えたまま。
+ * - widgets.js は読み込まれた瞬間に自動でページ内の .twitter-tweet を走査
+ *   して iframe 化する。'rendered' イベントは実際に埋め込みが完成した
+ *   ツイート単位で飛ぶので、そのタイミングで初めて対応する .post-embed を
+ *   可視化する — ポストが消えている/非公開などで完成しなかった分は
+ *   hidden のままカードが残る。
+ */
+function postEmbedScript() {
+  return `<script>(()=>{if(!/^https?:$/.test(location.protocol))return;
+if(!document.querySelector('.post-embed'))return;
+const s=document.createElement('script');
+s.src='https://platform.twitter.com/widgets.js';s.async=true;
+s.onload=()=>{window.twttr&&twttr.events&&twttr.events.bind('rendered',e=>{
+const c=e.target&&e.target.closest&&e.target.closest('.post-embed');
+if(c)c.classList.add('post-embed-active')})};
+document.head.appendChild(s)})()</script>`;
+}
+
+/**
  * Render a loaded deck into a single-file SPA (ADR-0012).
  * @param {object} opts { deckDir, themeDir } — bases for resolving relative asset paths.
  * @returns {{ pages: { 'index.html': string },
@@ -2578,6 +2623,10 @@ else if(e.key==='End')go(total)})})()</script>`;
 export function renderDeck(deckRoot, themeRoot, opts = {}) {
   const ctx = makeContext(deckRoot, themeRoot, opts);
   const total = ctx.slides.length;
+  // source 付き post が 1 つも無いデッキには埋め込み関連の出力を一切足さ
+  // ない (ADR-0017 決定 4)。
+  const hasPostEmbed = ctx.slides.some((s) =>
+    (s.elements || []).some((e) => e.kind === 'post' && e.source));
 
   // ctx.slideIndex is scoped per slide (agenda needs its own document
   // position to find the chapter strictly before it) — same one-context,
@@ -2609,7 +2658,7 @@ ${fontLinks}
 <style>${css(ctx)}${spaCss(ctx)}</style>
 </head><body class="deck" data-slides="${total}">${head}
 <main>${sections}
-</main>${navScript(total)}</body></html>`;
+</main>${navScript(total)}${hasPostEmbed ? postEmbedScript() : ''}</body></html>`;
 
   return { pages: { 'index.html': doc }, assets: ctx.assets };
 }

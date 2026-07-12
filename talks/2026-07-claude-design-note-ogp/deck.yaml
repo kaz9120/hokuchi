@@ -1,0 +1,363 @@
+# 「AIに、センスは頼めるのか」(note 記事の情報整理用デッキ、2026-07)
+# 構造: 物語起点。毎週 note の痛み → 道具の変遷 → 雑誌ベンチマークの転機 →
+# プロセスの言語化 → デザイナーに褒められた自信 → 「あなたの題材で真似てみて」で閉じる。
+# One Big Idea: ベンチマークを決め、AI に大量に出させ、不要を削ぎ落とす——
+# この協働プロセスを、自分の題材で真似てみる。
+schema_version: "0.3.0"
+deck:
+  title: "AIに、センスは頼めるのか"
+  audience:
+    who: "AI でデザインもコードも作れる時代に、自分の AI の使い方に自信が持てずにいる個人開発者"
+    action: "ベンチマークを決め、AI に大量に出させ、削ぎ落とす協働プロセスを、自分の題材で真似てみる"
+  theme: ../../tools/slides/themes/hokuchi.yaml
+
+slides:
+  - id: title
+    role: title
+    idea: "記事の背骨である問い「AIに、センスは頼めるのか」を掲げる"
+    layout: title-stage
+    elements:
+      - kind: statement
+        slot: title
+        text: "AIに、センスは頼めるのか"
+      - kind: statement
+        slot: subtitle
+        text: "Claude Design と作った、note 見出し画像メーカーの話"
+    notes: |
+      記事タイトルの候補でもある問い。「頼める。ただし頼み方があった」が本文の答え。
+      導入では、この問いを読者の言葉 (AI にデザインを頼むと"それっぽい"止まりになる) に
+      接続してから本編に入る。
+
+  - id: profile
+    role: content
+    chapter: "自己紹介"
+    idea: "毎週 note を書き続けている個人開発者という語り手の立場を示す"
+    layout: profile-stage
+    elements:
+      - kind: image
+        slot: portrait
+        src: ./assets/profile.jpg
+        prompt: "登壇者のプロフィール写真"
+      - kind: statement
+        slot: name
+        text: "山本 一将｜焚き火を愛するエンジニア"
+      - kind: statement
+        slot: affiliation
+        text: "MOSH株式会社 Engineering Manager"
+      - kind: statement
+        slot: handle
+        text: "X: @kyamamoto9120"
+      - kind: bullets
+        slot: bio
+        items:
+          - "note ── 毎週記事を書くと決めて、この時点で 28 本"
+          - "個人開発 ── 自宅サーバー基盤 hidoko の上で自分用アプリを開発・運用"
+          - "趣味 ── ヤクルトスワローズ、将棋、キャンプ、DQウォーク、旅行、謎解きなど"
+    notes: |
+      「毎週 note・28 本」が本編の伏線。28 本書いたから要件が言語化された、に効いてくる。
+      記事素材: hidoko の紹介記事 https://note.com/kyamamoto9120/n/n8208e2775e83
+      個人開発アプリの紹介記事 https://note.com/kyamamoto9120/n/n90db8717390e
+
+  - id: bridge-product
+    role: transition
+    chapter: "作ったもの"
+    idea: "問いから成果物の紹介へ場面を開く"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "作ったものから\nお見せします"
+    notes: |
+      記事では「まずは note-ogp の紹介です」の見出しに当たる。
+
+  - id: note-ogp
+    role: content
+    chapter: "作ったもの"
+    idea: "画像 1 枚とタイトルを入れるだけで見出し画像ができる道具を作った"
+    layout: image-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "画像を選んで、タイトルを入れるだけ"
+      - kind: image
+        slot: image
+        prompt: "note-ogp のアプリ画面スクリーンショット。画像選択・タイトル・号数・日付などの入力フォームと、生成された見出し画像のプレビューが写ったもの (Image #1)"
+        treatment: framed
+    notes: |
+      note-ogp https://note-ogp.y-kaz.com/
+      note 記事の見出し画像を作ることに特化したアプリ。画像を 1 枚選び、
+      タイトルと号数、日付を入力していくつかのパラメータを設定したら、
+      ある程度オシャレな見出し画像が作れる。hidoko で管理している。
+
+  - id: pain
+    role: content
+    chapter: "作ったもの"
+    idea: "毎週 note を書くうえで、実際にいちばん辛いのが見出し画像づくりだった"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "いちばん辛いのは\n見出し画像づくりだった"
+        emphasis: ["見出し画像"]
+      - kind: statement
+        slot: support
+        text: "毎週 note を書き続けて、身をもって知った"
+    notes: |
+      作った動機。「毎週 note を書く」という目標のなかで、記事を書くことより
+      見出し画像を作ることのほうが辛い。これは見込みではなく、
+      毎週続けるなかで実際に体験した辛さだった。
+
+  - id: bridge-history
+    role: transition
+    chapter: "変遷"
+    idea: "道具の変遷の物語へ場面を切り替える"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "この作業は\n3つの道具を渡り歩いた"
+    notes: |
+      記事の中盤の背骨。時系列の試行錯誤がそのまま「真似できるプロセス」の証拠になる。
+
+  - id: history
+    role: content
+    chapter: "変遷"
+    idea: "生成 AI → Canva → Claude Design と道具を渡り歩いてきた"
+    layout: diagram-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "見出し画像づくりの変遷"
+      - kind: diagram
+        slot: diagram
+        form: flow.timeline
+        nodes:
+          - { id: genai, label: "画像生成AIで出力", detail: "連載の初期" }
+          - { id: canva, label: "Canvaのテンプレート", detail: "楽さに負けて長期化" }
+          - { id: cd, label: "Claude Designで道具を作る", detail: "2026年GW〜" }
+        edges:
+          - genai -> canva
+          - canva -> cd
+        emphasis: [cd]
+    notes: |
+      Claude Design の初触の速報記事 https://note.com/kyamamoto9120/n/nbe133d5a7dfc
+      Design 登場から触るまでには少し間があった。忙しくてすぐには触れず、
+      ゴールデンウィークに時間が作れてようやく着手。そこから
+      Claude Design と見出し画像を追求する日々が始まる。
+
+  - id: era-genai
+    role: content
+    chapter: "変遷"
+    idea: "生成 AI は質を出せるが、文字の制御とクオリティ担保に時間を食った"
+    layout: image-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "質は出る。でも、時間を食う"
+      - kind: image
+        slot: image
+        prompt: "画像生成 AI で作っていた頃の見出し画像の実例 (Image #2)"
+        treatment: framed
+    notes: |
+      記事の内容を全部入力して、画像生成 AI に見出し画像を生成させるプロセス。
+      ある程度の質は出るが、文字の制御などクオリティの担保が地味に大変で、
+      毎週の作業としては無視できない時間がかかっていた。
+
+  - id: era-canva
+    role: content
+    chapter: "変遷"
+    idea: "Canva は単品ではそこそこ良いものができたが、記事が溜まって並んだときにダメだった"
+    layout: image-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "単品では良い。並べると、ダメ"
+      - kind: image
+        slot: image
+        prompt: "Canva テンプレートで作った見出し画像、または note のサムネイル一覧に並んだ状態のスクリーンショット (Image #3)"
+        treatment: framed
+    notes: |
+      Canva AI にテンプレートを作ってもらい、タイトルの文字だけ差し替える運用。
+      工数は大幅に下がったし、単品では「ちょっと良いものできた！」という気持ちもあった。
+      問題は並んだとき。毎週書けば記事は溜まっていき、note のサムネイル一覧で
+      まとめて見られる。そこで全く格好良くなかった。
+      連載には「12 枚並べて格好良い」という感覚が必要だと、ここで気付き始める。
+      あまりの楽さに長く使い続けてしまい、脱却の手段を探していた。
+
+  - id: bridge-turning
+    role: transition
+    chapter: "転機"
+    idea: "テンプレートを選ぶ発想を捨てる転機へ場面を切り替える"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "テンプレを選ぶのを\nやめた"
+    notes: |
+      ここが記事の転機。道具の乗り換えではなく、発想の乗り換え。
+
+  - id: first-gen
+    role: content
+    chapter: "転機"
+    idea: "最初の Claude Design 版もテンプレ選び発想で、Canva と同じ問題が続いた"
+    layout: image-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "テンプレ選びのままでは、Canva の再演"
+      - kind: image
+        slot: image
+        prompt: "最初に Claude Design と作った、複数テンプレートから選ぶ方式のツール画面 (Image #4)"
+        treatment: framed
+    notes: |
+      Claude Design で最初に作ったのは、いくつかのテンプレートを選んで
+      見出し画像を作るツール。ちょっと格好良いものは作れる。
+      でも「これが並んだ時に満足のいく記事一覧になるのか」という
+      Canva 時代と同じ問題が続いた。ここから台紙の見せ方の追求が始まる。
+
+  - id: requirements
+    role: content
+    chapter: "転機"
+    idea: "28 本書いて、見出し画像に求めるものが 3 つに言語化された"
+    layout: list-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "28本書いて、要件が言語化された"
+      - kind: bullets
+        slot: list
+        items:
+          - "連載であることが、わかる"
+          - "世界観が、統一されている"
+          - "それでいて、飽きない"
+    notes: |
+      これだけ書いていると、見出し画像に求める要件が定まってくる。
+      この 3 つを重視してデザインを出してもらった。
+      記事素材: 要件を重視して出してもらったデザイン案 (Image #5)。
+      方向性は良くなってきたが、まだ「良い」と思えなかった——という中間段階として
+      本文で 1 段落使う。
+
+  - id: magazine
+    role: content
+    chapter: "転機"
+    idea: "雑誌の表紙をベンチマークに置いた瞬間、急に良くなった"
+    layout: image-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "雑誌の表紙は、12冊並んでも格好良い"
+      - kind: image
+        slot: image
+        prompt: "雑誌の表紙をベンチマークに作り込んだ台紙のデザイン案 (Image #6)"
+        treatment: framed
+    notes: |
+      要件だけではまだ「良い」と思えず、方向性を変えた。
+      私は雑誌の表紙が好きだ。格好良い雑誌は、12 ヶ月分並べても格好良い。
+      Canva 期に気付いた「並べて格好良い」の答えが、アナログの世界にあった。
+      雑誌の表紙を想像して作り込みを始めたら、急に良くなった。
+      写真さえちゃんと選べば、満足感のある見出し画像が並べられる確信が持てた。
+
+  - id: process
+    role: content
+    chapter: "プロセス"
+    idea: "協働プロセスは 3 つの動きに言語化できる"
+    layout: diagram-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "協働は、3つの動きでできている"
+      - kind: diagram
+        slot: diagram
+        form: flow.linear
+        nodes:
+          - { id: benchmark, label: "ベンチマークを決める", detail: "憧れのアナログを指差す" }
+          - { id: generate, label: "大量に出させる", detail: "人間には頼めない物量" }
+          - { id: refine, label: "削ぎ落とす", detail: "すり合わせて、消す" }
+        edges:
+          - benchmark -> generate
+          - generate -> refine
+    notes: |
+      見出し画像を作るアプリから「自分が使いたいアプリ」までのギャップは大きかった。
+      要求の言語化が求められ、何度もパターンを作ってもらい、細かくすり合わせた。
+      重要だったのは、アプリの作り込みではなく台紙のブラッシュアップに集中したこと。
+      雑誌をベンチマークに置いたこと。とにかく大量にパターンを出してもらったこと。
+      この物量は人間のデザイナーには頼めない。AI は文句も言わず、
+      何時からでも何時間でも付き合ってくれる。だから一人でこの作業ができた。
+      補足: このプロセスのクオリティは Opus でも Fable でも大差を感じない。
+      モデルの賢さより、プロセスの型のほうが効いている。
+
+  - id: overbuild
+    role: content
+    chapter: "プロセス"
+    idea: "AI 時代の罠は作りすぎること——設定項目を一度全部消した"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "Canva を作ったら\nおしまい"
+        emphasis: ["おしまい"]
+      - kind: statement
+        slot: support
+        text: "設定項目が増えすぎて、一度全部消した"
+    notes: |
+      メンテの過程で設定可能な項目が増えすぎたタイミングがあり、一度全部消した。
+      AI 時代に気をつけるべきは、作れてしまうがゆえの作りすぎ。
+      危うく Canva を作るところだった。汎用を作ったら、この道具の価値はおしまい。
+      必要なものは何かを問い続けて価値を磨き、不要を削いで洗練させる。
+      それができていることが、このアプリに自信を持っている理由。
+
+  - id: praised
+    role: content
+    chapter: "自信"
+    idea: "デザイナーに褒められ、言語化されたプロセスが自信に変わった"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "言語化されたプロセスは\n自信になった"
+        emphasis: ["自信"]
+      - kind: statement
+        slot: support
+        text: "社内のデザイナーに、プロセスごと褒めてもらえた"
+    notes: |
+      この記事の感情の芯。究極は「褒めてもらって嬉しかった」を出す記事。
+      自分の AI の使い方に自信を持つのが難しい時代に、このアプリを題材に
+      Claude Design の使い方をデザイナーと話し、そのなかで言語化された
+      自分のプロセスは確実に自信になった。
+
+  - id: designers
+    role: content
+    chapter: "自信"
+    idea: "細部に気付く専門性は本物で、デザイナーは不要にならない"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "デザイナーは\n不要にならない"
+        emphasis: ["不要にならない"]
+      - kind: statement
+        slot: support
+        text: "細かいこだわりに気付けるのは、専門職の目だった"
+    notes: |
+      本当に細かいこだわりにめっちゃ気付いてもらえた。やっぱりデザイナーはすごい、
+      専門職だと実感した。Claude Design がどれだけ進化しても
+      デザイナーは不要にならないと、実感を持って言える。
+      読者への含意: AI を使うことと専門性を尊敬することは両立する。
+      あなたの試行も、専門家の目に耐えるものになりうる。
+
+  - id: closer
+    role: closer
+    idea: "協働プロセスを自分の題材で真似てみてほしい、という行動喚起で閉じる"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "ベンチマークを決め\n大量に出させ、削ぎ落とす"
+        emphasis: ["削ぎ落とす"]
+      - kind: statement
+        slot: support
+        text: "あなたの題材で、試してみてください"
+    notes: |
+      One Big Idea をそのまま手渡して閉じる。
+      Claude Design は頼もしい相棒で、能力を大きく拡張してくれた。
+      これからも無限にデザインを作ってもらう。感謝！——という感謝の温度で結ぶ。

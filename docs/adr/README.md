@@ -65,3 +65,4 @@ hokuchi における意思決定の記録。決定に至る過程（選択肢・
 | [0015](0015-image-stage-and-overlap-shared.md) | deck スキーマ 0.2.0 — image-stage パターンと overlap の交差語彙 (shared) を追加する | 承認 | tools/slides |
 | [0016](0016-tech-material-vocabulary.md) | deck スキーマ 0.3.0 / theme 0.4.0 — 技術素材・紹介・数値の語彙を追加する | 承認 | tools/slides |
 | [0017](0017-link-ogp-and-post-embed.md) | link の OGP 自動解決と post の SPA 実埋め込み | 承認 | tools/slides |
+| [0018](0018-react-renderer-and-css-composition.md) | レンダラを React コンポーネントで再実装し、ページ内の配置を CSS レイアウトに委ねる | 承認 | tools/slides |

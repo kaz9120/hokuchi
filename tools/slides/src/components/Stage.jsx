@@ -9,10 +9,11 @@
 // 残りの領域を受け取る。主役の箱の寸法は measure が決めたものをそのまま使い、
 // 縦は常に中央、横は align で選ぶ。左端は動かない。
 //
-// headlineHtml と leadHtml が HTML 文字列なのは移行途中のため。要素側を順次
-// コンポーネントに移し、最終的に children で受け取る形にする。
+// lead は移行の進み具合で React 要素にも HTML 文字列にもなる。文字列のときは
+// lead-box 自身に流し込むので、どちらでも構造は変わらない。
 
-export function Stage({ headlineHtml, headFontSize, leadHtml, leadW, leadH, align = 'center' }) {
+export function Stage({ headlineHtml, headFontSize, lead, leadW, leadH, align = 'center' }) {
+  const boxStyle = { width: `${leadW}px`, height: `${leadH}px` };
   return (
     <div className="stage">
       {headlineHtml != null && (
@@ -23,11 +24,9 @@ export function Stage({ headlineHtml, headFontSize, leadHtml, leadW, leadH, alig
         />
       )}
       <div className={`stage-lead ${align}`}>
-        <div
-          className="lead-box"
-          style={{ width: `${leadW}px`, height: `${leadH}px` }}
-          dangerouslySetInnerHTML={{ __html: leadHtml }}
-        />
+        {typeof lead === 'string'
+          ? <div className="lead-box" style={boxStyle} dangerouslySetInnerHTML={{ __html: lead }} />
+          : <div className="lead-box" style={boxStyle}>{lead}</div>}
       </div>
     </div>
   );

@@ -26,6 +26,7 @@ import { ProfileStage } from './components/ProfileStage.jsx';
 import { Slide, brandBackground } from './components/Slide.jsx';
 import { Stage } from './components/Stage.jsx';
 import { QuoteStage, StatementStage, TitleStage } from './components/TextStages.jsx';
+import { Agenda, Bullets, Stat, Table } from './components/elements/TextElements.jsx';
 
 // ---------------------------------------------------------------------------
 // Canvas + composition constants (ADR-0014 — renderer-internal, not spec)
@@ -1570,16 +1571,8 @@ function measureStat(el, ctx, avail) {
   const h = Math.min(avail.h, valueH + labelH + contextH);
   return {
     w: round(w), h: round(h),
-    render: () => renderStat(el, ctx, { fs, fsLabel, fsContext }),
+    render: () => createElement(Stat, { el, fs, fsLabel, fsContext }),
   };
-}
-
-function renderStat(el, ctx, { fs, fsLabel, fsContext }) {
-  return `<div class="stat-block">
-    <div class="stat-value" style="font-size:${fs}px">${esc(el.value)}</div>
-    ${el.label ? `<div class="stat-label jp" style="font-size:${fsLabel}px">${inlineText(el.label)}</div>` : ''}
-    ${el.context ? `<div class="stat-context jp" style="font-size:${fsContext}px">${inlineText(el.context)}</div>` : ''}
-  </div>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -1620,51 +1613,10 @@ function measureTable(el, ctx, avail) {
 
   return {
     w: round(Math.min(avail.w, totalW)), h: round(Math.min(avail.h, totalH)),
-    render: () => renderTable(el, ctx, { fs, colWidths: cw, rowH: rowHFor(fs), headH: headHFor(fs), colGap }),
+    render: () => createElement(Table, {
+      el, fs, colWidths: cw, rowH: rowHFor(fs), headH: headHFor(fs), colGap,
+    }),
   };
-}
-
-function renderTable(el, ctx, { fs, colWidths, rowH, headH, colGap }) {
-  const emphRows = new Set(el.emphasis?.rows || []);
-  const emphCols = new Set(el.emphasis?.cols || []);
-  const gridCols = colWidths.map((w) => `${round(w)}px`).join(' ');
-  const totalW = colWidths.reduce((a, b) => a + b, 0) + colGap * (colWidths.length - 1);
-  const totalH = headH + el.rows.length * rowH;
-  const colX = [];
-  { let acc = 0; colWidths.forEach((w) => { colX.push(acc); acc += w + colGap; }); }
-
-  // 1 列目 (行ラベル) は左揃え、データ列はヘッダ・セルとも中央揃えにする
-  // (レビュー指摘 2026-07-09)。emphasis はセルごとの塗りではなく、対象列/行
-  // の全長を覆う 1 枚の角丸帯として描く — セルごとの塗りだと列間ギャップで
-  // 帯が途切れて見える。ヘッダ下罫線も個々のセル border ではなく表の実幅
-  // ぴったりの 1 本の rule として描き、ギャップで途切れないようにする。
-  const bandPad = 16;
-  let decor = `<div class="table-rule" style="left:0px;top:${round(headH - 2)}px;width:${round(totalW)}px"></div>`;
-  emphCols.forEach((c) => {
-    const ci = c - 1;
-    if (ci < 0 || ci >= colWidths.length) return;
-    decor += `<div class="table-em-band" style="left:${round(colX[ci] - bandPad)}px;top:0px;width:${round(colWidths[ci] + bandPad * 2)}px;height:${round(totalH)}px"></div>`;
-  });
-  emphRows.forEach((r) => {
-    const ri = r - 1;
-    if (ri < 0 || ri >= el.rows.length) return;
-    decor += `<div class="table-em-band" style="left:${round(-bandPad)}px;top:${round(headH + ri * rowH)}px;width:${round(totalW + bandPad * 2)}px;height:${round(rowH)}px"></div>`;
-  });
-
-  let html = `<div class="table-wrap" style="width:${round(totalW)}px;height:${round(totalH)}px">${decor}<div class="table-grid" style="grid-template-columns:${gridCols};column-gap:${colGap}px;font-size:${fs}px">`;
-  el.columns.forEach((c, ci) => {
-    const align = ci === 0 ? '' : ' table-col-data';
-    html += `<div class="table-cell table-head${align}" style="height:${headH}px;line-height:${headH}px">${esc(c)}</div>`;
-  });
-  el.rows.forEach((row, ri) => {
-    row.forEach((cell, ci) => {
-      const align = ci === 0 ? '' : ' table-col-data';
-      const mark = cell === '✓' ? ' table-mark-yes' : cell === '—' ? ' table-mark-no' : '';
-      html += `<div class="table-cell${align}${mark}" style="height:${rowH}px;line-height:${rowH}px">${esc(cell)}</div>`;
-    });
-  });
-  html += '</div></div>';
-  return html;
 }
 
 // ---------------------------------------------------------------------------
@@ -1771,20 +1723,8 @@ function measureAgenda(el, ctx, avail) {
 
   return {
     w: avail.w, h: round(h),
-    render: () => renderAgenda(chapters, currentIdx, ctx, { fs, numW, gapNum, gap }),
+    render: () => createElement(Agenda, { chapters, currentIdx, fs, numW, gapNum, gap }),
   };
-}
-
-function renderAgenda(chapters, currentIdx, ctx, { fs, numW, gapNum, gap }) {
-  const items = chapters.map((c, i) => {
-    const hot = i === currentIdx;
-    const num = String(i + 1).padStart(2, '0');
-    return `<li style="gap:${gapNum}px">
-      <span class="agenda-num${hot ? ' agenda-num-hot' : ''}" style="width:${numW}px;font-size:${fs}px">${num}</span>
-      <span class="agenda-text jp${hot ? ' agenda-text-hot' : ''}" style="font-size:${fs}px">${inlineText(c.text)}</span>
-    </li>`;
-  }).join('');
-  return `<ul class="agenda-list" style="gap:${round(gap)}px">${items}</ul>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -1851,7 +1791,7 @@ function leadStage(slide, ctx, slotName, measureFn, align = 'center') {
   return createElement(Stage, {
     headlineHtml: head ? inlineText(head.text, head.emphasis) : null,
     headFontSize: ctx.scale.heading,
-    leadHtml: m.render({ w: m.w, h: m.h }),
+    lead: m.render({ w: m.w, h: m.h }),
     leadW: round(m.w),
     leadH: round(m.h),
     align,
@@ -1887,11 +1827,7 @@ function measureList(el, ctx, avail) {
   const h = Math.min(avail.h, estH(fs) + (n - 1) * gap);
   return {
     w: avail.w, h: round(h),
-    render: () => {
-      const items = el.items.map((it) =>
-        `<li><span class="dot"></span><span class="jp">${inlineText(it)}</span></li>`).join('');
-      return `<ul class="bullets" style="font-size:${fs}px;gap:${round(gap)}px;padding-left:${indent}px">${items}</ul>`;
-    },
+    render: () => createElement(Bullets, { items: el.items, fs, gap, indent }),
   };
 }
 

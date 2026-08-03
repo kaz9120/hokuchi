@@ -13,10 +13,13 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { loadDefaultJapaneseParser } from 'budoux';
 import hljs from 'highlight.js';
 import qrcode from 'qrcode-generator';
 import { iconExists, iconInner, promoteWeight } from './icons.mjs';
+import { Stage } from './components/Stage.jsx';
 
 const parser = loadDefaultJapaneseParser();
 
@@ -26,11 +29,12 @@ const parser = loadDefaultJapaneseParser();
 const CANVAS = { w: 1280, h: 720 };
 const MARGIN = { x: 96, y: 64 }; // 外周のみ。レターボックスという概念は持たない
 
-const OPTICAL = 0.45;      // 使い残した高さの上:下 配分 (光学中心 — 幾何中心よりわずかに上)
-// profile-stage 専用の上:下 配分。OPTICAL (0.45) は「ほぼ中央、わずかに上」の
-// 光学中心だが、写真+略歴という縦に短いコンテンツを縦長の body 領域の中で
-// 使うと 0.45 でも中央寄りに沈んで見える (レビュー指摘 2026-07-09)。もっと
-// 上詰めに振った専用値として 0.25 を使う。
+// 舞台の縦配分は CSS の spacer 比が持つ (ADR-0018、css() の .stage-lead)。
+// かつてここにあった OPTICAL (0.45) は leadStage が唯一の利用者だった。
+//
+// profile-stage 専用の上:下 配分。写真+略歴という縦に短いコンテンツを縦長の
+// body 領域に置くと、光学中心でも中央寄りに沈んで見える (レビュー指摘
+// 2026-07-09)。もっと上詰めに振った専用値として 0.25 を使う。
 const PROFILE_TOP = 0.25;
 const HEAD_GAP = 40;       // headline 帯と主役の間
 const RING_ASPECT = 1.1;   // flow.cycle の箱の理想 w/h — カードが横長なぶん、わずかに横広が釣り合う
@@ -1968,28 +1972,29 @@ function titleStage(slide, ctx) {
 }
 
 /**
- * Headline band + one lead slot, composed by measure/compose (ADR-0014):
- * the lead element reports the box it wants (measure), compose stacks
- * headline + lead and hands the leftover height to whitespace at the
- * optical centre (45:55).
+ * Headline band + one lead slot (ADR-0018). measure still decides the box the
+ * lead wants; placing it is now the CSS flex column in <Stage>, so the
+ * headline sits at the top of the stage on every slide and the left edge
+ * never moves. `align` picks the horizontal placement of the lead box:
+ * figures read as centred, text-shaped material lines up with the headline.
  */
-function leadStage(slide, ctx, slotName, measureFn, paneClass = 'pane center') {
+function leadStage(slide, ctx, slotName, measureFn, align = 'center') {
   const stage = stageRect();
   const head = slide.elements.find((e) => e.slot === 'headline');
   const el = slide.elements.find((e) => e.slot === slotName);
   const headH = head ? Math.round(ctx.scale.heading * 1.3) : 0;
   const avail = { w: stage.w, h: stage.h - (head ? headH + HEAD_GAP : 0) };
   const m = measureFn(el, ctx, avail);
-  const used = (head ? headH + HEAD_GAP : 0) + m.h;
-  let y = stage.y + Math.max(0, stage.h - used) * OPTICAL;
-  let html = '';
-  if (head) {
-    html += `<div class="headline jp" style="left:${stage.x}px;top:${round(y)}px;width:${stage.w}px;height:${headH}px;font-size:${ctx.scale.heading}px">${inlineText(head.text, head.emphasis)}</div>`;
-    y += headH + HEAD_GAP;
-  }
-  const box = { x: round(stage.x + (stage.w - m.w) / 2), y: round(y), w: round(m.w), h: round(m.h) };
-  html += `<div class="${paneClass}" style="${boxStyle(box)}">${m.render({ w: m.w, h: m.h })}</div>`;
-  return html;
+  // JSX を書けるのは .jsx だけなので、移行が render.mjs の分割に届くまでは
+  // createElement で繋ぐ (ADR-0018)。
+  return renderToStaticMarkup(createElement(Stage, {
+    headlineHtml: head ? inlineText(head.text, head.emphasis) : null,
+    headFontSize: ctx.scale.heading,
+    leadHtml: m.render({ w: m.w, h: m.h }),
+    leadW: round(m.w),
+    leadH: round(m.h),
+    align,
+  }));
 }
 
 function diagramStage(slide, ctx) {
@@ -2030,7 +2035,7 @@ function measureList(el, ctx, avail) {
 }
 
 function listStage(slide, ctx) {
-  return leadStage(slide, ctx, 'list', measureList, 'pane');
+  return leadStage(slide, ctx, 'list', measureList, 'start');
 }
 
 /** 画像ファイルの実寸 (px)。png / jpeg / svg のみ。読めなければ null。 */
@@ -2094,7 +2099,7 @@ function imageStage(slide, ctx) {
 }
 
 function codeStage(slide, ctx) {
-  return leadStage(slide, ctx, 'code', measureCode);
+  return leadStage(slide, ctx, 'code', measureCode, 'start');
 }
 
 function postStage(slide, ctx) {
@@ -2102,7 +2107,7 @@ function postStage(slide, ctx) {
 }
 
 function linkStage(slide, ctx) {
-  return leadStage(slide, ctx, 'link', measureLink);
+  return leadStage(slide, ctx, 'link', measureLink, 'start');
 }
 
 function statStage(slide, ctx) {
@@ -2110,7 +2115,7 @@ function statStage(slide, ctx) {
 }
 
 function tableStage(slide, ctx) {
-  return leadStage(slide, ctx, 'table', measureTable);
+  return leadStage(slide, ctx, 'table', measureTable, 'start');
 }
 
 function versusStage(slide, ctx) {
@@ -2118,7 +2123,7 @@ function versusStage(slide, ctx) {
 }
 
 function agendaStage(slide, ctx) {
-  return leadStage(slide, ctx, 'agenda', measureAgenda);
+  return leadStage(slide, ctx, 'agenda', measureAgenda, 'start');
 }
 
 function videoStage(slide, ctx) {
@@ -2299,6 +2304,25 @@ function css(ctx) {
 .hi{color:${C.highlight};font-weight:${fonts.wDisplay}}
 .pane{position:absolute;display:flex;flex-direction:column}
 .pane.center{align-items:center;justify-content:center;text-align:center}
+
+/* 舞台 (ADR-0018) — 見出しは上端に固定、主役は残りの領域を受け取る。
+   見出しの Y と本文の左端がスライドをまたいで動かないことが要点。 */
+.stage{position:absolute;left:${MARGIN.x}px;top:${MARGIN.y}px;
+  width:${CANVAS.w - MARGIN.x * 2}px;height:${CANVAS.h - MARGIN.y * 2}px;
+  display:flex;flex-direction:column}
+.stage>.headline{position:static;flex:0 0 auto;width:100%;margin-bottom:${HEAD_GAP}px}
+/* 残りの領域での縦位置は、上下の spacer の伸び比で決める (ADR-0018)。
+   図は 1:1 の中央。テキスト主体の素材は 1:2 で上寄りに置き、見出しから
+   離れすぎず、下に余白を残す。比が固定なので枚をまたいでも位置が動かない。 */
+.stage-lead{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+.stage-lead::before,.stage-lead::after{content:'';flex-basis:0;flex-shrink:1}
+.stage-lead::before{flex-grow:1}
+.stage-lead.center{align-items:center;text-align:center}
+.stage-lead.center::after{flex-grow:1}
+.stage-lead.start{align-items:flex-start}
+.stage-lead.start::after{flex-grow:2}
+.lead-box{flex:0 0 auto;display:flex;flex-direction:column;justify-content:center}
+.stage-lead.center>.lead-box{align-items:center}
 /* overflow:visible — 箱の縁に接するカードの外周ストロークが viewBox で
    半分に切られて線が細く見えるのを防ぐ (2026-07-08 レビュー指摘) */
 svg.lead{display:block;max-width:100%;max-height:100%;overflow:visible}

@@ -11,10 +11,15 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
+import './src/jsx-register.mjs';
 import { loadDeck } from './src/load.mjs';
 import { lint, hasError } from './src/lint.mjs';
-import { renderDeck } from './src/render.mjs';
 import { resolveLinkOgp } from './src/ogp.mjs';
+
+// render.mjs は .jsx を読むため、ローダー登録後に解決する必要がある
+// (ADR-0018)。静的 import だとモジュールグラフの解決が register より先に
+// 走って .jsx が読めない。
+const { renderDeck } = await import('./src/render.mjs');
 
 const SEV_ORDER = { error: 0, warn: 1, info: 2 };
 const SEV_LABEL = { error: 'ERROR', warn: 'WARN ', info: 'INFO ' };

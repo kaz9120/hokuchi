@@ -16,11 +16,14 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Ajv2020 from 'ajv/dist/2020.js';
+import '../src/jsx-register.mjs';
 import { loadDeck, loadTheme, normalizeEdge } from '../src/load.mjs';
 import { lint, hasError } from '../src/lint.mjs';
-import { renderDeck } from '../src/render.mjs';
 import { resolveLinkOgp } from '../src/ogp.mjs';
 import { iconExists, promoteWeight } from '../src/icons.mjs';
+
+// ローダー登録後に解決する (ADR-0018、cli.mjs と同じ理由)
+const { renderDeck } = await import('../src/render.mjs');
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(here, '..');

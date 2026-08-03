@@ -31,6 +31,8 @@ import { CodePanel, Versus } from './components/elements/Cards.jsx';
 import { ImageElement, Raw, StagePhoto, Video } from './components/elements/Media.jsx';
 import { Link, Post } from './components/elements/Social.jsx';
 import { Dag, StepRow, Timeline } from './components/svg/Flow.jsx';
+import { Cycle, Enclosed, Overlap, Radial, RingCluster } from './components/svg/Cluster.jsx';
+import { Layer, Matrix } from './components/svg/Structure.jsx';
 
 // ---------------------------------------------------------------------------
 // Canvas + composition constants (ADR-0014 — renderer-internal, not spec)
@@ -244,8 +246,7 @@ function ringArcEdge(a, b, ring, rects, ctx) {
 
   const s = ptAt(t0), e = ptAt(t1);
   const large = t1 - t0 > Math.PI ? 1 : 0;
-  const path = `<path d="M ${round(s.x)} ${round(s.y)} A ${round(ring.rx)} ${round(ring.ry)} 0 ${large} 1 ${round(e.x)} ${round(e.y)}"
-    fill="none" stroke="${C.muted}" stroke-width="3" marker-end="${markerRef(ctx)}"/>`;
+  const d = `M ${round(s.x)} ${round(s.y)} A ${round(ring.rx)} ${round(ring.ry)} 0 ${large} 1 ${round(e.x)} ${round(e.y)}`;
 
   // Label at mid-arc, pushed outward along the ring normal; the anchor makes
   // the text extend away from the ring so it clears neighbouring cards.
@@ -258,7 +259,7 @@ function ringArcEdge(a, b, ring, rects, ctx) {
     y: pm.y + ny * 24 + (ny > 0.3 ? 16 : ny < -0.3 ? -4 : 6),
     anchor: nx < -0.35 ? 'end' : nx > 0.35 ? 'start' : 'middle',
   };
-  return { path, label };
+  return { d, label };
 }
 
 /**
@@ -301,14 +302,14 @@ function measureDiagram(el, ctx, avail) {
   switch (el.form) {
     case 'flow.cycle': {
       const box = fitAspect(RING_ASPECT, avail.w, avail.h);
-      return { ...box, render: (b) => renderCycle(el, b, ctx) };
+      return { ...box, render: (b) => cycleNode(el, b, ctx) };
     }
     case 'radial.core': {
       // ハブの左右に周辺カードが並ぶぶん、箱の幅はカード寸法から導出する
       // (中心 + 左右 1 枚ずつ = 3 カード幅 + 間隔)。高さは使い切って環を稼ぐ。
       const card = cardMetrics(el, ctx);
       const w = Math.min(avail.w, card.w * 3 + 120);
-      return { w, h: avail.h, render: (b) => renderRadial(el, b, ctx, card) };
+      return { w, h: avail.h, render: (b) => radialNode(el, b, ctx, card) };
     }
     case 'structure.layer': return measureLayer(el, ctx, avail);
     case 'structure.matrix': return measureMatrix(el, ctx, avail);
@@ -324,7 +325,7 @@ function measureDiagram(el, ctx, avail) {
       // 群を知覚させる (ゲシュタルトの閉合)。linked は宣言された edges を
       // 矢印なしの線で結ぶ。
       const box = fitAspect(RING_ASPECT, avail.w, avail.h);
-      return { ...box, render: (b) => renderRingCluster(el, b, ctx) };
+      return { ...box, render: (b) => ringClusterNode(el, b, ctx) };
     }
     default: {
       const hasDetail = el.nodes.some((nd) => nd.detail);
@@ -357,19 +358,7 @@ function measureLayer(el, ctx, avail) {
   const h = Math.min(avail.h, n * bandH + (n - 1) * gap);
   return {
     w: bandW, h,
-    render: (box) => {
-      const emph = new Set(el.emphasis || []);
-      // measure が高さで切り詰めた場合は帯を等率で縮める
-      const bh = Math.min(bandH, (box.h - (n - 1) * gap) / n);
-      let svg = '';
-      el.nodes.forEach((nd, i) => {
-        svg += nodeCard(ctx, {
-          x: 0, y: i * (bh + gap), w: box.w, h: bh,
-          hot: emph.has(nd.id), label: nd.label, detail: nd.detail, icon: nd.icon, badge: null,
-        });
-      });
-      return svgLead(box, svg);
-    },
+    render: (box) => createElement(Layer, { el, box, ctx, bandH, gap }),
   };
 }
 
@@ -382,18 +371,7 @@ function measureMatrix(el, ctx, avail) {
   const h = Math.min(avail.h, rows * cardH + (rows - 1) * gap);
   return {
     w, h,
-    render: (box) => {
-      const emph = new Set(el.emphasis || []);
-      let svg = '';
-      el.nodes.forEach((nd, i) => {
-        svg += nodeCard(ctx, {
-          x: (i % 2) * (card.w + gap), y: Math.floor(i / 2) * (cardH + gap),
-          w: card.w, h: cardH,
-          hot: emph.has(nd.id), label: nd.label, detail: nd.detail, icon: nd.icon, badge: null,
-        });
-      });
-      return svgLead(box, svg);
-    },
+    render: (box) => createElement(Matrix, { el, box, ctx, cardW: card.w, cardH, gap }),
   };
 }
 
@@ -477,81 +455,8 @@ function measureOverlap(el, ctx, avail) {
   }
   return {
     w: round(w), h: round(h),
-    render: (box) => renderOverlap(el, box, ctx, { r, DIST }),
+    render: (box) => createElement(Overlap, { el, box, ctx, r, dist: DIST }),
   };
-}
-
-function renderOverlap(el, box, ctx, { r, DIST }) {
-  const { C, fonts, scale } = ctx;
-  const emph = new Set(el.emphasis || []);
-  const n = el.nodes.length;
-  const s = DIST * r;
-
-  let centers;
-  if (n === 3) {
-    const cx = box.w / 2;
-    centers = [
-      { x: cx, y: r },
-      { x: cx - s / 2, y: r + s * 0.866 },
-      { x: cx + s / 2, y: r + s * 0.866 },
-    ];
-  } else {
-    centers = el.nodes.map((_, i) => ({ x: r + i * s, y: box.h / 2 }));
-  }
-  // ラベルは重心から外向きに逃がすと、重なり領域と喧嘩しない
-  const gx = centers.reduce((t, c) => t + c.x, 0) / n;
-  const gy = centers.reduce((t, c) => t + c.y, 0) / n;
-
-  // 交差領域 (ADR-0015): shared 宣言があれば、全円の共通部分を clipPath の
-  // 入れ子で塗り、ラベルを領域の中心に置く。ベン図の主役はしばしばここ。
-  let sharedSvg = '';
-  if (el.shared) {
-    // 円の重心 = 共通部分のほぼ中心 (2 円は中点、3 円は重心)。ベースライン
-    // 描画なので、視覚中心に合わせてわずかに下げる
-    const sx = gx, sy = gy + 8;
-    if (el.shared.emphasis) {
-      let inner = `<circle cx="${round(centers[n - 1].x)}" cy="${round(centers[n - 1].y)}" r="${round(r)}"
-        fill="${C.highlight}" fill-opacity="0.16"/>`;
-      let defs = '';
-      for (let i = 0; i < n - 1; i++) {
-        const id = `ov-${ctx.slideKey}-${i}`;
-        defs += `<clipPath id="${id}"><circle cx="${round(centers[i].x)}" cy="${round(centers[i].y)}" r="${round(r)}"/></clipPath>`;
-        inner = `<g clip-path="url(#${id})">${inner}</g>`;
-      }
-      sharedSvg += `<defs>${defs}</defs>${inner}`;
-    }
-    if (el.shared.label) {
-      sharedSvg += `<text x="${round(sx)}" y="${round(sy + 7)}" text-anchor="middle"
-        fill="${el.shared.emphasis ? C.highlight : C.muted}" font-size="${scale.axis}"
-        font-weight="${el.shared.emphasis ? fonts.wDisplay : 'inherit'}" font-family='${fonts.display}'>${esc(el.shared.label)}</text>`;
-    }
-  }
-
-  let circleSvg = '', labelSvg = '';
-  el.nodes.forEach((nd, i) => {
-    const c = centers[i];
-    const hot = emph.has(nd.id);
-    circleSvg += `<circle cx="${round(c.x)}" cy="${round(c.y)}" r="${round(r)}"
-      fill="${C.surface}" fill-opacity="0.55" stroke="${hot ? C.highlight : C.line}" stroke-width="${hot ? 3 : 2.5}"/>`;
-    let dx = c.x - gx, dy = c.y - gy;
-    const dl = Math.hypot(dx, dy) || 1;
-    const lx = c.x + (dx / dl) * r * 0.32;
-    const ly = c.y + (dy / dl) * r * 0.32;
-    const fitFs = (base, text) => {
-      const tw = estW(text, base);
-      const availW = r * 1.3;
-      return tw > availW ? Math.max(15, Math.floor(base * availW / tw)) : base;
-    };
-    const fsL = fitFs(hot ? scale.node + 2 : scale.node, nd.label);
-    labelSvg += `<text x="${round(lx)}" y="${round(ly)}" text-anchor="middle" fill="${hot ? C.textStrong : C.text}"
-      font-size="${fsL}" font-weight="${fonts.wDisplay}" font-family='${fonts.display}'>${esc(nd.label)}</text>`;
-    if (nd.detail) {
-      labelSvg += `<text x="${round(lx)}" y="${round(ly + scale.axis * 1.6)}" text-anchor="middle" fill="${C.muted}"
-        font-size="${fitFs(scale.axis, nd.detail)}" font-family='${fonts.body}'>${esc(nd.detail)}</text>`;
-    }
-  });
-  // 描画順: 円 → 交差の塗り (円の上) → ラベル (最前面)
-  return svgLead(box, `<g>${circleSvg}</g><g>${sharedSvg}</g><g>${labelSvg}</g>`);
 }
 
 // ---------------------------------------------------------------------------
@@ -625,128 +530,41 @@ function measureEnclosed(el, ctx, avail) {
   const h = Math.min(avail.h, headH + card.h + padB);
   return {
     w: round(w), h: round(h),
-    render: (box) => renderEnclosed(el, box, ctx, { members, cardW, cardH: card.h, gap, padX, headH }),
+    render: (box) => createElement(Enclosed, {
+      el, box, ctx, members, cardW, cardH: card.h, gap, headH,
+    }),
   };
 }
 
-function renderEnclosed(el, box, ctx, { members, cardW, cardH, gap, padX, headH }) {
-  const { C, fonts, scale } = ctx;
-  const [group] = el.nodes;
-  const emph = new Set(el.emphasis || []);
-  const hotGroup = emph.has(group.id);
-  const cx = box.w / 2;
-  let svg = `<rect x="0" y="0" width="${round(box.w)}" height="${round(box.h)}" rx="22"
-    fill="${C.surface}" fill-opacity="0.45" stroke="${hotGroup ? C.highlight : C.line}" stroke-width="${hotGroup ? 3 : 2}"/>`;
-  svg += `<text x="${round(cx)}" y="${round(headH - (group.detail ? scale.axis * 1.9 : 0) - 24)}" text-anchor="middle"
-    fill="${hotGroup ? C.textStrong : C.text}" font-size="${scale.node + 2}" font-weight="${fonts.wDisplay}"
-    font-family='${fonts.display}'>${esc(group.label)}</text>`;
-  if (group.detail) {
-    svg += `<text x="${round(cx)}" y="${round(headH - 26)}" text-anchor="middle" fill="${C.muted}"
-      font-size="${scale.axis}" font-family='${fonts.body}'>${esc(group.detail)}</text>`;
-  }
-  const rowW = members.length * cardW + (members.length - 1) * gap;
-  const x0 = (box.w - rowW) / 2;
-  members.forEach((nd, i) => {
-    svg += nodeCard(ctx, {
-      x: x0 + i * (cardW + gap), y: headH, w: cardW, h: cardH,
-      hot: emph.has(nd.id), label: nd.label, detail: nd.detail, icon: nd.icon, badge: null,
-    });
-  });
-  return svgLead(box, svg);
-}
-
-/** cluster.closure / linked — ring placement; linked draws undirected lines. */
-function renderRingCluster(el, box, ctx) {
-  const { C, fonts, scale } = ctx;
-  const card = cardMetrics(el, ctx);
-  const emph = new Set(el.emphasis || []);
-  const { pos } = ringPositions(el, box, card.w, card.h);
-  const byId = Object.fromEntries(pos.map((n) => [n.id, n]));
-  const rectFor = (p) => ({ x: p.x - card.w / 2, y: p.y - card.h / 2, w: card.w, h: card.h });
-
-  let lineSvg = '';
-  for (const e of el.edges || []) {
-    const a = byId[e.from], b = byId[e.to];
-    if (!a || !b) continue; // edge-ref lint reports this; render skips silently.
-    const p1 = exitRect(a, b, rectFor(a), 6);
-    const p2 = exitRect(b, a, rectFor(b), 6);
-    lineSvg += `<line x1="${round(p1.x)}" y1="${round(p1.y)}" x2="${round(p2.x)}" y2="${round(p2.y)}"
-      stroke="${C.muted}" stroke-width="2.5" opacity="0.7"/>`;
-    if (e.label) {
-      // ラベルは線上ではなく、線の法線方向・環の外側へ逃がす (レビュー指摘 2026-07-08)
-      const mx = (p1.x + p2.x) / 2, my = (p1.y + p2.y) / 2;
-      const dx = p2.x - p1.x, dy = p2.y - p1.y;
-      const dl = Math.hypot(dx, dy) || 1;
-      let nx = -dy / dl, ny = dx / dl;
-      if (nx * (mx - box.w / 2) + ny * (my - box.h / 2) < 0) { nx = -nx; ny = -ny; }
-      lineSvg += `<text x="${round(mx + nx * 18)}" y="${round(my + ny * 18 + 6)}" text-anchor="middle"
-        fill="${C.muted}" font-size="${scale.axis}" font-family='${fonts.body}'>${esc(e.label)}</text>`;
-    }
-  }
-
-  let cardSvg = '';
-  for (const n of pos) {
-    const rc = rectFor(n);
-    cardSvg += nodeCard(ctx, {
-      x: rc.x, y: rc.y, w: rc.w, h: rc.h,
-      hot: emph.has(n.id), label: n.label, detail: n.detail, icon: n.icon, badge: null,
-    });
-  }
-  return svgLead(box, `<g>${lineSvg}</g><g>${cardSvg}</g>`);
-}
-
 /**
- * radial.core — nodes[0] is the hub, the rest sit at regular-polygon vertices
- * on the ring. Unlike cycle, the ring's eccentricity is not capped: the hub
- * occupies the middle, so satellites need the full horizontal reach to clear
- * it. Declared edges are drawn as arrows; with no edges the geometry itself
- * supplies plain spokes.
+ * radial.core の座標: nodes[0] を中心に置き、残りを環上の正多角形の頂点へ。
+ * cycle と違って離心率に上限を設けない — 中心がまんなかを占めるぶん、衛星は
+ * 水平方向いっぱいの距離を要する (描画は Radial コンポーネント)。
  */
-function renderRadial(el, box, ctx, card) {
-  const { C } = ctx;
+function radialNode(el, box, ctx, card) {
   const [core, ...sats] = el.nodes;
-  const emph = new Set(el.emphasis || []);
   const cx = box.w / 2, cy = box.h / 2;
   const ring = {
     rx: box.w / 2 - card.w / 2 - 4,
     ry: Math.max(40, box.h / 2 - card.h / 2 - 4),
   };
-
-  const rectFor = (p) => ({ x: p.x - card.w / 2, y: p.y - card.h / 2, w: card.w, h: card.h });
   const pts = { [core.id]: { ...core, x: cx, y: cy } };
   sats.forEach((n, i) => {
     const ang = -Math.PI / 2 + (2 * Math.PI * i) / sats.length;
     pts[n.id] = { ...n, x: cx + ring.rx * Math.cos(ang), y: cy + ring.ry * Math.sin(ang) };
   });
+  return createElement(Radial, {
+    el, box, ctx, cardW: card.w, cardH: card.h, pts, exitRect,
+  });
+}
 
-  let lineSvg = '';
-  if ((el.edges || []).length > 0) {
-    for (const e of el.edges) {
-      const a = pts[e.from], b = pts[e.to];
-      if (!a || !b) continue;
-      const p1 = exitRect(a, b, rectFor(a), 8);
-      const p2 = exitRect(b, a, rectFor(b), 14);
-      lineSvg += `<line x1="${round(p1.x)}" y1="${round(p1.y)}" x2="${round(p2.x)}" y2="${round(p2.y)}" stroke="${C.muted}" stroke-width="3" marker-end="${markerRef(ctx)}"/>`;
-    }
-  } else {
-    for (const n of sats) {
-      const p = pts[n.id];
-      const p1 = exitRect(pts[core.id], p, rectFor(pts[core.id]), 8);
-      const p2 = exitRect(p, pts[core.id], rectFor(p), 8);
-      lineSvg += `<line x1="${round(p1.x)}" y1="${round(p1.y)}" x2="${round(p2.x)}" y2="${round(p2.y)}" stroke="${C.muted}" stroke-width="2" opacity="0.6"/>`;
-    }
-  }
-
-  let cardSvg = '';
-  for (const n of el.nodes) {
-    const p = pts[n.id];
-    const rc = rectFor(p);
-    cardSvg += nodeCard(ctx, {
-      x: rc.x, y: rc.y, w: rc.w, h: rc.h,
-      hot: emph.has(n.id), label: n.label, detail: n.detail, icon: n.icon, badge: null,
-    });
-  }
-  return svgLead(box, `${arrowDefFor(ctx, C)}<g>${lineSvg}</g><g>${cardSvg}</g>`);
+/** cluster.closure / linked の座標 (描画は RingCluster コンポーネント)。 */
+function ringClusterNode(el, box, ctx) {
+  const card = cardMetrics(el, ctx);
+  const { pos } = ringPositions(el, box, card.w, card.h);
+  return createElement(RingCluster, {
+    el, box, ctx, cardW: card.w, cardH: card.h, pos, exitRect,
+  });
 }
 
 /**
@@ -768,16 +586,9 @@ function ringPositions(el, box, cardW, cardH) {
   return { ring, pos };
 }
 
-function renderCycle(el, box, ctx) {
-  const { C, fonts, scale } = ctx;
-  const emph = new Set(el.emphasis || []);
-
-  const arrowDef = arrowDefFor(ctx, C);
-
-  // cycle: cards on a near-circular ring, edges as arcs of the ring itself.
-  // Cards get no number badge — a loop has no first step; sequence reads from
-  // arrows. Nodes sit at regular-polygon vertices so a 3-node cycle reads as
-  // an equilateral triangle, not a flattened one.
+/** flow.cycle の座標: 環上の頂点と、環そのものの弧としてのエッジ
+ * (描画は Cycle コンポーネント)。 */
+function cycleNode(el, box, ctx) {
   const { w: cardW, h: cardH } = cardMetrics(el, ctx);
   const { ring, pos } = ringPositions(el, box, cardW, cardH);
   const byId = Object.fromEntries(pos.map((n) => [n.id, n]));
@@ -785,30 +596,14 @@ function renderCycle(el, box, ctx) {
     n.id, { x: n.x - cardW / 2, y: n.y - cardH / 2, w: cardW, h: cardH },
   ]));
 
-  let edgeSvg = '';
-  let labelSvg = ''; // labels sit on the top layer so cards never cover them
+  const arcs = [];
   for (const edge of el.edges || []) {
     const a = byId[edge.from], b = byId[edge.to];
-    if (!a || !b) continue; // edge-ref lint reports this; render skips silently.
+    if (!a || !b) continue; // edge-ref lint が報告する。描画は黙って飛ばす
     const arc = ringArcEdge(a, b, ring, rects, ctx);
-    if (!arc) continue;
-    edgeSvg += arc.path;
-    if (edge.label) {
-      labelSvg += `<text x="${round(arc.label.x)}" y="${round(arc.label.y)}" text-anchor="${arc.label.anchor}"
-        fill="${C.muted}" font-size="${scale.axis}" font-family='${fonts.body}'>${esc(edge.label)}</text>`;
-    }
+    if (arc) arcs.push({ ...arc, text: edge.label });
   }
-
-  let nodeSvg = '';
-  for (const n of pos) {
-    nodeSvg += nodeCard(ctx, {
-      x: n.x - cardW / 2, y: n.y - cardH / 2, w: cardW, h: cardH,
-      hot: emph.has(n.id), label: n.label, detail: n.detail, icon: n.icon, badge: null,
-    });
-  }
-
-  return `<svg class="lead" viewBox="0 0 ${round(box.w)} ${round(box.h)}" width="${round(box.w)}" height="${round(box.h)}" role="img">
-    ${arrowDef}<g>${edgeSvg}</g><g>${nodeSvg}</g><g>${labelSvg}</g></svg>`;
+  return createElement(Cycle, { el, box, ctx, cardW, cardH, pos, arcs });
 }
 
 // ---------------------------------------------------------------------------

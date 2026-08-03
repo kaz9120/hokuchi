@@ -27,6 +27,8 @@ import { Slide, brandBackground } from './components/Slide.jsx';
 import { Stage } from './components/Stage.jsx';
 import { QuoteStage, StatementStage, TitleStage } from './components/TextStages.jsx';
 import { Agenda, Bullets, Stat, Table } from './components/elements/TextElements.jsx';
+import { CodePanel, Versus } from './components/elements/Cards.jsx';
+import { ImageElement, Raw, StagePhoto, Video } from './components/elements/Media.jsx';
 
 // ---------------------------------------------------------------------------
 // Canvas + composition constants (ADR-0014 — renderer-internal, not spec)
@@ -1197,39 +1199,6 @@ function renderChart(el, box, ctx) {
 }
 
 // ---------------------------------------------------------------------------
-// Image placeholder (SPEC §6.3) — surface panel, corner frame, prompt text
-// ---------------------------------------------------------------------------
-function renderImagePlaceholder(el, ctx) {
-  const { C } = ctx;
-  const glyph = `<svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="${C.muted}" stroke-width="1.4" style="opacity:.85">
-    <rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.8"/>
-    <path d="M3 17l5-4 4 3 4-4 5 4"/></svg>`;
-  return `<div class="img-ph">
-    <div class="img-corner tl"></div><div class="img-corner tr"></div>
-    <div class="img-corner bl"></div><div class="img-corner br"></div>
-    <div class="img-badge">IMAGE · prompt</div>
-    <div class="img-inner">${glyph}<div class="img-prompt">${esc(el.prompt || '')}</div></div>
-  </div>`;
-}
-
-// ---------------------------------------------------------------------------
-// Image (SPEC §6.3) — real src when present, placeholder from prompt otherwise
-// ---------------------------------------------------------------------------
-function renderImage(el, ctx) {
-  if (!el.src) return renderImagePlaceholder(el, ctx);
-  const abs = path.resolve(ctx.deckDir, el.src);
-  // src declared but file not delivered yet — fall back to the prompt
-  // placeholder instead of failing the whole render.
-  if (!fs.existsSync(abs)) return renderImagePlaceholder(el, ctx);
-  const rel = ctx.useAsset(abs, 'assets');
-  const pos = { 'third-left': '33% 50%', 'third-right': '67% 50%' }[el.subject] || '50% 50%';
-  const img = `<img class="photo" src="${esc(rel)}" alt="" style="object-position:${pos}">`;
-  if (el.treatment === 'framed') return `<div class="photo-framed">${img}</div>`;
-  if (el.treatment === 'cutout') return `<div class="photo-cutout">${img.replace('class="photo"', 'class="photo contain"')}</div>`;
-  return img; // full-bleed (default)
-}
-
-// ---------------------------------------------------------------------------
 // Code rendering (SPEC §6.7, ADR-0016) — code is a referenced material, not a
 // voice: it gets its own mono typeface (theme.type.mono, DEFAULT_MONO_STACK
 // otherwise) and a small, fixed syntax palette derived from the theme rather
@@ -1334,11 +1303,15 @@ function measureCode(el, ctx, avail) {
   const h = Math.min(avail.h, lines.length * lineHFor(fs) + padY * 2 + labelH);
   return {
     w: round(w), h: round(h),
-    render: () => renderCode(el, ctx, { lines, lang, fs, lineH: lineHFor(fs), padX, padY, labelH }),
+    render: () => createElement(CodePanel, {
+      filename: el.filename, labelH, fs, lineH: lineHFor(fs), padX, padY,
+      lines: codeLines(el, { lines, lang }),
+    }),
   };
 }
 
-function renderCode(el, ctx, { lines, lang, fs, lineH, padX, padY, labelH }) {
+/** ハイライト済みの行を、強調・淡色・言語別の class とともに組み立てる。 */
+function codeLines(el, { lines, lang }) {
   const emphSet = expandLineRanges(el.emphasis);
   const hasEmphasis = emphSet.size > 0;
 
@@ -1364,22 +1337,12 @@ function renderCode(el, ctx, { lines, lang, fs, lineH, padX, padY, labelH }) {
     extraCls = () => '';
   }
 
-  const body = htmlLines.map((html, i) => {
+  return htmlLines.map((html, i) => {
     const cls = ['cl', extraCls(i)].filter(Boolean);
     if (emphSet.has(i)) cls.push('cl-em');
     else if (hasEmphasis) cls.push('cl-dim');
-    return `<div class="${cls.join(' ')}" style="height:${lineH}px;line-height:${lineH}px">${html}</div>`;
-  }).join('');
-
-  const fileBar = el.filename
-    ? `<div class="code-file" style="height:${labelH}px;line-height:${labelH}px">${esc(el.filename)}</div>`
-    : '';
-
-  // font-family は inline style に書かない — mono スタックは値に二重引用符を
-  // 含み ("SF Mono" など)、style="..." 属性がそこで途切れて font-size /
-  // padding ごと落ちていた (レビュー指摘 2026-07-09 「余白が少ない」の根本
-  // 原因)。書体は css() の .code-body 規則で当てる。
-  return `<div class="code-panel">${fileBar}<div class="code-body" style="font-size:${fs}px;padding:${padY}px ${padX}px">${body}</div></div>`;
+    return { html, className: cls.join(' ') };
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -1656,25 +1619,10 @@ function measureVersus(el, ctx, avail) {
   const h = Math.min(avail.h, panelH);
   return {
     w: round(w), h: round(h),
-    render: () => renderVersus(el, ctx, { panelW, panelH: h, fsLabel, fsItem, padX, padY, labelGap, itemGap, itemIndent, dividerW }),
+    render: () => createElement(Versus, {
+      el, panelW, panelH: h, fsLabel, fsItem, padX, padY, labelGap, itemGap, itemIndent, dividerW,
+    }),
   };
-}
-
-function renderVersus(el, ctx, { panelW, panelH, fsLabel, fsItem, padX, padY, labelGap, itemGap, itemIndent, dividerW }) {
-  const hasEmphasis = el.sides.some((s) => s.emphasis);
-  const panels = el.sides.map((side) => {
-    const items = side.items.map((it) =>
-      `<li><span class="dot"></span><span class="jp">${inlineText(it)}</span></li>`).join('');
-    const cls = ['versus-panel'];
-    if (side.emphasis) cls.push('versus-em');
-    else if (hasEmphasis) cls.push('versus-dim');
-    return `<div class="${cls.join(' ')}" style="width:${panelW}px;height:${panelH}px;padding:${padY}px ${padX}px">
-      <div class="versus-label jp" style="font-size:${fsLabel}px">${inlineText(side.label)}</div>
-      <ul class="versus-items" style="font-size:${fsItem}px;gap:${itemGap}px;margin-top:${labelGap}px;padding-left:${itemIndent}px">${items}</ul>
-    </div>`;
-  });
-  const divider = `<div class="versus-divider" style="width:${dividerW}px;height:${panelH}px"></div>`;
-  return `<div class="versus-row">${panels.join(divider)}</div>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -1734,38 +1682,7 @@ function measureAgenda(el, ctx, avail) {
 // ---------------------------------------------------------------------------
 function measureVideo(el, ctx, avail) {
   const box = fitAspect(16 / 9, avail.w, avail.h);
-  return { ...box, render: () => renderVideo(el, ctx) };
-}
-
-function renderVideo(el, ctx) {
-  const { C } = ctx;
-  const abs = el.poster ? path.resolve(ctx.deckDir, el.poster) : null;
-  const hasPoster = abs && fs.existsSync(abs);
-  const bgHtml = hasPoster ? `<img class="video-poster" src="${esc(ctx.useAsset(abs, 'assets'))}" alt="">` : '';
-  const fallbackHtml = hasPoster ? '' : `<div class="video-fallback jp">${esc(path.basename(el.src))}</div>`;
-  // 再生グリフは線描のみ (三角 + 円環)。ベタ塗りにしない (SPEC §6.14) — 背後の
-  // 円 (半透明の黒) はポスター写真の上でも線が読める最低限のコントラスト土台。
-  // fallback のファイル名はグリフの下に縦積みする (同じ中心に重ねると文字が
-  // グリフを貫通して読めない — レビュー指摘 2026-07-08)。
-  const glyph = `<svg class="video-glyph" viewBox="0 0 100 100" width="88" height="88">
-    <circle cx="50" cy="50" r="46" fill="rgba(0,0,0,.3)"/>
-    <circle cx="50" cy="50" r="40" fill="none" stroke="${C.text}" stroke-width="3"/>
-    <path d="M43 33 L71 50 L43 67 Z" fill="none" stroke="${C.text}" stroke-width="3" stroke-linejoin="round"/>
-  </svg>`;
-  return `<div class="video-box">${bgHtml}<div class="video-center">${glyph}${fallbackHtml}</div></div>`;
-}
-
-// ---------------------------------------------------------------------------
-// Raw escape hatch (SPEC §6.15) — svg file / inline svg / inline html
-// ---------------------------------------------------------------------------
-function renderRaw(el, ctx) {
-  if (el.html) return `<div class="raw-wrap">${el.html}</div>`;
-  const s = String(el.svg || '').trim();
-  if (!s) return '';
-  const svg = s.startsWith('<svg')
-    ? s
-    : fs.readFileSync(path.resolve(ctx.deckDir, s), 'utf8');
-  return `<div class="raw-wrap">${svg}</div>`;
+  return { ...box, render: () => createElement(Video, { el, ctx }) };
 }
 
 // ---------------------------------------------------------------------------
@@ -1879,16 +1796,7 @@ function measureImage(el, ctx, avail) {
   const dims = abs && fs.existsSync(abs) ? imageDims(abs) : null;
   const aspect = dims && dims.w > 0 && dims.h > 0 ? dims.w / dims.h : 16 / 9;
   const box = fitAspect(aspect, avail.w, avail.h);
-  return {
-    ...box,
-    render: () => {
-      if (!abs || !fs.existsSync(abs)) return renderImagePlaceholder(el, ctx);
-      const rel = ctx.useAsset(abs, 'assets');
-      const img = `<img class="stage-photo" src="${esc(rel)}" alt="">`;
-      // framed はスクリーンショットに面のパネルを敷く既存の見た目を流用
-      return el.treatment === 'framed' ? `<div class="photo-framed">${img}</div>` : img;
-    },
-  };
+  return { ...box, render: () => createElement(StagePhoto, { el, ctx }) };
 }
 
 function imageStage(slide, ctx) {
@@ -1927,10 +1835,11 @@ function videoStage(slide, ctx) {
   return leadStage(slide, ctx, 'video', measureVideo);
 }
 
-// grid-direct のセルに入る非テキスト要素 (image / raw) は、まだ HTML 文字列を
-// 返す描画関数を通る。GridDirect がセル自身に流し込むので要素は増えない。
-const gridCellHtml = (ctx) => (el) => (
-  el.kind === 'image' ? renderImage(el, ctx) : el.kind === 'raw' ? renderRaw(el, ctx) : ''
+/** grid-direct のセルに入る非テキスト要素 (SPEC §5.2)。 */
+const gridCellNode = (ctx) => (el) => (
+  el.kind === 'image' ? createElement(ImageElement, { el, ctx })
+    : el.kind === 'raw' ? createElement(Raw, { el, ctx })
+    : null
 );
 
 // パターンはすべて React 要素を返す (ADR-0018)。
@@ -1955,7 +1864,7 @@ const PATTERNS = {
 
 function renderSlideBody(slide, ctx) {
   if (typeof slide.layout === 'object') {
-    return createElement(GridDirect, { slide, ctx, renderHtml: gridCellHtml(ctx) });
+    return createElement(GridDirect, { slide, ctx, renderCell: gridCellNode(ctx) });
   }
   const fn = PATTERNS[slide.layout];
   if (fn) return fn(slide, ctx);

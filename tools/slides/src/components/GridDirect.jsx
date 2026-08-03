@@ -14,11 +14,8 @@ function cellStyle(cell) {
   return { gridColumn: `${c1} / ${c2 + 1}`, gridRow: `${r1} / ${r2 + 1}` };
 }
 
-/**
- * image と raw は移行が済むまで HTML 文字列で受け取る。セル自身に流し込むので
- * 余分な要素は増えない (renderHtml が呼び出し側の描画関数)。
- */
-export function GridDirect({ slide, ctx, renderHtml }) {
+/** image と raw の描画は呼び出し側から renderCell で受け取る。 */
+export function GridDirect({ slide, ctx, renderCell }) {
   const cols = COLS[ctx.grid.pattern] || 4;
   return (
     <div
@@ -41,12 +38,9 @@ export function GridDirect({ slide, ctx, renderHtml }) {
           );
         }
         return (
-          <div
-            className="grid-cell"
-            style={style}
-            key={i}
-            dangerouslySetInnerHTML={{ __html: renderHtml(el) }}
-          />
+          <div className="grid-cell" style={style} key={i}>
+            {renderCell(el)}
+          </div>
         );
       })}
     </div>

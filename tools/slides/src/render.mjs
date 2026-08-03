@@ -21,6 +21,9 @@ import { iconExists, iconInner, promoteWeight } from './icons.mjs';
 import { cpLen, esc, estW, estimateWrappedLines } from './text.mjs';
 import { CANVAS, MARGIN, boxStyle, round, stageRect } from './geometry.mjs';
 import { InlineText } from './components/InlineText.jsx';
+import { GridDirect } from './components/GridDirect.jsx';
+import { ProfileStage } from './components/ProfileStage.jsx';
+import { Slide, brandBackground } from './components/Slide.jsx';
 import { Stage } from './components/Stage.jsx';
 import { QuoteStage, StatementStage, TitleStage } from './components/TextStages.jsx';
 
@@ -30,11 +33,7 @@ import { QuoteStage, StatementStage, TitleStage } from './components/TextStages.
 
 // 舞台の縦配分は CSS の spacer 比が持つ (ADR-0018、css() の .stage-lead)。
 // かつてここにあった OPTICAL (0.45) は leadStage が唯一の利用者だった。
-//
-// profile-stage 専用の上:下 配分。写真+略歴という縦に短いコンテンツを縦長の
-// body 領域に置くと、光学中心でも中央寄りに沈んで見える (レビュー指摘
-// 2026-07-09)。もっと上詰めに振った専用値として 0.25 を使う。
-const PROFILE_TOP = 0.25;
+// profile-stage 専用の PROFILE_TOP は ProfileStage.jsx が持つ。
 const HEAD_GAP = 40;       // headline 帯と主役の間
 const RING_ASPECT = 1.1;   // flow.cycle の箱の理想 w/h — カードが横長なぶん、わずかに横広が釣り合う
 const RING_ECC_MAX = 1.15; // 環の離心率上限。これ以内ならノードは正多角形の頂点に見える
@@ -128,16 +127,6 @@ function makeContext(deckRoot, themeRoot, opts = {}) {
       core: P.core,
     },
   };
-}
-
-/** Role → brand background group (ADR-0010). */
-function roleGroup(role) {
-  return role === 'opener' || role === 'closer' ? 'bumper' : role;
-}
-
-/** The brand background entry for a slide, or null. */
-function brandBackground(ctx, slide) {
-  return ctx.brand?.backgrounds?.[roleGroup(slide.role)] || null;
 }
 
 // ---------------------------------------------------------------------------
@@ -1842,8 +1831,6 @@ function renderRaw(el, ctx) {
 // ---------------------------------------------------------------------------
 // Layout patterns (SPEC §5.1) — all resolve elements by slot, not order
 // ---------------------------------------------------------------------------
-const statementStage = (slide, ctx) => renderToStaticMarkup(createElement(StatementStage, { slide, ctx }));
-const titleStage = (slide, ctx) => renderToStaticMarkup(createElement(TitleStage, { slide, ctx }));
 
 /**
  * Headline band + one lead slot (ADR-0018). measure still decides the box the
@@ -1861,14 +1848,14 @@ function leadStage(slide, ctx, slotName, measureFn, align = 'center') {
   const m = measureFn(el, ctx, avail);
   // JSX を書けるのは .jsx だけなので、移行が render.mjs の分割に届くまでは
   // createElement で繋ぐ (ADR-0018)。
-  return renderToStaticMarkup(createElement(Stage, {
+  return createElement(Stage, {
     headlineHtml: head ? inlineText(head.text, head.emphasis) : null,
     headFontSize: ctx.scale.heading,
     leadHtml: m.render({ w: m.w, h: m.h }),
     leadW: round(m.w),
     leadH: round(m.h),
     align,
-  }));
+  });
 }
 
 function diagramStage(slide, ctx) {
@@ -2004,101 +1991,21 @@ function videoStage(slide, ctx) {
   return leadStage(slide, ctx, 'video', measureVideo);
 }
 
-const quoteStage = (slide, ctx) => renderToStaticMarkup(createElement(QuoteStage, { slide, ctx }));
+// grid-direct のセルに入る非テキスト要素 (image / raw) は、まだ HTML 文字列を
+// 返す描画関数を通る。GridDirect がセル自身に流し込むので要素は増えない。
+const gridCellHtml = (ctx) => (el) => (
+  el.kind === 'image' ? renderImage(el, ctx) : el.kind === 'raw' ? renderRaw(el, ctx) : ''
+);
 
-// Profile: self-introduction reference slide (SPEC §5.1 profile-stage).
-// Header = name + affiliation; left = round portrait + handle; right = bio
-// sections whose items may carry a "label ── body" prefix.
-function profileStage(slide, ctx) {
-  const stage = stageRect();
-  const get = (slot) => slide.elements.find((e) => e.slot === slot);
-  const portrait = get('portrait');
-  const name = get('name');
-  const affiliation = get('affiliation');
-  const handle = get('handle');
-  const bio = get('bio');
-
-  const headH = Math.round(ctx.scale.heading * 1.5 + (affiliation ? ctx.scale.attribution * 1.7 : 0) + 20);
-  const gap = 44; // ゆとり: 肩書きと本文ブロックの間 (レビュー指摘 2026-07-06)
-  const header = { x: stage.x, y: stage.y, w: stage.w, h: headH };
-  const body = { x: stage.x, y: stage.y + headH + gap, w: stage.w, h: stage.h - headH - gap };
-  const leftW = Math.round(body.w * 0.42);
-  const colGap = 80;
-  const left = { x: body.x, y: body.y, w: leftW, h: body.h };
-  const right = { x: body.x + leftW + colGap, y: body.y, w: body.w - leftW - colGap, h: body.h };
-
-  const handleH = handle ? ctx.scale.node * 2 : 0;
-  const size = Math.round(Math.min(left.w - 24, left.h - handleH - 24, 330));
-  let portraitHtml = '';
-  if (portrait) {
-    const abs = portrait.src ? path.resolve(ctx.deckDir, portrait.src) : null;
-    if (abs && fs.existsSync(abs)) {
-      const rel = ctx.useAsset(abs, 'assets');
-      portraitHtml = `<img class="profile-portrait" src="${esc(rel)}" alt="" style="width:${size}px;height:${size}px">`;
-    } else {
-      portraitHtml = `<div class="profile-portrait ph jp" style="width:${size}px;height:${size}px">${esc(portrait.prompt || '')}</div>`;
-    }
-  }
-
-  const bioHtml = (bio?.items || []).map((it) => {
-    const parts = String(it).split('──');
-    const label = parts.length > 1 ? parts[0].trim() : null;
-    const bodyText = parts.length > 1 ? parts.slice(1).join('──').trim() : String(it);
-    return `<div class="profile-item">
-      ${label ? `<div class="profile-label">${esc(label)}</div>` : ''}
-      <div class="profile-body jp">${inlineText(bodyText)}</div></div>`;
-  }).join('');
-
-  return `
-    <div class="pane" style="${boxStyle(header)}">
-      <div class="profile-name jp" style="font-size:${Math.round(ctx.scale.heading * 1.2)}px">${inlineText(name.text, name.emphasis)}</div>
-      ${affiliation ? `<div class="profile-affil jp" style="font-size:${ctx.scale.attribution}px">${inlineText(affiliation.text)}</div>` : ''}
-    </div>
-    <div class="pane profile-left" style="${boxStyle(left)}">
-      <div style="flex:${PROFILE_TOP} 0 0"></div>
-      ${portraitHtml}
-      ${handle ? `<div class="profile-handle jp" style="font-size:${ctx.scale.node}px">${
-        handle.icon && iconExists(handle.icon)
-          ? `<svg class="inline-icon" viewBox="0 0 256 256" fill="currentColor">${iconInner(handle.icon, ctx.iconWeight)}</svg>`
-          : ''
-      }${inlineText(handle.text)}</div>` : ''}
-      <div style="flex:${1 - PROFILE_TOP} 0 0"></div>
-    </div>
-    <div class="pane profile-right" style="${boxStyle(right)}">
-      <div style="flex:${PROFILE_TOP} 0 0"></div>
-      ${bioHtml}
-      <div style="flex:${1 - PROFILE_TOP} 0 0"></div>
-    </div>`;
-}
-
-// Grid-direct: full-canvas grid, elements resolved by id (SPEC §5.2).
-function gridDirect(slide, ctx) {
-  const cols = { 'col-3': 3, 'col-4': 4, 'col-5': 5, fibonacci: 4 }[ctx.grid.pattern] || 4;
-  const rows = ctx.grid.rows;
-  const cells = slide.layout.areas.map((a) => {
-    const el = slide.elements.find((e) => e.id === a.element);
-    const [colSpec, rowSpec] = a.cell.split('/').map((s) => s.trim());
-    const [c1, c2 = c1] = colSpec.split('-').map(Number);
-    const [r1, r2 = r1] = rowSpec.split('-').map(Number);
-    const g = `grid-column:${c1} / ${c2 + 1};grid-row:${r1} / ${r2 + 1};`;
-    let inner = '';
-    if (el.kind === 'image') inner = renderImage(el, ctx);
-    else if (el.kind === 'statement') inner = `<div class="grid-caption jp">${inlineText(el.text, el.emphasis)}</div>`;
-    else if (el.kind === 'quote') inner = `<div class="grid-caption jp">${inlineText(el.text)}</div>`;
-    else if (el.kind === 'raw') inner = renderRaw(el, ctx);
-    return `<div class="grid-cell" style="${g}">${inner}</div>`;
-  }).join('');
-  return `<div class="grid-stage" style="grid-template-columns:repeat(${cols},1fr);grid-template-rows:repeat(${rows},1fr)">${cells}</div>`;
-}
-
+// パターンはすべて React 要素を返す (ADR-0018)。
 const PATTERNS = {
-  'statement-stage': statementStage,
-  'title-stage': titleStage,
+  'statement-stage': (slide, ctx) => createElement(StatementStage, { slide, ctx }),
+  'title-stage': (slide, ctx) => createElement(TitleStage, { slide, ctx }),
+  'quote-stage': (slide, ctx) => createElement(QuoteStage, { slide, ctx }),
+  'profile-stage': (slide, ctx) => createElement(ProfileStage, { slide, ctx }),
   'diagram-stage': diagramStage,
   'chart-stage': chartStage,
   'list-stage': listStage,
-  'quote-stage': quoteStage,
-  'profile-stage': profileStage,
   'image-stage': imageStage,
   'code-stage': codeStage,
   'post-stage': postStage,
@@ -2111,40 +2018,31 @@ const PATTERNS = {
 };
 
 function renderSlideBody(slide, ctx) {
-  if (typeof slide.layout === 'object') return gridDirect(slide, ctx);
+  if (typeof slide.layout === 'object') {
+    return createElement(GridDirect, { slide, ctx, renderHtml: gridCellHtml(ctx) });
+  }
   const fn = PATTERNS[slide.layout];
-  return fn ? fn(slide, ctx) : `<div class="pane center"><div class="err">unknown layout: ${esc(slide.layout)}</div></div>`;
+  if (fn) return fn(slide, ctx);
+  return createElement('div', { className: 'pane center' },
+    createElement('div', { className: 'err' }, `unknown layout: ${slide.layout}`));
 }
 
 // ---------------------------------------------------------------------------
 // Brand frame (ADR-0010) — background art, logo, footer. Lives outside the
 // stage; role decides the background group, the theme decides everything else.
 // ---------------------------------------------------------------------------
-function brandFrame(slide, ctx, inverted) {
-  const b = ctx.brand;
-  if (!b) return '';
-  let html = '';
-  const isBumper = slide.role === 'opener' || slide.role === 'closer';
-  if (b.logo && (b.logo.placement === 'all' || isBumper)) {
-    const src = inverted && b.logo.src_invert ? b.logo.src_invert : b.logo.src;
-    const rel = ctx.useAsset(path.resolve(ctx.themeDir, src), 'theme-assets');
-    html += `<img class="brand-logo" src="${esc(rel)}" alt="" style="height:${b.logo.height ?? 24}px">`;
-  }
-  if (b.footer) html += `<div class="brand-footer">${esc(b.footer)}</div>`;
-  return html;
-}
+/**
+ * React 19 は <img> を見つけると markup の先頭に <link rel="preload"> を足す
+ * (Resource Preloading)。単一ファイル SPA (ADR-0012) では .frame の直下に
+ * link が並ぶことになり、出力の構造が変わる。shot は仮想時間でネットワーク
+ * 静止まで待つので先読みの利得もない。取り除く。
+ */
+const stripPreloads = (html) => html.replace(/<link rel="preload"[^>]*\/>/g, '');
 
 function renderSlide(slide, ctx) {
   ctx.slideKey = slide.id; // namespaces intra-SVG ids in the single-document SPA
-  const bg = brandBackground(ctx, slide);
-  const inverted = bg?.foreground === 'light';
-  const bgHtml = bg
-    ? `<img class="bg" src="${esc(ctx.useAsset(path.resolve(ctx.themeDir, bg.src), 'theme-assets'))}" alt="">`
-    : '';
-  const chapter = slide.chapter && slide.role !== 'opener' && slide.role !== 'closer'
-    ? `<div class="chapter">${esc(slide.chapter)}</div>`
-    : '';
-  return `<div class="slide${inverted ? ' inv' : ''}">${bgHtml}${chapter}${renderSlideBody(slide, ctx)}${brandFrame(slide, ctx, inverted)}</div>`;
+  const body = renderSlideBody(slide, ctx);
+  return stripPreloads(renderToStaticMarkup(createElement(Slide, { slide, ctx }, body)));
 }
 
 // ---------------------------------------------------------------------------

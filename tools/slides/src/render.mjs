@@ -15,19 +15,18 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { loadDefaultJapaneseParser } from 'budoux';
 import hljs from 'highlight.js';
 import qrcode from 'qrcode-generator';
 import { iconExists, iconInner, promoteWeight } from './icons.mjs';
+import { cpLen, esc, estW, estimateWrappedLines } from './text.mjs';
+import { CANVAS, MARGIN, boxStyle, round, stageRect } from './geometry.mjs';
+import { InlineText } from './components/InlineText.jsx';
 import { Stage } from './components/Stage.jsx';
-
-const parser = loadDefaultJapaneseParser();
+import { QuoteStage, StatementStage, TitleStage } from './components/TextStages.jsx';
 
 // ---------------------------------------------------------------------------
 // Canvas + composition constants (ADR-0014 — renderer-internal, not spec)
 // ---------------------------------------------------------------------------
-const CANVAS = { w: 1280, h: 720 };
-const MARGIN = { x: 96, y: 64 }; // 外周のみ。レターボックスという概念は持たない
 
 // 舞台の縦配分は CSS の spacer 比が持つ (ADR-0018、css() の .stage-lead)。
 // かつてここにあった OPTICAL (0.45) は leadStage が唯一の利用者だった。
@@ -141,122 +140,22 @@ function brandBackground(ctx, slide) {
   return ctx.brand?.backgrounds?.[roleGroup(slide.role)] || null;
 }
 
-/** Stage rectangle: the canvas inset by the outer margin. How the inside is
- * divided (headline band, lead box, whitespace) is decided by compose per
- * pattern — letterboxing is not a concept any more (ADR-0014). */
-function stageRect() {
-  return { x: MARGIN.x, y: MARGIN.y, w: CANVAS.w - MARGIN.x * 2, h: CANVAS.h - MARGIN.y * 2 };
-}
-
 // ---------------------------------------------------------------------------
-// Text: escaping, emphasis, BudouX phrase wrapping (SPEC §8.5)
+// Text (SPEC §8.5) — 分割と計測は text.mjs、描画は InlineText (ADR-0018)
 // ---------------------------------------------------------------------------
-const esc = (s) => String(s)
-  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-
-const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-const cpLen = (s) => [...s].length;
-/** Rough text width in px: CJK ≈ 1.04em, ASCII/half-width ≈ 0.56em. */
-const estW = (s, fs) => [...String(s)].reduce((t, ch) => t + (ch.codePointAt(0) < 0x2000 ? 0.56 : 1.04), 0) * fs;
 
 /**
- * Rough wrapped-line count for a text block at font size fs within a given
- * width, using estW's per-character width model. This is a measure-time
- * estimate only (no BudouX phrase awareness) — the actual render still goes
- * through inlineText for real wrapping, so a few px of drift between the
- * estimate and the browser's layout is expected and harmless (same
- * tolerance measureList already accepts).
- */
-function estimateWrappedLines(text, fs, width) {
-  return String(text).split('\n').reduce((total, line) => {
-    if (!line) return total + 1;
-    return total + Math.max(1, Math.ceil(estW(line, fs) / Math.max(1, width)));
-  }, 0);
-}
-
-/**
- * Merge single-code-point phrases into a neighbour so that no line break can
- * strand a lone character at a line edge. This is the structural orphan guard
- * that a layout-free (build-time) renderer can offer.
- */
-function mergeShortPhrases(phrases) {
-  const out = [];
-  for (const p of phrases) {
-    if (out.length && cpLen(p) <= 1) out[out.length - 1] += p;
-    else out.push(p);
-  }
-  if (out.length >= 2 && cpLen(out[0]) <= 1) {
-    out[1] = out[0] + out[1];
-    out.shift();
-  }
-  return out;
-}
-
-/**
- * Character ranges [start, end) covered by emphasis words in a line.
- * Longest word wins on overlap so nested matches do not double-mark.
- */
-function emphasisRanges(line, words) {
-  const uniq = [...new Set((words || []).filter(Boolean))].sort((a, b) => b.length - a.length);
-  const ranges = [];
-  const overlaps = (s, e) => ranges.some((r) => s < r.end && e > r.start);
-  for (const w of uniq) {
-    const re = new RegExp(escapeRegex(w), 'g');
-    let m;
-    while ((m = re.exec(line)) !== null) {
-      const s = m.index, e = s + w.length;
-      if (!overlaps(s, e)) ranges.push({ start: s, end: e });
-    }
-  }
-  return ranges.sort((a, b) => a.start - b.start);
-}
-
-/**
- * Render one phrase whose position in the line is [offset, offset+len),
- * wrapping the parts covered by emphasis ranges in .hi spans. Everything
- * emitted here is inside one phrase, so no break opportunity is created.
- */
-function phraseHtml(phrase, offset, ranges) {
-  const end = offset + phrase.length;
-  let html = '';
-  let cursor = offset;
-  for (const r of ranges) {
-    if (r.end <= offset || r.start >= end) continue;
-    const s = Math.max(r.start, offset), e = Math.min(r.end, end);
-    if (s > cursor) html += esc(phrase.slice(cursor - offset, s - offset));
-    html += `<span class="hi">${esc(phrase.slice(s - offset, e - offset))}</span>`;
-    cursor = e;
-  }
-  if (cursor < end) html += esc(phrase.slice(cursor - offset));
-  return html;
-}
-
-/**
- * Render inline text (SPEC §8.5). Explicit \n → hard <br> (highest priority).
- * Order matters: each line is BudouX phrase-segmented FIRST, and <wbr> break
- * opportunities exist only at phrase boundaries. Emphasis markup is then
- * applied inside phrases from character ranges, so a .hi span boundary never
- * creates a break opportunity (e.g. 「意図で」 stays one unbreakable phrase
- * even when 「意図」 is emphasized).
+ * 文字列を求める旧経路のための橋渡し。移行が済んでいない呼び出し元が HTML
+ * 文字列を期待しているあいだ、InlineText の出力を文字列化して返す。ロジック
+ * はコンポーネント側の 1 箇所にある。
  */
 function inlineText(text, emphasis = []) {
-  return String(text).split('\n').map((line) => {
-    const ranges = emphasisRanges(line, emphasis);
-    const phrases = mergeShortPhrases(parser.parse(line));
-    let offset = 0;
-    return phrases.map((p) => {
-      const html = phraseHtml(p, offset, ranges);
-      offset += p.length;
-      return html;
-    }).join('<wbr>');
-  }).join('<br>');
+  return renderToStaticMarkup(createElement(InlineText, { text, emphasis }));
 }
 
 // ---------------------------------------------------------------------------
 // Composition helpers (ADR-0014 — measure/compose)
 // ---------------------------------------------------------------------------
-const boxStyle = (r) => `left:${r.x}px;top:${r.y}px;width:${r.w}px;height:${r.h}px;`;
-const round = (n) => Math.round(n * 100) / 100;
 
 /** maxW×maxH に収まり、アスペクト (w/h) が ideal になる最大の矩形。
  * 中身の申告 (measure) だけが箱の形を決める。 */
@@ -1943,33 +1842,8 @@ function renderRaw(el, ctx) {
 // ---------------------------------------------------------------------------
 // Layout patterns (SPEC §5.1) — all resolve elements by slot, not order
 // ---------------------------------------------------------------------------
-function statementStage(slide, ctx) {
-  const stage = stageRect();
-  // 光学中心: 箱の下端を 6% 削って flex 中央に置くと、内容の中心が
-  // 幾何中心よりわずかに上に来る
-  const pane = { ...stage, h: round(stage.h * 0.94) };
-  const el = slide.elements.find((e) => e.slot === 'statement');
-  const support = slide.elements.find((e) => e.slot === 'support');
-  const token = (slide.role === 'opener' || slide.role === 'closer') ? 'hero' : 'big';
-  const fs = ctx.scale[token];
-  return `<div class="pane center" style="${boxStyle(pane)}">
-    <div class="statement jp" style="font-size:${fs}px">${inlineText(el.text, el.emphasis)}</div>
-    ${support ? `<div class="support jp" style="font-size:${ctx.scale.subtitle}px">${inlineText(support.text, support.emphasis)}</div>` : ''}
-  </div>`;
-}
-
-function titleStage(slide, ctx) {
-  const stage = stageRect();
-  // タイトル群の下端はキャンバスの黄金分割 (上から 61.8%) に置く
-  const band = { x: stage.x, y: stage.y, w: stage.w, h: round(CANVAS.h * 0.618 - stage.y) };
-  const title = slide.elements.find((e) => e.slot === 'title');
-  const sub = slide.elements.find((e) => e.slot === 'subtitle');
-  return `<div class="pane title-band" style="${boxStyle(band)}">
-    <div class="title-accent"></div>
-    <div class="title-main jp" style="font-size:${ctx.scale.title}px">${inlineText(title.text, title.emphasis)}</div>
-    ${sub ? `<div class="title-sub jp" style="font-size:${ctx.scale.subtitle}px">${inlineText(sub.text, sub.emphasis)}</div>` : ''}
-  </div>`;
-}
+const statementStage = (slide, ctx) => renderToStaticMarkup(createElement(StatementStage, { slide, ctx }));
+const titleStage = (slide, ctx) => renderToStaticMarkup(createElement(TitleStage, { slide, ctx }));
 
 /**
  * Headline band + one lead slot (ADR-0018). measure still decides the box the
@@ -2130,24 +2004,7 @@ function videoStage(slide, ctx) {
   return leadStage(slide, ctx, 'video', measureVideo);
 }
 
-function quoteStage(slide, ctx) {
-  const stage = stageRect();
-  const pane = { ...stage, h: round(stage.h * 0.94) }; // 光学中心 (statementStage と同じ)
-  const q = slide.elements.find((e) => e.slot === 'quote');
-  // A short quote is the slide's hero — scale it toward display size instead
-  // of leaving it at body-quote size (46px) inside an empty stage.
-  const len = cpLen(String(q.text).replace(/\n/g, ''));
-  const fs = len <= 12 ? Math.round(ctx.scale.quote * 1.7)
-    : len <= 24 ? Math.round(ctx.scale.quote * 1.35)
-    : ctx.scale.quote;
-  return `<div class="pane center" style="${boxStyle(pane)}">
-    <div class="quote-block">
-      <div class="quote-mark">&ldquo;</div>
-      <div class="quote-text jp" style="font-size:${fs}px">${inlineText(q.text)}</div>
-      ${q.attribution ? `<div class="quote-attr" style="font-size:${ctx.scale.attribution}px">— ${esc(q.attribution)}</div>` : ''}
-    </div>
-  </div>`;
-}
+const quoteStage = (slide, ctx) => renderToStaticMarkup(createElement(QuoteStage, { slide, ctx }));
 
 // Profile: self-introduction reference slide (SPEC §5.1 profile-stage).
 // Header = name + affiliation; left = round portrait + handle; right = bio

@@ -33,6 +33,7 @@ import { Link, Post } from './components/elements/Social.jsx';
 import { Dag, StepRow, Timeline } from './components/svg/Flow.jsx';
 import { Cycle, Enclosed, Overlap, Radial, RingCluster } from './components/svg/Cluster.jsx';
 import { Layer, Matrix } from './components/svg/Structure.jsx';
+import { AxisChart, Donut, StackedComposition } from './components/svg/Chart.jsx';
 
 // ---------------------------------------------------------------------------
 // Canvas + composition constants (ADR-0014 — renderer-internal, not spec)
@@ -625,71 +626,14 @@ function resolveYRange(el, ctx) {
 
 /** {x, y} on a circle of radius r centred at (cx, cy), angle in radians
  * (SVG convention: 0 = 3 o'clock, increasing = clockwise since y grows down). */
-function polarPt(cx, cy, r, theta) {
-  return { x: cx + r * Math.cos(theta), y: cy + r * Math.sin(theta) };
-}
-
-/** Donut-slice path: an annulus wedge between rInner/rOuter and startAngle/endAngle. */
-function donutSlicePath(cx, cy, rOuter, rInner, a0, a1) {
-  const large = a1 - a0 > Math.PI ? 1 : 0;
-  const p1 = polarPt(cx, cy, rOuter, a0), p2 = polarPt(cx, cy, rOuter, a1);
-  const p3 = polarPt(cx, cy, rInner, a1), p4 = polarPt(cx, cy, rInner, a0);
-  return `M ${round(p1.x)} ${round(p1.y)} A ${round(rOuter)} ${round(rOuter)} 0 ${large} 1 ${round(p2.x)} ${round(p2.y)}
-    L ${round(p3.x)} ${round(p3.y)} A ${round(rInner)} ${round(rInner)} 0 ${large} 0 ${round(p4.x)} ${round(p4.y)} Z`;
-}
-
-/**
- * composition intent, single series → donut (SPEC §6.5, §8.4, ADR-0016).
- * 12 時起点・時計回り (angle -90° を起点に増分)。box は円 + 外側ラベル帯
- * (DONUT_PAD) を含めて申告する — CHART_PAD が軸ラベル分を外側に確保するのと
- * 同じ考え方。annotations の style: highlight が指す項目は highlight 色、
- * それ以外は core を宣言順に巡回する。
- */
 function measureDonut(el, ctx, avail) {
   const ideal = PLOT_ASPECT.composition;
   const inner = { w: Math.max(120, avail.w - DONUT_PAD * 2), h: Math.max(120, avail.h - DONUT_PAD * 2) };
   const ring = fitAspect(ideal, inner.w, inner.h);
   return {
     w: round(ring.w + DONUT_PAD * 2), h: round(ring.h + DONUT_PAD * 2),
-    render: (b) => renderDonut(el, b, ctx),
+    render: (b) => createElement(Donut, { el, box: b, ctx, pad: DONUT_PAD }),
   };
-}
-
-function renderDonut(el, box, ctx) {
-  const { C, fonts, scale } = ctx;
-  const cats = el.data.x;
-  const values = el.data.series[0].values;
-  const total = values.reduce((a, b) => a + b, 0) || 1;
-  const cx = box.w / 2, cy = box.h / 2;
-  const rOuter = Math.min(box.w, box.h) / 2 - DONUT_PAD;
-  const rInner = rOuter * 0.55;
-
-  const hot = new Set();
-  for (const ann of el.annotations || []) {
-    if (ann.style !== 'highlight') continue;
-    const i = ann.at_index != null ? ann.at_index : cats.indexOf(ann.at);
-    if (i >= 0 && i < cats.length) hot.add(i); // annotation-anchor lint reports an unresolved `at`.
-  }
-
-  let sliceSvg = '', labelSvg = '';
-  let angle = -Math.PI / 2; // 12 時起点
-  values.forEach((v, i) => {
-    const frac = v / total;
-    const a0 = angle, a1 = angle + frac * 2 * Math.PI; // 時計回り (角度増加方向)
-    angle = a1;
-    const mid = (a0 + a1) / 2;
-    const col = hot.has(i) ? C.highlight : C.core[i % C.core.length];
-    sliceSvg += `<path d="${donutSlicePath(cx, cy, rOuter, rInner, a0, a1)}" fill="${col}"/>`;
-
-    const lp = polarPt(cx, cy, rOuter + 30, mid);
-    const anchor = Math.cos(mid) > 0.2 ? 'start' : Math.cos(mid) < -0.2 ? 'end' : 'middle';
-    const pct = Math.round(frac * 100);
-    labelSvg += `<text x="${round(lp.x)}" y="${round(lp.y)}" text-anchor="${anchor}"
-      fill="${hot.has(i) ? C.textStrong : C.text}" font-size="${scale.node}" font-family='${fonts.body}'>${esc(cats[i])}
-      <tspan fill="${C.muted}" dx="6">${pct}%</tspan></text>`;
-  });
-
-  return svgLead(box, `<g>${sliceSvg}</g><g>${labelSvg}</g>`);
 }
 
 /**
@@ -704,47 +648,8 @@ function measureStackedComposition(el, ctx, avail) {
   return {
     w: round(plotH * ideal + pad.l + pad.r),
     h: round(plotH + pad.t + pad.b),
-    render: (b) => renderStackedComposition(el, b, ctx),
+    render: (b) => createElement(StackedComposition, { el, box: b, ctx, pad: CHART_PAD }),
   };
-}
-
-function renderStackedComposition(el, box, ctx) {
-  const { C, fonts, scale } = ctx;
-  const pad = CHART_PAD;
-  const plot = { x: pad.l, y: pad.t, w: box.w - pad.l - pad.r, h: box.h - pad.t - pad.b };
-  const cats = el.data.x;
-  const series = el.data.series;
-  const bandW = Math.min(plot.w / cats.length, 280);
-  const bandX0 = plot.x + (plot.w - bandW * cats.length) / 2;
-  const barW = bandW * 0.6;
-
-  // 背景レイヤー: 0/50/100% の目盛とカテゴリラベルのみ (composition に
-  // annotations は適用しない — 主役は割合の内訳であり、単一の注目点ではない)。
-  let bg = '';
-  [0, 50, 100].forEach((pct) => {
-    const y = plot.y + plot.h * (1 - pct / 100);
-    bg += `<line x1="${round(plot.x)}" y1="${round(y)}" x2="${round(plot.x + plot.w)}" y2="${round(y)}" stroke="${C.line}" stroke-width="1" opacity="0.35"/>`;
-    bg += `<text x="${round(plot.x - 16)}" y="${round(y + 6)}" text-anchor="end" fill="${C.muted}" font-size="${scale.axis}" font-family='${fonts.body}'>${pct}%</text>`;
-  });
-  cats.forEach((c, i) => {
-    bg += `<text x="${round(bandX0 + bandW * (i + 0.5))}" y="${round(plot.y + plot.h + 36)}" text-anchor="middle" fill="${C.muted}" font-size="${scale.axis}" font-family='${fonts.body}'>${esc(c)}</text>`;
-  });
-
-  let data = '';
-  cats.forEach((c, i) => {
-    const total = series.reduce((t, s) => t + (s.values[i] || 0), 0) || 1;
-    let acc = 0;
-    const x = bandX0 + bandW * (i + 0.5) - barW / 2;
-    series.forEach((s, si) => {
-      const frac = (s.values[i] || 0) / total;
-      const yTop = plot.y + plot.h * (1 - (acc + frac));
-      const yBot = plot.y + plot.h * (1 - acc);
-      data += `<rect x="${round(x)}" y="${round(yTop)}" width="${round(barW)}" height="${round(yBot - yTop)}" fill="${C.core[si % C.core.length]}"/>`;
-      acc += frac;
-    });
-  });
-
-  return svgLead(box, `<g>${bg}</g><g>${data}</g>`);
 }
 
 /**
@@ -766,89 +671,11 @@ function measureChart(el, ctx, avail) {
   return {
     w: round(plotH * ideal + pad.l + pad.r),
     h: round(plotH + pad.t + pad.b),
-    render: (b) => renderChart(el, b, ctx),
+    render: (b) => {
+      const { min, max } = resolveYRange(el, ctx);
+      return createElement(AxisChart, { el, box: b, ctx, pad: CHART_PAD, yMin: min, yMax: max });
+    },
   };
-}
-
-function renderChart(el, box, ctx) {
-  const { C, fonts, scale } = ctx;
-  const pad = CHART_PAD;
-  const plot = { x: pad.l, y: pad.t, w: box.w - pad.l - pad.r, h: box.h - pad.t - pad.b };
-  const cats = el.data.x;
-  const { min: yMin, max: yMax } = resolveYRange(el, ctx);
-  const ticks = 4;
-  const isLine = el.intent === 'trend';
-
-  // Lines spread points edge to edge; bars sit in centred bands whose width is
-  // capped so few categories stay adjacent and comparable (and inside the plot).
-  const xAt = (i) => cats.length === 1
-    ? plot.x + plot.w / 2
-    : plot.x + (plot.w * i) / (cats.length - 1);
-  const bandW = Math.min(plot.w / cats.length, 280);
-  const bandX0 = plot.x + (plot.w - bandW * cats.length) / 2;
-  const xPos = isLine ? xAt : (i) => bandX0 + bandW * (i + 0.5);
-  const yAt = (v) => plot.y + plot.h * (1 - (v - yMin) / (yMax - yMin));
-
-  // Background layer: faint gridlines + minimal axis labels (neutral.line).
-  let bg = '';
-  for (let t = 0; t <= ticks; t++) {
-    const val = yMin + ((yMax - yMin) * t) / ticks;
-    const y = yAt(val);
-    bg += `<line x1="${round(plot.x)}" y1="${round(y)}" x2="${round(plot.x + plot.w)}" y2="${round(y)}" stroke="${C.line}" stroke-width="1" opacity="0.35"/>`;
-    bg += `<text x="${round(plot.x - 16)}" y="${round(y + 6)}" text-anchor="end" fill="${C.muted}" font-size="${scale.axis}" font-family='${fonts.body}'>${round(val)}</text>`;
-  }
-  bg += `<line x1="${round(plot.x)}" y1="${round(plot.y)}" x2="${round(plot.x)}" y2="${round(plot.y + plot.h)}" stroke="${C.line}" stroke-width="1.5"/>`;
-  bg += `<line x1="${round(plot.x)}" y1="${round(plot.y + plot.h)}" x2="${round(plot.x + plot.w)}" y2="${round(plot.y + plot.h)}" stroke="${C.line}" stroke-width="1.5"/>`;
-  cats.forEach((c, i) => {
-    bg += `<text x="${round(xPos(i))}" y="${round(plot.y + plot.h + 36)}" text-anchor="middle" fill="${C.muted}" font-size="${scale.axis}" font-family='${fonts.body}'>${esc(c)}</text>`;
-  });
-
-  // Data layer: line (trend) or grouped bars (comparison/distribution).
-  let data = '';
-  el.data.series.forEach((s, si) => {
-    const col = C.core[si % C.core.length];
-    if (isLine) {
-      const pts = s.values.map((v, i) => `${round(xAt(i))},${round(yAt(v))}`).join(' ');
-      data += `<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/>`;
-      s.values.forEach((v, i) => { data += `<circle cx="${round(xAt(i))}" cy="${round(yAt(v))}" r="5" fill="${col}"/>`; });
-    } else {
-      // comparison は棒同士を離して並べ、distribution はヒストグラムとして
-      // 隣接階級がほぼ接する (分布の連続性が読めるように)。
-      const groupW = bandW * (el.intent === 'distribution' ? 0.92 : 0.6);
-      const barW = groupW / el.data.series.length;
-      s.values.forEach((v, i) => {
-        const x = xPos(i) - groupW / 2 + barW * si;
-        const y = yAt(v);
-        data += `<rect x="${round(x)}" y="${round(y)}" width="${round(barW)}" height="${round(plot.y + plot.h - y)}" fill="${col}"/>`;
-      });
-    }
-  });
-
-  // Emphasis layer: annotations resolved by `at` (exact x match) or at_index.
-  let emph = '';
-  const s0 = el.data.series[0];
-  for (const ann of el.annotations || []) {
-    let i = ann.at_index != null ? ann.at_index : cats.indexOf(ann.at);
-    if (i < 0 || i >= cats.length) continue; // annotation-anchor lint reports mismatch.
-    const px = xPos(i), py = yAt(s0.values[i]);
-    emph += `<circle cx="${round(px)}" cy="${round(py)}" r="13" fill="none" stroke="${C.highlight}" stroke-width="2" opacity="0.5"/>`;
-    emph += `<circle cx="${round(px)}" cy="${round(py)}" r="7.5" fill="${C.highlight}"/>`;
-    // ラベルは折れ線が空けている側に置く。隣の点が高い側は線が上へ逃げる
-    // ぶん下が空く。右下 (読み方向) を優先、次に左下、両方塞がっていれば上。
-    const rightFree = isLine && i < cats.length - 1 && s0.values[i + 1] >= s0.values[i];
-    const leftFree = isLine && i > 0 && s0.values[i - 1] >= s0.values[i];
-    let ax, ay, anchor;
-    if (rightFree || !isLine) { ax = px + 20; ay = py + 74; anchor = 'start'; }
-    else if (leftFree) { ax = px - 20; ay = py + 74; anchor = 'end'; }
-    else { ax = px + 20; ay = py - 62; anchor = 'start'; }
-    const leaderY1 = ay > py ? py + 12 : py - 12;
-    const leaderY2 = ay > py ? ay - 22 : ay + 8;
-    emph += `<line x1="${round(px)}" y1="${round(leaderY1)}" x2="${round(ax)}" y2="${round(leaderY2)}" stroke="${C.highlight}" stroke-width="1.5" opacity="0.8"/>`;
-    emph += `<text x="${round(ax)}" y="${round(ay)}" text-anchor="${anchor}" fill="${C.highlight}" font-size="${scale.node}" font-weight="${fonts.wDisplay}" font-family='${fonts.display}'>${esc(ann.annotate)}</text>`;
-  }
-
-  return `<svg class="lead" viewBox="0 0 ${round(box.w)} ${round(box.h)}" width="${round(box.w)}" height="${round(box.h)}" role="img">
-    <g>${bg}</g><g>${data}</g><g>${emph}</g></svg>`;
 }
 
 // ---------------------------------------------------------------------------

@@ -29,6 +29,7 @@ import { QuoteStage, StatementStage, TitleStage } from './components/TextStages.
 import { Agenda, Bullets, Stat, Table } from './components/elements/TextElements.jsx';
 import { CodePanel, Versus } from './components/elements/Cards.jsx';
 import { ImageElement, Raw, StagePhoto, Video } from './components/elements/Media.jsx';
+import { Link, Post } from './components/elements/Social.jsx';
 
 // ---------------------------------------------------------------------------
 // Canvas + composition constants (ADR-0014 — renderer-internal, not spec)
@@ -1383,45 +1384,8 @@ function measurePost(el, ctx, avail) {
   const h = Math.min(avail.h, headH + headBodyGap + bodyH + padY * 2);
   return {
     w: round(w), h: round(h),
-    render: () => renderPost(el, ctx, { fsBody, fsAuthor, fsMeta, avatarSize, headGap }),
+    render: () => createElement(Post, { el, ctx, fsBody, fsAuthor, fsMeta, avatarSize, headGap }),
   };
-}
-
-function renderPost(el, ctx, { fsBody, fsAuthor, fsMeta, avatarSize, headGap }) {
-  let avatarHtml = '';
-  if (el.avatar) {
-    const abs = path.resolve(ctx.deckDir, el.avatar);
-    if (fs.existsSync(abs)) {
-      const rel = ctx.useAsset(abs, 'assets');
-      avatarHtml = `<img class="post-avatar" src="${esc(rel)}" alt="" style="width:${avatarSize}px;height:${avatarSize}px">`;
-    }
-  }
-  if (!avatarHtml) {
-    // avatar 未指定/未解決 → イニシャル円で代替 (SPEC §6.8)
-    const initial = [...String(el.author || '?')][0] || '?';
-    avatarHtml = `<div class="post-avatar post-avatar-fallback" style="width:${avatarSize}px;height:${avatarSize}px;font-size:${Math.round(avatarSize * 0.4)}px">${esc(initial)}</div>`;
-  }
-  const meta = [el.handle, el.date].filter(Boolean).map(esc).join('　·　');
-  const card = `<div class="post-card">
-    <div class="post-head" style="gap:${headGap}px">
-      ${avatarHtml}
-      <div class="post-head-text">
-        <div class="post-author jp" style="font-size:${fsAuthor}px">${inlineText(el.author)}</div>
-        ${meta ? `<div class="post-meta" style="font-size:${fsMeta}px">${meta}</div>` : ''}
-      </div>
-    </div>
-    <div class="post-body jp" style="font-size:${fsBody}px">${inlineText(el.text)}</div>
-  </div>`;
-
-  // 漸進的強化 (ADR-0017): source を持つ post だけ、カードの上に X の実埋め込み
-  // を重ねる下地を出す。静的出力 (shot / file://) では postEmbedScript が動か
-  // ないため .post-embed は常に visibility:hidden のままで、カードがそのまま
-  // 写る — フォールバックではなく初期表示がカード (決定 3)。
-  if (!el.source) return card;
-  const embed = `<div class="post-embed" data-post-source="${esc(el.source)}">
-    <blockquote class="twitter-tweet"><a href="${esc(el.source)}"></a></blockquote>
-  </div>`;
-  return `<div class="post-wrap">${card}${embed}</div>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -1486,27 +1450,11 @@ function measureLink(el, ctx, avail) {
   const h = Math.min(avail.h, Math.max(contentH, qrBox) + padY * 2);
   return {
     w: round(w), h: round(h),
-    render: () => renderLink(el, ctx, {
-      leftW, qrBox, hasImage, abs, imgH, fsTitle, fsDesc, fsUrl, gap,
+    render: () => createElement(Link, {
+      el, ctx, leftW, qrBox, hasImage, abs, imgH, fsTitle, fsDesc, fsUrl, gap,
+      qrSvg: renderQr(el.url),
     }),
   };
-}
-
-function renderLink(el, ctx, { leftW, qrBox, hasImage, abs, imgH, fsTitle, fsDesc, fsUrl, gap }) {
-  let imgHtml = '';
-  if (hasImage && abs && fs.existsSync(abs)) {
-    const rel = ctx.useAsset(abs, 'assets');
-    imgHtml = `<img class="link-img" src="${esc(rel)}" alt="" style="width:${leftW}px;height:${imgH}px">`;
-  }
-  return `<div class="link-card" style="gap:${gap}px">
-    <div class="link-left jp" style="width:${leftW}px">
-      ${imgHtml}
-      ${el.title ? `<div class="link-title" style="font-size:${fsTitle}px">${inlineText(el.title)}</div>` : ''}
-      ${el.description ? `<div class="link-desc" style="font-size:${fsDesc}px">${inlineText(el.description)}</div>` : ''}
-      <div class="link-url" style="font-size:${fsUrl}px">${esc(el.url)}</div>
-    </div>
-    <div class="link-qr" style="width:${qrBox}px;height:${qrBox}px">${renderQr(el.url)}</div>
-  </div>`;
 }
 
 // ---------------------------------------------------------------------------

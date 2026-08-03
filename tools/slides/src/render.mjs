@@ -30,6 +30,7 @@ import { Agenda, Bullets, Stat, Table } from './components/elements/TextElements
 import { CodePanel, Versus } from './components/elements/Cards.jsx';
 import { ImageElement, Raw, StagePhoto, Video } from './components/elements/Media.jsx';
 import { Link, Post } from './components/elements/Social.jsx';
+import { Dag, StepRow, Timeline } from './components/svg/Flow.jsx';
 
 // ---------------------------------------------------------------------------
 // Canvas + composition constants (ADR-0014 — renderer-internal, not spec)
@@ -265,52 +266,6 @@ function ringArcEdge(a, b, ring, rects, ctx) {
  * number badge + label + optional `detail` sub-line; edges become straight
  * arrows between cards. Emphasis gets the highlight border and badge.
  */
-function renderStepRow(el, box, ctx, arrowDef) {
-  const { C, fonts, scale } = ctx;
-  const emph = new Set(el.emphasis || []);
-  const n = el.nodes.length;
-  const hasDetail = el.nodes.some((nd) => nd.detail);
-  const hasIcon = el.nodes.some((nd) => nd.icon);
-  const usable = box.w * 0.94; // side margins keep the row off the stage edges
-  const gap = Math.min(56, usable * 0.05);
-  const cardW = Math.min(350, (usable - gap * (n - 1)) / n);
-  const cardH = (hasDetail ? 150 : 108) + (hasIcon ? 44 : 0);
-  const totalW = cardW * n + gap * (n - 1);
-  const x0 = (box.w - totalW) / 2;
-  const cy = box.h / 2;
-  const y = cy - cardH / 2;
-
-  const byId = {};
-  el.nodes.forEach((nd, i) => {
-    byId[nd.id] = { ...nd, i, x: x0 + i * (cardW + gap), cx: x0 + i * (cardW + gap) + cardW / 2 };
-  });
-
-  let edgeSvg = '';
-  for (const edge of el.edges || []) {
-    const a = byId[edge.from], b = byId[edge.to];
-    if (!a || !b) continue; // edge-ref lint reports this; render skips silently.
-    const [l, r] = a.i < b.i ? [a, b] : [b, a];
-    const x1 = l.x + cardW + 5, x2 = r.x - 7;
-    if (x2 <= x1) continue;
-    edgeSvg += `<line x1="${round(x1)}" y1="${round(cy)}" x2="${round(x2)}" y2="${round(cy)}" stroke="${C.muted}" stroke-width="3" marker-end="${markerRef(ctx)}"/>`;
-    if (edge.label) {
-      edgeSvg += `<text x="${round((x1 + x2) / 2)}" y="${round(cy - 14)}" text-anchor="middle" fill="${C.muted}" font-size="${scale.axis}" font-family='${fonts.body}'>${esc(edge.label)}</text>`;
-    }
-  }
-
-  let cardSvg = '';
-  el.nodes.forEach((nd, i) => {
-    const p = byId[nd.id];
-    cardSvg += nodeCard(ctx, {
-      x: p.x, y, w: cardW, h: cardH,
-      hot: emph.has(nd.id), label: nd.label, detail: nd.detail, icon: nd.icon, badge: i + 1,
-    });
-  });
-
-  return `<svg class="lead" viewBox="0 0 ${round(box.w)} ${round(box.h)}" width="${round(box.w)}" height="${round(box.h)}" role="img">
-    ${arrowDef}<g>${edgeSvg}</g><g>${cardSvg}</g></svg>`;
-}
-
 /** Uniform card metrics for a node set (matrix / dag / radial / cycle). */
 function cardMetrics(el, ctx, { minW = 180, maxW = 330 } = {}) {
   const { scale } = ctx;
@@ -376,7 +331,7 @@ function measureDiagram(el, ctx, avail) {
       const hasIcon = el.nodes.some((nd) => nd.icon);
       const cardH = (hasDetail ? 150 : 108) + (hasIcon ? 44 : 0);
       const h = Math.min(avail.h, cardH + 32);
-      return { w: avail.w, h, render: (b) => renderStepRow(el, b, ctx, arrowDefFor(ctx, ctx.C)) };
+      return { w: avail.w, h, render: (b) => createElement(StepRow, { el, box: b, ctx }) };
     }
   }
 }
@@ -496,65 +451,8 @@ function measureDag(el, ctx, avail) {
   const h = Math.min(avail.h, maxRows * cardH + (maxRows - 1) * rowGap);
   return {
     w, h,
-    render: (box) => renderDag(el, box, ctx, { cols, cardW, cardH, colGap, rowGap }),
+    render: (box) => createElement(Dag, { el, box, ctx, cols, cardW, cardH, colGap, rowGap }),
   };
-}
-
-function renderDag(el, box, ctx, { cols, cardW, cardH, colGap, rowGap }) {
-  const { C, fonts, scale } = ctx;
-  const emph = new Set(el.emphasis || []);
-  const pos = {};
-  cols.forEach((col, ci) => {
-    const colH = col.length * cardH + (col.length - 1) * rowGap;
-    const y0 = (box.h - colH) / 2;
-    col.forEach((nd, ri) => {
-      pos[nd.id] = { ...nd, x: ci * (cardW + colGap), y: y0 + ri * (cardH + rowGap) };
-    });
-  });
-
-  // 同じノードへ流入する複数エッジは、手前の合流点で 1 本に束ねる。
-  // 各カードの矢尻が 1 つになり (複数の矢尻は団子に見える。レビュー指摘
-  // 2026-07-08)、到達点も左辺の中央 1 点に揃う。
-  const inCount = {};
-  for (const e of el.edges || []) {
-    if (pos[e.from] && pos[e.to]) inCount[e.to] = (inCount[e.to] || 0) + 1;
-  }
-  let edgeSvg = '';
-  const junctionDrawn = new Set();
-  for (const e of el.edges || []) {
-    const a = pos[e.from], b = pos[e.to];
-    if (!a || !b) continue; // edge-ref lint reports this; render skips silently.
-    const x1 = a.x + cardW + 5, y1 = a.y + cardH / 2;
-    const xEnd = b.x - 7, yEnd = b.y + cardH / 2;
-    if (xEnd <= x1) continue; // 同列・逆行は描かない (form の誤用)
-    const merged = inCount[e.to] >= 2;
-    // 合流点: カード左辺の少し手前。ここまでは矢尻なしの曲線で集め、
-    // 合流点からカードへの短い直線 1 本だけが矢尻を持つ
-    const x2 = merged ? xEnd - 30 : xEnd;
-    // 高さが変わるエッジは S 字カーブ: 水平に出て水平に入る (制御点は中間 x)。
-    // 矢印はカードへ水平に刺さり、斜めの直線より視線の流れが柔らかい。
-    const mx = round((x1 + x2) / 2);
-    edgeSvg += `<path d="M ${round(x1)} ${round(y1)} C ${mx} ${round(y1)}, ${mx} ${round(yEnd)}, ${round(x2)} ${round(yEnd)}"
-      fill="none" stroke="${C.muted}" stroke-width="3"${merged ? '' : ` marker-end="${markerRef(ctx)}"`}/>`;
-    if (merged && !junctionDrawn.has(e.to)) {
-      junctionDrawn.add(e.to);
-      edgeSvg += `<line x1="${round(x2)}" y1="${round(yEnd)}" x2="${round(xEnd)}" y2="${round(yEnd)}"
-        stroke="${C.muted}" stroke-width="3" marker-end="${markerRef(ctx)}"/>`;
-    }
-    if (e.label) {
-      edgeSvg += `<text x="${mx}" y="${round((y1 + yEnd) / 2 - 10)}" text-anchor="middle" fill="${C.muted}" font-size="${scale.axis}" font-family='${fonts.body}'>${esc(e.label)}</text>`;
-    }
-  }
-
-  let cardSvg = '';
-  for (const id of Object.keys(pos)) {
-    const p = pos[id];
-    cardSvg += nodeCard(ctx, {
-      x: p.x, y: p.y, w: cardW, h: cardH,
-      hot: emph.has(id), label: p.label, detail: p.detail, icon: p.icon, badge: null,
-    });
-  }
-  return svgLead(box, `${arrowDefFor(ctx, C)}<g>${edgeSvg}</g><g>${cardSvg}</g>`);
 }
 
 /**
@@ -701,52 +599,11 @@ function measureTimeline(el, ctx, avail) {
 
   return {
     w: round(avail.w), h: round(h),
-    render: (box) => renderTimeline(el, box, ctx, { fsLabel, fsDetail, stagger, labelRowH, detailH }),
+    render: (box) => createElement(Timeline, {
+      el, box, ctx, fsLabel, fsDetail, stagger, labelRowH, detailH,
+      dotR: TL_DOT_R, gap: TL_GAP, marginX: TL_MARGIN_X,
+    }),
   };
-}
-
-function renderTimeline(el, box, ctx, { fsLabel, fsDetail, stagger, labelRowH, detailH }) {
-  const { C, fonts } = ctx;
-  const emph = new Set(el.emphasis || []);
-  const n = el.nodes.length;
-  const baseY = detailH + TL_DOT_R;
-  // 端ノードのラベル/日付が枠外へ落ちないよう、基線の始点・終点を
-  // 実測半幅ぶん内側に取る (以前は等間隔の基線をそのまま使い、はみ出す
-  // 端ラベルだけ clampTextX で内側へ寄せていたが、マーカー中央寄せの他
-  // ラベルと置き場所が揃わず違和感があった — レビュー指摘 2026-07-09)。
-  // これで全ノードが dot の真下/真上に text-anchor:middle で揃う。
-  const halfW = (nd) => Math.max(
-    estW(nd.label, fsLabel) / 2,
-    nd.detail ? estW(nd.detail, fsDetail) / 2 : 0,
-  );
-  const marginL = Math.max(TL_MARGIN_X, halfW(el.nodes[0]));
-  const marginR = Math.max(TL_MARGIN_X, halfW(el.nodes[n - 1]));
-  const x0 = marginL, x1 = box.w - marginR;
-  const usableW = Math.max(0, x1 - x0);
-  const xAt = (i) => n > 1 ? x0 + (usableW * i) / (n - 1) : box.w / 2;
-  // 安全弁: 千鳥判定などの後でなおラベルが枠をはみ出す場合だけ、テキストの
-  // 見た目位置を内側へ寄せる (通常は x0/x1 の時点で発生しないはず)。
-  const clampTextX = (cx, textW) => {
-    const half = textW / 2, pad = 4;
-    const lo = half + pad, hi = box.w - half - pad;
-    return lo <= hi ? Math.min(Math.max(cx, lo), hi) : box.w / 2;
-  };
-
-  let svg = `<line x1="${round(x0)}" y1="${round(baseY)}" x2="${round(x1)}" y2="${round(baseY)}" stroke="${C.line}" stroke-width="2"/>`;
-  el.nodes.forEach((nd, i) => {
-    const x = xAt(i);
-    const hot = emph.has(nd.id);
-    svg += `<circle cx="${round(x)}" cy="${round(baseY)}" r="${hot ? TL_DOT_R + 2 : TL_DOT_R}" fill="${hot ? C.highlight : C.core[0]}"/>`;
-    if (nd.detail) {
-      const dx = clampTextX(x, estW(nd.detail, fsDetail));
-      svg += `<text x="${round(dx)}" y="${round(baseY - TL_DOT_R - TL_GAP + fsDetail * 0.35)}" text-anchor="middle" fill="${C.muted}" font-size="${fsDetail}" font-family='${fonts.body}'>${esc(nd.detail)}</text>`;
-    }
-    const row = stagger ? i % 2 : 0;
-    const ly = baseY + TL_DOT_R + TL_GAP + labelRowH * row + fsLabel * 0.85;
-    const lx = clampTextX(x, estW(nd.label, fsLabel));
-    svg += `<text x="${round(lx)}" y="${round(ly)}" text-anchor="middle" fill="${hot ? C.textStrong : C.text}" font-weight="${hot ? fonts.wDisplay : fonts.wBody}" font-size="${fsLabel}" font-family='${fonts.display}'>${esc(nd.label)}</text>`;
-  });
-  return svgLead(box, svg);
 }
 
 /**

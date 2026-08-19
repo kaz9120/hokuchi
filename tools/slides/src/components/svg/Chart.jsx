@@ -154,6 +154,19 @@ export function StackedComposition({ el, box, ctx, pad }) {
 }
 
 /**
+ * 目盛りの本数を選ぶ。レンジが整数なら、割り切れる本数を優先する。
+ * 人数や件数のように整数しか取らないデータで、4 分割固定だと 3.75 のような
+ * 意味のない目盛りが出るため (2026-08-19)。割り切れなければ従来どおり 4 分割。
+ */
+function tickCount(yMin, yMax) {
+  const span = yMax - yMin;
+  if (Number.isInteger(span) && span > 0) {
+    for (const n of [4, 5, 3, 6, 2]) if (span % n === 0) return n;
+  }
+  return 4;
+}
+
+/**
  * trend / comparison / distribution — 軸を持つチャート (SPEC §6.5, §8.4)。
  *
  * 折れ線は点を端から端へ広げ、棒は中央寄せの帯に置く。帯の幅には上限があり、
@@ -164,7 +177,7 @@ export function AxisChart({ el, box, ctx, pad, yMin, yMax }) {
   const { C, fonts, scale } = ctx;
   const plot = { x: pad.l, y: pad.t, w: box.w - pad.l - pad.r, h: box.h - pad.t - pad.b };
   const cats = el.data.x;
-  const ticks = 4;
+  const ticks = tickCount(yMin, yMax);
   const isLine = el.intent === 'trend';
 
   const xAt = (i) => (cats.length === 1

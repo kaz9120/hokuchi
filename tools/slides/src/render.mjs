@@ -840,7 +840,7 @@ function codeLines(el, { lines, lang }) {
  */
 function measurePost(el, ctx, avail) {
   const { scale } = ctx;
-  const fsBody = Math.round(scale.quote * 0.7);
+  const fsBody = Math.round(scale.quote * 0.66);
   const fsAuthor = 24, fsMeta = 18;
   const padX = 44, padY = 38;
   const avatarSize = 72;
@@ -852,7 +852,7 @@ function measurePost(el, ctx, avail) {
   const bodyChars = cpLen(String(el.text).replace(/\n/g, ''));
   // sqrt(chars) targets a card whose text area grows sub-linearly with
   // length — see doc comment above.
-  let bodyW = Math.round(Math.sqrt(bodyChars) * fsBody * 1.9);
+  let bodyW = Math.round(Math.sqrt(bodyChars) * fsBody * 2.6);
   bodyW = Math.max(minW - padX * 2, Math.min(maxW - padX * 2, bodyW));
 
   const bodyLines = estimateWrappedLines(el.text, fsBody, bodyW);
@@ -1472,7 +1472,7 @@ svg.lead{display:block;max-width:100%;max-height:100%;overflow:visible}
 .post-wrap{position:relative;width:100%;height:100%}
 .post-card{width:100%;height:100%;box-sizing:border-box;background:${C.surface};
   border:1px solid ${C.line};border-radius:18px;padding:38px 44px;display:flex;
-  flex-direction:column;text-align:left}
+  flex-direction:column;text-align:left;box-shadow:0 10px 30px rgba(0,0,0,.06)}
 .post-wrap>.post-card{position:absolute;inset:0}
 /* 漸進的強化の埋め込み下地 (ADR-0017)。widgets.js が実際にツイートを iframe
    化して 'rendered' を発火するまでは visibility:hidden のまま — file://
@@ -1521,8 +1521,8 @@ svg.lead{display:block;max-width:100%;max-height:100%;overflow:visible}
    2026-07-09)。 */
 .table-wrap{position:relative}
 .table-rule{position:absolute;height:2px;background:${C.line}}
-.table-em-band{position:absolute;z-index:-1;background:${C.highlight}1f;border-radius:8px}
-.table-grid{display:grid;text-align:left}
+.table-em-band{position:absolute;z-index:0;background:${C.highlight}33;border-radius:8px}
+.table-grid{display:grid;text-align:left;position:relative;z-index:1}
 .table-cell{padding:0 20px;white-space:nowrap;color:${C.text};font-family:${fonts.body}}
 .table-col-data{text-align:center}
 .table-head{color:${C.textStrong};font-weight:${fonts.wDisplay};font-family:${fonts.display}}

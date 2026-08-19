@@ -32,7 +32,7 @@ tools/
   crafting-presentation/  対話からスライドを作る skill（Phase 0〜7）
 ```
 
-スライドを作る依頼は crafting-presentation skill に従う。デッキは `talks/<YYYY-MM-slug>/deck.yaml` に置き、テーマは登壇の立場で選んで相対参照する（個人は `tools/slides/themes/hokuchi.yaml`、MOSH としては `tools/slides/themes/mosh.yaml`。コピーしない。ADR-0010）。発表が終わったら最終レンダリングを `final/` にコミットして凍結する。レンダラは進化するので、deck.yaml だけでは当時の見た目を再現できない。人間の細かいレビューは `hokuchi serve` のアノテーション (ADR-0011) で受ける。
+スライドを作る依頼は crafting-presentation skill に従う。デッキは `talks/<YYYY-MM-slug>/deck.yaml` に置く。テーマは登壇の立場で選び、相対パスで参照する（個人は `tools/slides/themes/hokuchi.yaml`、MOSH としては `tools/slides/themes/mosh.yaml`。コピーしない。ADR-0010）。発表が終わったら最終レンダリングを `final/` にコミットして凍結する。レンダラは進化するので、deck.yaml だけでは当時の見た目を再現できない。人間の細かいレビューは `hokuchi serve` のアノテーション (ADR-0011) で受ける。
 
 ## コミット
 

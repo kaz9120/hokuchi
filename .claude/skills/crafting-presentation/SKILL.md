@@ -1,29 +1,29 @@
 ---
 name: crafting-presentation
-description: hokuchi のスライドツールで登壇資料を作る。人間との対話で聴衆と One Big Idea を深掘りし、SPEC 準拠の deck.yaml (意図宣言型 YAML) を生成して lint / render / shot まで回す一気通貫フロー。ユーザーが「スライド作って」「登壇資料を作りたい」「プレゼン準備」「発表資料を作りたい」「LT の資料」「プレゼンを一緒に考えて」と言ったときに使う。ピクセルではなく意図を書き、レンダラが配置を導出する。旧 presentation-roadmap を置き換える (ADR-0005)。
+description: hokuchi のスライドツールで登壇資料を作る。人間との対話で聴衆と One Big Idea を深掘りし、SPEC 準拠の deck.yaml (意図宣言型 YAML) を生成して lint / render / shot まで回す一気通貫フロー。登壇・発表・プレゼン・LT の資料を、作る/直す/構成から相談する依頼に使う。ピクセルではなく意図を書き、レンダラが配置を導出する。
 ---
 
 # スライドを意図で書く
 
-このスキルは、対話で聴衆とメッセージを深掘りし、hokuchi の宣言スキーマ (SPEC 準拠の `deck.yaml`) を生成し、`hokuchi` CLI で検証・描画するまでを一気に通す。
+このスキルは、対話で聴衆とメッセージを深掘りし、hokuchi の宣言スキーマ (SPEC 準拠の `deck.yaml`) を生成し、`hokuchi` CLI で検証・描画するまでを一気に通す。完成の姿は、lint を通した `talks/<YYYY-MM-slug>/deck.yaml` と、そこから描画した `out/` の 2 つ。
 
 書き手は Claude、レビュアーは人間。Claude が書くのはピクセルではなく意図 (何を伝えたいか・要素同士がどう関係するか) であり、配置・色・サイズはテーマとレンダラが導出する (ADR-0001)。人間がレビューするのは主に各スライドの `idea` と `notes`。
 
-## 前提となる必読
+## 着手前に開くファイル
 
-生成する YAML は次の仕様に準拠する。着手前に最低限 SPEC を開く。
+生成する YAML は次の仕様に準拠する。SPEC は着手前に開く。references は各 Phase の入口で開く。
 
 - `tools/slides/SPEC.md` — スキーマの規範仕様。フィールド・要素 15 種・レイアウトパターン・lint ルール。生成物はこれに従う
 - `tools/slides/docs/design.md` — 設計思想の背景 (なぜ意図を宣言し配置を導出するのか)
-- `references/element-guide.md` — 伝えたいことの形から要素と form を選ぶ判断ガイド。Phase 5 で必ず参照
-- `references/interview-questions.md` — 聴衆プロファイリングの 7 つのクエスチョンと対話への言い換え。Phase 1 で参照
-- `references/style-defaults.md` — 話者固有の登壇スタイルの既定 (振り返りで育てる)。Phase 4 と 5 で必ず参照
+- `references/interview-questions.md` — 聴衆プロファイリングの 7 つの問いと対話への言い換え。Phase 1 で開く
+- `references/style-defaults.md` — 話者固有の登壇スタイルの既定 (振り返りで育てる)。Phase 4 と Phase 5 で開く
+- `references/element-guide.md` — 伝えたいことの形から要素と form を選ぶ判断ガイド。Phase 5 で開く
 
 ## 全体の流れ
 
-Phase 0 から 7 まで順に進む。この骨格は変えない。Phase 0〜4 は人間との対話で設計を固める段で、YAML はまだ書かない。Phase 5 で初めて YAML を書き、Phase 6 で検証、Phase 7 で磨く。
+Phase 0 から 7 まで順に進む。Phase 2 と Phase 4 はユーザーの承認を取る関門で、飛ばすと合意していない前提の上に YAML を積むことになる。Phase 0〜4 は人間との対話で設計を固める段で、YAML はまだ書かない。Phase 5 で初めて YAML を書き、Phase 6 で検証、Phase 7 で磨く。
 
-拡散と収束を混ぜない。Phase 3 は拡散 (案を広げる)、Phase 4 は収束 (プロットを確定)。最初の 1 案に飛びつくことを自分に禁じる (slide:ology p.47)。
+拡散と収束を混ぜない。Phase 3 は拡散 (案を広げる)、Phase 4 は収束 (プロットを確定)。
 
 ---
 
@@ -53,7 +53,7 @@ Phase 0 から 7 まで順に進む。この骨格は変えない。Phase 0〜4 
 
 ## Phase 1 — 聴衆プロファイリング
 
-聴衆を具体的な 1 人として描けると、メッセージの取捨選択の基準が定まる (slide:ology p.34-37)。`references/interview-questions.md` の 7 つのクエスチョンを土台にする。
+聴衆を具体的な 1 人として描けると、メッセージの取捨選択の基準が定まる (slide:ology p.34-37)。`references/interview-questions.md` の 7 つの問いを土台にする。
 
 7 問を尋問のように順番に聞かない。文脈やユーザーの最初の説明から埋められるものは埋め、埋まらない核心の 3〜4 問に絞って対話で聞く。核心は次の 3 つ。
 
@@ -86,7 +86,7 @@ One Big Idea に貢献しないスライドは、どれだけ面白くても落�
 
 ## Phase 3 — 構成の発散と収束
 
-構成案を必ず 3 案提示し、ユーザーに選ばせる。1 案だけ出して進めることを自分に禁じる (slide:ology p.47「1 つのアイデアに集中し過ぎると、他のよりよいアイデアを探すチャンスが失われる」)。
+構成案を 3 案提示し、ユーザーに選ばせる。1 つのアイデアに集中し過ぎると、他のよりよいアイデアを探すチャンスが失われる (slide:ology p.47)。
 
 定番の 3 つの切り口を起点にする。題材に合わせて変えてよいが、必ず質の違う 3 案にする。
 
@@ -128,11 +128,11 @@ N. closer   聴衆が次の登壇資料を意図で書き始める
 
 ## Phase 5 — YAML 生成
 
-承認済みプロットを SPEC 準拠の `deck.yaml` に書く。要素選択は `references/element-guide.md` に、話者固有の既定 (support の付け方・実写真優先など) は `references/style-defaults.md` に従う。
+承認済みプロットを SPEC 準拠の `deck.yaml` に書く。要素選択は `references/element-guide.md` に従う。話者固有の既定 (support の付け方・実写真優先など) は `references/style-defaults.md` に従う。
 
 ### 手順
 
-1. テーマを用意する。登壇の立場で選ぶ — 個人としての登壇は `tools/slides/themes/hokuchi.yaml`、MOSH としての登壇は `tools/slides/themes/mosh.yaml` (ADR-0010)。どちらも相対パスで参照する (コピーしない。テーマの単一ソースを保つ)。テーマは勝手に発明しない。判断できなければ Phase 0 で聞く
+1. テーマを登壇の立場で選ぶ。個人としての登壇は `tools/slides/themes/hokuchi.yaml`、MOSH としての登壇は `tools/slides/themes/mosh.yaml` (ADR-0010)。どちらも相対パスで参照する。コピーするとテーマの単一ソースが壊れる。この 2 つ以外を新しく作らない。立場が判断できなければ Phase 0 で聞く
 2. `deck` ブロックを書く。`title` / `audience` (Phase 1 の結果) / `theme` (相対パス)。連続する chart で軸を揃えるなら `scales` を定義
 3. 各スライドを書く。`id` (安定キー) / `role` / `idea` (Phase 4 の 1 行) / `layout` / `elements` / `notes`
 4. 語る内容は `notes` に、スライドの可視テキストは最小に。スライドは見出し、本文はノート (下記)
@@ -172,10 +172,11 @@ hokuchi shot <outdir>
 hokuchi serve <outdir>         # 人間レビュー用のアノテーション付きプレビュー (ADR-0011)
 ```
 
-1. `lint` を実行し、警告を原則すべて解消する。テキスト超過 (`slideument`) は本文を `notes` へ移す。`one-idea` はスライドを分割する。`annotation-anchor` / `edge-ref` はエラーなので必ず直す。解消せず残す警告があれば、理由を添えてユーザーに報告する
+1. `lint` を実行し、警告を原則すべて解消する。テキスト超過 (`slideument`) は本文を `notes` へ移す。`one-idea` はスライドを分割する。`annotation-anchor` / `edge-ref` はエラーであり、直すまで先へ進まない。解消せず残す警告があれば、理由を添えてユーザーに報告する
 2. `render` で単一ファイル SPA (`out/index.html`) を描画する (ADR-0012)
 3. `shot` でスクリーンショットを生成し、自分の目で確かめてからユーザーに見せる
-4. 人間の細かいレビューには `serve` を提案する。ブラウザで ← → ページ送り、`g` で全スライドの一覧モード。要素をクリックしてメモを付け、Send すると `<outdir>/annotations.md` に追記される (一覧モードならデッキ全体の注釈を 1 回で送れる)。ユーザーから「アノテーションを送った」と言われたらそのファイルを読み、Phase 7 の入力にする
+4. 人間の細かいレビューには `serve` を提案する。ユーザーは ← → でページを送り、`g` で全スライドの一覧モードに切り替え、要素をクリックしてメモを付ける。Send を押すと `<outdir>/annotations.md` に追記される (一覧モードならデッキ全体の注釈を 1 回で送れる)
+5. ユーザーから「アノテーションを送った」と言われたら `<outdir>/annotations.md` を読み、Phase 7 の入力にする
 
 lint レポートは捨てずに残る一級の成果物 (ADR-0002)。逸脱を黙って常態化させない。
 

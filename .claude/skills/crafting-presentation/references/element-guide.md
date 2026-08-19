@@ -62,6 +62,7 @@ subtype カタログは網羅ではない (p.73)。「これらのサンプル�
 
 補足のルール。
 
+- ノードは `{ id, label, detail?, icon? }`。`icon` はテーマの icon_set のカタログにある名前で、label の上に描かれる (ADR-0013。カタログに無い名前は `icon-exists` エラー)
 - `emphasis` は強調するノード id の配列。サイズ・色は階層原則から導出される (p.119)
 - `edges` は `{ from, to, label? }`。糖衣で `"a -> b"` とも書ける (糖衣では label 不可)
 - 参照するノード id は必ず `nodes` に存在させる (無いと `edge-ref` エラー)
@@ -74,7 +75,7 @@ cluster と radial の使い分けの勘所。
 - `cluster.closure` は「順序も階層も関係もない、ただの仲間」を配置だけで見せる。位置に意味を持たせたい (象限で分類したい) なら `structure.matrix`。円環の知覚が立つのは 5 ノード以上で、4 以下だと matrix と紛らわしい
 - `cluster.linked` は「関係はあるが流れではない」対称な関連 (線に矢印が付かない)。方向・因果・時系列があるなら flow 系を使う
 
-専用描画を持つ form は cycle / linear / branch / converge / timeline / matrix / tree / layer / overlap / closure / enclosed / linked / radial.core。それ以外 (`flow.network`、`radial.semi` / `coreless`、`pictogram.*`) は現状 step-row (横並びカード) に落ちるので、頼るなら見た目を必ず確認する。
+専用描画を持つ form は cycle / branch / converge / timeline / matrix / tree / layer / overlap / closure / enclosed / linked / radial.core。`flow.linear` は step-row (順序を持つ横並びカード) で描かれ、これが linear 本来の形。残る form (`flow.network`、`radial.semi` / `coreless`、`pictogram.*`) も同じ step-row に落ちるため、関係の型は絵に出ない。使うなら描画結果を確認する。
 
 ---
 
@@ -118,7 +119,7 @@ cluster と radial の使い分けの勘所。
 
 | 要素 | 選ぶ基準 | 紛らわしい相手との境界 |
 |------|---------|---------------------|
-| code | コード・端末 (`lang: console`)・diff (`lang: diff`) を見せる | 17 行/81 桁を超えるなら抜粋する (`code-budget` lint)。強調行は `emphasis: ["3-5"]` (1 起点) |
+| code | コード・端末 (`lang: console`)・diff (`lang: diff`) を見せる | 17 行以上か 81 桁以上の行があれば抜粋する (`code-budget` lint)。強調行は `emphasis: ["3-5"]` (1 起点) |
 | post | SNS の発言が「実際にあった」ことを見せる | 発言者の権威で語らせるだけなら quote。日付・アカウント名が効くなら post。`source` を書いておくと SPA では実埋め込みになる (ADR-0017) |
 | link | 記事・資料へ誘導する (QR は自動) | title / image 未指定なら render 時に OGP を自動解決し `assets/ogp/` にキャッシュする (ADR-0017)。URL を読ませたいだけなら statement にしない — QR が要るなら常に link |
 | stat | 数字 1 つで刺す | 比較や推移を語るなら chart。単位は value に含める (`"3.2 倍"`) |

@@ -23,8 +23,8 @@ tools/
   slides/          スライドスキーマとレンダラ
     SPEC.md        スキーマの規範仕様（唯一の真実）
     schema/        JSON Schema（deck / theme）
-    src/ + cli.mjs lint / render / shot の CLI（npm link で hokuchi コマンドに。npm test で検証）
-    themes/        デフォルトテーマ（hokuchi.yaml）
+    src/ + cli.mjs lint / render / shot / serve の CLI（npm link で hokuchi コマンドに。npm test で検証）
+    themes/        テーマ（個人 hokuchi.yaml / MOSH mosh.yaml）
     examples/      テスト用フィクスチャ
     docs/design.md 生きた設計書
     spike/         捨て前提の試作（検証記録として保持）

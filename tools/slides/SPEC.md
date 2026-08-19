@@ -24,7 +24,7 @@
 | deck | 1 つのプレゼンテーション全体。`title`・`audience`・`scales`・`theme` 参照・`slides` を持つ (第 3 章) |
 | theme | デッキが参照する共有基盤。色・書体・グリッド・タイプスケールを名前付きスロットに固定する (第 2 章、ADR-0003) |
 | slide | 1 枚のスライド。1 枚 = 1 アイデア (`idea`) を守る (第 4 章、p.109) |
-| element | スライドを構成する要素。7 種 (statement / bullets / image / diagram / chart / quote / raw、第 6 章) |
+| element | スライドを構成する要素。15 種 (statement / bullets / image / diagram / chart / quote / code / post / link / stat / table / versus / agenda / video / raw、第 6 章) |
 | slot | 名前付きレイアウトパターンが宣言する配置口。要素は `slot` でスロットに入る (ADR-0007、第 5 章) |
 | stage (舞台) | role が定めるレターボックス帯の内側。レイアウトが配置してよい領域 (ADR-0008-6、第 8 章) |
 | pattern | 名前付きレイアウトパターン。スロットを宣言する配置テンプレート (第 5 章) |

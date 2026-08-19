@@ -13,7 +13,7 @@ description: hokuchi のスライドツールで登壇資料を作る。人間�
 
 生成する YAML は次の仕様に準拠する。着手前に最低限 SPEC を開く。
 
-- `tools/slides/SPEC.md` — スキーマの規範仕様。フィールド・要素 7 種・レイアウトパターン・lint ルール。生成物はこれに従う
+- `tools/slides/SPEC.md` — スキーマの規範仕様。フィールド・要素 15 種・レイアウトパターン・lint ルール。生成物はこれに従う
 - `tools/slides/docs/design.md` — 設計思想の背景 (なぜ意図を宣言し配置を導出するのか)
 - `references/element-guide.md` — 伝えたいことの形から要素と form を選ぶ判断ガイド。Phase 5 で必ず参照
 - `references/interview-questions.md` — 聴衆プロファイリングの 7 つのクエスチョンと対話への言い換え。Phase 1 で参照
@@ -107,8 +107,8 @@ One Big Idea に貢献しないスライドは、どれだけ面白くても落�
 出力の形。
 
 ```
-1. opener   焚き火を愛するエンジニアの登壇が始まる
-2. title    この 30 分で「意図で書く」選択肢を持ち帰ってもらう
+1. title    この 30 分で「意図で書く」選択肢を持ち帰ってもらう
+2. content  焚き火を愛するエンジニアが 10 年スライドを書いてきた (profile-stage)
 3. content  スライドの意味の半分は配置が担っている
 ...
 N. closer   聴衆が次の登壇資料を意図で書き始める
@@ -139,7 +139,7 @@ N. closer   聴衆が次の登壇資料を意図で書き始める
 
 ### 要素選択の原則
 
-要素は 7 種 (statement / bullets / image / diagram / chart / quote / raw)。何を選ぶかは `element-guide.md` の判断表に従う。箇条書き (bullets) は最後の手段。
+要素は 15 種 (statement / bullets / image / diagram / chart / quote / code / post / link / stat / table / versus / agenda / video / raw、ADR-0016)。何を選ぶかは `element-guide.md` の判断表に従う。箇条書き (bullets) は最後の手段。
 
 `layout` は名前付きパターンを優先する (9 割はこれで足りる)。パターンとスロットの対応は SPEC §5.1、要素はどのパターンに載るかは `element-guide.md`。凝った配置が要るときだけ grid-direct を使う。
 

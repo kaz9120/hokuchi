@@ -1,0 +1,292 @@
+# 「Fable 5 は、どこに置くのか」(Claude Code Fable 5 meetup #1、2026-08-19、LT 5 分)
+# 構造: データ起点。聞いた事実 → 生の声 → 集計 → 共通点、と外から内へ絞り、
+# 転換のあとで自分ひとりの置き方に降りる。
+schema_version: "0.1.0"
+deck:
+  title: "Fable 5 は、どこに置くのか"
+  audience:
+    who: "Fable 5 を実務で使い込んでいて、他社がどこに使っているかを知りたいエンジニア"
+    action: "自分のワークフローの中で判断が要る場所を 1 つ選び、そこに Fable 5 を置いてみる"
+  theme: ../../tools/slides/themes/mosh.yaml
+
+slides:
+  - id: title
+    role: title
+    idea: "この 5 分が答える問いをタイトルとして掲げる"
+    layout: title-stage
+    elements:
+      - kind: statement
+        slot: title
+        text: "Fable 5 は、\nどこに置くのか"
+      - kind: statement
+        slot: subtitle
+        text: "MOSH エンジニア 10 名に聞いた！実務における Fable 5 の利用状況"
+    notes: |
+      MOSH の山本です。今日は会場を提供させていただいています。
+      「Fable 5 をどこに置くのか」。これが今日の 5 分でお答えする問いです。
+      【5秒】
+
+  - id: profile
+    role: content
+    chapter: "自己紹介"
+    idea: "このイベントのために社内の同僚に話を聞いてきた、という立場を示す"
+    layout: profile-stage
+    elements:
+      - kind: image
+        slot: portrait
+        src: ./assets/profile.jpg
+        prompt: "登壇者のプロフィール写真"
+      - kind: statement
+        slot: name
+        text: "山本 一将｜焚き火を愛するエンジニア"
+      - kind: statement
+        slot: affiliation
+        text: "MOSH株式会社 Engineering Manager"
+      - kind: statement
+        slot: handle
+        text: "X: @kyamamoto9120"
+      - kind: bullets
+        slot: bio
+        items:
+          - "今日の話 ── このイベントのために、社内 Slack で同僚 9 名に聞いた回答がもとになっています"
+          - "略歴 ── 鉄道システム開発、SNS マーケティングツール開発を経て、2025年より MOSH に参画"
+    notes: |
+      山本一将です。MOSH でエンジニアリングマネージャーをしています。
+      今日お話しするのは、私ひとりの見解ではありません。
+      【20秒】
+
+  - id: asked
+    role: content
+    chapter: "10名の回答"
+    idea: "1 週間前に社内で実際に聞いた、という事実を示す"
+    layout: post-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "1週間前、社内で聞きました"
+      - kind: post
+        slot: post
+        text: "皆さまの Fable 5 の実務での利用方法も聞いてみたいです。使っていない方は、理由をいただけると嬉しいです"
+        author: "山本 一将"
+        handle: "#engineering"
+        date: "2026-08-13"
+        avatar: ./assets/profile.jpg
+    notes: |
+      1 週間前、社内の Slack でこう聞きました。エンジニア全員が見るチャンネルです。
+      使っている人だけに聞くと偏るので、使っていない人にも理由を聞きました。
+      9 名から返ってきて、それに私を足した 10 名分が今日の材料です。
+      【20秒】
+
+  - id: voices
+    role: content
+    chapter: "10名の回答"
+    idea: "返ってきた声は、どれも失敗の代償が大きい場面を指していた"
+    layout: list-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "返ってきた声"
+      - kind: bullets
+        slot: list
+        items:
+          - "「考慮漏れが怖い部分を徹底的にやらせる」"
+          - "「デグレのリスクが深刻そうな機能の設計」"
+          - "「リリースによるバグやリスクがないか調べる」"
+          - "「人が判断できるレベルで難解なイシュー」"
+    notes: |
+      まず、返ってきた言葉をそのまま読みます。
+
+      「考慮漏れが怖い部分を徹底的にやらせる」
+      「デグレのリスクが深刻そうな機能の設計やレビューに使っている」
+      「実装が後半に進んだときに、リリースすることによるバグやリスクがないかを調べる」
+      「人が判断できるレベルで難解なイシューについての設計とレビュー」
+
+      読んでいて気づいたのは、誰も「速く書かせる」とは言っていないことでした。
+      怖い、深刻、リスク。そういう言葉ばかりが並びます。
+      【45秒】
+
+  - id: usage
+    role: content
+    chapter: "10名の回答"
+    idea: "用途を数えると設計・レビュー・調査に集まり、実装と答えた人は 0 名だった"
+    layout: chart-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "何に使っているか（10名・複数回答）"
+      - kind: chart
+        slot: chart
+        intent: comparison
+        message: "書かせるためではなく、見極めさせるために使われている"
+        data:
+          x: ["設計", "コードレビュー", "リスク・影響調査", "実装"]
+          series:
+            - { label: "答えた人数", values: [4, 5, 4, 0] }
+        annotations:
+          - { at: "実装", annotate: "0名", style: highlight }
+    notes: |
+      用途を数えるとこうなりました。10 名のうち 1 名は使っておらず、
+      2 名は用途を絞らず全部に使っています。残る 7 名が挙げた用途の集計です。
+
+      設計、コードレビュー、リスクや影響範囲の調査。ここに集まりました。
+      そして右端です。実装に使っていると答えた人が、ひとりもいませんでした。
+      それどころか「実装は別のモデルでやる」と、わざわざ書いてくれた人が複数います。
+      【35秒】
+
+  - id: why
+    role: content
+    chapter: "10名の回答"
+    idea: "3 つの用途に共通するのは、リスクの高さだった"
+    layout: diagram-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "なぜ、この3つなのか"
+      - kind: diagram
+        slot: diagram
+        form: cluster.overlap
+        nodes:
+          - { id: design, label: "設計" }
+          - { id: review, label: "コードレビュー" }
+          - { id: risk,   label: "リスク・影響調査" }
+        shared:
+          label: "リスクが高い"
+          emphasis: true
+    notes: |
+      なぜこの 3 つなのか。共通点は、リスクの高さです。
+
+      設計のミスは実装が終わってから分かる。レビューの見落としは本番で分かる。
+      影響範囲の読み違えは障害で分かる。3 つとも、間違えても、その場では気づけません。
+      気づけないまま進むと、あとの手戻りが大きい。
+
+      だから、いちばん深く考えるモデルをここに当てている。これが 10 名に共通する形でした。
+      【30秒】
+
+  - id: bridge
+    role: transition
+    chapter: "私の使い方"
+    idea: "10 名の傾向から、自分ひとりの具体例へ視点を移す"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "私はどう使っているか"
+    notes: |
+      （一拍おく）
+      ここからは、もう少し具体的に。私自身の使い方をお見せします。
+      【8秒】
+
+  - id: where
+    role: content
+    chapter: "私の使い方"
+    idea: "Fable 5 を監督ではなくワーカーに置いている"
+    layout: stat-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "監督ではなく、ワーカーに置く"
+      - kind: stat
+        slot: stat
+        value: "70.5%"
+        label: "Fable 5 の実行のうち、サブエージェントが占める割合"
+        context: "直近1か月、20,383メッセージ分のログを集計"
+    notes: |
+      まず数字から。自分のログを集計したら、Fable 5 の 70.5% がサブエージェントでした。
+      メインで動かしている監督役は、Opus 5 のまま変えていません。
+
+      実は 1 か月前、私は逆をやろうとしていました。ログに残っています。
+      「Fable をルートのモデルにして、必要な作業をサブエージェントとして起動したい」。
+      そう書いて設計を始めて、実測してやめました。
+
+      監督のコストは、ターン数かける、その時点のコンテキスト量で決まります。
+      Fable を監督にすると 1 ターンごとに 12〜20 万トークンを読み直して、
+      レビュー 1 回の費用の 6〜7 割を監督が占めました。ワーカーは 5〜8 万トークンで終わる。
+      同じ仕事でも、監督にやらせると数倍高くつく。
+      だから監督は据え置いて、ワーカーだけ Fable にしました。
+      【50秒】
+
+  - id: my-case
+    role: content
+    chapter: "私の使い方"
+    idea: "手順が決まっているかどうかで、ワーカーのモデルを分けている"
+    layout: versus-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "レビューの6観点を振り分ける"
+      - kind: versus
+        slot: versus
+        sides:
+          - label: "手順が決まっている"
+            items:
+              - "先例との一貫性"
+              - "ユーザー影響"
+              - "API 契約"
+          - label: "モデルの力で差が出る"
+            items:
+              - "ロジックの正しさ"
+              - "観点の隙間の探索"
+              - "設計の妥当性"
+            emphasis: true
+    notes: |
+      では、どのワーカーを Fable にするか。私はこの基準で分けています。
+
+      左の 3 つは、見るものが決まっています。先例と揃っているか、ユーザー影響はどうか、
+      API 契約と合っているか。手順どおりに照らし合わせる仕事なので、誰がやっても答えが揃う。
+      だから安いモデルのままです。
+
+      右の 3 つは、そもそも何を探すかが決まっていません。ロジックが本当に正しいか。
+      決められた観点の隙間に何が落ちているか。設計として妥当か。
+      見つけられるかどうかが、モデルの能力で直接変わります。ここにだけ Fable 5 を指定しています。
+
+      基準は「手順があるか、判断が要るか」の一点です。
+      直近 1 か月で Fable 5 を名指しした呼び出しは 277 回、そのほとんどが右側でした。
+      【45秒】
+
+  - id: minority
+    role: content
+    chapter: "他の使い方"
+    idea: "今回まとめきれなかった少数の使い方も社内で試されている"
+    layout: list-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "少数だった使い方"
+      - kind: bullets
+        slot: list
+        items:
+          - "「タスク分解させ、サブエージェントに指示させる」"
+          - "「判断が要るサブエージェントだけ Fable を明示」"
+          - "「切り替えが面倒なので、とりあえず全部 Fable」"
+    notes: |
+      最後に、今日の集計にまとめきれなかった使い方も紹介させてください。
+
+      1 つ目は、Fable 5 自身をオーケストレーターにする使い方です。
+      タスクを分解させて、適切なモデルのサブエージェントを立ち上げて指示させる。
+      2 つ目は、それをもっと細かく制御する形で、判断が要るサブエージェントだけ Fable を明示し、
+      機械的な調査や検証は Sonnet に固定する。
+      3 つ目は、切り替えのコストを嫌って全部 Fable にしてしまう人です。x20 でもカツカツだそうです。
+
+      ちなみに 1 名だけ使っていない人がいて、理由は社内バランサーとして Codex を回しているからでした。
+      【20秒】
+
+  - id: closer
+    role: closer
+    idea: "判断が要る場所を 1 つ選んで、そこに置いてみてほしい"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "リスクが高い場所を、\n1つだけ選ぶ"
+        emphasis: ["1つだけ"]
+      - kind: statement
+        slot: support
+        text: "全部に使うのではなく、間違えても気づけない場所に置いてみてください"
+    notes: |
+      10 名に聞いて分かったのは、Fable 5 が「速く書かせる」ためではなく、
+      「見極めさせる」ために使われているということでした。
+
+      帰ったら、自分の仕事の中で「ここを間違えても、その場では気づけない」という場所を
+      1 つだけ選んでみてください。そこに置いてみる。それが今日の持ち帰りです。
+      ありがとうございました。
+      【22秒】

@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=1280">
+<title>Fable 5 は、どこに置くのか</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&amp;display=swap">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+.slide{width:1280px;height:720px;position:relative;overflow:hidden;
+  background:#fffbf9;color:#111827;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-weight:400;
+  -webkit-font-smoothing:antialiased;letter-spacing:.01em}
+.jp{word-break:keep-all;overflow-wrap:normal;line-break:strict}
+.hi{color:#fa6e78;font-weight:600}
+.pane{position:absolute;display:flex;flex-direction:column}
+.pane.center{align-items:center;justify-content:center;text-align:center}
+
+/* 舞台 (ADR-0018) — 見出しは上端に固定、主役は残りの領域を受け取る。
+   見出しの Y と本文の左端がスライドをまたいで動かないことが要点。 */
+.stage{position:absolute;left:96px;top:64px;
+  width:1088px;height:592px;
+  display:flex;flex-direction:column}
+.stage>.headline{position:static;flex:0 0 auto;width:100%;margin-bottom:40px}
+/* 残りの領域での縦位置は、上下の spacer の伸び比で決める (ADR-0018)。
+   図は 1:1 の中央。テキスト主体の素材は 1:2 で上寄りに置き、見出しから
+   離れすぎず、下に余白を残す。比が固定なので枚をまたいでも位置が動かない。 */
+.stage-lead{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+.stage-lead::before,.stage-lead::after{content:'';flex-basis:0;flex-shrink:1}
+.stage-lead::before{flex-grow:1}
+.stage-lead.center{align-items:center;text-align:center}
+.stage-lead.center::after{flex-grow:1}
+.stage-lead.start{align-items:flex-start}
+.stage-lead.start::after{flex-grow:2}
+.lead-box{flex:0 0 auto;display:flex;flex-direction:column;justify-content:center}
+.stage-lead.center>.lead-box{align-items:center}
+/* overflow:visible — 箱の縁に接するカードの外周ストロークが viewBox で
+   半分に切られて線が細く見えるのを防ぐ (2026-07-08 レビュー指摘) */
+svg.lead{display:block;max-width:100%;max-height:100%;overflow:visible}
+
+.statement{font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-weight:600;line-height:1.25;
+  color:#111827;max-width:100%}
+.support{color:#4b5563;margin-top:30px;line-height:1.5;letter-spacing:.02em}
+
+.chapter{position:absolute;top:22px;left:20px;z-index:2;font-size:15px;color:#4b5563;
+  letter-spacing:.18em;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-weight:600;
+  background:#fffbf9d9;padding:5px 12px;border-radius:6px}
+.inv .chapter{color:rgba(255,255,255,.9);background:rgba(0,0,0,.18)}
+.inv .support{color:rgba(255,255,255,.85)}
+
+.title-band{align-items:flex-start;justify-content:flex-end}
+.title-accent{width:76px;height:6px;background:#fa6e78;border-radius:3px;margin-bottom:28px}
+.title-main{font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-weight:600;line-height:1.18;
+  color:#111827;text-align:left}
+.title-sub{color:#4b5563;margin-top:22px;text-align:left;letter-spacing:.04em}
+
+.headline{position:absolute;display:flex;align-items:flex-end;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+  font-weight:600;color:#111827;text-align:left;line-height:1.3}
+
+.bullets{list-style:none;width:100%;display:flex;flex-direction:column;
+  justify-content:center;height:100%;gap:1.1em}
+.bullets li{display:flex;align-items:baseline;gap:24px;color:#111827;line-height:1.4}
+.bullets .dot{flex:0 0 auto;width:13px;height:13px;border-radius:50%;
+  background:#fa6e78;transform:translateY(-4px)}
+
+.quote-block{max-width:1000px;position:relative}
+.quote-mark{font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-size:180px;line-height:.7;color:#e5e0de;
+  position:absolute;top:-64px;left:-26px;user-select:none}
+.quote-text{font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-weight:600;line-height:1.5;
+  color:#111827;position:relative;text-align:left}
+.quote-attr{margin-top:34px;color:#4b5563;text-align:right}
+
+.grid-stage{position:absolute;inset:0;display:grid;gap:0}
+.grid-cell{position:relative;overflow:hidden;display:flex}
+.grid-caption{align-self:flex-end;padding:34px;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+  font-weight:600;font-size:38px;line-height:1.32;color:#111827}
+
+.img-ph{position:relative;width:100%;height:100%;background:#fef1f0;
+  display:flex;align-items:center;justify-content:center;overflow:hidden}
+.img-inner{display:flex;flex-direction:column;align-items:center;gap:22px;
+  padding:36px;max-width:88%;text-align:center}
+.img-prompt{color:#4b5563;font-size:20px;line-height:1.6}
+.img-badge{position:absolute;top:16px;left:16px;font-size:15px;letter-spacing:.14em;
+  color:#4b5563;text-transform:uppercase;border:1px solid #e5e0de;padding:4px 10px;border-radius:4px}
+.img-corner{position:absolute;width:22px;height:22px;border:2px solid #e5e0de;opacity:.9}
+.img-corner.tl{top:14px;left:14px;border-right:0;border-bottom:0}
+.img-corner.tr{top:14px;right:14px;border-left:0;border-bottom:0}
+.img-corner.bl{bottom:14px;left:14px;border-right:0;border-top:0}
+.img-corner.br{bottom:14px;right:14px;border-left:0;border-top:0}
+
+.profile-name{font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-weight:600;color:#111827;line-height:1.25}
+.profile-affil{color:#4b5563;margin-top:12px;letter-spacing:.03em}
+/* justify-content は使わない — 上下の空きは PROFILE_TOP 比率のスペーサー div
+   (flex-grow 25:75) で配分する。中央寄せだと写真が低く沈んで見えたため
+   (レビュー指摘 2026-07-09)。 */
+.profile-left{align-items:center;gap:20px}
+.profile-portrait{flex:0 0 auto;border-radius:50%;object-fit:cover;box-shadow:0 6px 28px rgba(0,0,0,.16)}
+.profile-portrait.ph{background:#fef1f0;border:2px dashed #e5e0de;display:flex;
+  align-items:center;justify-content:center;color:#4b5563;font-size:16px;
+  line-height:1.6;padding:28px;text-align:center;box-shadow:none}
+.profile-handle{color:#111827}
+.inline-icon{height:.95em;width:.95em;vertical-align:-.12em;margin-right:.4em}
+.profile-right{gap:30px}
+.profile-label{color:#fa6e78;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-weight:600;
+  font-size:22px;letter-spacing:.08em;margin-bottom:7px}
+.profile-body{font-size:21px;line-height:1.65;color:#111827}
+
+.photo{width:100%;height:100%;object-fit:cover;display:block}
+.stage-photo{width:100%;height:100%;object-fit:contain;display:block;border-radius:10px;
+  border:1px solid #e5e0de;box-shadow:0 10px 36px rgba(0,0,0,.12)}
+.photo.contain{object-fit:contain}
+.photo-framed{width:100%;height:100%;padding:48px;background:#fef1f0;display:flex;
+  align-items:center;justify-content:center}
+.photo-framed .photo{width:100%;height:100%;object-fit:contain}
+.photo-cutout{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+.raw-wrap{width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.raw-wrap svg{max-width:100%;max-height:100%}
+
+/* code (SPEC §6.7, ADR-0016) — surface panel + hairline + optional filename
+   label bar. Palette derivation (renderer-owned, ADR-0014), widened from 3
+   token buckets to 5 — 3〜4 色だと配色が貧弱で自作感が出ていた (レビュー
+   指摘 2026-07-09) — but still positional, no hardcoded hex: keyword/literal
+   → highlight (「宣言・分岐」を示す); string → core[1] (moss/green for
+   hokuchi); number/attr → core[0] (moon/blue for hokuchi); title/function
+   (宣言・呼び出し名) → text_strong; comment → muted; それ以外は既定の text。
+   console/diff skip tokenization entirely and colour whole lines instead
+   (prompt vs output; added vs removed) — a terminal session or a diff is
+   not "a language". */
+.code-panel{width:100%;height:100%;background:#fef1f0;border:1px solid #e5e0de;
+  border-radius:14px;overflow:hidden;display:flex;flex-direction:column;text-align:left}
+.code-file{flex:0 0 auto;padding:0 32px;color:#4b5563;background:#fffbf980;
+  border-bottom:1px solid #e5e0de;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-size:16px;letter-spacing:.02em}
+.code-body{flex:1 1 auto;overflow:hidden;font-family:"SF Mono", "Consolas", "DejaVu Sans Mono", monospace;font-weight:400}
+.cl{white-space:pre;color:#111827}
+.cl-prompt{color:#111827;font-weight:600}
+.cl-output{color:#4b5563}
+/* diff bands: addition = core[1] (moss/green for hokuchi), deletion =
+   highlight (ember/coral) — both at ~18% alpha via a hex alpha suffix */
+.cl-add{background:#1118272e}
+.cl-del{background:#fa6e782e}
+.cl-dim{opacity:.55}
+/* emphasis band (~15% alpha) is defined after cl-add/cl-del so it wins on
+   a line that is both a diff line and emphasized */
+.cl-em{background:#fa6e7826}
+.code-body .hljs-keyword,.code-body .hljs-literal{color:#fa6e78}
+.code-body .hljs-string,.code-body .hljs-regexp,.code-body .hljs-symbol{color:#111827}
+.code-body .hljs-number,.code-body .hljs-attr,.code-body .hljs-attribute{color:#e0525d}
+.code-body .hljs-title,.code-body .hljs-section,.code-body .hljs-name{color:#111827;font-weight:600}
+.code-body .hljs-comment,.code-body .hljs-quote,.code-body .hljs-doctag{color:#4b5563}
+
+/* post (SPEC §6.8, ADR-0017) — surface card, own opaque background so it
+   needs no .inv handling (same reasoning as code-panel). post-wrap only
+   exists for source posts (renderPost) — it stacks the static card and the
+   SPA embed overlay so they occupy the same box instead of the default
+   .pane flex-column stacking. */
+.post-wrap{position:relative;width:100%;height:100%}
+.post-card{width:100%;height:100%;box-sizing:border-box;background:#fef1f0;
+  border:1px solid #e5e0de;border-radius:18px;padding:38px 44px;display:flex;
+  flex-direction:column;text-align:left;box-shadow:0 10px 30px rgba(0,0,0,.06)}
+.post-wrap>.post-card{position:absolute;inset:0}
+/* 漸進的強化の埋め込み下地 (ADR-0017)。widgets.js が実際にツイートを iframe
+   化して 'rendered' を発火するまでは visibility:hidden のまま — file://
+   (shot) やオフラインでは一切見えず、カードだけが写る (決定 3・4)。 */
+.post-embed{position:absolute;inset:0;visibility:hidden;overflow:hidden;
+  border-radius:18px;display:flex;align-items:center;justify-content:center}
+.post-embed.post-embed-active{visibility:visible;background:#fffbf9}
+.post-head{display:flex;align-items:center}
+.post-avatar{border-radius:50%;object-fit:cover;flex:0 0 auto}
+.post-avatar-fallback{background:#e5e0de;color:#111827;display:flex;
+  align-items:center;justify-content:center;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-weight:600}
+.post-author{color:#111827;font-weight:600;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif}
+.post-meta{color:#4b5563;margin-top:5px;letter-spacing:.02em}
+.post-body{color:#111827;line-height:1.6;margin-top:26px}
+
+/* link (SPEC §6.9, ADR-0017) — OGP card + QR. QR keeps its own white face
+   (baked into the generated SVG) regardless of theme (ADR-0016 決定), so
+   .link-qr needs no colour override either. */
+.link-card{width:100%;height:100%;display:flex;align-items:center}
+.link-left{display:flex;flex-direction:column;text-align:left}
+.link-img{border-radius:10px;object-fit:cover;margin-bottom:22px;border:1px solid #e5e0de}
+.link-title{color:#111827;font-weight:600;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;line-height:1.35}
+.link-desc{color:#111827;line-height:1.55;margin-top:14px}
+/* URL 全体を見せる (ADR-0017) — .link-left は .jp (word-break:keep-all;
+   overflow-wrap:normal) を継承するが、URL はスペースを持たない一続きの文字
+   列なので keep-all のままでは折り返せず箱からあふれる。ここだけ上書きする。 */
+.link-url{color:#4b5563;margin-top:14px;letter-spacing:.01em;word-break:break-all;overflow-wrap:anywhere}
+.link-qr{flex:0 0 auto;background:#fff;border-radius:12px;padding:10px;
+  display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(0,0,0,.14)}
+.link-qr svg{display:block;width:100%;height:100%}
+
+/* stat (SPEC §6.10, ADR-0016) — bare on the slide background, like
+   statement: needs the same .inv treatment. */
+.stat-block{display:flex;flex-direction:column;align-items:center;text-align:center}
+.stat-value{font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-weight:600;color:#111827;line-height:1}
+.stat-label{color:#111827;margin-top:20px}
+.stat-context{color:#4b5563;margin-top:16px}
+
+/* table (SPEC §6.11, ADR-0016) — no outer frame, no cell fills, no zebra:
+   rows separate by whitespace, the header's hairline is the only rule.
+   Bare on the slide background, so it needs .inv handling like bullets.
+   table-wrap is the positioning root for the header rule and emphasis
+   bands, which are drawn as their own absolutely-positioned layers instead
+   of per-cell borders/fills — a column-gap now separates the cells, so a
+   per-cell border or fill would visibly break at every gap (レビュー指摘
+   2026-07-09)。 */
+.table-wrap{position:relative}
+.table-rule{position:absolute;height:2px;background:#e5e0de}
+.table-em-band{position:absolute;z-index:0;background:#fa6e7833;border-radius:8px}
+.table-grid{display:grid;text-align:left;position:relative;z-index:1}
+.table-cell{padding:0 20px;white-space:nowrap;color:#111827;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif}
+.table-col-data{text-align:center}
+.table-head{color:#111827;font-weight:600;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif}
+.table-mark-yes{color:#111827}
+.table-mark-no{color:#4b5563}
+
+/* versus (SPEC §6.12, ADR-0016) — two surface-card panels, own opaque
+   background so no .inv handling (same reasoning as post/code). */
+.versus-row{display:flex;align-items:stretch}
+.versus-panel{box-sizing:border-box;background:#fef1f0;border:2px solid #e5e0de;
+  border-radius:16px;display:flex;flex-direction:column;text-align:left}
+.versus-em{border-color:#fa6e78;border-width:3px}
+.versus-dim{opacity:.6}
+.versus-label{font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-weight:600;color:#111827;line-height:1.3}
+.versus-items{list-style:none;display:flex;flex-direction:column}
+.versus-items li{display:flex;align-items:baseline;gap:16px;color:#111827;line-height:1.4}
+.versus-items .dot{flex:0 0 auto;width:10px;height:10px;border-radius:50%;
+  background:#fa6e78;transform:translateY(-3px)}
+
+/* agenda (SPEC §6.13, ADR-0016) — bare on the slide background like bullets
+   and stat, so it needs .inv handling. */
+.agenda-list{list-style:none;width:100%;display:flex;flex-direction:column}
+.agenda-list li{display:flex;align-items:baseline}
+.agenda-num{flex:0 0 auto;color:#4b5563;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+  font-weight:600;letter-spacing:.02em}
+.agenda-num-hot{color:#fa6e78}
+.agenda-text{color:#111827;line-height:1.4}
+.agenda-text-hot{color:#111827;font-weight:600}
+
+/* video (SPEC §6.14, ADR-0016) — own opaque panel (poster or surface fill),
+   so no .inv handling (same reasoning as code/post/versus). */
+.video-box{position:relative;width:100%;height:100%;border-radius:14px;
+  overflow:hidden;background:#fef1f0}
+.video-poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.video-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:20px;z-index:1}
+.video-fallback{color:#4b5563;font-size:20px;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif}
+.video-glyph{position:relative}
+
+.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+.slide>.pane,.slide>.grid-stage,.slide>.headline{z-index:1}
+.brand-logo{position:absolute;top:25px;right:20px;z-index:2}
+.brand-footer{position:absolute;bottom:20px;right:20px;z-index:2;font-size:13px;
+  color:#4b5563;letter-spacing:.03em;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif}
+
+.inv{color:rgba(255,255,255,.94)}
+.inv .statement,.inv .title-main,.inv .quote-text,.inv .grid-caption,.inv .headline,
+.inv .stat-value,.inv .table-head,.inv .agenda-text-hot{color:#ffffff}
+.inv .hi{color:#ffffff}
+.inv .title-sub,.inv .quote-attr,.inv .brand-footer,.inv .img-prompt,
+.inv .stat-context{color:rgba(255,255,255,.85)}
+.inv .quote-mark{color:rgba(255,255,255,.38)}
+.inv .bullets li,.inv .stat-label,.inv .table-cell,.inv .agenda-text{color:rgba(255,255,255,.94)}
+.inv .bullets .dot,.inv .title-accent{background:#ffffff}
+.inv .table-rule{background:rgba(255,255,255,.5)}
+.inv .agenda-num{color:rgba(255,255,255,.65)}
+
+.err{color:#fa6e78;font-size:28px}
+html,body{height:100%}
+body{background:#eceef1;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif}
+.frame{width:1280px;height:720px;flex:0 0 auto}
+
+/* deck mode — one slide at a time, selected purely by :target */
+body.deck{overflow:hidden}
+body.deck .page{display:none}
+body.deck .page:target{display:flex;position:fixed;inset:0;align-items:center;justify-content:center}
+body.deck .page:target .frame{transform:scale(var(--s,1))}
+body.deck .cap,body.deck .deck-head{display:none}
+
+/* list mode (g key) — all slides stacked with captions, for review/annotation */
+body.list{overflow:auto;padding:56px 0}
+body.list .page{display:block;width:1280px;margin:0 auto 56px}
+body.list .cap{color:#4b5563;font-size:15px;margin-bottom:12px;letter-spacing:.03em;line-height:1.7}
+body.list .cap b{color:#111827;font-weight:600}
+body.list .cap .notes{white-space:pre-wrap;margin-top:6px;font-size:14px;opacity:.85}
+body.list .frame{box-shadow:0 6px 28px rgba(17,24,39,.14);border-radius:6px;overflow:hidden}
+body.list .deck-head{width:1280px;margin:0 auto 44px;color:#111827}
+.deck-head h1{font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-weight:600;font-size:40px;color:#111827}
+.deck-head p{color:#4b5563;margin-top:10px;font-size:18px}</style>
+</head><body class="deck" data-slides="11">
+  <div class="deck-head">
+    <h1>Fable 5 は、どこに置くのか</h1>
+    <p>Fable 5 を実務で使い込んでいて、他社がどこに使っているかを知りたいエンジニア — 全 11 枚 / 1280×720 · ← → でページ送り、g で一覧</p>
+  </div>
+<main>
+  <section class="page" id="p01" data-slide-id="title">
+    <div class="cap"><b>01 · title</b> &nbsp; title-stage · role:title<br>idea: この 5 分が答える問いをタイトルとして掲げる<div class="notes">MOSH の山本です。今日は会場を提供させていただいています。
+「Fable 5 をどこに置くのか」。これが今日の 5 分でお答えする問いです。
+【5秒】</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-cover.svg" alt=""/><div class="pane title-band" style="left:96px;top:64px;width:1088px;height:380.96px"><div class="title-accent"></div><div class="title-main jp" style="font-size:74px">Fable 5 は、<br/>どこに<wbr/>置くのか</div><div class="title-sub jp" style="font-size:30px">MOSH エンジニア 10 名に<wbr/>聞いた！<wbr/>実務に<wbr/>おける<wbr/> Fable 5 の<wbr/>利用状況</div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p02" data-slide-id="profile">
+    <div class="cap"><b>02 · profile</b> &nbsp; profile-stage · role:content<br>idea: このイベントのために社内の同僚に話を聞いてきた、という立場を示す<div class="notes">山本一将です。MOSH でエンジニアリングマネージャーをしています。
+今日お話しするのは、私ひとりの見解ではありません。
+【20秒】</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-default.svg" alt=""/><div class="chapter">自己紹介</div><div class="pane" style="left:96px;top:64px;width:1088px;height:112px"><div class="profile-name jp" style="font-size:41px">山本 一将｜焚き火を<wbr/>愛する<wbr/>エンジニア</div><div class="profile-affil jp" style="font-size:24px">MOSH株式会社 Engineering Manager</div></div><div class="pane profile-left" style="left:96px;top:220px;width:457px;height:436px"><div style="flex:0.25 0 0"></div><img class="profile-portrait" src="assets/profile.jpg" alt="" style="width:330px;height:330px"/><div class="profile-handle jp" style="font-size:24px">X: @kyamamoto9120</div><div style="flex:0.75 0 0"></div></div><div class="pane profile-right" style="left:633px;top:220px;width:551px;height:436px"><div style="flex:0.25 0 0"></div><div class="profile-item"><div class="profile-label">今日の話</div><div class="profile-body jp">この<wbr/>イベントの<wbr/>ために、<wbr/>社内 Slack で<wbr/>同僚 9 名に<wbr/>聞いた<wbr/>回答が<wbr/>もとになっています</div></div><div class="profile-item"><div class="profile-label">略歴</div><div class="profile-body jp">鉄道システム開発、<wbr/>SNS マーケティングツール開発を<wbr/>経て、<wbr/>2025年より<wbr/> MOSH に<wbr/>参画</div></div><div style="flex:0.75 0 0"></div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p03" data-slide-id="asked">
+    <div class="cap"><b>03 · asked</b> &nbsp; post-stage · role:content<br>idea: 1 週間前に社内で実際に聞いた、という事実を示す<div class="notes">1 週間前、社内の Slack でこう聞きました。エンジニア全員が見るチャンネルです。
+使っている人だけに聞くと偏るので、使っていない人にも理由を聞きました。
+9 名から返ってきて、それに私を足した 10 名分が今日の材料です。
+【20秒】</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-default.svg" alt=""/><div class="chapter">10名の回答</div><div class="stage"><div class="headline jp" style="font-size:34px">1週間前、<wbr/>社内で<wbr/>聞きました</div><div class="stage-lead center"><div class="lead-box" style="width:666px;height:318px"><div class="post-card"><div class="post-head" style="gap:20px"><img class="post-avatar" src="assets/profile.jpg" alt="" style="width:72px;height:72px"/><div class="post-head-text"><div class="post-author jp" style="font-size:24px">山本 一将</div><div class="post-meta" style="font-size:18px">#engineering　·　2026-08-13</div></div></div><div class="post-body jp" style="font-size:30px">皆さまの<wbr/> Fable 5 の<wbr/>実務での<wbr/>利用方<wbr/>法も<wbr/>聞いてみたいです。<wbr/>使っていない方は、<wbr/>理由を<wbr/>いただけると<wbr/>嬉しいです</div></div></div></div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p04" data-slide-id="voices">
+    <div class="cap"><b>04 · voices</b> &nbsp; list-stage · role:content<br>idea: 返ってきた声は、どれも失敗の代償が大きい場面を指していた<div class="notes">まず、返ってきた言葉をそのまま読みます。
+
+「考慮漏れが怖い部分を徹底的にやらせる」
+「デグレのリスクが深刻そうな機能の設計やレビューに使っている」
+「実装が後半に進んだときに、リリースすることによるバグやリスクがないかを調べる」
+「人が判断できるレベルで難解なイシューについての設計とレビュー」
+
+読んでいて気づいたのは、誰も「速く書かせる」とは言っていないことでした。
+怖い、深刻、リスク。そういう言葉ばかりが並びます。
+【45秒】</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-default.svg" alt=""/><div class="chapter">10名の回答</div><div class="stage"><div class="headline jp" style="font-size:34px">返ってきた声</div><div class="stage-lead start"><div class="lead-box" style="width:1088px;height:297.5px"><ul class="bullets" style="font-size:34px;gap:35.7px;padding-left:28px"><li><span class="dot"></span><span class="jp">「考慮漏れが<wbr/>怖い<wbr/>部分を<wbr/>徹底的に<wbr/>やらせる」</span></li><li><span class="dot"></span><span class="jp">「デグレの<wbr/>リスクが<wbr/>深刻そうな<wbr/>機能の<wbr/>設計」</span></li><li><span class="dot"></span><span class="jp">「リリースに<wbr/>よる<wbr/>バグや<wbr/>リスクが<wbr/>ないか<wbr/>調べる」</span></li><li><span class="dot"></span><span class="jp">「人が<wbr/>判断できる<wbr/>レベルで<wbr/>難解な<wbr/>イシュー」</span></li></ul></div></div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p05" data-slide-id="usage">
+    <div class="cap"><b>05 · usage</b> &nbsp; chart-stage · role:content<br>idea: 用途を数えると設計・レビュー・調査に集まり、実装と答えた人は 0 名だった<div class="notes">用途を数えるとこうなりました。10 名のうち 1 名は使っておらず、
+2 名は用途を絞らず全部に使っています。残る 7 名が挙げた用途の集計です。
+
+設計、コードレビュー、リスクや影響範囲の調査。ここに集まりました。
+そして右端です。実装に使っていると答えた人が、ひとりもいませんでした。
+それどころか「実装は別のモデルでやる」と、わざわざ書いてくれた人が複数います。
+【35秒】</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-default.svg" alt=""/><div class="chapter">10名の回答</div><div class="stage"><div class="headline jp" style="font-size:34px">何に<wbr/>使っているか<wbr/>（10名・複数回答）</div><div class="stage-lead center"><div class="lead-box" style="width:812.8px;height:508px"><svg class="lead" viewBox="0 0 812.8 508" width="812.8" height="508" role="img"><g><line x1="84" y1="444" x2="752.8" y2="444" stroke="#e5e0de" stroke-width="1" opacity="0.35"></line><text x="68" y="450" text-anchor="end" fill="#4b5563" font-size="20" font-family="&quot;Nunito&quot;, &quot;Hiragino Kaku Gothic ProN&quot;, &quot;Noto Sans JP&quot;, sans-serif">0</text><line x1="84" y1="360.4" x2="752.8" y2="360.4" stroke="#e5e0de" stroke-width="1" opacity="0.35"></line><text x="68" y="366.4" text-anchor="end" fill="#4b5563" font-size="20" font-family="&quot;Nunito&quot;, &quot;Hiragino Kaku Gothic ProN&quot;, &quot;Noto Sans JP&quot;, sans-serif">1</text><line x1="84" y1="276.8" x2="752.8" y2="276.8" stroke="#e5e0de" stroke-width="1" opacity="0.35"></line><text x="68" y="282.8" text-anchor="end" fill="#4b5563" font-size="20" font-family="&quot;Nunito&quot;, &quot;Hiragino Kaku Gothic ProN&quot;, &quot;Noto Sans JP&quot;, sans-serif">2</text><line x1="84" y1="193.2" x2="752.8" y2="193.2" stroke="#e5e0de" stroke-width="1" opacity="0.35"></line><text x="68" y="199.2" text-anchor="end" fill="#4b5563" font-size="20" font-family="&quot;Nunito&quot;, &quot;Hiragino Kaku Gothic ProN&quot;, &quot;Noto Sans JP&quot;, sans-serif">3</text><line x1="84" y1="109.6" x2="752.8" y2="109.6" stroke="#e5e0de" stroke-width="1" opacity="0.35"></line><text x="68" y="115.6" text-anchor="end" fill="#4b5563" font-size="20" font-family="&quot;Nunito&quot;, &quot;Hiragino Kaku Gothic ProN&quot;, &quot;Noto Sans JP&quot;, sans-serif">4</text><line x1="84" y1="26" x2="752.8" y2="26" stroke="#e5e0de" stroke-width="1" opacity="0.35"></line><text x="68" y="32" text-anchor="end" fill="#4b5563" font-size="20" font-family="&quot;Nunito&quot;, &quot;Hiragino Kaku Gothic ProN&quot;, &quot;Noto Sans JP&quot;, sans-serif">5</text><line x1="84" y1="26" x2="84" y2="444" stroke="#e5e0de" stroke-width="1.5"></line><line x1="84" y1="444" x2="752.8" y2="444" stroke="#e5e0de" stroke-width="1.5"></line><text x="167.6" y="480" text-anchor="middle" fill="#4b5563" font-size="20" font-family="&quot;Nunito&quot;, &quot;Hiragino Kaku Gothic ProN&quot;, &quot;Noto Sans JP&quot;, sans-serif">設計</text><text x="334.8" y="480" text-anchor="middle" fill="#4b5563" font-size="20" font-family="&quot;Nunito&quot;, &quot;Hiragino Kaku Gothic ProN&quot;, &quot;Noto Sans JP&quot;, sans-serif">コードレビュー</text><text x="502" y="480" text-anchor="middle" fill="#4b5563" font-size="20" font-family="&quot;Nunito&quot;, &quot;Hiragino Kaku Gothic ProN&quot;, &quot;Noto Sans JP&quot;, sans-serif">リスク・影響調査</text><text x="669.2" y="480" text-anchor="middle" fill="#4b5563" font-size="20" font-family="&quot;Nunito&quot;, &quot;Hiragino Kaku Gothic ProN&quot;, &quot;Noto Sans JP&quot;, sans-serif">実装</text></g><g><rect x="117.44" y="109.6" width="100.32" height="334.4" fill="#e0525d"></rect><rect x="284.64" y="26" width="100.32" height="418" fill="#e0525d"></rect><rect x="451.84" y="109.6" width="100.32" height="334.4" fill="#e0525d"></rect><rect x="619.04" y="444" width="100.32" height="0" fill="#e0525d"></rect></g><g><circle cx="669.2" cy="444" r="13" fill="none" stroke="#fa6e78" stroke-width="2" opacity="0.5"></circle><circle cx="669.2" cy="444" r="7.5" fill="#fa6e78"></circle><line x1="669.2" y1="456" x2="689.2" y2="496" stroke="#fa6e78" stroke-width="1.5" opacity="0.8"></line><text x="689.2" y="518" text-anchor="start" fill="#fa6e78" font-size="24" font-weight="600" font-family="&quot;Nunito&quot;, &quot;Hiragino Kaku Gothic ProN&quot;, &quot;Noto Sans JP&quot;, sans-serif">0名</text></g></svg></div></div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p06" data-slide-id="why">
+    <div class="cap"><b>06 · why</b> &nbsp; diagram-stage · role:content<br>idea: 3 つの用途に共通するのは、リスクの高さだった<div class="notes">なぜこの 3 つなのか。共通点は、リスクの高さです。
+
+設計のミスは実装が終わってから分かる。レビューの見落としは本番で分かる。
+影響範囲の読み違えは障害で分かる。3 つとも、間違えても、その場では気づけません。
+気づけないまま進むと、あとの手戻りが大きい。
+
+だから、いちばん深く考えるモデルをここに当てている。これが 10 名に共通する形でした。
+【30秒】</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-default.svg" alt=""/><div class="chapter">10名の回答</div><div class="stage"><div class="headline jp" style="font-size:34px">なぜ、<wbr/>この<wbr/>3つなのか</div><div class="stage-lead center"><div class="lead-box" style="width:537px;height:508px"><svg class="lead" viewBox="0 0 537 508" width="537" height="508" role="img"><g><circle cx="268.5" cy="160.3" r="160.3" fill="#fef1f0" fill-opacity="0.55" stroke="#e5e0de" stroke-width="2.5"></circle><circle cx="160.3" cy="347.7" r="160.3" fill="#fef1f0" fill-opacity="0.55" stroke="#e5e0de" stroke-width="2.5"></circle><circle cx="376.7" cy="347.7" r="160.3" fill="#fef1f0" fill-opacity="0.55" stroke="#e5e0de" stroke-width="2.5"></circle></g><g><defs><clipPath id="ov-why-0"><circle cx="268.5" cy="160.3" r="160.3"></circle></clipPath><clipPath id="ov-why-1"><circle cx="160.3" cy="347.7" r="160.3"></circle></clipPath></defs><g clip-path="url(#ov-why-1)"><g clip-path="url(#ov-why-0)"><circle cx="376.7" cy="347.7" r="160.3" fill="#fa6e78" fill-opacity="0.16"></circle></g></g><text x="268.5" y="300.23" text-anchor="middle" fill="#fa6e78" font-size="20" font-weight="600" font-family="&quot;Nunito&quot;, &quot;Hiragino Kaku Gothic ProN&quot;, &quot;Noto Sans JP&quot;, sans-serif">リスクが高い</text></g><g><text x="268.5" y="109" text-anchor="middle" fill="#111827" font-size="24" font-weight="600" font-family="&quot;Nunito&quot;, &quot;Hiragino Kaku Gothic ProN&quot;, &quot;Noto Sans JP&quot;, sans-serif">設計</text><text x="115.88" y="373.35" text-anchor="middle" fill="#111827" font-size="24" font-weight="600" font-family="&quot;Nunito&quot;, &quot;Hiragino Kaku Gothic ProN&quot;, &quot;Noto Sans JP&quot;, sans-serif">コードレビュー</text><text x="421.12" y="373.35" text-anchor="middle" fill="#111827" font-size="24" font-weight="600" font-family="&quot;Nunito&quot;, &quot;Hiragino Kaku Gothic ProN&quot;, &quot;Noto Sans JP&quot;, sans-serif">リスク・影響調査</text></g></svg></div></div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p07" data-slide-id="bridge">
+    <div class="cap"><b>07 · bridge</b> &nbsp; statement-stage · role:transition<br>idea: 10 名の傾向から、自分ひとりの具体例へ視点を移す<div class="notes">（一拍おく）
+ここからは、もう少し具体的に。私自身の使い方をお見せします。
+【8秒】</div></div>
+    <div class="frame"><div class="slide inv"><img class="bg" src="theme-assets/bg-section-cover.svg" alt=""/><div class="chapter">私の使い方</div><div class="pane center" style="left:96px;top:64px;width:1088px;height:556.48px"><div class="statement jp" style="font-size:70px">私は<wbr/>どう<wbr/>使っているか</div></div><img class="brand-logo" src="theme-assets/logo-mosh-white.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p08" data-slide-id="where">
+    <div class="cap"><b>08 · where</b> &nbsp; stat-stage · role:content<br>idea: Fable 5 を監督ではなくワーカーに置いている<div class="notes">まず数字から。自分のログを集計したら、Fable 5 の 70.5% がサブエージェントでした。
+メインで動かしている監督役は、Opus 5 のまま変えていません。
+
+実は 1 か月前、私は逆をやろうとしていました。ログに残っています。
+「Fable をルートのモデルにして、必要な作業をサブエージェントとして起動したい」。
+そう書いて設計を始めて、実測してやめました。
+
+監督のコストは、ターン数かける、その時点のコンテキスト量で決まります。
+Fable を監督にすると 1 ターンごとに 12〜20 万トークンを読み直して、
+レビュー 1 回の費用の 6〜7 割を監督が占めました。ワーカーは 5〜8 万トークンで終わる。
+同じ仕事でも、監督にやらせると数倍高くつく。
+だから監督は据え置いて、ワーカーだけ Fable にしました。
+【50秒】</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-default.svg" alt=""/><div class="chapter">私の使い方</div><div class="stage"><div class="headline jp" style="font-size:34px">監督ではなく、<wbr/>ワーカーに<wbr/>置く</div><div class="stage-lead center"><div class="lead-box" style="width:829.6px;height:295px"><div class="stat-block"><div class="stat-value" style="font-size:160px">70.5%</div><div class="stat-label jp" style="font-size:30px">Fable 5 の<wbr/>実行の<wbr/>うち、<wbr/>サブエージェントが<wbr/>占める<wbr/>割合</div><div class="stat-context jp" style="font-size:24px">直近1か月、<wbr/>20,383メッセージ分の<wbr/>ログを<wbr/>集計</div></div></div></div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p09" data-slide-id="my-case">
+    <div class="cap"><b>09 · my-case</b> &nbsp; versus-stage · role:content<br>idea: 手順が決まっているかどうかで、ワーカーのモデルを分けている<div class="notes">では、どのワーカーを Fable にするか。私はこの基準で分けています。
+
+左の 3 つは、見るものが決まっています。先例と揃っているか、ユーザー影響はどうか、
+API 契約と合っているか。手順どおりに照らし合わせる仕事なので、誰がやっても答えが揃う。
+だから安いモデルのままです。
+
+右の 3 つは、そもそも何を探すかが決まっていません。ロジックが本当に正しいか。
+決められた観点の隙間に何が落ちているか。設計として妥当か。
+見つけられるかどうかが、モデルの能力で直接変わります。ここにだけ Fable 5 を指定しています。
+
+基準は「手順があるか、判断が要るか」の一点です。
+直近 1 か月で Fable 5 を名指しした呼び出しは 277 回、そのほとんどが右側でした。
+【45秒】</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-default.svg" alt=""/><div class="chapter">私の使い方</div><div class="stage"><div class="headline jp" style="font-size:34px">レビューの<wbr/>6観点を<wbr/>振り分ける</div><div class="stage-lead center"><div class="lead-box" style="width:1064px;height:313px"><div class="versus-row"><div class="versus-panel versus-dim" style="width:500px;height:313px;padding:36px 40px"><div class="versus-label jp" style="font-size:34px">手順が<wbr/>決まっている</div><ul class="versus-items" style="font-size:27px;gap:24px;margin-top:26px;padding-left:26px"><li><span class="dot"></span><span class="jp">先例との<wbr/>一貫性</span></li><li><span class="dot"></span><span class="jp">ユーザー影響</span></li><li><span class="dot"></span><span class="jp">API 契約</span></li></ul></div><div class="versus-divider" style="width:64px;height:313px"></div><div class="versus-panel versus-em" style="width:500px;height:313px;padding:36px 40px"><div class="versus-label jp" style="font-size:34px">モデルの<wbr/>力で<wbr/>差が<wbr/>出る</div><ul class="versus-items" style="font-size:27px;gap:24px;margin-top:26px;padding-left:26px"><li><span class="dot"></span><span class="jp">ロジックの<wbr/>正しさ</span></li><li><span class="dot"></span><span class="jp">観点の<wbr/>隙間の<wbr/>探索</span></li><li><span class="dot"></span><span class="jp">設計の<wbr/>妥当性</span></li></ul></div></div></div></div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p10" data-slide-id="minority">
+    <div class="cap"><b>10 · minority</b> &nbsp; list-stage · role:content<br>idea: 今回まとめきれなかった少数の使い方も社内で試されている<div class="notes">最後に、今日の集計にまとめきれなかった使い方も紹介させてください。
+
+1 つ目は、Fable 5 自身をオーケストレーターにする使い方です。
+タスクを分解させて、適切なモデルのサブエージェントを立ち上げて指示させる。
+2 つ目は、それをもっと細かく制御する形で、判断が要るサブエージェントだけ Fable を明示し、
+機械的な調査や検証は Sonnet に固定する。
+3 つ目は、切り替えのコストを嫌って全部 Fable にしてしまう人です。x20 でもカツカツだそうです。
+
+ちなみに 1 名だけ使っていない人がいて、理由は社内バランサーとして Codex を回しているからでした。
+【20秒】</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-default.svg" alt=""/><div class="chapter">他の使い方</div><div class="stage"><div class="headline jp" style="font-size:34px">少数だった<wbr/>使い方</div><div class="stage-lead start"><div class="lead-box" style="width:1088px;height:214.2px"><ul class="bullets" style="font-size:34px;gap:35.7px;padding-left:28px"><li><span class="dot"></span><span class="jp">「タスク分解させ、<wbr/>サブエージェントに<wbr/>指示させる」</span></li><li><span class="dot"></span><span class="jp">「判断が<wbr/>要る<wbr/>サブエージェントだけ Fable を<wbr/>明示」</span></li><li><span class="dot"></span><span class="jp">「切り<wbr/>替えが<wbr/>面倒なので、<wbr/>とりあえず<wbr/>全部<wbr/> Fable」</span></li></ul></div></div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p11" data-slide-id="closer">
+    <div class="cap"><b>11 · closer</b> &nbsp; statement-stage · role:closer<br>idea: 判断が要る場所を 1 つ選んで、そこに置いてみてほしい<div class="notes">10 名に聞いて分かったのは、Fable 5 が「速く書かせる」ためではなく、
+「見極めさせる」ために使われているということでした。
+
+帰ったら、自分の仕事の中で「ここを間違えても、その場では気づけない」という場所を
+1 つだけ選んでみてください。そこに置いてみる。それが今日の持ち帰りです。
+ありがとうございました。
+【22秒】</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-cover.svg" alt=""/><div class="pane center" style="left:96px;top:64px;width:1088px;height:556.48px"><div class="statement jp" style="font-size:80px">リスクが<wbr/>高い<wbr/>場所を、<br/><span class="hi">1つだけ</span>選ぶ</div><div class="support jp" style="font-size:30px">全部に<wbr/>使うのではなく、<wbr/>間違えても<wbr/>気づけない<wbr/>場所に<wbr/>置いてみてください</div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+</main><script>(()=>{const total=11,pad=n=>String(n).padStart(2,'0');
+const cur=()=>{const m=location.hash.match(/^#p(\d+)$/);return m?Number(m[1]):1};
+const go=n=>{if(n>=1&&n<=total)location.hash='#p'+pad(n)};
+const fit=()=>document.documentElement.style.setProperty('--s',Math.min(innerWidth/1280,innerHeight/720));
+if(!location.hash)location.replace('#p01');
+fit();addEventListener('resize',fit);
+addEventListener('keydown',e=>{if(e.defaultPrevented)return;const t=e.target;
+if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable))return;
+if(e.key==='g'){const b=document.body,list=b.classList.toggle('list');b.classList.toggle('deck',!list);
+if(list)document.getElementById('p'+pad(cur()))?.scrollIntoView({block:'start'});return}
+if(document.body.classList.contains('list'))return;
+if(e.key==='ArrowRight'||e.key===' ')go(cur()+1);
+else if(e.key==='ArrowLeft')go(cur()-1);
+else if(e.key==='Home')go(1);
+else if(e.key==='End')go(total)})})()</script></body></html>

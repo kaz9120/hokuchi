@@ -1,0 +1,572 @@
+# 「なんでも作れる時代に、作らないものを決める」(山手ウエスト #1、2026-08-25、10 分)
+# 構造: 問いを立てる → 事例 → 情緒的価値で答える → パンチラインで閉じる。
+# 5 枚目の問い「全部作ったら良いものになるのか」に、closer の「全部作るな」が答える。
+# 事例は「何を届けたいか」を先に渡してから、迷走と解き方に降りる。
+schema_version: "0.1.0"
+deck:
+  title: "なんでも作れる時代に、作らないものを決める"
+  audience:
+    who: "日常的に AI で開発していて、作れる量は増えたのに使っているものが増えていないエンジニア"
+    action: "次に機能を足したくなったとき、作れるかではなく渡すかを自分で決める"
+  theme: ../../tools/slides/themes/mosh.yaml
+
+slides:
+  - id: title
+    role: title
+    idea: "この 10 分の主張をタイトルとして掲げる"
+    layout: title-stage
+    elements:
+      - kind: statement
+        slot: title
+        text: "なんでも作れる時代に、\n作らないものを決める"
+      - kind: statement
+        slot: subtitle
+        text: "趣味の個人開発で、機能を厳選した話"
+    notes: |
+      山本一将です。「なんでも作れる時代に、作らないものを決める」というタイトルでお話しします。
+      今日は業務の話ではなく、趣味で作っているツールの話をします。
+      【15秒】
+
+  - id: profile
+    role: content
+    chapter: "自己紹介"
+    idea: "毎週 note を書く人間である、という伏線を趣味の欄で渡す"
+    layout: profile-stage
+    elements:
+      - kind: image
+        slot: portrait
+        src: ./assets/profile.jpg
+        prompt: "登壇者のプロフィール写真"
+      - kind: statement
+        slot: name
+        text: "山本 一将｜焚き火を愛するエンジニア"
+      - kind: statement
+        slot: affiliation
+        text: "MOSH株式会社 Engineering Manager"
+      - kind: statement
+        slot: handle
+        text: "X: @kyamamoto9120"
+      - kind: bullets
+        slot: bio
+        items:
+          - "略歴 ── 鉄道システム開発、SNS マーケティングツール開発を経て、2025年より MOSH に参画"
+          - "実績 ── 2015年 世界コンピュータ将棋選手権 9位\n2024年 LINE API Expert 認定"
+          - "趣味 ── ヤクルトスワローズ、将棋、キャンプ、DQウォーク\n毎週 note を書いています"
+    notes: |
+      MOSH でエンジニアリングマネージャーをしています。
+      趣味のところに書きましたが、毎週 note を書いています。今日の話はここから始まります。
+      【25秒】
+
+  - id: ch1-open
+    role: transition
+    idea: "今日の問いをこれから投げる、と宣言する"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "本日の問い"
+    notes: |
+      いきなりですが、みなさんに聞きたいことがあります。
+      【8秒】
+
+  - id: are-you-choosing
+    role: content
+    chapter: "作れる時代"
+    idea: "実装する機能を厳選できているか、を聴衆に直接問う"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "実装する機能\n厳選できていますか？"
+        emphasis: ["厳選"]
+    notes: |
+      実装する機能、厳選できていますか。
+      欲しいと思ったものが、その日のうちに動く時代です。楽しいですよね。
+      ただ、作った数は増えているのに、日常的に使っているものは増えていません。
+      作った時点で満足して、二度と開いていないものがいくつもあります。
+      足すコストがタダになった瞬間、私は選ぶのをやめていました。
+      【25秒】
+
+  - id: open-question
+    role: content
+    chapter: "作れる時代"
+    idea: "作れる量と良さが一致しないのではないか、という問いを立てる"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "作れるものを全部作ったら\n良いものになるのか"
+        emphasis: ["良いものになるのか"]
+    notes: |
+      言い換えると、こういう問いです。
+      作れるものを全部作ったら、良いものになるのか。
+      （間を取る。聴衆に考えてもらう）
+      今日はこの問いを、趣味で作っているツールの話を通して考えます。
+      【20秒】
+
+  - id: ch2-open
+    role: transition
+    idea: "事例の前提に降りる"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "毎週、note を書いています"
+    notes: |
+      さっきの自己紹介の続きです。
+      【8秒】
+
+  - id: hardest-part
+    role: content
+    chapter: "作りたかったもの"
+    idea: "いちばん辛いのは執筆ではなく見出し画像だった、という出発点を渡す"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "いちばん辛いのは\n見出し画像を作ること"
+        emphasis: ["見出し画像"]
+      - kind: statement
+        slot: support
+        text: "記事を書くより、こっちで止まる"
+    notes: |
+      毎週書いていていちばん辛いのは、実は記事を書くことじゃありません。見出し画像です。
+      毎週これで止まります。書き終わっているのに公開できない。
+      【25秒】
+
+  - id: three-wants
+    role: content
+    chapter: "作りたかったもの"
+    idea: "求めていた見出し画像の要件を 3 つに言語化した"
+    layout: list-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "欲しかったのは、この 3 つ"
+      - kind: bullets
+        slot: list
+        items:
+          - "かっこいい"
+          - "世界観が統一されている"
+          - "それでいて、飽きない"
+    notes: |
+      28 本たまったところで、自分が何を欲しがっているのかを言葉にしました。3 つあります。
+      かっこいいこと。世界観が統一されていること。それでいて、飽きないこと。
+      3 つ目が厄介です。統一しろと言いながら、飽きるなと言っている。
+      連載だと分かるかどうかは、2 つ目の世界観のほうで担保されます。
+      【30秒】
+
+  - id: twelve-in-a-row
+    role: content
+    chapter: "作りたかったもの"
+    idea: "1 枚単体ではなく、並んだときの見え方が判断基準だった"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "12 枚並べて、格好良いこと"
+        emphasis: ["並べて"]
+      - kind: statement
+        slot: support
+        text: "ベンチマークにしたのは、雑誌の表紙"
+    notes: |
+      それで基準をこう置きました。1 枚で格好良いことではなく、12 枚並べて格好良いこと。
+      参考にしたのは雑誌の表紙です。バックナンバーが棚に並んだときに、揃っていて、しかも飽きない。
+      毎号タイトルが同じ位置にあったら、並べたときに飽きるんです。号ごとに動きが要る。
+      【25秒】
+
+  - id: timeline-proof
+    role: content
+    chapter: "作りたかったもの"
+    idea: "実際に並べたときの見え方を実物で見せる"
+    layout: image-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "直近 9 週間の見出し画像"
+      - kind: image
+        slot: image
+        src: ./assets/note-timeline.png
+        prompt: "note の記事一覧。9 記事のカバー画像が 3×3 で並び、タイトルの位置や号数の見せ方が号ごとに違う"
+    notes: |
+      これが直近 9 週間です。タイトルが左下にあったり、右上に縦組みで入っていたり、中央にあったり。
+      世界観は揃っているのに、並べても飽きない。ここを作りたかった。
+      【30秒】
+
+  - id: why-build
+    role: content
+    chapter: "作りたかったもの"
+    idea: "既製品を試したうえで、並べたときの格好良さに届かず自作した"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "並べたときの格好良さは、\n既製品では作れなかった"
+        emphasis: ["既製品では作れなかった"]
+      - kind: statement
+        slot: support
+        text: "画像生成 AI は文字が制御できない。Canva は工数が減っただけ"
+    notes: |
+      最初から作ろうとしたわけではありません。まず画像生成 AI を試しました。文字が制御できない。
+      次に Canva を使いました。工数は確かに減りました。でも、並べたときに格好良くならない。
+      テンプレートを選んでいる限り、12 枚並んだときの動きは設計できないんです。
+      【30秒】
+
+  - id: build-it-myself
+    role: content
+    chapter: "作りたかったもの"
+    idea: "テンプレートを選ぶのをやめ、自分の要件に合わせて道具から作った"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "テンプレートを選ぶのをやめて、\n道具から作ることにした"
+        emphasis: ["道具から作る"]
+      - kind: statement
+        slot: support
+        text: "デザインは Claude Design と一緒に決めていった"
+    notes: |
+      それで、既製品を使うのをやめました。テンプレートを選ぶのではなく、道具のほうから作る。
+      私はデザイナーではないので、理想の UI を自力で設計する力はありません。
+      でも、何が気持ち悪いかなら言葉にできます。そこを Claude Design にぶつけながら作りました。
+      作れる時代になったからこそ選べた道です。ここまでは良かったんですが。
+      【20秒】
+
+  - id: ch3-open
+    role: transition
+    idea: "失敗の局面に移る"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "そして、迷走した"
+    notes: |
+      （間）
+      【8秒】
+
+  - id: chaos-editor
+    role: content
+    chapter: "迷走"
+    idea: "満足できずに設定項目を増やし続けた時期を、実際の画面で見せる"
+    layout: image-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "全部いじれるようにした"
+      - kind: image
+        slot: image
+        src: ./assets/v3-editor.webp
+        prompt: "設定項目が右カラムにずらりと並んだエディタ画面。タイトルの居場所 6 通り、号数の見せ方 5 通り、スクリムの方向、リード文の表示"
+    notes: |
+      出てくる画像に満足できなくて、選べる幅を広げる方向に舵を切りました。
+      タイトルの居場所が 6 通り、号数の見せ方が 5 通り、スクリムの方向、リード文の表示。
+      別のバージョンでは、台紙のパターン、テーマ、カラー、書体、装飾まで選べるようにしました。
+      自分では、機能を足しているつもりでした。
+      【30秒】
+
+  - id: deleted-all
+    role: content
+    chapter: "迷走"
+    idea: "選択肢を増やした結果、毎週の作業が重くなり、一度すべて消した"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "毎週が重くなった。\n一度、全部消した"
+        emphasis: ["全部消した"]
+      - kind: statement
+        slot: support
+        text: "選べる幅が広がるほど、決めるのに時間がかかる"
+    notes: |
+      使ってみてすぐ分かりました。重い。
+      6 通りから選んで、5 通りから選んで、方向を決めて、書体を決めて。毎週これをやるのかと。
+      選べる幅が広がるほど、決めるのに時間がかかります。楽にするために作ったのに、逆でした。
+      それで、設定項目を一度、全部消しました。
+      【25秒】
+
+  - id: hundred-sketches
+    role: content
+    chapter: "作り直し"
+    idea: "レイアウトの型だけを 100 パターン並べて比較した"
+    layout: image-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "矩形だけで、100 パターン並べた"
+      - kind: image
+        slot: image
+        src: ./assets/sketch-100.webp
+        prompt: "写真もタイトルも入れず、矩形の抽象だけでレイアウト案を 100 通り並べた一覧画面"
+    notes: |
+      作り直しで最初にやったのがこれです。レイアウト案を 100 個並べてもらいました。
+      この物量は、人間のデザイナーには頼めません。
+      【30秒】
+
+  - id: motion-only
+    role: content
+    chapter: "作り直し"
+    idea: "写真も文字も入れないのは、並んだときの動きだけを見るため"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "見たいのは、\n並んだときの動きだけ"
+        emphasis: ["動き"]
+      - kind: statement
+        slot: support
+        text: "写真も文字も入れない。形だけなら、動きが見える"
+    notes: |
+      写真もタイトルも入れず、グレーとオレンジの矩形だけにしています。
+      中身が入っていると、写真の良し悪しに引っ張られて形を判断できません。
+      見たかったのは 1 枚の完成度ではなく、並べたときにどう動くかです。だから形だけにしました。
+      【25秒】
+
+  - id: only-twelve
+    role: content
+    chapter: "作り直し"
+    idea: "100 から 12 に絞り、渡すのはその 12 だけにすると決めた"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "100 から 12 に絞って、\nそれだけを渡すことにした"
+        emphasis: ["それだけ"]
+      - kind: statement
+        slot: support
+        text: "12 あれば、そうそう被らない"
+    notes: |
+      100 から 12 を選びました。12 という数字自体に意味はありません。
+      12 あれば、毎週選んでもそうそう被らない。そのくらいの感覚です。
+      大事なのは、選んだ 12 以外は渡さないと決めたことです。
+      【25秒】
+
+  - id: who-decides
+    role: content
+    chapter: "作り直し"
+    idea: "自由な設定 UI も作れたが、決めるのは作る側の仕事だと判断した"
+    layout: versus-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "自由を渡すか、決めておくか"
+      - kind: versus
+        slot: versus
+        sides:
+          - label: "使う人に決めさせる"
+            items:
+              - "配置も書体も自由"
+              - "毎週、全部を決める"
+          - label: "作る人が決めておく"
+            items:
+              - "12 パターンだけ渡す"
+              - "毎週、選ぶだけ"
+            emphasis: true
+    notes: |
+      ここが今日の核心です。
+      12 が分かったなら、配置も書体も自由にいじれる UI を作ることもできました。AI に投げれば作れます。
+      でもそうしませんでした。12 だけ渡す、と決めました。
+      自由を渡すというのは、決めることを使う人に押しつけているだけです。
+      並べたときに格好良くしたいのは私なので、私が決めておくべきでした。
+      【35秒】
+
+  - id: current-editor
+    role: content
+    chapter: "作り直し"
+    idea: "厳選した結果、入力は 3 つとレイアウト選択だけになった"
+    layout: image-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "いまは、入れるのは 3 つ。あとは選ぶだけ"
+      - kind: image
+        slot: image
+        src: ./assets/current-editor.png
+        prompt: "現行の note カバー画像エディタ。左に大きなプレビュー、右にタイトル・号数・日付の入力欄とレイアウト 12 パターンのサムネイル"
+    notes: |
+      いまの画面です。タイトル、号数、日付を入れて、レイアウトを選ぶだけ。
+      画像探しは相変わらず大変ですが、それ以外の労力は相当軽くなりました。
+      【25秒】
+
+  - id: ch4-open
+    role: transition
+    idea: "一般論に上げる"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "なぜ、ここまでやるのか"
+    notes: |
+      誰にも頼まれていない、趣味のツールです。
+      なぜここまでやるのか。
+      【8秒】
+
+  - id: no-differentiation
+    role: content
+    chapter: "なぜここまでやるのか"
+    idea: "機能をいくら足しても差別化にならない、と冒頭の問いに答える"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "機能をいくら足しても\n差別化にはならない"
+        emphasis: ["差別化にはならない"]
+      - kind: statement
+        slot: support
+        text: "同じものが、誰にでも作れるようになった"
+    notes: |
+      最初の問いに戻ります。作れるものを全部作ったら、良いものになるのか。
+      ならないと思っています。理由は、機能では差がつかなくなったからです。
+      技術が進んで機能の差が縮まることを、コモディティ化と言います。
+      AI で誰でも同じものを作れるようになった今、これが一気に進みました。
+      機能を足す競争は、勝てない競争です。
+      【25秒】
+
+  - id: emotional-value-word
+    role: content
+    chapter: "なぜここまでやるのか"
+    idea: "機能の数では測れない価値に名前を与える"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "情緒的価値"
+    notes: |
+      （間）
+      じゃあ何で差がつくのか。情緒的価値、という言葉があります。
+      【10秒】
+
+  - id: emotional-value-def
+    role: content
+    chapter: "なぜここまでやるのか"
+    idea: "情緒的価値と機能的価値の性質の違いを対比で示す"
+    layout: versus-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "数値で言えるか、言えないか"
+      - kind: versus
+        slot: versus
+        sides:
+          - label: "機能的価値"
+            items:
+              - "処理速度、項目数"
+              - "数値で言えるから、模倣される"
+              - "最後は価格競争になる"
+          - label: "情緒的価値"
+            items:
+              - "所有する喜び、使うときの高揚感"
+              - "数値で言えないから、模倣されない"
+              - "価格競争に巻き込まれない"
+            emphasis: true
+    notes: |
+      機能的価値は、商品やサービスの客観的・実用的な性能です。処理速度、項目数、対応形式。
+      数値や仕様で言えます。言えるということは、真似できるということです。
+      情緒的価値は、感覚的・心理的な価値です。所有する喜び、使うときの高揚感、
+      ブランドの背景にあるストーリーへの共感。数値で言えないので、真似できません。
+      機能だけで戦うと、最後は価格競争になります。情緒的価値は、そこに巻き込まれません。
+      【35秒】
+
+  - id: what-i-got
+    role: content
+    chapter: "なぜここまでやるのか"
+    idea: "機能を削った結果として、このツールで何を得たのかを具体で示す"
+    layout: list-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "削って、生まれたもの"
+      - kind: bullets
+        slot: list
+        items:
+          - "毎週、楽に作れる"
+          - "出てくるものが、かっこいい"
+          - "人に見せたくなる"
+    notes: |
+      では自分のツールはどうか。機能を削って生まれたのは、この 3 つでした。
+      毎週、楽に作れる。ここまでは機能的価値です。分かりやすいけれど、真似できます。
+      でも、出てくるものがかっこいい。そして、人に見せたくなる。
+      これは数値で言えません。真似される種類のものでもありません。
+      レイアウトを 12 に絞ったこと自体は、小さな判断です。一つでは価値になりません。
+      でも積み重なると、こうなります。
+      【30秒】
+
+  - id: talk-about-it
+    role: content
+    chapter: "なぜここまでやるのか"
+    idea: "人に話したくなることが、真似できない差別化になっている"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "使っていると\n人に話したくなる"
+        emphasis: ["人に話したくなる"]
+      - kind: statement
+        slot: support
+        text: "今日ここで話しているのが、その証拠です"
+    notes: |
+      そして、いちばん自分でも意外だったのがこれです。使っていると、人に話したくなる。
+      誰にも頼まれていない、趣味のツールの話です。それを今日、こうして話しに来ています。
+      なぜ話したくなるのか。判断が自分の中にあるからだと思います。
+      Canva でテンプレートを選んで作っていたら、話すことは何もありません。
+      100 案を並べて 12 に絞った、自由な設定 UI は作らないと決めた。
+      その判断があるから、語る中身があります。
+      機能は真似できます。でも、話したくなる理由は真似できません。
+      【25秒】
+
+  - id: human-decides
+    role: content
+    chapter: "なぜここまでやるのか"
+    idea: "体験を決める仕事は人間に残り、その責任も人間にある"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "体験を決めるのは、人間\n機能を実装するのは、AI"
+        emphasis: ["体験を決める"]
+      - kind: statement
+        slot: support
+        text: "出てきたものがひどければ、決めた人間の責任"
+    notes: |
+      機能を実装するのは、もう AI の仕事です。速いし、正確です。
+      でも、何を渡すか、何を渡さないかを決めているのは人間です。
+      裏を返すと、使いにくいものが出てきたとき、AI が作ったからとは言えません。
+      さっきの重い画面も、AI のせいではなくて、私が決めなかったせいです。
+      【30秒】
+
+  - id: summary
+    role: content
+    chapter: "なぜここまでやるのか"
+    idea: "3 点にまとめて持ち帰らせる"
+    layout: list-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "まとめ"
+      - kind: bullets
+        slot: list
+        items:
+          - "機能を足しても、差別化にはならない"
+          - "何を作らないかを決めるのが、人間の仕事"
+          - "削ると、真似できない価値が生まれる"
+    notes: |
+      まとめます。
+      機能を足しても差別化にはなりません。誰でも同じものを作れるようになったからです。
+      だから、何を作らないかを決めるのが人間の仕事として残ります。
+      そして削ると、真似できない価値が生まれます。人に話したくなる、というのがまさにそれでした。
+      【25秒】
+
+  - id: closer
+    role: closer
+    idea: "冒頭の問いに答えを返して閉じる"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "作れるものを\n全部作るな"
+        emphasis: ["全部作るな"]
+    notes: |
+      最初の問いに戻ります。作れるものを全部作ったら、良いものになるのか。
+      私の答えはこれです。作れるものを、全部作らない。
+      次に機能を足したくなったとき、作れるかどうかではなく、渡すかどうかを決めてみてください。
+      あなたは、何を渡しますか。ありがとうございました。
+      【20秒】

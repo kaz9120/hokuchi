@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=1280">
+<title>なんでも作れる時代に、作らないものを決める</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&amp;display=swap">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+.slide{width:1280px;height:720px;position:relative;overflow:hidden;
+  background:#fffbf9;color:#111827;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-weight:400;
+  -webkit-font-smoothing:antialiased;letter-spacing:.01em}
+.jp{word-break:keep-all;overflow-wrap:normal;line-break:strict}
+.hi{color:#fa6e78;font-weight:600}
+.pane{position:absolute;display:flex;flex-direction:column}
+.pane.center{align-items:center;justify-content:center;text-align:center}
+
+/* 舞台 (ADR-0018) — 見出しは上端に固定、主役は残りの領域を受け取る。
+   見出しの Y と本文の左端がスライドをまたいで動かないことが要点。 */
+.stage{position:absolute;left:96px;top:64px;
+  width:1088px;height:592px;
+  display:flex;flex-direction:column}
+.stage>.headline{position:static;flex:0 0 auto;width:100%;margin-bottom:40px}
+/* 残りの領域での縦位置は、上下の spacer の伸び比で決める (ADR-0018)。
+   図は 1:1 の中央。テキスト主体の素材は 1:2 で上寄りに置き、見出しから
+   離れすぎず、下に余白を残す。比が固定なので枚をまたいでも位置が動かない。 */
+.stage-lead{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+.stage-lead::before,.stage-lead::after{content:'';flex-basis:0;flex-shrink:1}
+.stage-lead::before{flex-grow:1}
+.stage-lead.center{align-items:center;text-align:center}
+.stage-lead.center::after{flex-grow:1}
+.stage-lead.start{align-items:flex-start}
+.stage-lead.start::after{flex-grow:2}
+.lead-box{flex:0 0 auto;display:flex;flex-direction:column;justify-content:center}
+.stage-lead.center>.lead-box{align-items:center}
+/* overflow:visible — 箱の縁に接するカードの外周ストロークが viewBox で
+   半分に切られて線が細く見えるのを防ぐ (2026-07-08 レビュー指摘) */
+svg.lead{display:block;max-width:100%;max-height:100%;overflow:visible}
+
+.statement{font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-weight:600;line-height:1.25;
+  color:#111827;max-width:100%}
+.support{color:#4b5563;margin-top:30px;line-height:1.5;letter-spacing:.02em}
+
+.chapter{position:absolute;top:22px;left:20px;z-index:2;font-size:15px;color:#4b5563;
+  letter-spacing:.18em;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-weight:600;
+  background:#fffbf9d9;padding:5px 12px;border-radius:6px}
+.inv .chapter{color:rgba(255,255,255,.9);background:rgba(0,0,0,.18)}
+.inv .support{color:rgba(255,255,255,.85)}
+
+.title-band{align-items:flex-start;justify-content:flex-end}
+.title-accent{width:76px;height:6px;background:#fa6e78;border-radius:3px;margin-bottom:28px}
+.title-main{font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-weight:600;line-height:1.18;
+  color:#111827;text-align:left}
+.title-sub{color:#4b5563;margin-top:22px;text-align:left;letter-spacing:.04em}
+
+.headline{position:absolute;display:flex;align-items:flex-end;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+  font-weight:600;color:#111827;text-align:left;line-height:1.3}
+
+.bullets{list-style:none;width:100%;display:flex;flex-direction:column;
+  justify-content:center;height:100%;gap:1.1em}
+.bullets li{display:flex;align-items:baseline;gap:24px;color:#111827;line-height:1.4}
+.bullets .dot{flex:0 0 auto;width:13px;height:13px;border-radius:50%;
+  background:#fa6e78;transform:translateY(-4px)}
+
+.quote-block{max-width:1000px;position:relative}
+.quote-mark{font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-size:180px;line-height:.7;color:#e5e0de;
+  position:absolute;top:-64px;left:-26px;user-select:none}
+.quote-text{font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-weight:600;line-height:1.5;
+  color:#111827;position:relative;text-align:left}
+.quote-attr{margin-top:34px;color:#4b5563;text-align:right}
+
+.grid-stage{position:absolute;inset:0;display:grid;gap:0}
+.grid-cell{position:relative;overflow:hidden;display:flex}
+.grid-caption{align-self:flex-end;padding:34px;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+  font-weight:600;font-size:38px;line-height:1.32;color:#111827}
+
+.img-ph{position:relative;width:100%;height:100%;background:#fef1f0;
+  display:flex;align-items:center;justify-content:center;overflow:hidden}
+.img-inner{display:flex;flex-direction:column;align-items:center;gap:22px;
+  padding:36px;max-width:88%;text-align:center}
+.img-prompt{color:#4b5563;font-size:20px;line-height:1.6}
+.img-badge{position:absolute;top:16px;left:16px;font-size:15px;letter-spacing:.14em;
+  color:#4b5563;text-transform:uppercase;border:1px solid #e5e0de;padding:4px 10px;border-radius:4px}
+.img-corner{position:absolute;width:22px;height:22px;border:2px solid #e5e0de;opacity:.9}
+.img-corner.tl{top:14px;left:14px;border-right:0;border-bottom:0}
+.img-corner.tr{top:14px;right:14px;border-left:0;border-bottom:0}
+.img-corner.bl{bottom:14px;left:14px;border-right:0;border-top:0}
+.img-corner.br{bottom:14px;right:14px;border-left:0;border-top:0}
+
+.profile-name{font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-weight:600;color:#111827;line-height:1.25}
+.profile-affil{color:#4b5563;margin-top:12px;letter-spacing:.03em}
+/* justify-content は使わない — 上下の空きは PROFILE_TOP 比率のスペーサー div
+   (flex-grow 25:75) で配分する。中央寄せだと写真が低く沈んで見えたため
+   (レビュー指摘 2026-07-09)。 */
+.profile-left{align-items:center;gap:20px}
+.profile-portrait{flex:0 0 auto;border-radius:50%;object-fit:cover;box-shadow:0 6px 28px rgba(0,0,0,.16)}
+.profile-portrait.ph{background:#fef1f0;border:2px dashed #e5e0de;display:flex;
+  align-items:center;justify-content:center;color:#4b5563;font-size:16px;
+  line-height:1.6;padding:28px;text-align:center;box-shadow:none}
+.profile-handle{color:#111827}
+.inline-icon{height:.95em;width:.95em;vertical-align:-.12em;margin-right:.4em}
+.profile-right{gap:30px}
+.profile-label{color:#fa6e78;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-weight:600;
+  font-size:22px;letter-spacing:.08em;margin-bottom:7px}
+.profile-body{font-size:21px;line-height:1.65;color:#111827}
+
+.photo{width:100%;height:100%;object-fit:cover;display:block}
+.stage-photo{width:100%;height:100%;object-fit:contain;display:block;border-radius:10px;
+  border:1px solid #e5e0de;box-shadow:0 10px 36px rgba(0,0,0,.12)}
+.photo.contain{object-fit:contain}
+.photo-framed{width:100%;height:100%;padding:48px;background:#fef1f0;display:flex;
+  align-items:center;justify-content:center}
+.photo-framed .photo{width:100%;height:100%;object-fit:contain}
+.photo-cutout{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+.raw-wrap{width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.raw-wrap svg{max-width:100%;max-height:100%}
+
+/* code (SPEC §6.7, ADR-0016) — surface panel + hairline + optional filename
+   label bar. Palette derivation (renderer-owned, ADR-0014), widened from 3
+   token buckets to 5 — 3〜4 色だと配色が貧弱で自作感が出ていた (レビュー
+   指摘 2026-07-09) — but still positional, no hardcoded hex: keyword/literal
+   → highlight (「宣言・分岐」を示す); string → core[1] (moss/green for
+   hokuchi); number/attr → core[0] (moon/blue for hokuchi); title/function
+   (宣言・呼び出し名) → text_strong; comment → muted; それ以外は既定の text。
+   console/diff skip tokenization entirely and colour whole lines instead
+   (prompt vs output; added vs removed) — a terminal session or a diff is
+   not "a language". */
+.code-panel{width:100%;height:100%;background:#fef1f0;border:1px solid #e5e0de;
+  border-radius:14px;overflow:hidden;display:flex;flex-direction:column;text-align:left}
+.code-file{flex:0 0 auto;padding:0 32px;color:#4b5563;background:#fffbf980;
+  border-bottom:1px solid #e5e0de;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-size:16px;letter-spacing:.02em}
+.code-body{flex:1 1 auto;overflow:hidden;font-family:"SF Mono", "Consolas", "DejaVu Sans Mono", monospace;font-weight:400}
+.cl{white-space:pre;color:#111827}
+.cl-prompt{color:#111827;font-weight:600}
+.cl-output{color:#4b5563}
+/* diff bands: addition = core[1] (moss/green for hokuchi), deletion =
+   highlight (ember/coral) — both at ~18% alpha via a hex alpha suffix */
+.cl-add{background:#1118272e}
+.cl-del{background:#fa6e782e}
+.cl-dim{opacity:.55}
+/* emphasis band (~15% alpha) is defined after cl-add/cl-del so it wins on
+   a line that is both a diff line and emphasized */
+.cl-em{background:#fa6e7826}
+.code-body .hljs-keyword,.code-body .hljs-literal{color:#fa6e78}
+.code-body .hljs-string,.code-body .hljs-regexp,.code-body .hljs-symbol{color:#111827}
+.code-body .hljs-number,.code-body .hljs-attr,.code-body .hljs-attribute{color:#e0525d}
+.code-body .hljs-title,.code-body .hljs-section,.code-body .hljs-name{color:#111827;font-weight:600}
+.code-body .hljs-comment,.code-body .hljs-quote,.code-body .hljs-doctag{color:#4b5563}
+
+/* post (SPEC §6.8, ADR-0017) — surface card, own opaque background so it
+   needs no .inv handling (same reasoning as code-panel). post-wrap only
+   exists for source posts (renderPost) — it stacks the static card and the
+   SPA embed overlay so they occupy the same box instead of the default
+   .pane flex-column stacking. */
+.post-wrap{position:relative;width:100%;height:100%}
+.post-card{width:100%;height:100%;box-sizing:border-box;background:#fef1f0;
+  border:1px solid #e5e0de;border-radius:18px;padding:38px 44px;display:flex;
+  flex-direction:column;text-align:left;box-shadow:0 10px 30px rgba(0,0,0,.06)}
+.post-wrap>.post-card{position:absolute;inset:0}
+/* 漸進的強化の埋め込み下地 (ADR-0017)。widgets.js が実際にツイートを iframe
+   化して 'rendered' を発火するまでは visibility:hidden のまま — file://
+   (shot) やオフラインでは一切見えず、カードだけが写る (決定 3・4)。 */
+.post-embed{position:absolute;inset:0;visibility:hidden;overflow:hidden;
+  border-radius:18px;display:flex;align-items:center;justify-content:center}
+.post-embed.post-embed-active{visibility:visible;background:#fffbf9}
+.post-head{display:flex;align-items:center}
+.post-avatar{border-radius:50%;object-fit:cover;flex:0 0 auto}
+.post-avatar-fallback{background:#e5e0de;color:#111827;display:flex;
+  align-items:center;justify-content:center;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-weight:600}
+.post-author{color:#111827;font-weight:600;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif}
+.post-meta{color:#4b5563;margin-top:5px;letter-spacing:.02em}
+.post-body{color:#111827;line-height:1.6;margin-top:26px}
+
+/* link (SPEC §6.9, ADR-0017) — OGP card + QR. QR keeps its own white face
+   (baked into the generated SVG) regardless of theme (ADR-0016 決定), so
+   .link-qr needs no colour override either. */
+.link-card{width:100%;height:100%;display:flex;align-items:center}
+.link-left{display:flex;flex-direction:column;text-align:left}
+.link-img{border-radius:10px;object-fit:cover;margin-bottom:22px;border:1px solid #e5e0de}
+.link-title{color:#111827;font-weight:600;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;line-height:1.35}
+.link-desc{color:#111827;line-height:1.55;margin-top:14px}
+/* URL 全体を見せる (ADR-0017) — .link-left は .jp (word-break:keep-all;
+   overflow-wrap:normal) を継承するが、URL はスペースを持たない一続きの文字
+   列なので keep-all のままでは折り返せず箱からあふれる。ここだけ上書きする。 */
+.link-url{color:#4b5563;margin-top:14px;letter-spacing:.01em;word-break:break-all;overflow-wrap:anywhere}
+.link-qr{flex:0 0 auto;background:#fff;border-radius:12px;padding:10px;
+  display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(0,0,0,.14)}
+.link-qr svg{display:block;width:100%;height:100%}
+
+/* stat (SPEC §6.10, ADR-0016) — bare on the slide background, like
+   statement: needs the same .inv treatment. */
+.stat-block{display:flex;flex-direction:column;align-items:center;text-align:center}
+.stat-value{font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-weight:600;color:#111827;line-height:1}
+.stat-label{color:#111827;margin-top:20px}
+.stat-context{color:#4b5563;margin-top:16px}
+
+/* table (SPEC §6.11, ADR-0016) — no outer frame, no cell fills, no zebra:
+   rows separate by whitespace, the header's hairline is the only rule.
+   Bare on the slide background, so it needs .inv handling like bullets.
+   table-wrap is the positioning root for the header rule and emphasis
+   bands, which are drawn as their own absolutely-positioned layers instead
+   of per-cell borders/fills — a column-gap now separates the cells, so a
+   per-cell border or fill would visibly break at every gap (レビュー指摘
+   2026-07-09)。 */
+.table-wrap{position:relative}
+.table-rule{position:absolute;height:2px;background:#e5e0de}
+.table-em-band{position:absolute;z-index:0;background:#fa6e7833;border-radius:8px}
+.table-grid{display:grid;text-align:left;position:relative;z-index:1}
+.table-cell{padding:0 20px;white-space:nowrap;color:#111827;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif}
+.table-col-data{text-align:center}
+.table-head{color:#111827;font-weight:600;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif}
+.table-mark-yes{color:#111827}
+.table-mark-no{color:#4b5563}
+
+/* versus (SPEC §6.12, ADR-0016) — two surface-card panels, own opaque
+   background so no .inv handling (same reasoning as post/code). */
+.versus-row{display:flex;align-items:stretch}
+.versus-panel{box-sizing:border-box;background:#fef1f0;border:2px solid #e5e0de;
+  border-radius:16px;display:flex;flex-direction:column;text-align:left}
+.versus-em{border-color:#fa6e78;border-width:3px}
+.versus-dim{opacity:.6}
+.versus-label{font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-weight:600;color:#111827;line-height:1.3}
+.versus-items{list-style:none;display:flex;flex-direction:column}
+.versus-items li{display:flex;align-items:baseline;gap:16px;color:#111827;line-height:1.4}
+.versus-items .dot{flex:0 0 auto;width:10px;height:10px;border-radius:50%;
+  background:#fa6e78;transform:translateY(-3px)}
+
+/* agenda (SPEC §6.13, ADR-0016) — bare on the slide background like bullets
+   and stat, so it needs .inv handling. */
+.agenda-list{list-style:none;width:100%;display:flex;flex-direction:column}
+.agenda-list li{display:flex;align-items:baseline}
+.agenda-num{flex:0 0 auto;color:#4b5563;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+  font-weight:600;letter-spacing:.02em}
+.agenda-num-hot{color:#fa6e78}
+.agenda-text{color:#111827;line-height:1.4}
+.agenda-text-hot{color:#111827;font-weight:600}
+
+/* video (SPEC §6.14, ADR-0016) — own opaque panel (poster or surface fill),
+   so no .inv handling (same reasoning as code/post/versus). */
+.video-box{position:relative;width:100%;height:100%;border-radius:14px;
+  overflow:hidden;background:#fef1f0}
+.video-poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.video-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:20px;z-index:1}
+.video-fallback{color:#4b5563;font-size:20px;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif}
+.video-glyph{position:relative}
+
+.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+.slide>.pane,.slide>.grid-stage,.slide>.headline{z-index:1}
+.brand-logo{position:absolute;top:25px;right:20px;z-index:2}
+.brand-footer{position:absolute;bottom:20px;right:20px;z-index:2;font-size:13px;
+  color:#4b5563;letter-spacing:.03em;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif}
+
+.inv{color:rgba(255,255,255,.94)}
+.inv .statement,.inv .title-main,.inv .quote-text,.inv .grid-caption,.inv .headline,
+.inv .stat-value,.inv .table-head,.inv .agenda-text-hot{color:#ffffff}
+.inv .hi{color:#ffffff}
+.inv .title-sub,.inv .quote-attr,.inv .brand-footer,.inv .img-prompt,
+.inv .stat-context{color:rgba(255,255,255,.85)}
+.inv .quote-mark{color:rgba(255,255,255,.38)}
+.inv .bullets li,.inv .stat-label,.inv .table-cell,.inv .agenda-text{color:rgba(255,255,255,.94)}
+.inv .bullets .dot,.inv .title-accent{background:#ffffff}
+.inv .table-rule{background:rgba(255,255,255,.5)}
+.inv .agenda-num{color:rgba(255,255,255,.65)}
+
+.err{color:#fa6e78;font-size:28px}
+html,body{height:100%}
+body{background:#eceef1;font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif}
+.frame{width:1280px;height:720px;flex:0 0 auto}
+
+/* deck mode — one slide at a time, selected purely by :target */
+body.deck{overflow:hidden}
+body.deck .page{display:none}
+body.deck .page:target{display:flex;position:fixed;inset:0;align-items:center;justify-content:center}
+body.deck .page:target .frame{transform:scale(var(--s,1))}
+body.deck .cap,body.deck .deck-head{display:none}
+
+/* list mode (g key) — all slides stacked with captions, for review/annotation */
+body.list{overflow:auto;padding:56px 0}
+body.list .page{display:block;width:1280px;margin:0 auto 56px}
+body.list .cap{color:#4b5563;font-size:15px;margin-bottom:12px;letter-spacing:.03em;line-height:1.7}
+body.list .cap b{color:#111827;font-weight:600}
+body.list .cap .notes{white-space:pre-wrap;margin-top:6px;font-size:14px;opacity:.85}
+body.list .frame{box-shadow:0 6px 28px rgba(17,24,39,.14);border-radius:6px;overflow:hidden}
+body.list .deck-head{width:1280px;margin:0 auto 44px;color:#111827}
+.deck-head h1{font-family:"Nunito", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;font-weight:600;font-size:40px;color:#111827}
+.deck-head p{color:#4b5563;margin-top:10px;font-size:18px}</style>
+</head><body class="deck" data-slides="29">
+  <div class="deck-head">
+    <h1>なんでも作れる時代に、作らないものを決める</h1>
+    <p>日常的に AI で開発していて、作れる量は増えたのに使っているものが増えていないエンジニア — 全 29 枚 / 1280×720 · ← → でページ送り、g で一覧</p>
+  </div>
+<main>
+  <section class="page" id="p01" data-slide-id="title">
+    <div class="cap"><b>01 · title</b> &nbsp; title-stage · role:title<br>idea: この 10 分の主張をタイトルとして掲げる<div class="notes">山本一将です。「なんでも作れる時代に、作らないものを決める」というタイトルでお話しします。
+今日は業務の話ではなく、趣味で作っているツールの話をします。
+【15秒】</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-cover.svg" alt=""/><div class="pane title-band" style="left:96px;top:64px;width:1088px;height:380.96px"><div class="title-accent"></div><div class="title-main jp" style="font-size:74px">なんでも<wbr/>作れる<wbr/>時代に、<br/>作らない<wbr/>ものを<wbr/>決める</div><div class="title-sub jp" style="font-size:30px">趣味の<wbr/>個人開発で、<wbr/>機能を<wbr/>厳選した話</div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p02" data-slide-id="profile">
+    <div class="cap"><b>02 · profile</b> &nbsp; profile-stage · role:content<br>idea: 毎週 note を書く人間である、という伏線を趣味の欄で渡す<div class="notes">MOSH でエンジニアリングマネージャーをしています。
+趣味のところに書きましたが、毎週 note を書いています。今日の話はここから始まります。
+【25秒】</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-default.svg" alt=""/><div class="chapter">自己紹介</div><div class="pane" style="left:96px;top:64px;width:1088px;height:112px"><div class="profile-name jp" style="font-size:41px">山本 一将｜焚き火を<wbr/>愛する<wbr/>エンジニア</div><div class="profile-affil jp" style="font-size:24px">MOSH株式会社 Engineering Manager</div></div><div class="pane profile-left" style="left:96px;top:220px;width:457px;height:436px"><div style="flex:0.25 0 0"></div><img class="profile-portrait" src="assets/profile.jpg" alt="" style="width:330px;height:330px"/><div class="profile-handle jp" style="font-size:24px">X: @kyamamoto9120</div><div style="flex:0.75 0 0"></div></div><div class="pane profile-right" style="left:633px;top:220px;width:551px;height:436px"><div style="flex:0.25 0 0"></div><div class="profile-item"><div class="profile-label">略歴</div><div class="profile-body jp">鉄道システム開発、<wbr/>SNS マーケティングツール開発を<wbr/>経て、<wbr/>2025年より<wbr/> MOSH に<wbr/>参画</div></div><div class="profile-item"><div class="profile-label">実績</div><div class="profile-body jp">2015年 世界コンピュータ将棋選手権 9位<br/>2024年 LINE API Expert 認定</div></div><div class="profile-item"><div class="profile-label">趣味</div><div class="profile-body jp">ヤクルトスワローズ、<wbr/>将棋、<wbr/>キャンプ、<wbr/>DQウォーク<br/>毎週<wbr/> note を<wbr/>書いています</div></div><div style="flex:0.75 0 0"></div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p03" data-slide-id="ch1-open">
+    <div class="cap"><b>03 · ch1-open</b> &nbsp; statement-stage · role:transition<br>idea: 今日の問いをこれから投げる、と宣言する<div class="notes">いきなりですが、みなさんに聞きたいことがあります。
+【8秒】</div></div>
+    <div class="frame"><div class="slide inv"><img class="bg" src="theme-assets/bg-section-cover.svg" alt=""/><div class="pane center" style="left:96px;top:64px;width:1088px;height:556.48px"><div class="statement jp" style="font-size:70px">本日の<wbr/>問い</div></div><img class="brand-logo" src="theme-assets/logo-mosh-white.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p04" data-slide-id="are-you-choosing">
+    <div class="cap"><b>04 · are-you-choosing</b> &nbsp; statement-stage · role:content<br>idea: 実装する機能を厳選できているか、を聴衆に直接問う<div class="notes">実装する機能、厳選できていますか。
+欲しいと思ったものが、その日のうちに動く時代です。楽しいですよね。
+ただ、作った数は増えているのに、日常的に使っているものは増えていません。
+作った時点で満足して、二度と開いていないものがいくつもあります。
+足すコストがタダになった瞬間、私は選ぶのをやめていました。
+【25秒】</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-default.svg" alt=""/><div class="chapter">作れる時代</div><div class="pane center" style="left:96px;top:64px;width:1088px;height:556.48px"><div class="statement jp" style="font-size:70px">実装する<wbr/>機能<br/><span class="hi">厳選</span>できていますか？</div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p05" data-slide-id="open-question">
+    <div class="cap"><b>05 · open-question</b> &nbsp; statement-stage · role:content<br>idea: 作れる量と良さが一致しないのではないか、という問いを立てる<div class="notes">言い換えると、こういう問いです。
+作れるものを全部作ったら、良いものになるのか。
+（間を取る。聴衆に考えてもらう）
+今日はこの問いを、趣味で作っているツールの話を通して考えます。
+【20秒】</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-default.svg" alt=""/><div class="chapter">作れる時代</div><div class="pane center" style="left:96px;top:64px;width:1088px;height:556.48px"><div class="statement jp" style="font-size:70px">作れる<wbr/>ものを<wbr/>全部<wbr/>作ったら<br/><span class="hi">良い</span><wbr/><span class="hi">ものに</span><wbr/><span class="hi">なるのか</span></div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p06" data-slide-id="ch2-open">
+    <div class="cap"><b>06 · ch2-open</b> &nbsp; statement-stage · role:transition<br>idea: 事例の前提に降りる<div class="notes">さっきの自己紹介の続きです。
+【8秒】</div></div>
+    <div class="frame"><div class="slide inv"><img class="bg" src="theme-assets/bg-section-cover.svg" alt=""/><div class="pane center" style="left:96px;top:64px;width:1088px;height:556.48px"><div class="statement jp" style="font-size:70px">毎週、<wbr/>note を<wbr/>書いています</div></div><img class="brand-logo" src="theme-assets/logo-mosh-white.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p07" data-slide-id="hardest-part">
+    <div class="cap"><b>07 · hardest-part</b> &nbsp; statement-stage · role:content<br>idea: いちばん辛いのは執筆ではなく見出し画像だった、という出発点を渡す<div class="notes">毎週書いていていちばん辛いのは、実は記事を書くことじゃありません。見出し画像です。
+毎週これで止まります。書き終わっているのに公開できない。
+【25秒】</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-default.svg" alt=""/><div class="chapter">作りたかったもの</div><div class="pane center" style="left:96px;top:64px;width:1088px;height:556.48px"><div class="statement jp" style="font-size:70px">いちばん辛いのは<br/><span class="hi">見出し画像</span>を<wbr/>作る<wbr/>こと</div><div class="support jp" style="font-size:30px">記事を<wbr/>書くより、<wbr/>こっちで<wbr/>止まる</div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p08" data-slide-id="three-wants">
+    <div class="cap"><b>08 · three-wants</b> &nbsp; list-stage · role:content<br>idea: 求めていた見出し画像の要件を 3 つに言語化した<div class="notes">28 本たまったところで、自分が何を欲しがっているのかを言葉にしました。3 つあります。
+かっこいいこと。世界観が統一されていること。それでいて、飽きないこと。
+3 つ目が厄介です。統一しろと言いながら、飽きるなと言っている。
+連載だと分かるかどうかは、2 つ目の世界観のほうで担保されます。
+【30秒】</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-default.svg" alt=""/><div class="chapter">作りたかったもの</div><div class="stage"><div class="headline jp" style="font-size:34px">欲しかったのは、<wbr/>この<wbr/> 3 つ</div><div class="stage-lead start"><div class="lead-box" style="width:1088px;height:214.2px"><ul class="bullets" style="font-size:34px;gap:35.7px;padding-left:28px"><li><span class="dot"></span><span class="jp">かっこいい</span></li><li><span class="dot"></span><span class="jp">世界観が<wbr/>統一されている</span></li><li><span class="dot"></span><span class="jp">それで<wbr/>いて、<wbr/>飽きない</span></li></ul></div></div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p09" data-slide-id="twelve-in-a-row">
+    <div class="cap"><b>09 · twelve-in-a-row</b> &nbsp; statement-stage · role:content<br>idea: 1 枚単体ではなく、並んだときの見え方が判断基準だった<div class="notes">それで基準をこう置きました。1 枚で格好良いことではなく、12 枚並べて格好良いこと。
+参考にしたのは雑誌の表紙です。バックナンバーが棚に並んだときに、揃っていて、しかも飽きない。
+毎号タイトルが同じ位置にあったら、並べたときに飽きるんです。号ごとに動きが要る。
+【25秒】</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-default.svg" alt=""/><div class="chapter">作りたかったもの</div><div class="pane center" style="left:96px;top:64px;width:1088px;height:556.48px"><div class="statement jp" style="font-size:70px">12 枚<wbr/><span class="hi">並べて</span>、<wbr/>格好良い<wbr/>こと</div><div class="support jp" style="font-size:30px">ベンチマークに<wbr/>したのは、<wbr/>雑誌の<wbr/>表紙</div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p10" data-slide-id="timeline-proof">
+    <div class="cap"><b>10 · timeline-proof</b> &nbsp; image-stage · role:content<br>idea: 実際に並べたときの見え方を実物で見せる<div class="notes">これが直近 9 週間です。タイトルが左下にあったり、右上に縦組みで入っていたり、中央にあったり。
+世界観は揃っているのに、並べても飽きない。ここを作りたかった。
+【30秒】</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-default.svg" alt=""/><div class="chapter">作りたかったもの</div><div class="stage"><div class="headline jp" style="font-size:34px">直近 9 週間の<wbr/>見出し画像</div><div class="stage-lead center"><div class="lead-box" style="width:584.28px;height:508px"><img class="stage-photo" src="assets/note-timeline.png" alt=""/></div></div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p11" data-slide-id="why-build">
+    <div class="cap"><b>11 · why-build</b> &nbsp; statement-stage · role:content<br>idea: 既製品を試したうえで、並べたときの格好良さに届かず自作した<div class="notes">最初から作ろうとしたわけではありません。まず画像生成 AI を試しました。文字が制御できない。
+次に Canva を使いました。工数は確かに減りました。でも、並べたときに格好良くならない。
+テンプレートを選んでいる限り、12 枚並んだときの動きは設計できないんです。
+【30秒】</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-default.svg" alt=""/><div class="chapter">作りたかったもの</div><div class="pane center" style="left:96px;top:64px;width:1088px;height:556.48px"><div class="statement jp" style="font-size:70px">並べた<wbr/>ときの<wbr/>格好良さは、<br/><span class="hi">既製品では</span><wbr/><span class="hi">作れなかった</span></div><div class="support jp" style="font-size:30px">画像生成 AI は<wbr/>文字が<wbr/>制御できない。<wbr/>Canva は<wbr/>工数が<wbr/>減っただけ</div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p12" data-slide-id="build-it-myself">
+    <div class="cap"><b>12 · build-it-myself</b> &nbsp; statement-stage · role:content<br>idea: テンプレートを選ぶのをやめ、自分の要件に合わせて道具から作った<div class="notes">それで、既製品を使うのをやめました。テンプレートを選ぶのではなく、道具のほうから作る。
+私はデザイナーではないので、理想の UI を自力で設計する力はありません。
+でも、何が気持ち悪いかなら言葉にできます。そこを Claude Design にぶつけながら作りました。
+作れる時代になったからこそ選べた道です。ここまでは良かったんですが。
+【20秒】</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-default.svg" alt=""/><div class="chapter">作りたかったもの</div><div class="pane center" style="left:96px;top:64px;width:1088px;height:556.48px"><div class="statement jp" style="font-size:70px">テンプレートを<wbr/>選ぶのを<wbr/>やめて、<br/><span class="hi">道具から</span><wbr/><span class="hi">作る</span><wbr/>ことに<wbr/>した</div><div class="support jp" style="font-size:30px">デザインは<wbr/> Claude Design と<wbr/>一緒に<wbr/>決めて<wbr/>いった</div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p13" data-slide-id="ch3-open">
+    <div class="cap"><b>13 · ch3-open</b> &nbsp; statement-stage · role:transition<br>idea: 失敗の局面に移る<div class="notes">（間）
+【8秒】</div></div>
+    <div class="frame"><div class="slide inv"><img class="bg" src="theme-assets/bg-section-cover.svg" alt=""/><div class="pane center" style="left:96px;top:64px;width:1088px;height:556.48px"><div class="statement jp" style="font-size:70px">そして、<wbr/>迷走した</div></div><img class="brand-logo" src="theme-assets/logo-mosh-white.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p14" data-slide-id="chaos-editor">
+    <div class="cap"><b>14 · chaos-editor</b> &nbsp; image-stage · role:content<br>idea: 満足できずに設定項目を増やし続けた時期を、実際の画面で見せる<div class="notes">出てくる画像に満足できなくて、選べる幅を広げる方向に舵を切りました。
+タイトルの居場所が 6 通り、号数の見せ方が 5 通り、スクリムの方向、リード文の表示。
+別のバージョンでは、台紙のパターン、テーマ、カラー、書体、装飾まで選べるようにしました。
+自分では、機能を足しているつもりでした。
+【30秒】</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-default.svg" alt=""/><div class="chapter">迷走</div><div class="stage"><div class="headline jp" style="font-size:34px">全部<wbr/>いじれるように<wbr/>した</div><div class="stage-lead center"><div class="lead-box" style="width:903.11px;height:508px"><img class="stage-photo" src="assets/v3-editor.webp" alt=""/></div></div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p15" data-slide-id="deleted-all">
+    <div class="cap"><b>15 · deleted-all</b> &nbsp; statement-stage · role:content<br>idea: 選択肢を増やした結果、毎週の作業が重くなり、一度すべて消した<div class="notes">使ってみてすぐ分かりました。重い。
+6 通りから選んで、5 通りから選んで、方向を決めて、書体を決めて。毎週これをやるのかと。
+選べる幅が広がるほど、決めるのに時間がかかります。楽にするために作ったのに、逆でした。
+それで、設定項目を一度、全部消しました。
+【25秒】</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-default.svg" alt=""/><div class="chapter">迷走</div><div class="pane center" style="left:96px;top:64px;width:1088px;height:556.48px"><div class="statement jp" style="font-size:70px">毎週が<wbr/>重くなった。<br/>一度、<wbr/><span class="hi">全部</span><wbr/><span class="hi">消した</span></div><div class="support jp" style="font-size:30px">選べる<wbr/>幅が<wbr/>広がる<wbr/>ほど、<wbr/>決めるのに<wbr/>時間が<wbr/>かかる</div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p16" data-slide-id="hundred-sketches">
+    <div class="cap"><b>16 · hundred-sketches</b> &nbsp; image-stage · role:content<br>idea: レイアウトの型だけを 100 パターン並べて比較した<div class="notes">作り直しで最初にやったのがこれです。レイアウト案を 100 個並べてもらいました。
+この物量は、人間のデザイナーには頼めません。
+【30秒】</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-default.svg" alt=""/><div class="chapter">作り直し</div><div class="stage"><div class="headline jp" style="font-size:34px">矩形だけで、<wbr/>100 パターン<wbr/>並べた</div><div class="stage-lead center"><div class="lead-box" style="width:903.11px;height:508px"><img class="stage-photo" src="assets/sketch-100.webp" alt=""/></div></div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p17" data-slide-id="motion-only">
+    <div class="cap"><b>17 · motion-only</b> &nbsp; statement-stage · role:content<br>idea: 写真も文字も入れないのは、並んだときの動きだけを見るため<div class="notes">写真もタイトルも入れず、グレーとオレンジの矩形だけにしています。
+中身が入っていると、写真の良し悪しに引っ張られて形を判断できません。
+見たかったのは 1 枚の完成度ではなく、並べたときにどう動くかです。だから形だけにしました。
+【25秒】</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-default.svg" alt=""/><div class="chapter">作り直し</div><div class="pane center" style="left:96px;top:64px;width:1088px;height:556.48px"><div class="statement jp" style="font-size:70px">見たいのは、<br/>並んだ<wbr/>ときの<wbr/><span class="hi">動き</span>だけ</div><div class="support jp" style="font-size:30px">写真も<wbr/>文字も<wbr/>入れない。<wbr/>形だけなら、<wbr/>動きが<wbr/>見える</div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p18" data-slide-id="only-twelve">
+    <div class="cap"><b>18 · only-twelve</b> &nbsp; statement-stage · role:content<br>idea: 100 から 12 に絞り、渡すのはその 12 だけにすると決めた<div class="notes">100 から 12 を選びました。12 という数字自体に意味はありません。
+12 あれば、毎週選んでもそうそう被らない。そのくらいの感覚です。
+大事なのは、選んだ 12 以外は渡さないと決めたことです。
+【25秒】</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-default.svg" alt=""/><div class="chapter">作り直し</div><div class="pane center" style="left:96px;top:64px;width:1088px;height:556.48px"><div class="statement jp" style="font-size:70px">100 から<wbr/> 12 に<wbr/>絞って、<br/><span class="hi">それだけ</span>を<wbr/>渡すことに<wbr/>した</div><div class="support jp" style="font-size:30px">12 <wbr/>あれば、<wbr/>そうそう<wbr/>被らない</div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p19" data-slide-id="who-decides">
+    <div class="cap"><b>19 · who-decides</b> &nbsp; versus-stage · role:content<br>idea: 自由な設定 UI も作れたが、決めるのは作る側の仕事だと判断した<div class="notes">ここが今日の核心です。
+12 が分かったなら、配置も書体も自由にいじれる UI を作ることもできました。AI に投げれば作れます。
+でもそうしませんでした。12 だけ渡す、と決めました。
+自由を渡すというのは、決めることを使う人に押しつけているだけです。
+並べたときに格好良くしたいのは私なので、私が決めておくべきでした。
+【35秒】</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-default.svg" alt=""/><div class="chapter">作り直し</div><div class="stage"><div class="headline jp" style="font-size:34px">自由を<wbr/>渡すか、<wbr/>決めて<wbr/>おくか</div><div class="stage-lead center"><div class="lead-box" style="width:1064px;height:248px"><div class="versus-row"><div class="versus-panel versus-dim" style="width:500px;height:248px;padding:36px 40px"><div class="versus-label jp" style="font-size:34px">使う<wbr/>人に<wbr/>決めさせる</div><ul class="versus-items" style="font-size:27px;gap:24px;margin-top:26px;padding-left:26px"><li><span class="dot"></span><span class="jp">配置も<wbr/>書体も<wbr/>自由</span></li><li><span class="dot"></span><span class="jp">毎週、<wbr/>全部を<wbr/>決める</span></li></ul></div><div class="versus-divider" style="width:64px;height:248px"></div><div class="versus-panel versus-em" style="width:500px;height:248px;padding:36px 40px"><div class="versus-label jp" style="font-size:34px">作る<wbr/>人が<wbr/>決めて<wbr/>おく</div><ul class="versus-items" style="font-size:27px;gap:24px;margin-top:26px;padding-left:26px"><li><span class="dot"></span><span class="jp">12 パターンだけ渡す</span></li><li><span class="dot"></span><span class="jp">毎週、<wbr/>選ぶだけ</span></li></ul></div></div></div></div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p20" data-slide-id="current-editor">
+    <div class="cap"><b>20 · current-editor</b> &nbsp; image-stage · role:content<br>idea: 厳選した結果、入力は 3 つとレイアウト選択だけになった<div class="notes">いまの画面です。タイトル、号数、日付を入れて、レイアウトを選ぶだけ。
+画像探しは相変わらず大変ですが、それ以外の労力は相当軽くなりました。
+【25秒】</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-default.svg" alt=""/><div class="chapter">作り直し</div><div class="stage"><div class="headline jp" style="font-size:34px">いまは、<wbr/>入れるのは<wbr/> 3 つ。<wbr/>あとは<wbr/>選ぶだけ</div><div class="stage-lead center"><div class="lead-box" style="width:850.86px;height:508px"><img class="stage-photo" src="assets/current-editor.png" alt=""/></div></div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p21" data-slide-id="ch4-open">
+    <div class="cap"><b>21 · ch4-open</b> &nbsp; statement-stage · role:transition<br>idea: 一般論に上げる<div class="notes">誰にも頼まれていない、趣味のツールです。
+なぜここまでやるのか。
+【8秒】</div></div>
+    <div class="frame"><div class="slide inv"><img class="bg" src="theme-assets/bg-section-cover.svg" alt=""/><div class="pane center" style="left:96px;top:64px;width:1088px;height:556.48px"><div class="statement jp" style="font-size:70px">なぜ、<wbr/>ここまで<wbr/>やるのか</div></div><img class="brand-logo" src="theme-assets/logo-mosh-white.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p22" data-slide-id="no-differentiation">
+    <div class="cap"><b>22 · no-differentiation</b> &nbsp; statement-stage · role:content<br>idea: 機能をいくら足しても差別化にならない、と冒頭の問いに答える<div class="notes">最初の問いに戻ります。作れるものを全部作ったら、良いものになるのか。
+ならないと思っています。理由は、機能では差がつかなくなったからです。
+技術が進んで機能の差が縮まることを、コモディティ化と言います。
+AI で誰でも同じものを作れるようになった今、これが一気に進みました。
+機能を足す競争は、勝てない競争です。
+【25秒】</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-default.svg" alt=""/><div class="chapter">なぜここまでやるのか</div><div class="pane center" style="left:96px;top:64px;width:1088px;height:556.48px"><div class="statement jp" style="font-size:70px">機能を<wbr/>いくら足しても<br/><span class="hi">差別化には</span><wbr/><span class="hi">ならない</span></div><div class="support jp" style="font-size:30px">同じ<wbr/>ものが、<wbr/>誰に<wbr/>でも<wbr/>作れるようになった</div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p23" data-slide-id="emotional-value-word">
+    <div class="cap"><b>23 · emotional-value-word</b> &nbsp; statement-stage · role:content<br>idea: 機能の数では測れない価値に名前を与える<div class="notes">（間）
+じゃあ何で差がつくのか。情緒的価値、という言葉があります。
+【10秒】</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-default.svg" alt=""/><div class="chapter">なぜここまでやるのか</div><div class="pane center" style="left:96px;top:64px;width:1088px;height:556.48px"><div class="statement jp" style="font-size:70px">情緒的価値</div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p24" data-slide-id="emotional-value-def">
+    <div class="cap"><b>24 · emotional-value-def</b> &nbsp; versus-stage · role:content<br>idea: 情緒的価値と機能的価値の性質の違いを対比で示す<div class="notes">機能的価値は、商品やサービスの客観的・実用的な性能です。処理速度、項目数、対応形式。
+数値や仕様で言えます。言えるということは、真似できるということです。
+情緒的価値は、感覚的・心理的な価値です。所有する喜び、使うときの高揚感、
+ブランドの背景にあるストーリーへの共感。数値で言えないので、真似できません。
+機能だけで戦うと、最後は価格競争になります。情緒的価値は、そこに巻き込まれません。
+【35秒】</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-default.svg" alt=""/><div class="chapter">なぜここまでやるのか</div><div class="stage"><div class="headline jp" style="font-size:34px">数値で<wbr/>言えるか、<wbr/>言えないか</div><div class="stage-lead center"><div class="lead-box" style="width:1064px;height:395px"><div class="versus-row"><div class="versus-panel versus-dim" style="width:500px;height:395px;padding:36px 40px"><div class="versus-label jp" style="font-size:34px">機能的価値</div><ul class="versus-items" style="font-size:27px;gap:24px;margin-top:26px;padding-left:26px"><li><span class="dot"></span><span class="jp">処理速度、<wbr/>項目数</span></li><li><span class="dot"></span><span class="jp">数値で<wbr/>言えるから、<wbr/>模倣される</span></li><li><span class="dot"></span><span class="jp">最後は<wbr/>価格競争に<wbr/>なる</span></li></ul></div><div class="versus-divider" style="width:64px;height:395px"></div><div class="versus-panel versus-em" style="width:500px;height:395px;padding:36px 40px"><div class="versus-label jp" style="font-size:34px">情緒的価値</div><ul class="versus-items" style="font-size:27px;gap:24px;margin-top:26px;padding-left:26px"><li><span class="dot"></span><span class="jp">所有する<wbr/>喜び、<wbr/>使う<wbr/>ときの<wbr/>高揚感</span></li><li><span class="dot"></span><span class="jp">数値で<wbr/>言えないから、<wbr/>模倣されない</span></li><li><span class="dot"></span><span class="jp">価格競争に<wbr/>巻き込まれない</span></li></ul></div></div></div></div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p25" data-slide-id="what-i-got">
+    <div class="cap"><b>25 · what-i-got</b> &nbsp; list-stage · role:content<br>idea: 機能を削った結果として、このツールで何を得たのかを具体で示す<div class="notes">では自分のツールはどうか。機能を削って生まれたのは、この 3 つでした。
+毎週、楽に作れる。ここまでは機能的価値です。分かりやすいけれど、真似できます。
+でも、出てくるものがかっこいい。そして、人に見せたくなる。
+これは数値で言えません。真似される種類のものでもありません。
+レイアウトを 12 に絞ったこと自体は、小さな判断です。一つでは価値になりません。
+でも積み重なると、こうなります。
+【30秒】</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-default.svg" alt=""/><div class="chapter">なぜここまでやるのか</div><div class="stage"><div class="headline jp" style="font-size:34px">削って、<wbr/>生まれた<wbr/>もの</div><div class="stage-lead start"><div class="lead-box" style="width:1088px;height:214.2px"><ul class="bullets" style="font-size:34px;gap:35.7px;padding-left:28px"><li><span class="dot"></span><span class="jp">毎週、<wbr/>楽に<wbr/>作れる</span></li><li><span class="dot"></span><span class="jp">出てくる<wbr/>ものが、<wbr/>かっこいい</span></li><li><span class="dot"></span><span class="jp">人に<wbr/>見せたくなる</span></li></ul></div></div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p26" data-slide-id="talk-about-it">
+    <div class="cap"><b>26 · talk-about-it</b> &nbsp; statement-stage · role:content<br>idea: 人に話したくなることが、真似できない差別化になっている<div class="notes">そして、いちばん自分でも意外だったのがこれです。使っていると、人に話したくなる。
+誰にも頼まれていない、趣味のツールの話です。それを今日、こうして話しに来ています。
+なぜ話したくなるのか。判断が自分の中にあるからだと思います。
+Canva でテンプレートを選んで作っていたら、話すことは何もありません。
+100 案を並べて 12 に絞った、自由な設定 UI は作らないと決めた。
+その判断があるから、語る中身があります。
+機能は真似できます。でも、話したくなる理由は真似できません。
+【25秒】</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-default.svg" alt=""/><div class="chapter">なぜここまでやるのか</div><div class="pane center" style="left:96px;top:64px;width:1088px;height:556.48px"><div class="statement jp" style="font-size:70px">使っていると<br/><span class="hi">人に</span><wbr/><span class="hi">話したくなる</span></div><div class="support jp" style="font-size:30px">今日<wbr/>ここで<wbr/>話しているのが、<wbr/>その<wbr/>証拠です</div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p27" data-slide-id="human-decides">
+    <div class="cap"><b>27 · human-decides</b> &nbsp; statement-stage · role:content<br>idea: 体験を決める仕事は人間に残り、その責任も人間にある<div class="notes">機能を実装するのは、もう AI の仕事です。速いし、正確です。
+でも、何を渡すか、何を渡さないかを決めているのは人間です。
+裏を返すと、使いにくいものが出てきたとき、AI が作ったからとは言えません。
+さっきの重い画面も、AI のせいではなくて、私が決めなかったせいです。
+【30秒】</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-default.svg" alt=""/><div class="chapter">なぜここまでやるのか</div><div class="pane center" style="left:96px;top:64px;width:1088px;height:556.48px"><div class="statement jp" style="font-size:70px"><span class="hi">体験を</span><wbr/><span class="hi">決める</span>のは、<wbr/>人間<br/>機能を<wbr/>実装するのは、<wbr/>AI</div><div class="support jp" style="font-size:30px">出てきた<wbr/>ものが<wbr/>ひどければ、<wbr/>決めた<wbr/>人間の<wbr/>責任</div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p28" data-slide-id="summary">
+    <div class="cap"><b>28 · summary</b> &nbsp; list-stage · role:content<br>idea: 3 点にまとめて持ち帰らせる<div class="notes">まとめます。
+機能を足しても差別化にはなりません。誰でも同じものを作れるようになったからです。
+だから、何を作らないかを決めるのが人間の仕事として残ります。
+そして削ると、真似できない価値が生まれます。人に話したくなる、というのがまさにそれでした。
+【25秒】</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-default.svg" alt=""/><div class="chapter">なぜここまでやるのか</div><div class="stage"><div class="headline jp" style="font-size:34px">まとめ</div><div class="stage-lead start"><div class="lead-box" style="width:1088px;height:214.2px"><ul class="bullets" style="font-size:34px;gap:35.7px;padding-left:28px"><li><span class="dot"></span><span class="jp">機能を<wbr/>足しても、<wbr/>差別化には<wbr/>ならない</span></li><li><span class="dot"></span><span class="jp">何を<wbr/>作らないかを<wbr/>決めるのが、<wbr/>人間の<wbr/>仕事</span></li><li><span class="dot"></span><span class="jp">削ると、<wbr/>真似できない<wbr/>価値が<wbr/>生まれる</span></li></ul></div></div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+  <section class="page" id="p29" data-slide-id="closer">
+    <div class="cap"><b>29 · closer</b> &nbsp; statement-stage · role:closer<br>idea: 冒頭の問いに答えを返して閉じる<div class="notes">最初の問いに戻ります。作れるものを全部作ったら、良いものになるのか。
+私の答えはこれです。作れるものを、全部作らない。
+次に機能を足したくなったとき、作れるかどうかではなく、渡すかどうかを決めてみてください。
+あなたは、何を渡しますか。ありがとうございました。
+【20秒】</div></div>
+    <div class="frame"><div class="slide"><img class="bg" src="theme-assets/bg-cover.svg" alt=""/><div class="pane center" style="left:96px;top:64px;width:1088px;height:556.48px"><div class="statement jp" style="font-size:80px">作れる<wbr/>ものを<br/><span class="hi">全部</span><wbr/><span class="hi">作るな</span></div></div><img class="brand-logo" src="theme-assets/logo-mosh.svg" alt="" style="height:24px"/><div class="brand-footer">© MOSH, Inc.</div></div></div>
+  </section>
+</main><script>(()=>{const total=29,pad=n=>String(n).padStart(2,'0');
+const cur=()=>{const m=location.hash.match(/^#p(\d+)$/);return m?Number(m[1]):1};
+const go=n=>{if(n>=1&&n<=total)location.hash='#p'+pad(n)};
+const fit=()=>document.documentElement.style.setProperty('--s',Math.min(innerWidth/1280,innerHeight/720));
+if(!location.hash)location.replace('#p01');
+fit();addEventListener('resize',fit);
+addEventListener('keydown',e=>{if(e.defaultPrevented)return;const t=e.target;
+if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable))return;
+if(e.key==='g'){const b=document.body,list=b.classList.toggle('list');b.classList.toggle('deck',!list);
+if(list)document.getElementById('p'+pad(cur()))?.scrollIntoView({block:'start'});return}
+if(document.body.classList.contains('list'))return;
+if(e.key==='ArrowRight'||e.key===' ')go(cur()+1);
+else if(e.key==='ArrowLeft')go(cur()-1);
+else if(e.key==='Home')go(1);
+else if(e.key==='End')go(total)})})()</script></body></html>

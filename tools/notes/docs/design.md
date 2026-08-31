@@ -1,0 +1,72 @@
+# tools/notes — 設計
+
+note.com の記事を hokuchi に取り込み、原本と Markdown の 2 層でアーカイブする。決定の経緯は [ADR-0019](../../../docs/adr/0019-note-archive-two-layer.md)。
+
+## 置き場所
+
+```
+articles/note/
+  slugs.json                    note key → slug。ディレクトリ名の唯一の真実
+  README.md                     索引 (hokuchi-note index が生成)
+  <公開日>-<slug>/
+    source.json                 原本。note API の不変フィールドを凍結したもの
+    index.md                    読む用。source.json から決定的に生成する
+    assets/                     見出し画像と本文画像の実体
+```
+
+`index.md` と `README.md` は生成物なので手で直さない。直したくなったら変換規則の側を直して `hokuchi-note build` を回す。`source.json` と `assets/` と `slugs.json` が真実である。
+
+## コマンド
+
+| コマンド | すること | ネットワーク |
+|---|---|---|
+| `hokuchi-note sync` | 一覧取得 → 記事取得 → 画像取得 → build → verify → index | 使う |
+| `hokuchi-note build [dir...]` | `source.json` から `index.md` を作り直す | 使わない |
+| `hokuchi-note verify [dir...]` | 取り込みの忠実さを検査する。欠落があれば終了コード 1 | 使わない |
+| `hokuchi-note index` | `articles/note/README.md` を作り直す | 使わない |
+
+`tools/notes` で一度 `npm link` すると `hokuchi-note` として使える。`npm test` は変換規則の回帰テストとアーカイブ全体の検査を回す。
+
+## 取り込みの流れ
+
+1. `/api/v2/creators/<urlname>/contents` で公開記事の key を全件集める
+2. key ごとに `/api/v3/notes/<key>` を叩き、`freezeNote` で不変フィールドだけに絞って `source.json` に書く。内容が変わっていなければファイルを書き換えない (取得時刻だけの差分を出さない)
+3. 見出し画像と本文中の `<img>` を `assets/` に落とす。ファイル名は note のまま、既にあれば取りに行かない
+4. 全記事を `build` する。他記事のタイトルを引くので、記事単位ではなくアーカイブ単位で回す
+5. `verify` で検査する
+
+## 変換の規則
+
+note の body HTML が使う語彙は有限で、次の対応で Markdown にする。
+
+| 原本 | index.md |
+|---|---|
+| `<h2>` / `<h3>` | `##` / `###` |
+| `<p>` | 段落。`<br>` は行末 2 スペースの改行 |
+| `<figure><img>` | `![alt](assets/…)`。`<figcaption>` は直後のイタリック行 |
+| `<figure><a href><img></a>` | `[![alt](assets/…)](href)` |
+| `<figure embedded-service>` | `:::embed{service url}` + 代表テキスト |
+| `<figure><blockquote>` | `>` の引用 |
+| `<ul>` / `<ol>` / `<li>` | `-` / `1.` |
+| `<pre><code>` | フェンス。中身に ``` があれば長いフェンスで囲む |
+| `<hr>` | `---` |
+| `<table-of-contents>` | `:::toc` |
+| 未知のタグ | `:::unknown{tag}` (verify が warn を出す) |
+
+埋め込みだけディレクティブにするのは、素の URL に潰すと種別が失われるからである。ブロックの中には、X のポストなら本文と署名行、外部記事カードならタイトル・説明・ドメイン、Spotify などの oembed なら iframe の title を置く。埋め込み先が消えても中身が残る。自分の他記事への note 埋め込みは、アーカイブ内の `source.json` からタイトルを引いて補う。
+
+読みやすさのために割り切っている点が 3 つある。`&nbsp;` は半角空白に寄せる。エスケープは Markdown の記法と衝突する文字 (`` \ ` * [ ] < ``) に絞り、`_` は単語内で強調にならないので触らない。キャプションはイタリック行にする。いずれも原本が別にあるから許される割り切りである。
+
+## 検査
+
+`verify` は原本 `source.json` と生成物 (`index.md` + `assets/`) を突き合わせる。実装は `parse.mjs` を通さず、原本 HTML を正規表現で直接数える。パーサと検査が同じ勘違いをして揃って通ることを避けるためである。
+
+- **本文** — 原本の `<p>` `<h*>` `<li>` `<figcaption>` `<pre>` からテキストを取り出し、空白と強調記号を落として `index.md` に含まれるか見る。コードブロックは記法の除去がコードを壊すので、フェンスの中身と別に照合する
+- **埋め込み** — service ごとの件数が一致し、原本の `data-src` がすべて `:::embed` の url に残っているか
+- **本文リンク** — 埋め込み以外の `<a href>` がすべて `index.md` に現れるか
+- **画像** — 枚数が一致し、参照が相対パスで、実体がディスクにあるか
+- **構造** — 見出し・リスト項目・区切り線・コードブロックの数。front matter と埋め込みブロックの中身は数えない
+
+## 記事を書き足したとき
+
+`hokuchi-note sync` を回す。`slugs.json` にない記事は key のままのディレクトリに作られ、その旨を出力する。slug を足して再実行すればディレクトリごと引っ越す。記事を書き直したときも同じで、`source.json` が更新され、差分として読める。

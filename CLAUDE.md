@@ -18,8 +18,16 @@ talks/             発表資料（主役。時系列に蓄積）
     assets/        実画像など
     out/           作業レンダリング（git 管理外）
     final/         発表済みの凍結出力（コミットする）
-articles/          （将来）記事など、他の発信形態も root に並べる
+articles/
+  note/            note.com の記事アーカイブ（原本 + Markdown の 2 層。ADR-0019）
+    slugs.json     note key → slug。ディレクトリ名の唯一の真実
+    <YYYY-MM-DD-slug>/
+      source.json  原本。note API の不変フィールドを凍結したもの
+      index.md     読む用。source.json から生成（手で直さない）
+      assets/      見出し画像と本文画像の実体
 tools/
+  notes/           note 取り込みの CLI（sync / build / verify / index）
+    docs/design.md 生きた設計書
   slides/          スライドスキーマとレンダラ
     SPEC.md        スキーマの規範仕様（唯一の真実）
     schema/        JSON Schema（deck / theme）
@@ -31,6 +39,8 @@ tools/
 .claude/skills/
   crafting-presentation/  対話からスライドを作る skill（Phase 0〜7）
 ```
+
+note の記事は `hokuchi-note sync`（`tools/notes`）で取り込む。`index.md` は生成物なので手で直さず、変換規則を直して `build` を回す。取り込みの欠落は `verify` が検査するので、記事を足したら必ず通す（ADR-0019）。
 
 スライドを作る依頼は crafting-presentation skill に従う。デッキは `talks/<YYYY-MM-slug>/deck.yaml` に置く。テーマは登壇の立場で選び、相対パスで参照する（個人は `tools/slides/themes/hokuchi.yaml`、MOSH としては `tools/slides/themes/mosh.yaml`。コピーしない。ADR-0010）。発表が終わったら最終レンダリングを `final/` にコミットして凍結する。レンダラは進化するので、deck.yaml だけでは当時の見た目を再現できない。人間の細かいレビューは `hokuchi serve` のアノテーション (ADR-0011) で受ける。
 

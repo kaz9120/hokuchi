@@ -1,0 +1,12 @@
+{
+  "name": "@hokuchi/notes",
+  "version": "0.1.0",
+  "description": "hokuchi note importer — note.com の記事を原本 + Markdown の 2 層でアーカイブする",
+  "type": "module",
+  "bin": {
+    "hokuchi-note": "./cli.mjs"
+  },
+  "scripts": {
+    "test": "node test/check.mjs"
+  }
+}

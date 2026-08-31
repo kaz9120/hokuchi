@@ -104,9 +104,12 @@ function embedBlock(figure, embedsByKey) {
 function figureBlock(figure, embedsByKey) {
   if (figure.attrs['embedded-service']) return embedBlock(figure, embedsByKey);
 
+  // \u30ad\u30e3\u30d7\u30b7\u30e7\u30f3\u306f\u30c6\u30ad\u30b9\u30c8\u3068\u306f\u9650\u3089\u305a\u3001\u30ea\u30f3\u30af\u304c\u5165\u3063\u3066\u3044\u308b\u3053\u3068\u304c\u3042\u308b\u3002
+  // textOf \u3067\u6f70\u3059\u3068 URL \u3060\u3051\u304c\u9759\u304b\u306b\u6d88\u3048\u308b\u306e\u3067\u3001\u30a4\u30f3\u30e9\u30a4\u30f3\u306e\u307e\u307e\u6301\u3064\u3002
   const caption = (() => {
     const fc = find(figure.children, (n) => n.tag === 'figcaption');
-    return fc ? textOf([fc]).replace(/\u00a0/g, ' ').trim() : '';
+    const inline = fc ? inlineOf(fc.children) : [];
+    return isBlank(inline) ? [] : inline;
   })();
 
   const img = find(figure.children, (n) => n.tag === 'img');

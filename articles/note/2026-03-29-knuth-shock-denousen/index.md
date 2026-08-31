@@ -11,7 +11,7 @@ hashtags:
 ---
 
 > "Shock! Shock!"
-*https://www-cs-faculty.stanford.edu/~knuth/papers/claude-cycles.pdf*
+*<https://www-cs-faculty.stanford.edu/~knuth/papers/claude-cycles.pdf>*
 
 クヌース先生が2026年2月28日に発表した論文の書き出しだ。  
 こちらの記事のおかげで、このような論文があることを知ることができた。

@@ -74,7 +74,15 @@ const md = (note) => toMarkdown({ title: note.name ?? 't' }, parseNote(note).blo
   assert.equal(blocks[0].link, 'https://example.com/dest');
   assert.match(md(note), /\[!\[\]\(https:\/\/img\/x\.png\)\]\(https:\/\/example\.com\/dest\)/);
   assert.match(md(note), /^\*説明\*$/m);
-  ok('画像に張られたリンクと figcaption を落とさない');
+
+  // キャプションはテキストとは限らない。リンクをテキストに潰すと URL が消える
+  const withLink = {
+    body: '<figure><img src="https://img/y.png" alt=""><figcaption>' +
+      '出典 <a href="https://example.com/src">ここ</a></figcaption></figure>',
+    embedded_contents: [],
+  };
+  assert.match(md(withLink), /^\*出典 \[ここ\]\(https:\/\/example\.com\/src\)\*$/m);
+  ok('画像に張られたリンクと、キャプション内のリンクを落とさない');
 }
 
 // (4) 記法ガード -------------------------------------------------------------
@@ -104,7 +112,8 @@ const md = (note) => toMarkdown({ title: note.name ?? 't' }, parseNote(note).blo
     hashtags: [], eyecatch: null,
   };
   fs.writeFileSync(path.join(dir, 'source.json'), JSON.stringify(source));
-  const good = '---\ntitle: t\n---\n\n残る文\n\n消える文\n\n:::embed{service="twitter" url="https://x.com/u/status/9"}\n:::\n';
+  const fm = '---\ntitle: t\nnote_key: nX\nnote_url: https://note.com/x\npublished_at: "2026-01-01T00:00:00+09:00"\n---\n';
+  const good = `${fm}\n残る文\n\n消える文\n\n:::embed{service="twitter" url="https://x.com/u/status/9"}\n:::\n`;
   fs.writeFileSync(path.join(dir, 'index.md'), good);
   assert.deepEqual(verifyArticle(dir).errors, [], '過不足なければ error は出ない');
 
@@ -114,8 +123,44 @@ const md = (note) => toMarkdown({ title: note.name ?? 't' }, parseNote(note).blo
   fs.writeFileSync(path.join(dir, 'index.md'), good.replace(/:::embed\{[^\n]*\}\n:::/, 'https://x.com/u/status/9'));
   const stripped = verifyArticle(dir).errors.join('\n');
   assert.match(stripped, /埋め込み twitter/, '埋め込みを素の URL に潰したら検知する');
+
+  // 「含まれるか」だけの検査だと素通りする欠陥 — 順序の入れ替え
+  fs.writeFileSync(path.join(dir, 'index.md'), good.replace('残る文\n\n消える文', '消える文\n\n残る文'));
+  assert.match(verifyArticle(dir).errors.join('\n'), /順序か出現回数/, '段落の入れ替えを検知する');
+
+  // 同じく — リンクのラベルが別の URL に付け替わる
+  const linked = { ...source, body: '<p><a href="https://a.example/">A の話</a><a href="https://b.example/">B の話</a></p>' };
+  fs.writeFileSync(path.join(dir, 'source.json'), JSON.stringify(linked));
+  fs.writeFileSync(path.join(dir, 'index.md'),
+    `${fm}\n[A の話](https://b.example/)[B の話](https://a.example/)\n`);
+  assert.match(verifyArticle(dir).errors.join('\n'), /リンクの文字列と URL の組/, 'ラベルの付け替えを検知する');
+
+  // 同じく — 見出し画像に note の縮小版 (?width=1280) を掴んでしまう
+  const png = (w, h) => {
+    const b = Buffer.alloc(32);
+    Buffer.from('89504e470d0a1a0a', 'hex').copy(b, 0);
+    b.write('IHDR', 12);
+    b.writeUInt32BE(w, 16);
+    b.writeUInt32BE(h, 20);
+    return b;
+  };
+  fs.mkdirSync(path.join(dir, 'assets'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'assets/eye.png'), png(1280, 670));
+  const shrunk = {
+    ...source, body: '<p>残る文</p>', embedded_contents: [],
+    eyecatch: 'https://img/eye.png?width=1280', eyecatch_width: 1920, eyecatch_height: 1005,
+  };
+  fs.writeFileSync(path.join(dir, 'source.json'), JSON.stringify(shrunk));
+  const withEye = '---\ntitle: t\nnote_key: nX\nnote_url: https://note.com/x\n' +
+    'published_at: "2026-01-01T00:00:00+09:00"\neyecatch: assets/eye.png\n---\n\n残る文\n';
+  fs.writeFileSync(path.join(dir, 'index.md'), withEye);
+  assert.match(verifyArticle(dir).errors.join('\n'), /見出し画像が縮小版/, '縮小版の見出し画像を検知する');
+
+  fs.writeFileSync(path.join(dir, 'assets/eye.png'), Buffer.from('not an image'));
+  assert.match(verifyArticle(dir).errors.join('\n'), /見出し画像として読めない/, '壊れた画像を検知する');
+
   fs.rmSync(dir, { recursive: true, force: true });
-  ok('verify は本文・埋め込みの欠落を必ず検知する');
+  ok('verify は欠落・順序・リンクの取り違え・縮小画像を検知する');
 }
 
 // (6) アーカイブ全体 ---------------------------------------------------------

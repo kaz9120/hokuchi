@@ -71,6 +71,13 @@ const guardLineStarts = (s) =>
 const prefixLines = (text, prefix) =>
   text.split('\n').map((l) => (l === '' ? prefix.trimEnd() : prefix + l)).join('\n');
 
+// キャプションはイタリックの 1 行にする。中のリンクは Markdown のリンクとして
+// 残す (テキストに潰すと URL が消える)。改行が入ると囲みが壊れるので空白に寄せる。
+const captionToMd = (caption) =>
+  Array.isArray(caption) && caption.length
+    ? inlineToMd(caption).replace(/\s*\n\s*/g, ' ').trim()
+    : '';
+
 // ---------------------------------------------------------------------------
 // 埋め込み
 // ---------------------------------------------------------------------------
@@ -109,14 +116,16 @@ function blockToMd(block) {
       const alt = escapeText(block.alt ?? '');
       let img = `![${alt}](${block.localPath ?? block.src})`;
       if (block.link) img = `[${img}](${block.link})`;
-      return block.caption ? `${img}\n*${escapeText(block.caption)}*` : img;
+      const cap = captionToMd(block.caption);
+      return cap ? `${img}\n*${cap}*` : img;
     }
     case 'embed':
       return embedToMd(block);
     case 'quote': {
       const inner = block.blocks.map(blockToMd).join('\n\n');
       const quoted = prefixLines(inner, '> ');
-      return block.caption ? `${quoted}\n*${escapeText(block.caption)}*` : quoted;
+      const cap = captionToMd(block.caption);
+      return cap ? `${quoted}\n*${cap}*` : quoted;
     }
     case 'list':
       return block.items

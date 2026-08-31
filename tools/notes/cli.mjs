@@ -12,7 +12,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { listNotes, fetchNote, freezeNote } from './src/api.mjs';
-import { downloadImage } from './src/assets.mjs';
+import { downloadImage, downloadEyecatch } from './src/assets.mjs';
 import { buildArticle, articleIndex, listArticleDirs, readSource, SOURCE } from './src/build.mjs';
 import { verifyArticle } from './src/verify.mjs';
 
@@ -114,7 +114,7 @@ async function cmdSync(opts) {
     const assetsDir = path.join(dir, 'assets');
     let images = 0;
     if (frozen.eyecatch) {
-      await downloadImage(frozen.eyecatch, assetsDir);
+      await downloadEyecatch(frozen.eyecatch, assetsDir);
       images++;
     }
     for (const m of frozen.body.matchAll(/<img\b[^>]*\bsrc="([^"]*)"/g)) {

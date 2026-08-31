@@ -1,0 +1,105 @@
+{
+  "id": 169686854,
+  "key": "ne7ffad2f13c7",
+  "slug": "slug-ne7ffad2f13c7",
+  "type": "TextNote",
+  "status": "published",
+  "format": "4.0",
+  "name": "AIにセンスは頼めるのか — Claude Design と作った note 見出し画像メーカーの話",
+  "description": "",
+  "body": "<p name=\"f8ec4f8c-ad76-4290-a441-3543e168b81c\" id=\"f8ec4f8c-ad76-4290-a441-3543e168b81c\">AIに、センスは頼めるのか。</p><p name=\"b704c795-896f-4a5d-9941-d47b84830664\" id=\"b704c795-896f-4a5d-9941-d47b84830664\">私の答えは「頼める。ただし、頼み方があった」です。</p><p name=\"ea99adbf-b251-4f09-819a-49b638a33e6f\" id=\"ea99adbf-b251-4f09-819a-49b638a33e6f\">先日、社内のデザイナーと Claude Design の使い方について話す機会がありました。題材にしたのは、私が個人開発している note の見出し画像メーカーです。この対話がとても嬉しい体験だったので、そこで言語化できた「AIとデザインを作るプロセス」を記事にします。</p><p name=\"f37f9938-471b-47ed-bd45-25c7a9b57bb2\" id=\"f37f9938-471b-47ed-bd45-25c7a9b57bb2\">何が嬉しかったのかは、最後に書きます。</p><h2 name=\"cc0df214-7f5a-4267-86b2-6560b04022c0\" id=\"cc0df214-7f5a-4267-86b2-6560b04022c0\">作ったもの</h2><p name=\"391f11df-aa38-4cca-9ba5-21a60b30bcd9\" id=\"391f11df-aa38-4cca-9ba5-21a60b30bcd9\">まずは成果物からお見せします。note-ogp という、note 記事の見出し画像を作ることに特化したアプリです。</p><p name=\"5ee13448-66bb-4f8a-ba62-a733e2e3b644\" id=\"5ee13448-66bb-4f8a-ba62-a733e2e3b644\"><a href=\"https://note-ogp.y-kaz.com/\" target=\"_blank\" rel=\"nofollow noopener\">https://note-ogp.y-kaz.com/</a></p><p name=\"362c6a6c-647b-49b3-a2d1-55c1b27a2cfb\" id=\"362c6a6c-647b-49b3-a2d1-55c1b27a2cfb\">画像を1枚選び、タイトルと号数、日付を入力して、いくつかのパラメータを設定する。それだけで、ある程度オシャレな見出し画像ができあがります。</p><figure name=\"9613efc3-e28b-4c63-a236-546754632a37\" id=\"9613efc3-e28b-4c63-a236-546754632a37\"><img src=\"https://assets.st-note.com/img/1783834273-0e6aQUiNfXTVxGCKEY7HtMhw.png\" alt=\"\" width=\"620\" height=\"376\"><figcaption></figcaption></figure><p name=\"b54a9086-a04f-4a4f-a042-40ad2fe70ddd\" id=\"b54a9086-a04f-4a4f-a042-40ad2fe70ddd\">なぜこんなものを作ったのか。</p><p name=\"60ae5763-17d9-483d-be70-eb44e42895e7\" id=\"60ae5763-17d9-483d-be70-eb44e42895e7\">毎週 note を書いていて、いちばん辛いのは記事を書くことではありませんでした。見出し画像を作ることです。</p><h2 name=\"42e68c74-3333-4e8f-8d95-2cb93f81ef22\" id=\"42e68c74-3333-4e8f-8d95-2cb93f81ef22\">見出し画像づくりの変遷</h2><p name=\"67e2959e-f9d2-489e-99bc-8cc0b450679b\" id=\"67e2959e-f9d2-489e-99bc-8cc0b450679b\">この作業は、3つの道具を渡り歩いてきました。</p><p name=\"9f7068a9-5f30-420e-bfa4-78ae16ceb7fa\" id=\"9f7068a9-5f30-420e-bfa4-78ae16ceb7fa\">最初は画像生成AIです。記事の内容を全部入力して、見出し画像を生成してもらうプロセスでした。ある程度の質は出ます。ただ、文字の制御などクオリティの担保が地味に大変で、毎週の作業としては無視できない時間がかかっていました。</p><figure name=\"7e41988c-d3b1-4e23-a95d-7c1b770c89a2\" id=\"7e41988c-d3b1-4e23-a95d-7c1b770c89a2\"><img src=\"https://assets.st-note.com/img/1783834476-zdkHMQaXi7er6hLDJ82PIUWt.png\" alt=\"\" width=\"620\" height=\"209\"><figcaption></figcaption></figure><p name=\"7ed8614b-259a-4bfe-9a06-1950d918d2f5\" id=\"7ed8614b-259a-4bfe-9a06-1950d918d2f5\">次が Canva です。Canva AI にテンプレートを作ってもらい、タイトルの文字だけを差し替えていく運用に変えました。工数は大幅に下がりました。単品で見れば「ちょっと良いものできた！」という気持ちもあったんです。</p><p name=\"fa699219-9e83-41d4-b176-69b65c990f61\" id=\"fa699219-9e83-41d4-b176-69b65c990f61\">問題は、並んだときでした。毎週書いていれば記事は溜まっていき、note のサムネイル一覧でまとめて見られます。そこで全く格好良くない。連載には「12枚並べて格好良い」という感覚が必要なのだと、このとき気付き始めました。それでも、あまりの楽さに長く使い続けてしまい、脱却の手段をずっと探していました。</p><figure name=\"96a40f94-21dc-45da-bb45-a9bfd3b43d78\" id=\"96a40f94-21dc-45da-bb45-a9bfd3b43d78\"><img src=\"https://assets.st-note.com/img/1783834535-Z78BSC3mDVOM1LiavPRXyYW5.png\" alt=\"\" width=\"620\" height=\"413\"><figcaption></figcaption></figure><p name=\"63009a7a-08a0-41a3-be2d-cb3991c75134\" id=\"63009a7a-08a0-41a3-be2d-cb3991c75134\">そして Claude Design が登場します。真っ先にチャレンジしたかったのが、センスの良い見出し画像を作る努力でした。実際には忙しくてすぐには触れず、ゴールデンウィークに時間が作れてようやく着手しています。当時の速報記事がこちらです。</p><figure name=\"a2780d83-06a3-452d-b002-52b59c0d90f5\" id=\"a2780d83-06a3-452d-b002-52b59c0d90f5\" data-src=\"https://note.com/kyamamoto9120/n/nbe133d5a7dfc\" data-identifier=\"nbe133d5a7dfc\" embedded-service=\"note\" embedded-content-key=\"emb7adf65adc00f\">\n</figure><p name=\"756eec84-c413-4d53-8768-6fbc9f3f2e11\" id=\"756eec84-c413-4d53-8768-6fbc9f3f2e11\">ここから、Claude Design と見出し画像を追求する日々が始まりました。</p><h2 name=\"93a01171-4558-4b13-be98-8d627b3b0d44\" id=\"93a01171-4558-4b13-be98-8d627b3b0d44\">転機 — テンプレを選ぶのを、やめた</h2><p name=\"fa9e08f9-c0bb-411a-bf1f-b998a0bd5d60\" id=\"fa9e08f9-c0bb-411a-bf1f-b998a0bd5d60\">最初に Claude Design と作ったのは、いくつかのテンプレートを選んで見出し画像を作るツールでした。ちょっと格好良いものは作れます。でも、これでは Canva の再演です。「これが並んだときに、満足のいく記事一覧になるのか」という問題がそのまま残りました。</p><figure name=\"86932b81-89cc-4146-b1da-43533c560844\" id=\"86932b81-89cc-4146-b1da-43533c560844\"><img src=\"https://assets.st-note.com/img/1783834593-P0wtId4yXxkV7Jz1mjRveSQp.png\" alt=\"\" width=\"620\" height=\"357\"><figcaption></figcaption></figure><p name=\"57d3b5ad-6fa7-416a-9688-528e7d5287f9\" id=\"57d3b5ad-6fa7-416a-9688-528e7d5287f9\">ここからは、台紙の見せ方の追求になります。</p><p name=\"c0f383f7-5551-4711-8dff-81e775a8f0b0\" id=\"c0f383f7-5551-4711-8dff-81e775a8f0b0\">この時点で記事は28本。これだけ書いていると、見出し画像に求めるものが言語化されてきます。私の要件は3つでした。</p><ul name=\"62d9ad34-caaf-4265-8195-3376db86eaf5\" id=\"62d9ad34-caaf-4265-8195-3376db86eaf5\"><li><p name=\"bb485d1b-62b5-44ae-b7a6-7aa1a6babdd6\" id=\"bb485d1b-62b5-44ae-b7a6-7aa1a6babdd6\">連載であることがわかる</p></li><li><p name=\"d0398898-840e-4e97-b024-6d86729ecb01\" id=\"d0398898-840e-4e97-b024-6d86729ecb01\">世界観が統一されている</p></li><li><p name=\"7f2313c6-709e-4436-b133-b5ef10190809\" id=\"7f2313c6-709e-4436-b133-b5ef10190809\">それでいて、飽きない</p></li></ul><p name=\"42ec36fa-91f2-492e-a875-aa746ce34f1c\" id=\"42ec36fa-91f2-492e-a875-aa746ce34f1c\">これを重視してデザインを出してもらいます。方向性は良くなってきました。でも、まだ「良い」と思えないんです。</p><figure name=\"06468aee-2986-4864-a433-c4fc1737c7e3\" id=\"06468aee-2986-4864-a433-c4fc1737c7e3\"><img src=\"https://assets.st-note.com/img/1783834655-6ZY0H5CpsXbTenyOcmUM1GSu.png\" alt=\"\" width=\"620\" height=\"376\"><figcaption></figcaption></figure><p name=\"f7bc5afd-149d-49f7-9b24-59f909b26c4a\" id=\"f7bc5afd-149d-49f7-9b24-59f909b26c4a\">そこで、方向を変えました。</p><p name=\"799604b1-b5b1-4b00-8afa-eba29da5af17\" id=\"799604b1-b5b1-4b00-8afa-eba29da5af17\">私は雑誌の表紙が好きです。格好良い雑誌って、12ヶ月分並べても格好良いんですよ。Canva 期に気付いた「並べて格好良い」の答えは、アナログの世界にすでにあった。雑誌の表紙をベンチマークに置いて、それを想像しながら作り込みを始めました。</p><figure name=\"c91f9bd9-397c-4b95-85bc-8f615b02bb4e\" id=\"c91f9bd9-397c-4b95-85bc-8f615b02bb4e\"><img src=\"https://assets.st-note.com/img/1783834694-jdfH45o1ybLuc83mPJpNMVTv.png\" alt=\"\" width=\"620\" height=\"376\"><figcaption></figcaption></figure><p name=\"c71fd9f6-1bce-4691-99ce-63692b41decc\" id=\"c71fd9f6-1bce-4691-99ce-63692b41decc\">急に良くなってきました！</p><p name=\"25b136ad-8bba-4bda-a83e-24d0204bf3c1\" id=\"25b136ad-8bba-4bda-a83e-24d0204bf3c1\">これなら、写真さえちゃんと選べば、満足感のある見出し画像を並べられる。そう確信できた瞬間でした。</p><h2 name=\"aeaa8553-8138-4e04-b87b-b528ccba921d\" id=\"aeaa8553-8138-4e04-b87b-b528ccba921d\">プロセスを言語化する</h2><p name=\"7fa19651-efb6-49e8-b2f6-af796224429d\" id=\"7fa19651-efb6-49e8-b2f6-af796224429d\">「見出し画像を作るアプリ」から「自分が使いたいアプリ」までのギャップは、かなり大きいものでした。要求を言語化する能力が求められますし、Claude Design に何度もパターンを作ってもらい、細かいすり合わせを重ねて完成に近づけていきました。</p><p name=\"b5786d85-707c-467f-8a6d-6a87bbcdf41c\" id=\"b5786d85-707c-467f-8a6d-6a87bbcdf41c\">振り返って重要だったのは、この3つの動きだと思っています。</p><p name=\"fe777f8d-b685-4227-84d0-1a8127a1b6ab\" id=\"fe777f8d-b685-4227-84d0-1a8127a1b6ab\">まず、ベンチマークを決める。憧れのアナログを指差して「これ」と言えるようにする。アプリの作り込みではなく、台紙のブラッシュアップに集中できたのはこのおかげです。</p><p name=\"7a07d541-471b-4c10-93cb-a3d822d4a1aa\" id=\"7a07d541-471b-4c10-93cb-a3d822d4a1aa\">次に、大量に出させる。とにかくたくさんパターンを作ってもらって、格好良いものをすり合わせていく。この物量は、人間のデザイナーには頼めません。AIは文句も言わず、何時からでも何時間でも付き合ってくれます。だからこそ、この作業を自分一人でやり切れたのだと思います。</p><p name=\"5fd006ca-8fa0-4846-a2d1-07b7ddada54a\" id=\"5fd006ca-8fa0-4846-a2d1-07b7ddada54a\">最後に、削ぎ落とす。アプリをメンテするなかで、設定可能な項目が増えすぎたタイミングがありました。私は一度、全部消しました。</p><p name=\"339607b0-3dde-40a6-998d-9b3e98cc2828\" id=\"339607b0-3dde-40a6-998d-9b3e98cc2828\">AI時代に気をつけなければいけないのは、作りすぎることです。頼めば何でも作ってくれるから、危うく Canva を作るところでした。Canva を作ったらおしまいです。汎用の道具が欲しいなら、本物の Canva を使えばいい。必要なものは何かを問い続けて価値を磨き、不要を削いで洗練させる。それができていることが、このアプリに自信を持っている理由です。</p><p name=\"826679c7-cc20-4da5-88ad-c38200580e3e\" id=\"826679c7-cc20-4da5-88ad-c38200580e3e\">ちなみにこのプロセス、モデルが Opus でも Fable でもクオリティにそれほど差を感じていません。Fable は確かに賢いのですが、Opus でも困らない。効いているのはモデルの賢さより、プロセスの型のほうだと感じています。</p><h2 name=\"4e153613-c152-46af-b430-73053f920a43\" id=\"4e153613-c152-46af-b430-73053f920a43\">デザイナーに褒められた</h2><p name=\"7eb14d52-4281-461f-9775-7164a3b7b58c\" id=\"7eb14d52-4281-461f-9775-7164a3b7b58c\">冒頭の話に戻ります。</p><p name=\"1a62418c-1745-4a7f-8966-eaaca38d09b1\" id=\"1a62418c-1745-4a7f-8966-eaaca38d09b1\">このプロセスと成果物を、社内のデザイナーに褒めてもらえました。</p><p name=\"3544d34b-59ff-4c10-9b0a-5908e82babc5\" id=\"3544d34b-59ff-4c10-9b0a-5908e82babc5\">自分のAIの使い方に自信を持つのが難しい時代です。「これでいいのか」と思いながら使っている人は多いはずで、私もそうでした。このアプリを題材に Claude Design の使い方を話すなかで、自分のプロセスが言語化されていき、それを専門職の目で認めてもらえた。これは確実に自信になりました。</p><p name=\"b7c59608-23ae-472e-9112-cffe770a57a2\" id=\"b7c59608-23ae-472e-9112-cffe770a57a2\">同時に、本当に細かいこだわりにめっちゃ気付いてもらえたんです。こちらが説明する前に、狙いを見抜いてくる。やっぱりデザイナーはすごい、専門職なのだと実感しました。Claude Design がどれだけ進化しても、デザイナーは不要にならない。これも実感を持ってそう思います。AIを使うことと、専門性を尊敬することは両立するんです。</p><h2 name=\"7f1ec9cd-e824-410d-ab13-d62a7b1b321f\" id=\"7f1ec9cd-e824-410d-ab13-d62a7b1b321f\">おわりに</h2><p name=\"23b85333-66b8-4850-a743-1318f4124733\" id=\"23b85333-66b8-4850-a743-1318f4124733\">ベンチマークを決め、大量に出させ、削ぎ落とす。</p><p name=\"36c5e9bb-80df-4c95-bf64-08018c12933d\" id=\"36c5e9bb-80df-4c95-bf64-08018c12933d\">私が Claude Design と見つけたプロセスは、この3つの動きでした。デザインに限らず使える型だと思うので、よかったらあなたの題材で試してみてください。</p><p name=\"d231173b-42b2-4fbc-a667-bcb1125dcde8\" id=\"d231173b-42b2-4fbc-a667-bcb1125dcde8\">Claude Design は頼もしい相棒です。私の能力を大きく拡張してくれました。これからも、無限にデザインを作ってもらうと思います。感謝！</p>",
+  "separator": null,
+  "publish_at": "2026-07-12T14:40:39.000+09:00",
+  "created_at": "2026-07-12T13:07:06.000+09:00",
+  "note_url": "https://note.com/kyamamoto9120/n/ne7ffad2f13c7",
+  "price": 0,
+  "is_limited": false,
+  "is_trial": false,
+  "eyecatch": "https://assets.st-note.com/production/uploads/images/293681868/rectangle_large_type_2_196705f0489bf1fe1bd978f96aa3d806.png?fit=bounds&quality=85&width=1280",
+  "eyecatch_alt": "見出し画像",
+  "eyecatch_width": 1920,
+  "eyecatch_height": 1005,
+  "hashtags": [
+    "#個人開発",
+    "#見出し画像",
+    "#ClaudeDesign"
+  ],
+  "pictures": [
+    {
+      "caption": null,
+      "key": "1783834273-0e6aQUiNfXTVxGCKEY7HtMhw",
+      "url": "https://assets.st-note.com/img/1783834273-0e6aQUiNfXTVxGCKEY7HtMhw.png",
+      "thumbnail_url": "https://assets.st-note.com/img/1783834273-0e6aQUiNfXTVxGCKEY7HtMhw.png",
+      "alt": "画像1",
+      "width": null,
+      "height": null,
+      "index": 0
+    },
+    {
+      "caption": null,
+      "key": "1783834476-zdkHMQaXi7er6hLDJ82PIUWt",
+      "url": "https://assets.st-note.com/img/1783834476-zdkHMQaXi7er6hLDJ82PIUWt.png",
+      "thumbnail_url": "https://assets.st-note.com/img/1783834476-zdkHMQaXi7er6hLDJ82PIUWt.png",
+      "alt": "画像2",
+      "width": null,
+      "height": null,
+      "index": 1
+    },
+    {
+      "caption": null,
+      "key": "1783834535-Z78BSC3mDVOM1LiavPRXyYW5",
+      "url": "https://assets.st-note.com/img/1783834535-Z78BSC3mDVOM1LiavPRXyYW5.png",
+      "thumbnail_url": "https://assets.st-note.com/img/1783834535-Z78BSC3mDVOM1LiavPRXyYW5.png",
+      "alt": "画像3",
+      "width": null,
+      "height": null,
+      "index": 2
+    },
+    {
+      "caption": null,
+      "key": "1783834593-P0wtId4yXxkV7Jz1mjRveSQp",
+      "url": "https://assets.st-note.com/img/1783834593-P0wtId4yXxkV7Jz1mjRveSQp.png",
+      "thumbnail_url": "https://assets.st-note.com/img/1783834593-P0wtId4yXxkV7Jz1mjRveSQp.png",
+      "alt": "画像4",
+      "width": null,
+      "height": null,
+      "index": 3
+    },
+    {
+      "caption": null,
+      "key": "1783834655-6ZY0H5CpsXbTenyOcmUM1GSu",
+      "url": "https://assets.st-note.com/img/1783834655-6ZY0H5CpsXbTenyOcmUM1GSu.png",
+      "thumbnail_url": "https://assets.st-note.com/img/1783834655-6ZY0H5CpsXbTenyOcmUM1GSu.png",
+      "alt": "画像5",
+      "width": null,
+      "height": null,
+      "index": 4
+    },
+    {
+      "caption": null,
+      "key": "1783834694-jdfH45o1ybLuc83mPJpNMVTv",
+      "url": "https://assets.st-note.com/img/1783834694-jdfH45o1ybLuc83mPJpNMVTv.png",
+      "thumbnail_url": "https://assets.st-note.com/img/1783834694-jdfH45o1ybLuc83mPJpNMVTv.png",
+      "alt": "画像6",
+      "width": null,
+      "height": null,
+      "index": 5
+    }
+  ],
+  "embedded_contents": [
+    {
+      "key": "emb7adf65adc00f",
+      "url": "https://note.com/kyamamoto9120/n/nbe133d5a7dfc",
+      "service": "note",
+      "identifier": "nbe133d5a7dfc",
+      "caption": null,
+      "html_for_embed": "<iframe class=\"note-embed\" height=\"210\" scrolling=\"no\" src=\"https://note.com/embed/notes/nbe133d5a7dfc\" style=\"border: 0; display: block; max-width: 99%; width: 494px; padding: 0px; margin: 10px 0px; position: static; visibility: visible;\"></iframe>\n",
+      "html_for_display": null
+    }
+  ],
+  "user": {
+    "urlname": "kyamamoto9120",
+    "nickname": "山本一将｜焚き火を愛するエンジニア"
+  },
+  "_fetched_at": "2026-08-31T01:40:52.085Z"
+}

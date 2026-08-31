@@ -1,0 +1,41 @@
+{
+  "id": 156380458,
+  "key": "nbe3644604e5f",
+  "slug": "slug-nbe3644604e5f",
+  "type": "TextNote",
+  "status": "published",
+  "format": "4.0",
+  "name": "工夫は、ない。note20週続けた正直な話",
+  "description": "",
+  "body": "<p name=\"b2dd0bb0-dd19-4abe-873e-98a256961991\" id=\"b2dd0bb0-dd19-4abe-873e-98a256961991\">工夫は、ない。</p><p name=\"4697b2dd-afb0-4ba2-b0fd-c61fd9923164\" id=\"4697b2dd-afb0-4ba2-b0fd-c61fd9923164\">気の利いたネタ帳もないし、予約投稿もしていない。毎週日曜、焦りながら書いている。それでもnoteの連続投稿が20週続いた。</p><p name=\"6ab7faac-baf0-4965-9c2f-e7b2e4386aff\" id=\"6ab7faac-baf0-4965-9c2f-e7b2e4386aff\">きっかけは、昨年12月のアドベントカレンダー。</p><p name=\"e5fae9cd-d7d3-4018-9aad-27abb2e6bf11\" id=\"e5fae9cd-d7d3-4018-9aad-27abb2e6bf11\">私はもともとブログが苦手で、何度始めても続かなかった。それがなぜか、そのままずるずる毎週続いてしまった。気づいたら20週経っていた。</p><figure name=\"f53c9497-9d48-45bb-bebb-4d784e4864be\" id=\"f53c9497-9d48-45bb-bebb-4d784e4864be\"><img src=\"https://assets.st-note.com/img/1776563013-2jfbdoRkl1wrtaPVyNFzK8OS.png\" alt=\"\" width=\"620\" height=\"775\"><figcaption></figcaption></figure><p name=\"43992d88-28c5-40d6-b957-6195e674e3f3\" id=\"43992d88-28c5-40d6-b957-6195e674e3f3\">20週書いてみて、わかったことがある。</p><p name=\"bc36708f-f24a-4b06-8ee9-899a57893e62\" id=\"bc36708f-f24a-4b06-8ee9-899a57893e62\">書くハードルは、確かに下がった。「とにかく出す」ができるようになった。500文字でも、思いついたことをそのまま出せる。</p><p name=\"0f7e0b40-aadb-4597-acd5-69814209b3c9\" id=\"0f7e0b40-aadb-4597-acd5-69814209b3c9\">ただ、日曜の夜は毎週焦っている。ネタは毎週ひねり出している。平日から探しているが、ろくに貯まらない。「今週は何を書こう」を、結局毎週繰り返している。</p><p name=\"7a4756a6-45da-4dae-8260-9fc5e89832d2\" id=\"7a4756a6-45da-4dae-8260-9fc5e89832d2\">それでも続いているのは、たぶんひとつだけ。</p><p name=\"33484a7d-cdbf-447b-bba7-694d3efc132d\" id=\"33484a7d-cdbf-447b-bba7-694d3efc132d\">感想をもらえることがある。それが素直に嬉しい。小さなリターンが、次の1本を書く理由になっている。</p><p name=\"79653c04-7e7f-47b0-9901-dc296a46aa3f\" id=\"79653c04-7e7f-47b0-9901-dc296a46aa3f\">というわけで、続けるコツがある方、もしよかったら教えてください。ノウハウが欲しいです。</p>",
+  "separator": null,
+  "publish_at": "2026-04-19T10:44:22.000+09:00",
+  "created_at": "2026-04-19T10:39:50.000+09:00",
+  "note_url": "https://note.com/kyamamoto9120/n/nbe3644604e5f",
+  "price": 0,
+  "is_limited": false,
+  "is_trial": false,
+  "eyecatch": "https://assets.st-note.com/production/uploads/images/268537131/rectangle_large_type_2_1e6480de4172cd4f68d80a18d04520a1.png?fit=bounds&quality=85&width=1280",
+  "eyecatch_alt": "見出し画像",
+  "eyecatch_width": 1204,
+  "eyecatch_height": 630,
+  "hashtags": [],
+  "pictures": [
+    {
+      "caption": null,
+      "key": "1776563013-2jfbdoRkl1wrtaPVyNFzK8OS",
+      "url": "https://assets.st-note.com/img/1776563013-2jfbdoRkl1wrtaPVyNFzK8OS.png",
+      "thumbnail_url": "https://assets.st-note.com/img/1776563013-2jfbdoRkl1wrtaPVyNFzK8OS.png",
+      "alt": "画像1",
+      "width": null,
+      "height": null,
+      "index": 0
+    }
+  ],
+  "embedded_contents": [],
+  "user": {
+    "urlname": "kyamamoto9120",
+    "nickname": "山本一将｜焚き火を愛するエンジニア"
+  },
+  "_fetched_at": "2026-08-31T01:41:35.519Z"
+}

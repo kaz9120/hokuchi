@@ -1,0 +1,52 @@
+{
+  "id": 153301280,
+  "key": "nbc8ff37d9d2b",
+  "slug": "slug-nbc8ff37d9d2b",
+  "type": "TextNote",
+  "status": "published",
+  "format": "4.0",
+  "name": "クヌース先生の「Shock!」を読んで、電王戦を思い出した",
+  "description": "",
+  "body": "<figure name=\"5182e761-ed6f-4e60-abac-6a65dafd3601\" id=\"5182e761-ed6f-4e60-abac-6a65dafd3601\"><blockquote><p name=\"631831ae-5a8a-4ddd-b668-3577ece9c16b\" id=\"631831ae-5a8a-4ddd-b668-3577ece9c16b\">\"Shock! Shock!\"</p></blockquote><figcaption><a href=\"https://www-cs-faculty.stanford.edu/~knuth/papers/claude-cycles.pdf\" target=\"_blank\" rel=\"nofollow noopener\">https://www-cs-faculty.stanford.edu/~knuth/papers/claude-cycles.pdf</a></figcaption></figure><p name=\"9b3c3344-8081-43ee-81bd-25b7ccb04300\" id=\"9b3c3344-8081-43ee-81bd-25b7ccb04300\">クヌース先生が2026年2月28日に発表した論文の書き出しだ。<br>こちらの記事のおかげで、このような論文があることを知ることができた。</p><figure name=\"2aa5ebde-3642-4493-843d-bd2694e9dae3\" id=\"2aa5ebde-3642-4493-843d-bd2694e9dae3\" data-src=\"https://qiita.com/nogataka/items/ecbaedb3d7ffc29c9fb2\" data-identifier=\"null\" embedded-service=\"external-article\" embedded-content-key=\"embafbff183befb\"> \n<a href=\"https://qiita.com/nogataka/items/ecbaedb3d7ffc29c9fb2\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong>\nコンピュータ科学の神様が「AIに負けた」日 — Donald Knuth『Claude's Cycles』を読み解く - Qiita\n</strong>\n<em>\nはじめに：「Shock! Shock!」 2026年2月28日、コンピュータ科学の世界に小さな衝撃が走った。 Donald\n</em>\n<em>\nqiita.com\n</em>\n</a><a href=\"https://qiita.com/nogataka/items/ecbaedb3d7ffc29c9fb2\" rel=\"nofollow noopener\" target=\"_blank\"></a>\n\n \n</figure><p name=\"72afcc8a-c9aa-4fd8-812e-acf8497bf889\" id=\"72afcc8a-c9aa-4fd8-812e-acf8497bf889\">クヌース先生を知らない方のために補足すると、コンピュータ科学の世界で「神」と呼ばれる人物。代表作『The Art of Computer Programming』はこの分野の聖書ともいわれている。</p><p name=\"af408db4-766a-4fec-8332-d61f676bdd87\" id=\"af408db4-766a-4fec-8332-d61f676bdd87\">そのクヌース先生が数週間かけても解けなかった数学の問題を Claude に解かれた。87歳の巨匠が「AIに対する自分の意見を改めないといけないようだ」と書いた。</p><p name=\"fd230104-18b1-4c94-8943-3f5e8f82c8cd\" id=\"fd230104-18b1-4c94-8943-3f5e8f82c8cd\">これを読んで、ふと思った。<br>いまのLLMってコンピュータ将棋の歴史でいうとどの辺まで来たんだろう。</p><h2 name=\"9e143129-e33e-4ca4-b807-80fe381fc342\" id=\"9e143129-e33e-4ca4-b807-80fe381fc342\">コンピュータ将棋との対応</h2><p name=\"d40ed508-5703-4633-b29f-96c2556c0905\" id=\"d40ed508-5703-4633-b29f-96c2556c0905\">私は10年前、コンピュータ将棋が一番盛り上がっていた時代にプレイヤーをしていた。だからどうしてもこの対応が気になる。</p><p name=\"05aef4cb-2a02-4d16-947d-7e2c00bfff9e\" id=\"05aef4cb-2a02-4d16-947d-7e2c00bfff9e\">ChatGPTが登場した2022年。<br>あの衝撃は、Bonanzaが現れた2005年くらいの感覚だと思う。「なんかすごいのが出てきたぞ」という空気。</p><p name=\"45718f4e-a008-4422-b94a-d0fdc42b36ed\" id=\"45718f4e-a008-4422-b94a-d0fdc42b36ed\">GPT-4のインパクトは、Bonanzaが渡辺明竜王に挑んだ頃に近い。<br>「これは無視できない」と多くの人が感じ始めたタイミング。</p><p name=\"35077631-37a1-4b92-8d26-a245ebff2ccb\" id=\"35077631-37a1-4b92-8d26-a245ebff2ccb\">いまはどうか。<br>クヌース先生がAIを認めた。これは将棋でいえば、トップ棋士がコンピュータの実力を認めた瞬間だ。私の感覚では、電王戦の時代まで来ている。</p><h2 name=\"cf94aed5-0c1f-4f23-a465-b32746fad554\" id=\"cf94aed5-0c1f-4f23-a465-b32746fad554\">2八角の記憶</h2><p name=\"2e666e54-fd5c-47b5-8528-3a2a689baa9f\" id=\"2e666e54-fd5c-47b5-8528-3a2a689baa9f\">電王戦の話をすると、どうしても思い出すことがある。</p><p name=\"f8af596d-6441-46cd-b43b-d79d8810fce3\" id=\"f8af596d-6441-46cd-b43b-d79d8810fce3\">2015年、将棋ソフトAWAKEが21手で投了した一局。詳細はぜひ調べてみてほしい。ざっくり言うと、当時トッププロを超える棋力を持っていたはずのソフトが、事前に見つかっていた欠陥を突かれて力を発揮できないまま終わった。</p><p name=\"c2fe9f31-1965-47c2-a3e8-fe952c7bd49b\" id=\"c2fe9f31-1965-47c2-a3e8-fe952c7bd49b\">あの日、私はニコニコ生放送で見届けたあと、いてもたってもいられず千駄ヶ谷に向かった。同じようにモヤモヤを抱えた関係者と食事をした。</p><p name=\"03027dee-a7a6-4a6c-91f1-75aecf2eb2f7\" id=\"03027dee-a7a6-4a6c-91f1-75aecf2eb2f7\">寂しかった、というのが一番近い。</p><p name=\"09e89e9f-aa17-47ec-94ab-86d1c3357c1c\" id=\"09e89e9f-aa17-47ec-94ab-86d1c3357c1c\">あの後、少し意地になって自分の開発していたソフトで検証した。</p><figure name=\"be8b12ef-59ad-40a6-ac88-e196c579f6a0\" id=\"be8b12ef-59ad-40a6-ac88-e196c579f6a0\" data-src=\"https://x.com/kyamamoto9120/status/589357152663248896\" data-identifier=\"null\" embedded-service=\"twitter\" embedded-content-key=\"emb4004473fe402\"><blockquote class=\"twitter-tweet\"><p>AWAKEが２八角を打った局面、ひまわりはこれだけ読めば回避できるらしい。 <a href=\"http://t.co/FZBemHR7os\" rel=\"nofollow noopener\">pic.twitter.com/FZBemHR7os</a></p>— 山本一将｜焚き火を愛するエンジニア (@kyamamoto9120) <a href=\"https://twitter.com/kyamamoto9120/status/589357152663248896?ref_src=twsrc%5Etfw\" rel=\"nofollow noopener\">April 18, 2015</a></blockquote>\n\n\n</figure><p name=\"a3ac6f2d-354a-41b3-91cd-f452a2538d23\" id=\"a3ac6f2d-354a-41b3-91cd-f452a2538d23\">当該局面を38時間探索させ続けた。1時間の探索では悪手を指してしまうかもしれない。でも38時間かければ回避する。そして、この38時間を5分に縮めること自体は、コンピュータの歴史にとってそう長くかかる問題ではない。</p><p name=\"79db7700-7b3b-402c-91ed-716d437756c7\" id=\"79db7700-7b3b-402c-91ed-716d437756c7\">伝えたかったのはそれだけだ。時間の問題で解決される欠陥だった。</p><h2 name=\"f243cb21-2862-45fe-925d-155af6373950\" id=\"f243cb21-2862-45fe-925d-155af6373950\">いま、同じ空気を感じている</h2><p name=\"95db365f-42c5-48aa-8da4-dfea3bf35c78\" id=\"95db365f-42c5-48aa-8da4-dfea3bf35c78\">LLMの周りに、あのときと似た空気がある。</p><p name=\"b0d43226-a4fa-4f82-8209-3ca8690ed563\" id=\"b0d43226-a4fa-4f82-8209-3ca8690ed563\">ハルシネーション。コードのバグ。不正確な出力。それを指摘して「まだ人間の仕事を置き換えるには至らない」と結論づける声。</p><p name=\"02988f26-b5fe-4339-aaff-3c87f4ec5eec\" id=\"02988f26-b5fe-4339-aaff-3c87f4ec5eec\">気持ちは分かる。でも私には、あのときの2八角と重なって見える。</p><p name=\"ef22fb50-9ad5-4319-b321-973123e99d07\" id=\"ef22fb50-9ad5-4319-b321-973123e99d07\">修正可能な欠陥を理由に、その技術の本当の力を見ないまま結論を出してしまうこと。しかも、コンピュータ将棋の時代よりもはるかに速いスピードで進化が起きている。</p><p name=\"3362c6a9-4b34-4a6b-ac6a-afb33b4aa332\" id=\"3362c6a9-4b34-4a6b-ac6a-afb33b4aa332\">2八角を指摘している場合じゃない。</p><h2 name=\"ec67e360-3fcf-44b9-9323-a3c831de51cc\" id=\"ec67e360-3fcf-44b9-9323-a3c831de51cc\">藤井聡太が来る</h2><p name=\"ef0a581a-76d6-41c0-8737-e91b0bacb50f\" id=\"ef0a581a-76d6-41c0-8737-e91b0bacb50f\">藤井聡太は、将棋ソフトを使い倒した最初の世代だ。欠点を突く側ではなく、自分を強くする道具として使った。<br>LLMにも、その世代がいまに来る。ネイティブLLM世代。</p><p name=\"02737798-2875-4997-9d42-aeee4dbe6a52\" id=\"02737798-2875-4997-9d42-aeee4dbe6a52\">そんな世代に飲み込まれないよう、私もClaudeを使い倒して新しい能力を獲得していきたい。</p>",
+  "separator": null,
+  "publish_at": "2026-03-29T20:23:22.000+09:00",
+  "created_at": "2026-03-29T20:09:36.000+09:00",
+  "note_url": "https://note.com/kyamamoto9120/n/nbc8ff37d9d2b",
+  "price": 0,
+  "is_limited": false,
+  "is_trial": false,
+  "eyecatch": "https://assets.st-note.com/production/uploads/images/263129439/rectangle_large_type_2_6f33515c0bd4952ec740e8d38b1d689b.png?fit=bounds&quality=85&width=1280",
+  "eyecatch_alt": "見出し画像",
+  "eyecatch_width": 1280,
+  "eyecatch_height": 670,
+  "hashtags": [
+    "#Claude",
+    "#コンピュータ将棋"
+  ],
+  "pictures": [],
+  "embedded_contents": [
+    {
+      "key": "embafbff183befb",
+      "url": "https://qiita.com/nogataka/items/ecbaedb3d7ffc29c9fb2",
+      "service": "external-article",
+      "identifier": null,
+      "caption": null,
+      "html_for_embed": "<span><div class=\"external-article-widget\">\n<a href=\"https://qiita.com/nogataka/items/ecbaedb3d7ffc29c9fb2\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong class=\"external-article-widget-title\">\nコンピュータ科学の神様が「AIに負けた」日 — Donald Knuth『Claude's Cycles』を読み解く - Qiita\n</strong>\n<em class=\"external-article-widget-description\">\nはじめに：「Shock! Shock!」 2026年2月28日、コンピュータ科学の世界に小さな衝撃が走った。 Donald\n</em>\n<em class=\"external-article-widget-url\">\nqiita.com\n</em>\n</a><a class=\"external-article-widget-image\" href=\"https://qiita.com/nogataka/items/ecbaedb3d7ffc29c9fb2\" rel=\"nofollow noopener\" style=\"background-image: url('https://assets.st-note.com/production/uploads/ext/e14974c5022d92fab779743ff56bd0910bb41e3d9f99c52b4270eb615927.jpeg?x-type=ogp');\" target=\"_blank\"></a>\n\n</div>\n</span>",
+      "html_for_display": null
+    },
+    {
+      "key": "emb4004473fe402",
+      "url": "https://x.com/kyamamoto9120/status/589357152663248896",
+      "service": "twitter",
+      "identifier": null,
+      "caption": null,
+      "html_for_embed": "<span><blockquote class=\"twitter-tweet\" data-dnt=\"true\" align=\"center\"><p lang=\"ja\" dir=\"ltr\">AWAKEが２八角を打った局面、ひまわりはこれだけ読めば回避できるらしい。 <a href=\"http://t.co/FZBemHR7os\">pic.twitter.com/FZBemHR7os</a></p>&mdash; 山本一将｜焚き火を愛するエンジニア (@kyamamoto9120) <a href=\"https://twitter.com/kyamamoto9120/status/589357152663248896?ref_src=twsrc%5Etfw\">April 18, 2015</a></blockquote>\n<script async src=\"https://platform.twitter.com/widgets.js\" charset=\"utf-8\"></script>\n\n</span>",
+      "html_for_display": null
+    }
+  ],
+  "user": {
+    "urlname": "kyamamoto9120",
+    "nickname": "山本一将｜焚き火を愛するエンジニア"
+  },
+  "_fetched_at": "2026-08-31T01:41:40.199Z"
+}

@@ -1,0 +1,84 @@
+{
+  "id": 149039333,
+  "key": "nbef83441c098",
+  "slug": "slug-nbef83441c098",
+  "type": "TextNote",
+  "status": "published",
+  "format": "4.0",
+  "name": "能力を上げるな、摩擦を減らせ。Claude Code活用の考え方",
+  "description": "",
+  "body": "<p name=\"47103508-4ee6-4e61-bebf-03b6bf941762\" id=\"47103508-4ee6-4e61-bebf-03b6bf941762\">最後に自分でコードを書いてコミットしたのはいつだろう。</p><p name=\"e304c849-dcac-483c-bc7a-585b697664eb\" id=\"e304c849-dcac-483c-bc7a-585b697664eb\">この1ヶ月、記憶にない。毎日PRはレビューしている。仕様も書く。<br>でもコードを書いているのは私ではなくClaude Codeだ。</p><p name=\"d08ed2a9-0f00-4949-8cde-d49bb0d5088b\" id=\"d08ed2a9-0f00-4949-8cde-d49bb0d5088b\">2026年3月現在、私の開発スタイルはそうなっている。<br>先日Findyさん主催のClaude Code活用LT会で、この話をした。この記事では、登壇で伝えきれなかった部分も含めて書き残しておきたい。</p><h2 name=\"015a22e0-1a3a-4342-aa70-c46095362785\" id=\"015a22e0-1a3a-4342-aa70-c46095362785\">人間とコンピュータを区別しない</h2><p name=\"af20f0ef-5fe7-483a-9ed7-01e751187f85\" id=\"af20f0ef-5fe7-483a-9ed7-01e751187f85\">基点となるのは EM Conf JP 2025 の広木大地さんのキーノート。</p><figure name=\"fca779b0-69a1-4916-b2d9-b4321fa3db30\" id=\"fca779b0-69a1-4916-b2d9-b4321fa3db30\"><img src=\"https://assets.st-note.com/img/1772335956-ljmVk8xDaKh9vFoTC5EZPp1t.png\" alt=\"\" width=\"620\" height=\"349\"><figcaption>p.5「すべてのエンジニアは、AIをメンバーに持つエンジニアリングマネージャになる。」</figcaption></figure><p name=\"1a24595e-ae5c-44b9-bcca-85312d9efd45\" id=\"1a24595e-ae5c-44b9-bcca-85312d9efd45\">1年前はまだ想像が難しかった。いまのClaude Codeなら、十分現実的だと思っている。</p><figure name=\"c554476d-f98a-4b41-8336-c99ad387235a\" id=\"c554476d-f98a-4b41-8336-c99ad387235a\"><img src=\"https://assets.st-note.com/img/1772336202-F31iqwrj045SgmWL2anzTXNl.png\" alt=\"\" width=\"620\" height=\"349\"><figcaption>p.7 インタフェースを統一する</figcaption></figure><p name=\"484dcdc8-482a-4f36-9c63-8b504fd9fffd\" id=\"484dcdc8-482a-4f36-9c63-8b504fd9fffd\">私が心がけているのは、人間のメンバーとClaude Codeに対するインタフェースを統一すること。</p><p name=\"1e662aa2-7e98-4c21-b587-0b2f5ea63959\" id=\"1e662aa2-7e98-4c21-b587-0b2f5ea63959\">指示の出し方は「Whyを伝えて、Howは任せる」。NotionやFigma、SlackのURLを渡して、何を実現したいかを伝える。具体的な実装方法は指定しない。</p><p name=\"52579b99-8159-4fec-b9df-fffd0755d1b3\" id=\"52579b99-8159-4fec-b9df-fffd0755d1b3\">成果物の確認はPR上で完結させる。CIが通っているか、動作は仕様通りか、コード品質は十分か。ここも人間のPRと同じ基準で見る。</p><figure name=\"3f2a30f4-b614-4ab6-8f2e-bd9db5703e62\" id=\"3f2a30f4-b614-4ab6-8f2e-bd9db5703e62\"><img src=\"https://assets.st-note.com/img/1772336232-18AnJuy4VcbYMZaGNFCfK3Qs.png\" alt=\"\" width=\"620\" height=\"338\"><figcaption></figcaption></figure><p name=\"336dd7cc-715d-4928-b339-00c715694b84\" id=\"336dd7cc-715d-4928-b339-00c715694b84\">開発の流れを図にするとこうなる。<br>雑なインプット（Notion、Figma、SlackのURL）を渡すところと、実装計画の精査、最終成果物のPRレビュー。この3箇所だけが人間の仕事だ。</p><p name=\"217d1bd6-5345-4f2f-b9f8-6880846a3197\" id=\"217d1bd6-5345-4f2f-b9f8-6880846a3197\">URLから要件を言語化し、実装計画を立て、コードを書き、セルフレビューしてコミット&amp;プッシュする。ここはすべてClaude Codeが自律的にやる。</p><p name=\"613a4ed3-9cec-4f54-b4be-207927cfd495\" id=\"613a4ed3-9cec-4f54-b4be-207927cfd495\">この「自律的に」が大事だと思っている。</p><h2 name=\"c5bde4a5-c694-4123-94ce-21cd1bc0a399\" id=\"c5bde4a5-c694-4123-94ce-21cd1bc0a399\">能力不足は許容する。引き出せないのは改善する</h2><figure name=\"89b1e396-2518-4f68-befa-81ae71e7fe73\" id=\"89b1e396-2518-4f68-befa-81ae71e7fe73\"><img src=\"https://assets.st-note.com/img/1772336310-9xXBaTSyZ06fNmJYwAibt3EK.png\" alt=\"\" width=\"620\" height=\"349\"><figcaption>p.12 許容できること・できないこと</figcaption></figure><p name=\"ce1824a6-ec85-45fe-abca-fb84f9f0548e\" id=\"ce1824a6-ec85-45fe-abca-fb84f9f0548e\">Claude Codeに任せる範囲が広がると、EMがボトルネックになってくる。レビューが追いつかない。要件の言語化が間に合わない。これは予想通りだった。</p><p name=\"8931ec65-4e1d-4850-8e2f-92da771f24ab\" id=\"8931ec65-4e1d-4850-8e2f-92da771f24ab\">ただ、ここで大事にしている考え方がある。</p><p name=\"deae8f60-ccbd-4b61-82eb-a616d371da76\" id=\"deae8f60-ccbd-4b61-82eb-a616d371da76\"><strong>能力不足は仕方ない。能力を引き出せていないのはまずい。</strong></p><p name=\"d5cb647d-3949-499b-99f1-89ab401ec2cb\" id=\"d5cb647d-3949-499b-99f1-89ab401ec2cb\">これは人間のメンバーに対しても同じだ。ある人がスキル的にできないことがある。それは許容する。でも、環境やプロセスのせいでフルパワーが出せていないなら、それはEMの責任だと思っている。</p><p name=\"e69c1337-eaf7-4f72-b564-acf37726e1c5\" id=\"e69c1337-eaf7-4f72-b564-acf37726e1c5\">Claude Codeにも同じ考え方を適用している。</p><p name=\"5f75f3f8-2416-4871-b195-99270ac499ac\" id=\"5f75f3f8-2416-4871-b195-99270ac499ac\">PRに対してフィードバックすること。これは許容する。最終的にタスクを引き取って人間が片付けること。これも許容する。できないことはある。</p><p name=\"18569171-b7b3-4e11-957b-89ce74f6d315\" id=\"18569171-b7b3-4e11-957b-89ce74f6d315\">でも、情報が足りなくて自走できず手が止まること。チーム開発のルールを知らなくて間違えること。これは許容しない。環境の問題だからだ。</p><p name=\"3dca7ba4-f7a8-4bbd-94c3-44d1094b3979\" id=\"3dca7ba4-f7a8-4bbd-94c3-44d1094b3979\">フルパワーを出せる状態を作る。その上で出た結果が、いまのClaude Codeの実力。そう評価したい。</p><h2 name=\"2bbbbb60-5f7a-4439-b93b-47c85ae2b900\" id=\"2bbbbb60-5f7a-4439-b93b-47c85ae2b900\">摩擦を減らす3つの打ち手</h2><p name=\"2f86785a-9b67-4db4-9651-7c4d306d973c\" id=\"2f86785a-9b67-4db4-9651-7c4d306d973c\">では具体的に何をしているか。私は「摩擦」という言葉で整理している。<br>Claude Codeが自律的に動こうとしたとき、引っかかって止まるポイント。それが摩擦だ。</p><h3 name=\"dc54cbae-cdad-49b6-926a-75d3013dd8f7\" id=\"dc54cbae-cdad-49b6-926a-75d3013dd8f7\">情報へのアクセス</h3><p name=\"de9eef5d-1fca-4b87-a4b7-2f726df8a7b4\" id=\"de9eef5d-1fca-4b87-a4b7-2f726df8a7b4\">一番多い摩擦は「情報が足りなくて判断できない」だった。</p><p name=\"a9357ef0-e56a-4038-ac73-64eeafd2e68e\" id=\"a9357ef0-e56a-4038-ac73-64eeafd2e68e\">打ち手は3つ。MCPを整備して、Notion・Figma・Slackの情報に直接アクセスできるようにした。PR descriptionで曖昧さを事前に潰すようにした。そして「迷ったら決めで実装して、後で報告」というルールを入れた。</p><p name=\"1759e374-3a47-4cc2-b236-1dee06388986\" id=\"1759e374-3a47-4cc2-b236-1dee06388986\">3つ目が地味に大きかった。人間のメンバーにも同じことを言う。「迷ったら一旦決めて進めて。間違ってたらレビューで直すから」。手戻りになる可能性もあるが、手が止まってしまうよりずっと良いと考えている。</p><h3 name=\"2ac71b12-084b-4049-bc89-cbd4287fa5b7\" id=\"2ac71b12-084b-4049-bc89-cbd4287fa5b7\">パーミッションの設計</h3><p name=\"3a7326f8-ca4d-43ca-b0bf-bd0e2432f7e2\" id=\"3a7326f8-ca4d-43ca-b0bf-bd0e2432f7e2\">Claude Codeには権限の壁がある。bashコマンドを実行するたびに承認を求めてくる。安全のためだが、毎回止まると自律性が損なわれる。</p><p name=\"fb257cd8-aa70-4ce1-ad67-e8440a5ebd54\" id=\"fb257cd8-aa70-4ce1-ad67-e8440a5ebd54\">ここでの工夫は、Claude Codeがやりたいことを観察して、繰り返すパターンに名前をつけてスクリプト化すること。そのスクリプトに対して権限を付与する。</p><p name=\"6c9a0d1b-ee74-4a8e-8297-f6b14f748401\" id=\"6c9a0d1b-ee74-4a8e-8297-f6b14f748401\">闇雲に全権限を開放するのではない。やりたいことを理解した上で、必要な権限だけを渡す。これもメンバーに対する権限設計と同じ発想だ。</p><h3 name=\"0449769d-d216-4090-81d2-2059e8ff8b68\" id=\"0449769d-d216-4090-81d2-2059e8ff8b68\">リモートでの指示</h3><figure name=\"7b0499f5-8736-4ff5-b9e1-dd675cc03608\" id=\"7b0499f5-8736-4ff5-b9e1-dd675cc03608\"><img src=\"https://assets.st-note.com/img/1772338003-vJtQmZRS7benUK4EAIDOGhos.png\" alt=\"\" width=\"620\" height=\"349\"><figcaption>p.16&nbsp;Remote Control 機能がリリース</figcaption></figure><p name=\"315f0ffe-6337-43c6-b57c-62e32489cb21\" id=\"315f0ffe-6337-43c6-b57c-62e32489cb21\">登壇した日の朝、Claude CodeのRemote Control機能がリリースされた。ターミナルで起動したClaude Codeのセッションを、スマホやブラウザから操作できる機能だ。</p><p name=\"d326b7d1-8265-4144-8f1c-9c571c4f05f0\" id=\"d326b7d1-8265-4144-8f1c-9c571c4f05f0\">これはまさに摩擦を減らすための機能だと思った。それまで、Claude Codeへの指示はターミナルからしか出せなかった。Slackなら移動中でもスマホから返信できるのに、Claude Codeには席に戻らないと指示が出せない。</p><p name=\"8c724c66-2552-421d-87d6-e5aa8e2eb51a\" id=\"8c724c66-2552-421d-87d6-e5aa8e2eb51a\">リリースから数日、実際に使ってみている。散歩中にスマホからPRの修正指示を出したり、ミーティングの合間にタスクを投げたりできる。コミュニケーションのギャップがまた一つ小さくなった。</p><h2 name=\"0d447bca-8edd-418f-bf38-41822fdccf99\" id=\"0d447bca-8edd-418f-bf38-41822fdccf99\">機能は「摩擦を減らす手段」として見る</h2><p name=\"5ee3abf3-38de-4bd5-a4cb-b9c6f7ec0313\" id=\"5ee3abf3-38de-4bd5-a4cb-b9c6f7ec0313\">Claude Codeには新しい機能がどんどん追加されている。MCP、カスタムスラッシュコマンド、Remote Control。</p><p name=\"1ff36f12-aed1-4e1f-be6d-b0336675f12c\" id=\"1ff36f12-aed1-4e1f-be6d-b0336675f12c\">これらを「AIの能力を上げるもの」として捉えると、使い方を間違えると思っている。</p><p name=\"054ea53f-2f16-43f2-9936-517339708d2c\" id=\"054ea53f-2f16-43f2-9936-517339708d2c\">Claude Codeの能力そのものは、モデルのアップデートで上がる。私がやるべきなのは、いまある能力をフルに引き出すための環境を整えること。新機能は、そのための手段だ。</p><p name=\"95d2b2bd-2f01-40bb-82b2-4d63cd6acdc8\" id=\"95d2b2bd-2f01-40bb-82b2-4d63cd6acdc8\">それぞれの機能が、具体的な摩擦に対応している。能力を上げるのではなく、摩擦を減らす。この視点で機能を評価すると、何を優先的に導入すべきかが見えてくる。</p><hr name=\"19c7f8bc-77e3-4861-a942-917a7b7ca558\" id=\"19c7f8bc-77e3-4861-a942-917a7b7ca558\"><p name=\"809154eb-ad40-4425-8de1-3605738d48de\" id=\"809154eb-ad40-4425-8de1-3605738d48de\">この考え方が正解かは分からない。1ヶ月後にはまた変わっているかもしれない。2026年3月時点の記録として、ここに残しておく。</p>",
+  "separator": null,
+  "publish_at": "2026-03-01T13:14:48.000+09:00",
+  "created_at": "2026-03-01T12:17:38.000+09:00",
+  "note_url": "https://note.com/kyamamoto9120/n/nbef83441c098",
+  "price": 0,
+  "is_limited": false,
+  "is_trial": false,
+  "eyecatch": "https://assets.st-note.com/production/uploads/images/255571231/rectangle_large_type_2_2003dab7bfd06f8274b30cf887456560.png?fit=bounds&quality=85&width=1280",
+  "eyecatch_alt": "見出し画像",
+  "eyecatch_width": 1280,
+  "eyecatch_height": 670,
+  "hashtags": [
+    "#AI活用",
+    "#ClaudeCode"
+  ],
+  "pictures": [
+    {
+      "caption": null,
+      "key": "1772335956-ljmVk8xDaKh9vFoTC5EZPp1t",
+      "url": "https://assets.st-note.com/img/1772335956-ljmVk8xDaKh9vFoTC5EZPp1t.png",
+      "thumbnail_url": "https://assets.st-note.com/img/1772335956-ljmVk8xDaKh9vFoTC5EZPp1t.png",
+      "alt": "画像1",
+      "width": null,
+      "height": null,
+      "index": 0
+    },
+    {
+      "caption": null,
+      "key": "1772336202-F31iqwrj045SgmWL2anzTXNl",
+      "url": "https://assets.st-note.com/img/1772336202-F31iqwrj045SgmWL2anzTXNl.png",
+      "thumbnail_url": "https://assets.st-note.com/img/1772336202-F31iqwrj045SgmWL2anzTXNl.png",
+      "alt": "画像2",
+      "width": null,
+      "height": null,
+      "index": 1
+    },
+    {
+      "caption": null,
+      "key": "1772336232-18AnJuy4VcbYMZaGNFCfK3Qs",
+      "url": "https://assets.st-note.com/img/1772336232-18AnJuy4VcbYMZaGNFCfK3Qs.png",
+      "thumbnail_url": "https://assets.st-note.com/img/1772336232-18AnJuy4VcbYMZaGNFCfK3Qs.png",
+      "alt": "画像3",
+      "width": null,
+      "height": null,
+      "index": 2
+    },
+    {
+      "caption": null,
+      "key": "1772336310-9xXBaTSyZ06fNmJYwAibt3EK",
+      "url": "https://assets.st-note.com/img/1772336310-9xXBaTSyZ06fNmJYwAibt3EK.png",
+      "thumbnail_url": "https://assets.st-note.com/img/1772336310-9xXBaTSyZ06fNmJYwAibt3EK.png",
+      "alt": "画像4",
+      "width": null,
+      "height": null,
+      "index": 3
+    },
+    {
+      "caption": null,
+      "key": "1772338003-vJtQmZRS7benUK4EAIDOGhos",
+      "url": "https://assets.st-note.com/img/1772338003-vJtQmZRS7benUK4EAIDOGhos.png",
+      "thumbnail_url": "https://assets.st-note.com/img/1772338003-vJtQmZRS7benUK4EAIDOGhos.png",
+      "alt": "画像5",
+      "width": null,
+      "height": null,
+      "index": 4
+    }
+  ],
+  "embedded_contents": [],
+  "user": {
+    "urlname": "kyamamoto9120",
+    "nickname": "山本一将｜焚き火を愛するエンジニア"
+  },
+  "_fetched_at": "2026-08-31T01:41:48.690Z"
+}

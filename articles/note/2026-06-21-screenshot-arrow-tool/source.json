@@ -1,0 +1,46 @@
+{
+  "id": 166315235,
+  "key": "n90db8717390e",
+  "slug": "slug-n90db8717390e",
+  "type": "TextNote",
+  "status": "published",
+  "format": "4.0",
+  "name": "スクショに矢印を足して貼る。それだけのことを手軽にしたかった",
+  "description": "",
+  "body": "<p name=\"3aad2219-48ff-475e-b2cf-b6177989e211\" id=\"3aad2219-48ff-475e-b2cf-b6177989e211\">バグ報告のために画面をキャプチャして、「ここ」と矢印を引いて、Slack に貼る。ハンズオン記事を書くために、操作手順をスクショに撮って、注釈をふって、note や Zenn に並べる。</p><p name=\"5406d307-d74e-436e-816a-5d9376523e2e\" id=\"5406d307-d74e-436e-816a-5d9376523e2e\">ソフトウェアエンジニアなら、この作業を週に何度もやっていると思います。</p><p name=\"75274e71-935a-421f-8f95-68f32ca32a54\" id=\"75274e71-935a-421f-8f95-68f32ca32a54\">私もそうです。そして、ずっと地味なストレスを感じていました。</p><h2 name=\"644e7f55-4716-443d-84e9-10a5bf909f99\" id=\"644e7f55-4716-443d-84e9-10a5bf909f99\">Mac のスクショ体験が、意外としんどい</h2><p name=\"27d90aa9-4044-4363-ba09-8e68af20610e\" id=\"27d90aa9-4044-4363-ba09-8e68af20610e\">Windows を使っていた頃は、標準のツールでそこそこ快適にこなせていました。Mac に移ってから、同じことをやろうとすると妙に手数が増える。</p><p name=\"f7266270-42b1-4cd6-b4a3-4c5697ab7206\" id=\"f7266270-42b1-4cd6-b4a3-4c5697ab7206\">スクショを撮る。プレビューで開く。切り取る。注釈を足す。コピーする。ツールを行き来するたびに、流れが途切れます。</p><p name=\"084a957f-68e4-4a13-baab-d1f70ea07076\" id=\"084a957f-68e4-4a13-baab-d1f70ea07076\">CleanShot X のようなネイティブアプリを入れれば解決する場面もあります。でも、私が欲しかったのは「環境を選ばず、ブラウザを開くだけで使える」手軽さでした。インストールが必要な時点で、別のマシンでは使えません。</p><p name=\"12feda56-99f2-430e-900d-d924ed58a086\" id=\"12feda56-99f2-430e-900d-d924ed58a086\">そしてもう一つ。私はスクショをローカルに保存したくない。撮って、加工して、クリップボードに乗せて、Slack なり GitHub なりに貼ったら、それで終わり。画像ファイルがデスクトップに溜まっていくのは、それだけで小さなストレスです。</p><h2 name=\"fffe0903-11ab-4643-b911-0fe39c542bbd\" id=\"fffe0903-11ab-4643-b911-0fe39c542bbd\">snapcrop を作った</h2><p name=\"9eb49344-998e-4acc-a5d6-b3b6c1382a7c\" id=\"9eb49344-998e-4acc-a5d6-b3b6c1382a7c\">この不便を解決するために、snapcrop というブラウザツールを作りました。</p><figure name=\"a586374b-0cad-47c6-b1d5-0d3c7160af5a\" id=\"a586374b-0cad-47c6-b1d5-0d3c7160af5a\"><a href=\"https://snapcrop.y-kaz.com/\" target=\"_blank\" rel=\"nofollow noopener\"><img src=\"https://assets.st-note.com/img/1782023635-LFUjh6xaIKZQCm5Nkp12o8bG.png\" alt=\"\" width=\"620\" height=\"349\"></a><figcaption>https://snapcrop.y-kaz.com/</figcaption></figure><p name=\"029c881c-4b3d-49a7-926b-b3bd1e951391\" id=\"029c881c-4b3d-49a7-926b-b3bd1e951391\">アカウント登録は不要です。画像がサーバーに送信されることもありません。開いた瞬間から使えます。</p><p name=\"4748da00-42dc-4579-b044-9074767a94c0\" id=\"4748da00-42dc-4579-b044-9074767a94c0\">できることは絞っています。</p><ul name=\"635d3cb7-034a-4bf1-a7f8-62f3c5e48cbf\" id=\"635d3cb7-034a-4bf1-a7f8-62f3c5e48cbf\"><li><p name=\"12f3dbbc-036f-4fb3-96d4-b6c7cc324314\" id=\"12f3dbbc-036f-4fb3-96d4-b6c7cc324314\">ブラウザ上でスクリーンショットを撮る</p></li><li><p name=\"00e173b6-2bf6-4b6d-9b27-eae53fcae26a\" id=\"00e173b6-2bf6-4b6d-9b27-eae53fcae26a\">画像を切り取る（16:9 などアスペクト比の指定もできる）</p></li><li><p name=\"e49ee59d-1942-4556-84d3-a04aab386795\" id=\"e49ee59d-1942-4556-84d3-a04aab386795\">矢印、テキスト、矩形、マーカー、モザイクで注釈を入れる</p></li><li><p name=\"66ac8b2f-45c1-470b-9dbe-8d01ab62872e\" id=\"66ac8b2f-45c1-470b-9dbe-8d01ab62872e\">Cmd+C でクリップボードにコピーする</p></li></ul><p name=\"3e0c0910-e066-4cb2-adcc-b7043c6a0789\" id=\"3e0c0910-e066-4cb2-adcc-b7043c6a0789\">これだけです。</p><p name=\"65821d15-c792-419a-bc96-030d03d50ae2\" id=\"65821d15-c792-419a-bc96-030d03d50ae2\">画像を保存する機能はあえて重視していません。スクショは「通過する」ものだと思っています。撮って、加工して、相手に届いたら、役目を終える。</p><h2 name=\"1f2aba2b-b364-4ba6-b5b4-fbd0f00b8782\" id=\"1f2aba2b-b364-4ba6-b5b4-fbd0f00b8782\">「伝わるスクショ」は、道具の問題だった</h2><p name=\"9e2aea3a-68a9-4118-95bb-f03f7df51665\" id=\"9e2aea3a-68a9-4118-95bb-f03f7df51665\">snapcrop を自分で使い込むうちに、気づいたことがあります。</p><p name=\"8d2df462-9513-4000-b06e-546360c54e1d\" id=\"8d2df462-9513-4000-b06e-546360c54e1d\">スクショは、適当に貼ればいいものではありません。バグ報告で「ここが壊れている」と矢印1本引いてあるだけで、受け取る側の理解速度がまるで変わります。ハンズオン記事で手順ごとのスクショが同じサイズで並んでいると、読む側のストレスが減ります。</p><p name=\"cdfb7022-a318-4151-91d0-9b9e8b101981\" id=\"cdfb7022-a318-4151-91d0-9b9e8b101981\">丁寧にスクショを作りたいという気持ちは、多くの人が持っているはずです。でも、ツールが不便だとその気持ちに蓋をしてしまう。面倒だから、とりあえず撮ったまま貼る。</p><p name=\"0fa82fcf-4ba6-457c-9904-84998df6d5ca\" id=\"0fa82fcf-4ba6-457c-9904-84998df6d5ca\">これは意志の問題ではなく、道具の摩擦の問題でした。</p><p name=\"2fdd6b81-b651-4c4c-8d2e-eac616a67437\" id=\"2fdd6b81-b651-4c4c-8d2e-eac616a67437\">snapcrop は、その摩擦を限りなく小さくすることで、「丁寧に伝える」の敷居を下げたいと思って作っています。</p><h2 name=\"7ed6a685-87fc-454d-9056-fc76c344d1c0\" id=\"7ed6a685-87fc-454d-9056-fc76c344d1c0\">なんでもできる方向には進まない</h2><p name=\"e549b5c1-3b27-40c1-95ac-cbc74588fc16\" id=\"e549b5c1-3b27-40c1-95ac-cbc74588fc16\">snapcrop は画像編集アプリではありません。Figma や Photoshop の代わりにはなりませんし、なるつもりもありません。</p><p name=\"6e04e123-587b-42c7-82c9-9d50bf0b216b\" id=\"6e04e123-587b-42c7-82c9-9d50bf0b216b\">目指しているのは、「説明のための図解を、摩擦なく作れるツール」です。なんでもできるようになると、むしろ価値が下がると考えています。機能を足すかどうかの判断基準は「これがあると、説明がもっと伝わるか」の一点だけです。</p><p name=\"3d94dc1b-cc40-4d11-960e-f236d2bd2e08\" id=\"3d94dc1b-cc40-4d11-960e-f236d2bd2e08\">今は1枚ずつの注釈の体験を磨いている段階ですが、いずれはハンズオン資料のように、シリーズを通して一貫した見た目で図解を並べられる体験も作りたいと考えています。</p><h2 name=\"354fe6d1-3a59-4cab-9522-ed868f90bd1a\" id=\"354fe6d1-3a59-4cab-9522-ed868f90bd1a\">使ってみてください</h2><p name=\"42521399-7e9f-488a-b575-b3beed2fb010\" id=\"42521399-7e9f-488a-b575-b3beed2fb010\"><a href=\"https://snapcrop.y-kaz.com/\" target=\"_blank\" rel=\"nofollow noopener\">https://snapcrop.y-kaz.com/</a></p><p name=\"27603821-3c33-4a5b-936f-9f1bb03dbba4\" id=\"27603821-3c33-4a5b-936f-9f1bb03dbba4\">ブラウザで開いて、Cmd+V で画像を貼るか、画面キャプチャボタンを押すだけです。</p><p name=\"8e7b8e82-98bf-4f7a-a399-c3f13948413d\" id=\"8e7b8e82-98bf-4f7a-a399-c3f13948413d\">普段のスクショ作業が少しでも楽になったら嬉しいです。</p>",
+  "separator": null,
+  "publish_at": "2026-06-21T15:49:26.000+09:00",
+  "created_at": "2026-06-21T14:38:32.000+09:00",
+  "note_url": "https://note.com/kyamamoto9120/n/n90db8717390e",
+  "price": 0,
+  "is_limited": false,
+  "is_trial": false,
+  "eyecatch": "https://assets.st-note.com/production/uploads/images/287404275/rectangle_large_type_2_6b51ffb38c296025baf3258fe54db71a.png?fit=bounds&quality=85&width=1280",
+  "eyecatch_alt": "見出し画像",
+  "eyecatch_width": 1920,
+  "eyecatch_height": 1005,
+  "hashtags": [
+    "#個人開発",
+    "#ツール",
+    "#スクショ",
+    "#snapcrop"
+  ],
+  "pictures": [
+    {
+      "caption": null,
+      "key": "1782023635-LFUjh6xaIKZQCm5Nkp12o8bG",
+      "url": "https://assets.st-note.com/img/1782023635-LFUjh6xaIKZQCm5Nkp12o8bG.png",
+      "thumbnail_url": "https://assets.st-note.com/img/1782023635-LFUjh6xaIKZQCm5Nkp12o8bG.png",
+      "alt": "画像1",
+      "width": null,
+      "height": null,
+      "index": 0
+    }
+  ],
+  "embedded_contents": [],
+  "user": {
+    "urlname": "kyamamoto9120",
+    "nickname": "山本一将｜焚き火を愛するエンジニア"
+  },
+  "_fetched_at": "2026-08-31T01:41:09.002Z"
+}

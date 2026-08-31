@@ -1,0 +1,76 @@
+{
+  "id": 173989948,
+  "key": "nfe667accffd0",
+  "slug": "slug-nfe667accffd0",
+  "type": "TextNote",
+  "status": "published",
+  "format": "4.0",
+  "name": "AIが将棋AIを作る3週間、見えてきた壁",
+  "description": "",
+  "body": "<p name=\"c9145b9d-299e-48d8-947f-3780fe267e10\" id=\"c9145b9d-299e-48d8-947f-3780fe267e10\">3週間前、コンピュータ将棋の開発を Claude Code と再開した話を書きました。3日でルール通りに指せるエンジンができた、というところまでです。</p><figure name=\"22577b04-266b-458b-8d21-82a4bf9a4a60\" id=\"22577b04-266b-458b-8d21-82a4bf9a4a60\" data-src=\"https://note.com/kyamamoto9120/n/n8e50f15a69e0\" data-identifier=\"n8e50f15a69e0\" embedded-service=\"note\" embedded-content-key=\"emb1650b6c86118\">\n</figure><p name=\"42874626-7867-4214-b9ae-e55edc7ed99d\" id=\"42874626-7867-4214-b9ae-e55edc7ed99d\">あれから3週間。コードは相変わらず1行も書いていません。<br>というより、このリポジトリではドキュメントを含めて1ファイルも編集していないし、コマンドも実行していません。</p><p name=\"76562eae-e2ef-45d6-b923-e05101b46703\" id=\"76562eae-e2ef-45d6-b923-e05101b46703\">それでもレーティングは3452まで来ました。</p><figure name=\"53be6af5-c93f-4122-be2f-a365bd0c5112\" id=\"53be6af5-c93f-4122-be2f-a365bd0c5112\"><img src=\"https://assets.st-note.com/img/1786244909-RZMqzJCTmK3prFf7w6edhnbO.png\" alt=\"\" width=\"601\" height=\"302\"><figcaption>floodgate のレーティングの推移</figcaption></figure><p name=\"50917682-e646-47e4-8557-102e76c7e094\" id=\"50917682-e646-47e4-8557-102e76c7e094\">今回書きたいのは将棋の話ではありません。<br>「うまくいく施策の割合が、3週間でどう落ちていったか」の話です。</p><h2 name=\"f1976b18-b568-4f19-abf2-d0f824adaefa\" id=\"f1976b18-b568-4f19-abf2-d0f824adaefa\">現在地</h2><p name=\"d90f15bd-08b1-4e68-b870-940b214c9009\" id=\"d90f15bd-08b1-4e68-b870-940b214c9009\">floodgate というコンピュータ将棋の自動対局場があります。<br>24時間、勝手に対局が組まれてレーティングが付く場所です。</p><p name=\"665a4910-90a1-4dad-8ea6-0d550d960412\" id=\"665a4910-90a1-4dad-8ea6-0d550d960412\">初参戦が7月24日、レーティングは3186でした。</p><p name=\"75c6df31-ca73-4ca4-8315-27e33da9e7b1\" id=\"75c6df31-ca73-4ca4-8315-27e33da9e7b1\">7月29日からは常駐させるためにマシンスペックを下げて再参戦。<br>392局で204勝188敗、レーティング3452。2週間で266上がりました。</p><p name=\"40c52aac-5e7e-41b9-8906-31929f2f7984\" id=\"40c52aac-5e7e-41b9-8906-31929f2f7984\">この間に積まれたのは ADR 149本、PR 225本、コミット446件です。<br>趣味の開発で一人でできる分量は大きく超えていると思います。</p><h2 name=\"f6c0f070-6dd9-4841-9e8e-77ddc7375624\" id=\"f6c0f070-6dd9-4841-9e8e-77ddc7375624\">目的は将棋ではありません</h2><p name=\"2f2afb59-a55f-44f7-9532-e0ea88bfafdb\" id=\"2f2afb59-a55f-44f7-9532-e0ea88bfafdb\">私がやりたいのは、将棋AIを強くすることではありません。24時間、自律的に開発が回り続ける環境を作ることです。将棋はそのための題材です。</p><p name=\"9653680a-4689-46ac-9de6-a81b0791d00e\" id=\"9653680a-4689-46ac-9de6-a81b0791d00e\">業務の開発でいちばん難しいのは、「作ったものが価値につながったか」の判断だと思っています。リリースしても、効果なのか季節要因なのか判別できない。</p><p name=\"296263e0-ca8d-450f-acb0-3e9cf4d80282\" id=\"296263e0-ca8d-450f-acb0-3e9cf4d80282\">コンピュータ将棋には、ここに<a href=\"https://chessprogramming.org/Sequential_Probability_Ratio_Test\" target=\"_blank\" rel=\"nofollow noopener\">SPRT</a>という道具があります。変更前後のプログラムを数百〜数千局戦わせ、「強くなった」と言えるかを統計的に判定する手法です。人の解釈が入らず、数時間で白黒がつきます。</p><p name=\"e9b60a69-b09e-4bab-b94d-ab6a485e45c9\" id=\"e9b60a69-b09e-4bab-b94d-ab6a485e45c9\">つまり将棋は、価値の測定という難所が最初から解けている題材です。ここで自律開発の環境を作れないなら、測定のない実業務で作れる道理がない。そういう順序で選びました。</p><h2 name=\"6192e974-d814-4558-ad34-08266146a2ab\" id=\"6192e974-d814-4558-ad34-08266146a2ab\">回し方</h2><p name=\"7a47ffc8-fc15-469b-bb67-c5a4006d4ad5\" id=\"7a47ffc8-fc15-469b-bb67-c5a4006d4ad5\">仕組みはシンプルです。</p><p name=\"a7f53f1d-2967-4503-aa9d-089ff2e1b91b\" id=\"a7f53f1d-2967-4503-aa9d-089ff2e1b91b\">方針は Fable 5 と対話しながら決めます。決まったら ADR に落としますが、書くのも Fable 5 です。書けたら Opus 5 に渡し、実装、実験、PR まで進めてもらいます。CI と SPRT を通った PR は、エージェントが自分でマージします。私の承認は挟みません。</p><p name=\"61439a28-f4d6-4061-a47c-baf725b3c52b\" id=\"61439a28-f4d6-4061-a47c-baf725b3c52b\">棋力に関わる変更は SPRT で「強くなった」と出るまで main に入れない規約です。</p><p name=\"7f189373-a380-4a4f-849d-a6003ba4a15a\" id=\"7f189373-a380-4a4f-849d-a6003ba4a15a\">棄却された案の ADR も消しません。エージェントは会話の文脈を持ち越さないので、「なぜ前回失敗したか」をファイルで読める状態にしておく価値が、人間の開発より大きいと考えています。</p><h2 name=\"decefba5-e403-456f-8a9d-4cb8eef37b36\" id=\"decefba5-e403-456f-8a9d-4cb8eef37b36\">打率は67%から27%に落ちた</h2><p name=\"1d0abb17-ac0a-436b-84fc-cebc63cdb516\" id=\"1d0abb17-ac0a-436b-84fc-cebc63cdb516\">ここからが本題です。</p><p name=\"9bd30722-f9a0-4371-b8ef-d0d6c379b86d\" id=\"9bd30722-f9a0-4371-b8ef-d0d6c379b86d\">棋力向上をねらって着手し、採否が決着した施策は3週間で75件、うち採択が44件でした。この「採択された割合」を、野球にならって打率と呼ぶことにします。通算で58.7%です。</p><p name=\"6e18770b-372c-4ec9-8ce7-50bbb9ba432d\" id=\"6e18770b-372c-4ec9-8ce7-50bbb9ba432d\">時期ごとに区切ると、様子が変わります。</p><figure name=\"98bc707e-c7f6-4c9c-8b1e-3517256a104b\" id=\"98bc707e-c7f6-4c9c-8b1e-3517256a104b\"><img src=\"https://assets.st-note.com/img/1786245486-kHt1B3CreoVMuX9qPzUl0KcS.png\" alt=\"\" width=\"620\" height=\"349\"><figcaption></figcaption></figure><p name=\"5f2217f1-a00b-4a4b-ae2a-63200df00bc9\" id=\"5f2217f1-a00b-4a4b-ae2a-63200df00bc9\">最初の1週間は7割前後。そこから43%に落ち、直近の1週間は27%です。理由ははっきりしていて、教科書に載っている手が先に尽きるからです。枝刈りや評価関数の定番は「入れれば効く」と分かっているもの。それを入れ終えた後に残るのは、効くかどうか分からない案だけになります。</p><p name=\"bbab78cc-f256-4a67-87d5-78761379dfa5\" id=\"bbab78cc-f256-4a67-87d5-78761379dfa5\">当たったときの取り分も減っています。最初の週は採択1件あたり平均+83 Eloだったのが、直近の週は+23です。打率が下がるうえに、当たっても小さい。</p><p name=\"0b63746e-abfa-4a9d-84ef-238fe11904e4\" id=\"0b63746e-abfa-4a9d-84ef-238fe11904e4\">そしてグラフにひとつ、逆向きの山があります。7月30日からの3日間だけ、打率91%。ここには経緯があります。</p><h2 name=\"51e7b512-e0d4-4ef4-9382-731854d3b76b\" id=\"51e7b512-e0d4-4ef4-9382-731854d3b76b\">6連敗の翌日にやったこと</h2><p name=\"02ffea09-47bf-4183-881c-9a0a337463b4\" id=\"02ffea09-47bf-4183-881c-9a0a337463b4\">7月29日、時間管理の改善案を6件試して、全部落ちました。棄却の ADR が6本並んだ日です。</p><p name=\"6276d320-ae34-4a19-8d3d-792b9fc05b57\" id=\"6276d320-ae34-4a19-8d3d-792b9fc05b57\">診断はエージェントがしました。6本の棄却理由を並べて読むと、個別のパラメータではなく、探索を止める判定の構造そのものが参照実装（やねうら王）と違う。全件が同じ場所でつまずいていました。棄却の記録を消さずに残していたのが、ここで効いた形です。</p><p name=\"d056c23f-c597-484a-be13-dc991cad0c19\" id=\"d056c23f-c597-484a-be13-dc991cad0c19\">方針を変えたのは私です。翌日、単発の改善を積むのをやめ、参照実装との差分をまとめて埋める方針に切り替えました（ライセンスは参照実装に合わせて GPLv3 へ揃えています）。そのとき付けた条件がこれです。</p><figure name=\"93e23bb3-268a-4d35-ae08-716051cff92b\" id=\"93e23bb3-268a-4d35-ae08-716051cff92b\"><blockquote><p name=\"46bc06c9-bb8c-4109-89a7-7a39b28c47fa\" id=\"46bc06c9-bb8c-4109-89a7-7a39b28c47fa\">再現を目標に置く。値も条件も変えずに移す。良し悪しの判断を挟まない。</p></blockquote><figcaption></figcaption></figure><p name=\"5e1f4d94-0d01-45c6-a184-43685af80240\" id=\"5e1f4d94-0d01-45c6-a184-43685af80240\">エージェントに、考えるのをやめさせました。打率91%はこの指示の産物です。検証済みの実装を写す作業に、判断を挟む理由がない。それに正直なところ、追従の期間は機械的にうまくいくと分かっている、つまらない区間なんですよね。そこに自分の時間もエージェントの試行錯誤も使いたくありませんでした。</p><p name=\"66e47f15-6aaf-4cc0-b3ac-b8bb0ee90bc7\" id=\"66e47f15-6aaf-4cc0-b3ac-b8bb0ee90bc7\">参照実装への追従自体は、最初から構想にありました。何も見ずにどこまで行けるか見たくて、行き詰まるまで温存していただけです。6連敗が、その引き金になりました。</p><h2 name=\"f122800e-cea0-4376-aa84-d087574998ee\" id=\"f122800e-cea0-4376-aa84-d087574998ee\">実業務に持ち帰れること</h2><p name=\"096afdb6-fbff-406a-ba73-ecc9c463164c\" id=\"096afdb6-fbff-406a-ba73-ecc9c463164c\">打率27%は4回に3回外すということです。<br>人間主体の開発では許容できないかもしれません。</p><p name=\"7701a1be-1d3a-403e-a0ff-0a44457fda86\" id=\"7701a1be-1d3a-403e-a0ff-0a44457fda86\">ただ、自律開発では話が変わります。1試行が「エージェントが数時間走る」だけなら、27%でも積み上がります。外れた案も棄却の記録が残るぶんだけ次に効きます。</p><p name=\"ba2c0e95-f214-400b-8b60-035f860629ed\" id=\"ba2c0e95-f214-400b-8b60-035f860629ed\">ただしこの算段は測定が自動で回っていることが前提です。<br>採否の判定が人間待ちになった瞬間、24時間走る意味は消えます。ADR 149本、PR 225本、コミット446件という数字はレビューしていないからこそ実現できます。</p><p name=\"5296cca3-1375-4891-aa92-b37448b06d41\" id=\"5296cca3-1375-4891-aa92-b37448b06d41\">実業務に持ち込むならまずは価値の測定を自動化する。承認の条件を明確にしなければならないなと改めて感じました。</p><h2 name=\"543ed615-1b1d-4763-ba68-b4cd517d3bc4\" id=\"543ed615-1b1d-4763-ba68-b4cd517d3bc4\">次にやりたいこと</h2><p name=\"01e980c4-1de4-46c0-9ab7-6e21de7bbec9\" id=\"01e980c4-1de4-46c0-9ab7-6e21de7bbec9\">先日、たまたま floodgate を観戦していたら一手詰めに気付いていない局面を見かけました。ご機嫌なまま、負けてました。</p><figure name=\"6d02f4cd-dd10-40b2-9d21-421028760e37\" id=\"6d02f4cd-dd10-40b2-9d21-421028760e37\" data-src=\"https://x.com/kyamamoto9120/status/2084692145462792581\" data-identifier=\"null\" embedded-service=\"twitter\" embedded-content-key=\"emba98133b38483\"><blockquote class=\"twitter-tweet\"><p>【コンピュータ将棋の話】<br>たまたま floodgate 見ていたタイミングでの将棋、この局面で一手詰めに気付いていないのはバグっている気がする。<br>Claude Code に floodgate の棋譜全部精査してもらったほうが良いな。<a href=\"https://t.co/Ugql4L6YEt\" rel=\"nofollow noopener\">https://t.co/Ugql4L6YEt</a> <a href=\"https://t.co/lfCeFcO8sO\" rel=\"nofollow noopener\">pic.twitter.com/lfCeFcO8sO</a></p>— 山本一将｜焚き火を愛するエンジニア (@kyamamoto9120) <a href=\"https://x.com/kyamamoto9120/status/2084692145462792581?ref_src=twsrc%5Etfw\" rel=\"nofollow noopener\">August 4, 2026</a></blockquote>\n\n\n</figure><p name=\"0fea84d8-d671-497a-916f-7f61d8273d45\" id=\"0fea84d8-d671-497a-916f-7f61d8273d45\">気付けたのは偶然見ていたからです。<br>392局ぶんの棋譜を人間が精査するのは大変ですが、Claude Code ならできます。実戦の棋譜には、SPRT の数字に出ない違和感が埋まっているはずです。</p><p name=\"0f556310-21b4-4df6-8a0a-991ce2534af3\" id=\"0f556310-21b4-4df6-8a0a-991ce2534af3\">いまの仕組みは、測定の数字だけを見て回っています。<br>次は本番の対局を観測して、そこから施策を立てるところまで任せたい。</p><p name=\"82fe6420-8422-42c0-8db6-0af0e44007f5\" id=\"82fe6420-8422-42c0-8db6-0af0e44007f5\">進んだら、また書きます。</p>",
+  "separator": null,
+  "publish_at": "2026-08-09T13:03:07.000+09:00",
+  "created_at": "2026-08-09T11:56:24.000+09:00",
+  "note_url": "https://note.com/kyamamoto9120/n/nfe667accffd0",
+  "price": 0,
+  "is_limited": false,
+  "is_trial": false,
+  "eyecatch": "https://assets.st-note.com/production/uploads/images/301798609/rectangle_large_type_2_147a378cb7c2c80c6663a74b1794fea4.png?fit=bounds&quality=85&width=1280",
+  "eyecatch_alt": "見出し画像",
+  "eyecatch_width": 1920,
+  "eyecatch_height": 1005,
+  "hashtags": [
+    "#AIエージェント",
+    "#ClaudeCode",
+    "#個人開発",
+    "#将棋",
+    "#コンピュータ将棋"
+  ],
+  "pictures": [
+    {
+      "caption": null,
+      "key": "1786244909-RZMqzJCTmK3prFf7w6edhnbO",
+      "url": "https://assets.st-note.com/img/1786244909-RZMqzJCTmK3prFf7w6edhnbO.png",
+      "thumbnail_url": "https://assets.st-note.com/img/1786244909-RZMqzJCTmK3prFf7w6edhnbO.png",
+      "alt": "画像1",
+      "width": null,
+      "height": null,
+      "index": 0
+    },
+    {
+      "caption": null,
+      "key": "1786245486-kHt1B3CreoVMuX9qPzUl0KcS",
+      "url": "https://assets.st-note.com/img/1786245486-kHt1B3CreoVMuX9qPzUl0KcS.png",
+      "thumbnail_url": "https://assets.st-note.com/img/1786245486-kHt1B3CreoVMuX9qPzUl0KcS.png",
+      "alt": "画像2",
+      "width": null,
+      "height": null,
+      "index": 1
+    }
+  ],
+  "embedded_contents": [
+    {
+      "key": "emb1650b6c86118",
+      "url": "https://note.com/kyamamoto9120/n/n8e50f15a69e0",
+      "service": "note",
+      "identifier": "n8e50f15a69e0",
+      "caption": null,
+      "html_for_embed": "<iframe class=\"note-embed\" height=\"210\" scrolling=\"no\" src=\"https://note.com/embed/notes/n8e50f15a69e0\" style=\"border: 0; display: block; max-width: 99%; width: 494px; padding: 0px; margin: 10px 0px; position: static; visibility: visible;\"></iframe>\n",
+      "html_for_display": null
+    },
+    {
+      "key": "emba98133b38483",
+      "url": "https://x.com/kyamamoto9120/status/2084692145462792581",
+      "service": "twitter",
+      "identifier": null,
+      "caption": null,
+      "html_for_embed": "<span><blockquote class=\"twitter-tweet\" data-dnt=\"true\" align=\"center\"><p lang=\"ja\" dir=\"ltr\">【コンピュータ将棋の話】<br>たまたま floodgate 見ていたタイミングでの将棋、この局面で一手詰めに気付いていないのはバグっている気がする。<br>Claude Code に floodgate の棋譜全部精査してもらったほうが良いな。<a href=\"https://t.co/Ugql4L6YEt\">https://t.co/Ugql4L6YEt</a> <a href=\"https://t.co/lfCeFcO8sO\">pic.twitter.com/lfCeFcO8sO</a></p>&mdash; 山本一将｜焚き火を愛するエンジニア (@kyamamoto9120) <a href=\"https://x.com/kyamamoto9120/status/2084692145462792581?ref_src=twsrc%5Etfw\">August 4, 2026</a></blockquote>\n<script async src=\"https://platform.x.com/widgets.js\" charset=\"utf-8\"></script>\n\n</span>",
+      "html_for_display": null
+    }
+  ],
+  "user": {
+    "urlname": "kyamamoto9120",
+    "nickname": "山本一将｜焚き火を愛するエンジニア"
+  },
+  "_fetched_at": "2026-08-31T01:40:44.605Z"
+}

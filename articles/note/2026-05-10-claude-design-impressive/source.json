@@ -1,0 +1,83 @@
+{
+  "id": 159601156,
+  "key": "nbe133d5a7dfc",
+  "slug": "slug-nbe133d5a7dfc",
+  "type": "TextNote",
+  "status": "published",
+  "format": "4.0",
+  "name": "Claude Design がすごかった",
+  "description": "",
+  "body": "<p name=\"0a48196b-8d57-4a7a-af48-f1bbd41c1dd7\" id=\"0a48196b-8d57-4a7a-af48-f1bbd41c1dd7\">話題になっていて気になってはいたけど触れていなかった Claude Design。<br>GW の自己研鑽に使ってみたらスゴかった！</p><h2 name=\"23d352c5-a451-47e4-85d3-cc038d6a70c1\" id=\"23d352c5-a451-47e4-85d3-cc038d6a70c1\">Design System から始まる</h2><p name=\"ed3bcfa9-ffc4-4cc8-952e-9e9397191cbf\" id=\"ed3bcfa9-ffc4-4cc8-952e-9e9397191cbf\">Claude Design は新しいプロジェクトの作成に「プロジェクト名」と「Design System」を要求します。</p><figure name=\"82636e4c-15f8-421c-90d1-9ac82e151e6d\" id=\"82636e4c-15f8-421c-90d1-9ac82e151e6d\"><img src=\"https://assets.st-note.com/img/1778382590-7a8uLmNeFJO4C5v6gpchMyw9.png\" alt=\"\" width=\"620\" height=\"775\"><figcaption>Hidoko（火床）は私の個人開発プロジェクト</figcaption></figure><p name=\"2bd6778a-d612-4714-8df9-342362627bd0\" id=\"2bd6778a-d612-4714-8df9-342362627bd0\">デザインシステムの作成にあたっては色々聞かれますが、all optional なので全部無視して先に進みました。</p><p name=\"239b6215-c11c-4a88-9ff8-466612c56dfd\" id=\"239b6215-c11c-4a88-9ff8-466612c56dfd\">その先には馴染みのチャットUIが登場しますが、そのタイミングで細かくヒアリングされるのでデザイン素人の私でも安心して進めることができます。</p><figure name=\"37296fe9-31a3-42e0-ab92-4a013af15f80\" id=\"37296fe9-31a3-42e0-ab92-4a013af15f80\"><img src=\"https://assets.st-note.com/img/1778383428-kbfXAIQtsTmPZwOi6jKzCulV.png\" alt=\"\" width=\"620\" height=\"775\"><figcaption></figcaption></figure><p name=\"349e8aa5-87b9-4256-9216-b2a682fa3b8c\" id=\"349e8aa5-87b9-4256-9216-b2a682fa3b8c\">紆余曲折で完成したのがこんな感じ。<br>ロゴやカラーパレット、タイポグラフィなど定義してもらい、「焚き火を愛するエンジニア」のデザインシステムが完成しました 🎉</p><figure name=\"7a35fd1e-edad-4b7e-9661-b2daaf3c9a64\" id=\"7a35fd1e-edad-4b7e-9661-b2daaf3c9a64\"><img src=\"https://assets.st-note.com/img/1778383750-z7QYfek3pg9Nvi5dhsFMWEK6.png\" alt=\"\" width=\"620\" height=\"573\"><figcaption></figcaption></figure><h2 name=\"dcab647e-dabd-40bb-87e9-d403cfb6bb37\" id=\"dcab647e-dabd-40bb-87e9-d403cfb6bb37\">デザイナーというより、全部できる PdM かも</h2><p name=\"fc5db66b-9e83-4e00-b54b-8476d23c24fb\" id=\"fc5db66b-9e83-4e00-b54b-8476d23c24fb\">毎週 note を書く中で、見出し画像に困っていました。<br>そんなに時間かけたくないが、ある程度見栄えがするものにしたい欲求だけありました。</p><p name=\"203a79d5-35fe-4656-9a03-04a7a6484f1b\" id=\"203a79d5-35fe-4656-9a03-04a7a6484f1b\">せっかくデザインシステムができたので、見出し画像のジェネレータを作ってもらいます。</p><p name=\"77bfe554-bb54-4f89-b583-2501ff88ee9e\" id=\"77bfe554-bb54-4f89-b583-2501ff88ee9e\">完成したものがこちら。</p><figure name=\"79ef715b-7cec-457c-8d3c-a90974bbab55\" id=\"79ef715b-7cec-457c-8d3c-a90974bbab55\"><img src=\"https://assets.st-note.com/img/1778384501-0vhyMmUIQo49rRaFLbqu2TwX.png\" alt=\"\" width=\"620\" height=\"357\"><figcaption></figcaption></figure><p name=\"2e6b4762-8a5c-40a8-a4ad-6236f6d06a0a\" id=\"2e6b4762-8a5c-40a8-a4ad-6236f6d06a0a\">台紙を6種類のテンプレートから選び、タイトルなど入力して PNG でダウンロードする機能まで用意してくれています。<br>このプロトタイプは完全に動作します！</p><p name=\"ab1325d3-ae8f-48f8-a228-007b1bf5267b\" id=\"ab1325d3-ae8f-48f8-a228-007b1bf5267b\">途中でやったことは10問ほど質問に答えるだけです。<br>選択肢には「Decide for me」もあり、こちらで決め切らなくてもよしなに考えてくれます。</p><p name=\"80c818b8-e27e-408d-9a6e-00dcdb9c9e5f\" id=\"80c818b8-e27e-408d-9a6e-00dcdb9c9e5f\">実装するために Claude Code に依頼するための機能も用意されています。<br>右上の「Share」にある「Handoff to Claude Code…」です。</p><figure name=\"d3d4c322-e820-45d9-a309-e42de1c6e94a\" id=\"d3d4c322-e820-45d9-a309-e42de1c6e94a\"><img src=\"https://assets.st-note.com/img/1778384774-8wvS6nMHfLRZzqOGetCBXJ12.png\" alt=\"\" width=\"283\" height=\"446\"><figcaption></figcaption></figure><p name=\"b9d2efe7-291e-43c1-9dd4-c2c4348b33e4\" id=\"b9d2efe7-291e-43c1-9dd4-c2c4348b33e4\">Claude Code は必要なデータをダウンロードし、実装に向けて必要なことを検討してくれます。</p><h2 name=\"7d5735a2-bbb0-468d-961f-246fec822dd9\" id=\"7d5735a2-bbb0-468d-961f-246fec822dd9\">スライドやアニメーションも作ってくれる</h2><p name=\"38a99694-7205-445a-a59c-c4901e169b93\" id=\"38a99694-7205-445a-a59c-c4901e169b93\">アプリケーション以外のデザインもしてくれます。<br>試しにアニメーションを作ってもらいましたが、クオリティはともかくプロトタイプとしては面白そうなものが作れました。</p><p name=\"f0bcd21a-d1b5-4f43-8882-f3ba486c2e9d\" id=\"f0bcd21a-d1b5-4f43-8882-f3ba486c2e9d\">これをベースに動画生成の AI にクオリティを上げてもらう、みたいな使い方はできそうです。</p><p name=\"af0542c2-8db5-48b1-9ccb-ba3518e07609\" id=\"af0542c2-8db5-48b1-9ccb-ba3518e07609\">週間の制限があるので優先度を決めながらになりますが、可能性を感じたので引き続き試していきます。</p>",
+  "separator": null,
+  "publish_at": "2026-05-10T12:59:17.000+09:00",
+  "created_at": "2026-05-10T11:41:13.000+09:00",
+  "note_url": "https://note.com/kyamamoto9120/n/nbe133d5a7dfc",
+  "price": 0,
+  "is_limited": false,
+  "is_trial": false,
+  "eyecatch": "https://assets.st-note.com/production/uploads/images/274691802/rectangle_large_type_2_b00abba885f7d58f7e6ff774714e1015.png?fit=bounds&quality=85&width=1280",
+  "eyecatch_alt": "見出し画像",
+  "eyecatch_width": 1920,
+  "eyecatch_height": 1005,
+  "hashtags": [
+    "#ClaudeDesign"
+  ],
+  "pictures": [
+    {
+      "caption": null,
+      "key": "1778382590-7a8uLmNeFJO4C5v6gpchMyw9",
+      "url": "https://assets.st-note.com/img/1778382590-7a8uLmNeFJO4C5v6gpchMyw9.png",
+      "thumbnail_url": "https://assets.st-note.com/img/1778382590-7a8uLmNeFJO4C5v6gpchMyw9.png",
+      "alt": "画像1",
+      "width": null,
+      "height": null,
+      "index": 0
+    },
+    {
+      "caption": null,
+      "key": "1778383428-kbfXAIQtsTmPZwOi6jKzCulV",
+      "url": "https://assets.st-note.com/img/1778383428-kbfXAIQtsTmPZwOi6jKzCulV.png",
+      "thumbnail_url": "https://assets.st-note.com/img/1778383428-kbfXAIQtsTmPZwOi6jKzCulV.png",
+      "alt": "画像2",
+      "width": null,
+      "height": null,
+      "index": 1
+    },
+    {
+      "caption": null,
+      "key": "1778383750-z7QYfek3pg9Nvi5dhsFMWEK6",
+      "url": "https://assets.st-note.com/img/1778383750-z7QYfek3pg9Nvi5dhsFMWEK6.png",
+      "thumbnail_url": "https://assets.st-note.com/img/1778383750-z7QYfek3pg9Nvi5dhsFMWEK6.png",
+      "alt": "画像3",
+      "width": null,
+      "height": null,
+      "index": 2
+    },
+    {
+      "caption": null,
+      "key": "1778384501-0vhyMmUIQo49rRaFLbqu2TwX",
+      "url": "https://assets.st-note.com/img/1778384501-0vhyMmUIQo49rRaFLbqu2TwX.png",
+      "thumbnail_url": "https://assets.st-note.com/img/1778384501-0vhyMmUIQo49rRaFLbqu2TwX.png",
+      "alt": "画像4",
+      "width": null,
+      "height": null,
+      "index": 3
+    },
+    {
+      "caption": null,
+      "key": "1778384774-8wvS6nMHfLRZzqOGetCBXJ12",
+      "url": "https://assets.st-note.com/img/1778384774-8wvS6nMHfLRZzqOGetCBXJ12.png",
+      "thumbnail_url": "https://assets.st-note.com/img/1778384774-8wvS6nMHfLRZzqOGetCBXJ12.png",
+      "alt": "画像5",
+      "width": null,
+      "height": null,
+      "index": 4
+    }
+  ],
+  "embedded_contents": [],
+  "user": {
+    "urlname": "kyamamoto9120",
+    "nickname": "山本一将｜焚き火を愛するエンジニア"
+  },
+  "_fetched_at": "2026-08-31T01:41:29.894Z"
+}

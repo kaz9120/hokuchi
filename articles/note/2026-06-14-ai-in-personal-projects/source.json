@@ -1,0 +1,45 @@
+{
+  "id": 165250372,
+  "key": "n8208e2775e83",
+  "slug": "slug-n8208e2775e83",
+  "type": "TextNote",
+  "status": "published",
+  "format": "4.0",
+  "name": "個人開発で、AIが活きる場を試している",
+  "description": "",
+  "body": "<p name=\"a8387518-3787-4c59-8f66-e7ce70044fb7\" id=\"a8387518-3787-4c59-8f66-e7ce70044fb7\">最近、個人開発で何をやっているか聞かれると、こう答えています。</p><p name=\"150e3d2d-57f4-4d4f-8e66-f51d10f4fc9b\" id=\"150e3d2d-57f4-4d4f-8e66-f51d10f4fc9b\">「自律的に動くAIが活きる場を作っている」</p><p name=\"5deb3408-a987-4a8b-becb-3e20cd8a2a59\" id=\"5deb3408-a987-4a8b-becb-3e20cd8a2a59\">業務でAIを使うことには前向きです。それでも、業務だけでは試せない実験があります。この記事は、その実験の現在地です。</p><h2 name=\"a6058ccb-8ab8-4976-aa4f-a0fc1427f45d\" id=\"a6058ccb-8ab8-4976-aa4f-a0fc1427f45d\">個人開発は実験場</h2><p name=\"4f1699a6-2da5-465c-898b-7bcce826b18e\" id=\"4f1699a6-2da5-465c-898b-7bcce826b18e\">業務でのAI活用は、理想を描いてもさまざまな制約があります。組織として成果を出すため、目先の効率化のため、どうしても連続的な変化になりがちです。</p><p name=\"83bb465b-2f8e-4d7c-87aa-6a3d42582ac8\" id=\"83bb465b-2f8e-4d7c-87aa-6a3d42582ac8\">現在の延長線上にない実験は、別の場でやるしかありません。私にとって、それが個人開発です。業務とは目的も速度も制約も違う場として、「次に何を試すか」を自分で選べる。対立ではなく役割分担です。</p><h2 name=\"feb62ef2-4cd9-47ce-9cae-157a63043fde\" id=\"feb62ef2-4cd9-47ce-9cae-157a63043fde\">実験の対象は、AIの能力に応じて変わってきた</h2><p name=\"74027070-d25f-44e1-9904-b5c869cd29db\" id=\"74027070-d25f-44e1-9904-b5c869cd29db\">個人開発で何を試すかは、AIの能力の進化に応じて移り変わってきました。</p><p name=\"bc3b6c9e-b24e-4106-9337-4856d8814998\" id=\"bc3b6c9e-b24e-4106-9337-4856d8814998\">少し前まで、AIは開発者の傍らで副操縦する役割でした。<br>コードの補完、関数の提案、エラーの解説。この時期に試していたのは「AIを使って人間一人をどこまで強化できるか」です。<br>「人が主、AIが助手」の時代でした。</p><p name=\"d5a74fe2-f703-4fc4-bd19-60ba1987f167\" id=\"d5a74fe2-f703-4fc4-bd19-60ba1987f167\">Opus 4.5 あたりから、関係が変わりました。AIが自律的に動けるようになり、エディタを開く機会はほとんどなくなりました。<br>3月頭に、この変化について書いています。</p><figure name=\"17a089e1-1dce-4853-b2a3-2ed0129477b4\" id=\"17a089e1-1dce-4853-b2a3-2ed0129477b4\" data-src=\"https://note.com/kyamamoto9120/n/nbef83441c098\" data-identifier=\"nbef83441c098\" embedded-service=\"note\" embedded-content-key=\"embca111d371706\">\n</figure><p name=\"475dd741-c0ee-498f-832b-f6157d626070\" id=\"475dd741-c0ee-498f-832b-f6157d626070\">そこに書いた「Whyを伝えてHowは任せる」「人間とコンピュータを区別しない」を、もっと突き詰めたい。個人開発の実験対象も、その変化に追随しました。</p><p name=\"d3ce6868-b057-4582-9fb4-0f45939447ec\" id=\"d3ce6868-b057-4582-9fb4-0f45939447ec\">人間の役割は、実装者から場の設計者へ移ります。</p><h2 name=\"002da9ef-96af-4e65-a582-5902254b79c0\" id=\"002da9ef-96af-4e65-a582-5902254b79c0\">いま見えている「活きる場」の姿</h2><p name=\"a0f462e5-eadb-4b47-a937-0ab15af65f37\" id=\"a0f462e5-eadb-4b47-a937-0ab15af65f37\">「自律AIが活きる場」と書くと抽象的なので、いま頭の中にある具体的な姿を書いておきます。</p><p name=\"725dc669-2c44-4955-b97a-4d2013bab42f\" id=\"725dc669-2c44-4955-b97a-4d2013bab42f\">私はアプリケーションのゴールと、進め方のルールを決める。あとはAIがそれに沿って動き続ける。コードを書き、レビューし、マージまで完走する。それが止まらずに回っている状態です。</p><p name=\"c3bd0a17-a8a0-4708-bb20-1411094e68c3\" id=\"c3bd0a17-a8a0-4708-bb20-1411094e68c3\">ただし、止まらないことだけが目的ではありません。出てくるものの質まで含めて「活きる場」と呼んでいます。</p><p name=\"14075650-2c1c-44ea-8f59-284c3e01c72e\" id=\"14075650-2c1c-44ea-8f59-284c3e01c72e\">そこに向かって、いま二つの方向で実験を進めています。環境側と能力側です。</p><h2 name=\"f65b2012-0749-46be-8aeb-7d64ebaaef88\" id=\"f65b2012-0749-46be-8aeb-7d64ebaaef88\">AIが動き続けられる場を作る</h2><p name=\"be9a9285-5d53-44db-ad8a-0db90480b0c8\" id=\"be9a9285-5d53-44db-ad8a-0db90480b0c8\">ひとつ目は環境です。<br>Hidoko というモノレポを個人開発の基盤として育てています。</p><p name=\"333a0526-fa47-42a0-82fb-51a9b9187dac\" id=\"333a0526-fa47-42a0-82fb-51a9b9187dac\"><a href=\"https://github.com/kaz9120/hidoko\" target=\"_blank\" rel=\"nofollow noopener\">https://github.com/kaz9120/hidoko</a></p><p name=\"ba2436e7-f94e-44bb-bfee-b8a18b439b0e\" id=\"ba2436e7-f94e-44bb-bfee-b8a18b439b0e\">ここで設計しているのは、AIが一人で完走できる構造です。AIエージェントの起点情報、繰り返し発生する作業フロー、コミット規約、PRの品質ゲート。すべて、その前提で組んでいます。</p><p name=\"80df1741-4342-466f-ad6d-1f4e76c8527f\" id=\"80df1741-4342-466f-ad6d-1f4e76c8527f\">人間がやるのは、構造を整えて要所で承認することだけです。</p><p name=\"295327eb-a184-4002-9586-4de67980a015\" id=\"295327eb-a184-4002-9586-4de67980a015\">モノレポにしているのは、複数アプリを並行で回すためです。新しいアプリを生やすコストが下がり、1つ目で得た学びが2つ目以降に効きます。実験の単位が「1アプリ」ではなく「複数アプリの連なり」になっている。それが、自律稼働を支える構造です。</p><h2 name=\"bc402602-6ad8-4380-a7d9-63954d8389b8\" id=\"bc402602-6ad8-4380-a7d9-63954d8389b8\">Claude Design が「何を作るか」も任せる段階を開いた</h2><p name=\"3d2d3e71-ffd6-4f9e-af13-d64e06a72723\" id=\"3d2d3e71-ffd6-4f9e-af13-d64e06a72723\">もう一つは能力です。</p><p name=\"8b94857e-cc14-46d1-929f-8d559948a9a5\" id=\"8b94857e-cc14-46d1-929f-8d559948a9a5\">これまでAIに任せられたのは主に「どう作るか」でした。極端に言えば「shadcn/ui のコンポーネントを上手に配置する仕事」。十分役立つけれど、ゴールから仕様までは人間が決める必要がありました。</p><p name=\"60042955-ead5-446c-b4a9-1fed225853c3\" id=\"60042955-ead5-446c-b4a9-1fed225853c3\">Claude Design は、その枠を超えてきました。デザインシステムを組むだけではありません。どんな体験がよいか、本当に提供したい価値は何か。そこを考えて、アプリの仕様まで決められる。デザイナーというより、プロダクトマネージャーに近い役割です。</p><p name=\"0efa1051-d047-46d4-8d27-b8249c704d24\" id=\"0efa1051-d047-46d4-8d27-b8249c704d24\">「何を作るか」がAIに任せられるなら、自律で動ける範囲が一気に広がります。</p><p name=\"58f63e16-d1de-4a6a-be83-03716aa8af2a\" id=\"58f63e16-d1de-4a6a-be83-03716aa8af2a\">私の役割は、さらに上流に上がります。アプリケーションのゴールを決める。原則を示す。あとは任せる。</p><h2 name=\"97031eff-35e6-447d-bee4-1f30e8c5a94f\" id=\"97031eff-35e6-447d-bee4-1f30e8c5a94f\">これからも、火床を整える</h2><p name=\"9c722fa1-ffbd-463e-8555-a0c592f51918\" id=\"9c722fa1-ffbd-463e-8555-a0c592f51918\">Hidoko の README にはこう書いています。</p><figure name=\"5b87878d-4d1e-45cb-9033-0734853108fc\" id=\"5b87878d-4d1e-45cb-9033-0734853108fc\"><blockquote><p name=\"31302b14-683f-439a-beb9-10e6cedda229\" id=\"31302b14-683f-439a-beb9-10e6cedda229\">焚き火を楽しむためには良い火床が不可欠です。<br>いかに熱を閉じ込め酸素を効率よく送るかを意識することで思い通りに焚き火が操れるようになります。<br><br>私は個人開発も火床つくりに通ずるところがあると考えています。<br>アイデアをすぐに形にできる良い基盤を作ることで、思い通りに個人開発をすることができるようになります。</p></blockquote><figcaption></figcaption></figure><p name=\"0855dce4-b638-49c5-a90a-5eb1d83ee022\" id=\"0855dce4-b638-49c5-a90a-5eb1d83ee022\">「AIが活きる場」はまだ整えている途中です。<br>環境側も能力側も、同じ方向を向き始めている感覚があります。</p><p name=\"7ef78ac1-f7e8-4805-b925-4a60ab17f447\" id=\"7ef78ac1-f7e8-4805-b925-4a60ab17f447\">2026年6月時点の現在地として、ここに残しておきます。</p>",
+  "separator": null,
+  "publish_at": "2026-06-14T20:56:26.000+09:00",
+  "created_at": "2026-06-14T20:42:27.000+09:00",
+  "note_url": "https://note.com/kyamamoto9120/n/n8208e2775e83",
+  "price": 0,
+  "is_limited": false,
+  "is_trial": false,
+  "eyecatch": "https://assets.st-note.com/production/uploads/images/285445793/rectangle_large_type_2_b6b3741985c23c0973732ab8fa213457.png?fit=bounds&quality=85&width=1280",
+  "eyecatch_alt": "見出し画像",
+  "eyecatch_width": 1920,
+  "eyecatch_height": 1005,
+  "hashtags": [
+    "#AI",
+    "#Claude",
+    "#エンジニア",
+    "#個人開発"
+  ],
+  "pictures": [],
+  "embedded_contents": [
+    {
+      "key": "embca111d371706",
+      "url": "https://note.com/kyamamoto9120/n/nbef83441c098",
+      "service": "note",
+      "identifier": "nbef83441c098",
+      "caption": null,
+      "html_for_embed": "<iframe class=\"note-embed\" height=\"210\" scrolling=\"no\" src=\"https://note.com/embed/notes/nbef83441c098\" style=\"border: 0; display: block; max-width: 99%; width: 494px; padding: 0px; margin: 10px 0px; position: static; visibility: visible;\"></iframe>\n",
+      "html_for_display": null
+    }
+  ],
+  "user": {
+    "urlname": "kyamamoto9120",
+    "nickname": "山本一将｜焚き火を愛するエンジニア"
+  },
+  "_fetched_at": "2026-08-31T01:41:10.832Z"
+}

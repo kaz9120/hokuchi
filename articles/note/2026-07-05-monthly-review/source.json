@@ -1,0 +1,130 @@
+{
+  "id": 168597500,
+  "key": "n6d5043b00b93",
+  "slug": "slug-n6d5043b00b93",
+  "type": "TextNote",
+  "status": "published",
+  "format": "4.1",
+  "name": "2026年6月の活動振り返り",
+  "description": "",
+  "body": "<p name=\"d3b23870-4a1b-44e2-8099-de03d2420552\" id=\"d3b23870-4a1b-44e2-8099-de03d2420552\">6月はついに30週連続投稿を達成しました。活動自体は少なめでしたが、簡単に振り返ります。</p><figure name=\"4ac6771f-23d7-498c-8445-653d5f72c6ef\" id=\"4ac6771f-23d7-498c-8445-653d5f72c6ef\" data-src=\"https://x.com/kyamamoto9120/status/2068587860035506589\" data-identifier=\"null\" embedded-service=\"twitter\" embedded-content-key=\"embd146b2de5e21\"><blockquote class=\"twitter-tweet\"><p>そして、ようやくnote 30週連続投稿〜<br>なんでも良いから書き続けてみる、というのも結構難しい。しばらくは個人開発ツールを紹介し続けるけど、その先に書くものは未定。 <a href=\"https://t.co/DQLMWyArM9\" rel=\"nofollow noopener\">pic.twitter.com/DQLMWyArM9</a></p>— 山本一将｜焚き火を愛するエンジニア (@kyamamoto9120) <a href=\"https://x.com/kyamamoto9120/status/2068587860035506589?ref_src=twsrc%5Etfw\" rel=\"nofollow noopener\">June 21, 2026</a></blockquote>\n\n\n</figure><table-of-contents name=\"97fd7ed7-3214-444d-b544-d736d1e30c06\" id=\"97fd7ed7-3214-444d-b544-d736d1e30c06\"><br></table-of-contents><h2 name=\"2575bc0e-5bc5-4783-bda0-5cf3c85ffec9\" id=\"2575bc0e-5bc5-4783-bda0-5cf3c85ffec9\">6/2 (火)&nbsp;TSUDOI by giftee Tech #3 「裏側の奮闘を自慢しよう選手権」</h2><p name=\"7918d2ee-5357-4650-88dc-ec39fe6128a3\" id=\"7918d2ee-5357-4650-88dc-ec39fe6128a3\">ギフティ主催の LT 会に登壇しました。こちらのイベントに登壇するのは2度目でした。</p><figure name=\"26e27eaf-ae00-448d-bcd6-8ac19e5a5026\" id=\"26e27eaf-ae00-448d-bcd6-8ac19e5a5026\" data-src=\"https://giftee.connpass.com/event/391373/\" data-identifier=\"null\" embedded-service=\"external-article\" embedded-content-key=\"embb04b6f8ef6db\"> \n<a href=\"https://giftee.connpass.com/event/391373/\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong>\nTSUDOI by giftee Tech #3 「裏側の奮闘を自慢しよう選手権」 (2026/06/02 19:00〜)\n</strong>\n<em>\n## 🎁 TSUDOI by giftee Techとは  株式会社ギフティは、『eギフトを軸として、人、企業、街の間に、\n</em>\n<em>\ngiftee.connpass.com\n</em>\n</a><a href=\"https://giftee.connpass.com/event/391373/\" rel=\"nofollow noopener\" target=\"_blank\"></a>\n\n \n</figure><p name=\"367c542a-a7e1-47dd-aa8f-57998efa41be\" id=\"367c542a-a7e1-47dd-aa8f-57998efa41be\">「裏側の奮闘を自慢しよう」ということで、以前 Zenn の記事に書いた Safe Triangle の実装の話を MOSH の自慢につながる形でお話しさせていただきました。</p><figure name=\"e7f5958d-1bbd-4903-a23b-a10ffae38068\" id=\"e7f5958d-1bbd-4903-a23b-a10ffae38068\" data-src=\"https://www.docswell.com/s/kyamamoto9120/KJW8M3-2026-06-02-190000\" data-identifier=\"null\" embedded-service=\"oembed\" embedded-content-key=\"emb8231a7e31db5\"> \n \n \n\n \n \n \n<a href=\"https://www.docswell.com/\" target=\"_blank\" rel=\"nofollow noopener\">\nwww.docswell.com\n</a>\n \n \n</figure><p name=\"ffe38826-45b8-4760-9669-50f86fddd1f3\" id=\"ffe38826-45b8-4760-9669-50f86fddd1f3\">懇親会でもたくさんお声がけいただき、手応えを感じる登壇になりました。イベント参加者の空気感も温かく、ぜひ今後も参加したいイベントです。</p><p name=\"a6d12ab7-131e-4c00-a10b-e265f7e4f10a\" id=\"a6d12ab7-131e-4c00-a10b-e265f7e4f10a\">ちなみに、一応「選手権」とついているのでチャンピオンを決めておきましょう。私の主観ですが、優勝は mine さんの「生成AIをマジシャンのアシスタントにしてみた」です。現地で参加していないと伝わらないと思います。<br>再演があればぜひまた見たいです！</p><h2 name=\"d8c16b42-13ec-4574-bf08-0640a95ebe9b\" id=\"d8c16b42-13ec-4574-bf08-0640a95ebe9b\">6/10 (水)&nbsp;エンジニアのキャリアを知るナイト</h2><p name=\"86591c91-48f4-4548-a8dc-a713e63a947a\" id=\"86591c91-48f4-4548-a8dc-a713e63a947a\">会場提供のイベントでしたが、企画の序盤から伴走させていただき思い入れを持って当日を迎えたイベントでした。</p><figure name=\"9a9b1b7c-5995-4619-8f67-d6ae0a87c596\" id=\"9a9b1b7c-5995-4619-8f67-d6ae0a87c596\" data-src=\"https://bashowotsukuru.connpass.com/event/391702/\" data-identifier=\"null\" embedded-service=\"external-article\" embedded-content-key=\"embaff9a184d706\"> \n<a href=\"https://bashowotsukuru.connpass.com/event/391702/\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong>\n【再増枠】エンジニアのキャリアを知るナイト (2026/06/10 19:00〜)\n</strong>\n<em>\n2026/05/15 参加者枠を増枠しました。 2026/05/26 参加者枠をさらに増枠しました。  ## エンジニアの\n</em>\n<em>\nbashowotsukuru.connpass.com\n</em>\n</a><a href=\"https://bashowotsukuru.connpass.com/event/391702/\" rel=\"nofollow noopener\" target=\"_blank\"></a>\n\n \n</figure><p name=\"18d29dce-9bb0-4767-9905-d8bff9461234\" id=\"18d29dce-9bb0-4767-9905-d8bff9461234\">ご参加いただいた方への声掛けやイベントを楽しんでもらうための配慮など、私もイベントの運営をする側の人間として、学びが多い会でした。<br>イベントレポートが公開されているのでぜひ読んでみていただきたいです。</p><figure name=\"71d429b6-af48-4aa2-b9b4-57a555d2efb6\" id=\"71d429b6-af48-4aa2-b9b4-57a555d2efb6\" data-src=\"https://2323-code.hatenablog.com/entry/2026/06/14/132551\" data-identifier=\"null\" embedded-service=\"external-article\" embedded-content-key=\"emb0a68c77ebf51\"> \n<a href=\"https://2323-code.hatenablog.com/entry/2026/06/14/132551\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong>\nエンジニアのキャリアを知るナイトを開催しました【イベントレポ】 - 歩くパワースポットでありたい。\n</strong>\n<em>\nはじめに 「自分はこの先どうしたいかな」 「このまま今の仕事を続けようか迷う」 そう感じたことがある人は少なくないのではな\n</em>\n<em>\n2323-code.hatenablog.com\n</em>\n</a><a href=\"https://2323-code.hatenablog.com/entry/2026/06/14/132551\" rel=\"nofollow noopener\" target=\"_blank\"></a>\n\n \n</figure><p name=\"65663a88-e0f9-48fc-9722-173f3c633b6d\" id=\"65663a88-e0f9-48fc-9722-173f3c633b6d\">このような素敵なイベントに会場をお貸しできたのは本当によかったです。</p><h2 name=\"5e400d4b-fc7a-44f9-9ff7-69fa96318a0f\" id=\"5e400d4b-fc7a-44f9-9ff7-69fa96318a0f\">6/22 (火)&nbsp;【EM Oasis #12】「勝手に生まれる余白」なんてない 〜AI時代のセルフマネジメント〜</h2><p name=\"9cfee892-96a9-4787-8904-1ec41a87a55d\" id=\"9cfee892-96a9-4787-8904-1ec41a87a55d\">EM Oasis の運営に入って１年、昨年デビュー戦で会場をお借りした弁護士ドットコムさんでの開催となりました。</p><figure name=\"08c848e8-ab6e-46de-b05b-290614594d87\" id=\"08c848e8-ab6e-46de-b05b-290614594d87\" data-src=\"https://emoasis.connpass.com/event/394361/\" data-identifier=\"null\" embedded-service=\"external-article\" embedded-content-key=\"emb3e5aa6fe0bf9\"> \n<a href=\"https://emoasis.connpass.com/event/394361/\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong>\n【EM Oasis #12】「勝手に生まれる余白」なんてない 〜AI時代のセルフマネジメント〜 (2026/06/22 19:00〜)\n</strong>\n<em>\n# 「勝手に生まれる余白」なんてない 〜AI時代のセルフマネジメント〜  ## 概要  AI時代、机上では「無限に何でもで\n</em>\n<em>\nemoasis.connpass.com\n</em>\n</a><a href=\"https://emoasis.connpass.com/event/394361/\" rel=\"nofollow noopener\" target=\"_blank\"></a>\n\n \n</figure><p name=\"804b77e5-dd4f-45fc-ad67-24dabcd9beb7\" id=\"804b77e5-dd4f-45fc-ad67-24dabcd9beb7\">こちらはイベントレポートも書いているので改めて書くこともないのですが、運営がイベントレポートを書く意義も「エンジニアのキャリアを知るナイト」を見ての学びでした。</p><figure name=\"1c3b6752-d7b2-49f2-a1e8-51e9019e60cf\" id=\"1c3b6752-d7b2-49f2-a1e8-51e9019e60cf\" data-src=\"https://note.com/kyamamoto9120/n/ne9078fc0db95\" data-identifier=\"ne9078fc0db95\" embedded-service=\"note\" embedded-content-key=\"emb583e257ae743\">\n</figure><p name=\"24597930-cd12-4fc1-ae00-6d5ac50282a4\" id=\"24597930-cd12-4fc1-ae00-6d5ac50282a4\">今後も、単にイベントを開催するだけでなくそれを記録する努力も続けていけたらと思いました。</p><h2 name=\"0479601c-a325-4385-8d24-83f2d4a7488f\" id=\"0479601c-a325-4385-8d24-83f2d4a7488f\">6/25 (木)&nbsp;LINE APIで試したんだけど、聞いてほしい Night LT #03</h2><p name=\"43d897d0-b891-4658-b4b7-eb2f6c0370e8\" id=\"43d897d0-b891-4658-b4b7-eb2f6c0370e8\">毎月恒例となりつつある、LINE DC 主催の LT 会です。今回は登壇者として参加させていただきました。</p><figure name=\"464525d3-848d-4033-b7c7-4245260d969b\" id=\"464525d3-848d-4033-b7c7-4245260d969b\" data-src=\"https://linedevelopercommunity.connpass.com/event/395376/\" data-identifier=\"null\" embedded-service=\"external-article\" embedded-content-key=\"emb3e0548451315\"> \n<a href=\"https://linedevelopercommunity.connpass.com/event/395376/\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong>\nLINE APIで試したんだけど、聞いてほしい Night LT #03 (2026/06/25 19:00〜)\n</strong>\n<em>\n## Communityへの参加方法    * Discord(こちらがメインで動いております) https://disc\n</em>\n<em>\nlinedevelopercommunity.connpass.com\n</em>\n</a><a href=\"https://linedevelopercommunity.connpass.com/event/395376/\" rel=\"nofollow noopener\" target=\"_blank\"></a>\n\n \n</figure><p name=\"a7b5060c-c7a9-4760-a26a-aa8c03852ffc\" id=\"a7b5060c-c7a9-4760-a26a-aa8c03852ffc\">お話ししたのは LINE Developer コンソールにログインせずに LINE Bot を作る話です。最近頂いたご相談をもとに、解決策として提案した手順を紹介しました。</p><p name=\"9274cbdc-8ced-4b67-b175-2213cd5d8c37\" id=\"9274cbdc-8ced-4b67-b175-2213cd5d8c37\">お話しした内容は Zenn でハンズオン記事としても書いています。</p><figure name=\"984bf0c8-eb14-49f5-b96d-6c31eea314ff\" id=\"984bf0c8-eb14-49f5-b96d-6c31eea314ff\" data-src=\"https://zenn.dev/kyamamoto9120/articles/8f7e8777264a5d\" data-identifier=\"null\" embedded-service=\"external-article\" embedded-content-key=\"embf612e20fefda\"> \n<a href=\"https://zenn.dev/kyamamoto9120/articles/8f7e8777264a5d\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong>\nステートレスチャネルアクセストークンで作る GAS 製 LINE エコーボット\n</strong>\n<em>\n\n</em>\n<em>\nzenn.dev\n</em>\n</a><a href=\"https://zenn.dev/kyamamoto9120/articles/8f7e8777264a5d\" rel=\"nofollow noopener\" target=\"_blank\"></a>\n\n \n</figure><h2 name=\"783fec3b-a036-4d19-b3ac-41f1d967ca0c\" id=\"783fec3b-a036-4d19-b3ac-41f1d967ca0c\">その他：プロポーザルを２件提出しました</h2><p name=\"1cfa9226-0d9d-4ae9-89a7-11f0dd8520e1\" id=\"1cfa9226-0d9d-4ae9-89a7-11f0dd8520e1\">6月は note / Zenn の他にプロポーザルも書きました。</p><figure name=\"05c23998-0acd-41d2-8854-43b2043f4f88\" id=\"05c23998-0acd-41d2-8854-43b2043f4f88\" data-src=\"https://fortee.jp/pdeconf-2026/proposal/482f4647-5041-4da8-b5ca-51cb1ee183c1\" data-identifier=\"null\" embedded-service=\"external-article\" embedded-content-key=\"embdd6a1f7a5f5a\"> \n<a href=\"https://fortee.jp/pdeconf-2026/proposal/482f4647-5041-4da8-b5ca-51cb1ee183c1\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong>\n機能はAIが作る時代に、誰も気づかない細部をなぜ作り込むのか\n</strong>\n<em>\n【セッション概要】 サイドバーのメニューにマウスを乗せたとき横にサブメニューが開きます。 そこへ斜めに動かすと途中で別のメ\n</em>\n<em>\nfortee.jp\n</em>\n</a><a href=\"https://fortee.jp/pdeconf-2026/proposal/482f4647-5041-4da8-b5ca-51cb1ee183c1\" rel=\"nofollow noopener\" target=\"_blank\"></a>\n\n \n</figure><figure name=\"262260ad-67a4-4671-baba-f3e9424d9f65\" id=\"262260ad-67a4-4671-baba-f3e9424d9f65\" data-src=\"https://fortee.jp/fec-kansai-2026/proposal/e93396ce-b0e0-4c24-bc8b-cb0ad0942675\" data-identifier=\"null\" embedded-service=\"external-article\" embedded-content-key=\"embdee7215239c6\"> \n<a href=\"https://fortee.jp/fec-kansai-2026/proposal/e93396ce-b0e0-4c24-bc8b-cb0ad0942675\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong>\n「ここ、なんか違う」をエージェントに届ける技術\n</strong>\n<em>\n【セッション概要】 Agentic Coding が当たり前になったフロントエンド開発で、一つ解かれていない課題があります\n</em>\n<em>\nfortee.jp\n</em>\n</a><a href=\"https://fortee.jp/fec-kansai-2026/proposal/e93396ce-b0e0-4c24-bc8b-cb0ad0942675\" rel=\"nofollow noopener\" target=\"_blank\"></a>\n\n \n</figure><p name=\"7371f1db-5082-4fbd-90c3-d7188cbcb8c7\" id=\"7371f1db-5082-4fbd-90c3-d7188cbcb8c7\">PdE Conference は採択されませんでしたが、書き続けることに意味があると思うので引き続き頑張ります。</p><hr name=\"27321cd0-3e04-4b46-bd27-0c166fd873b5\" id=\"27321cd0-3e04-4b46-bd27-0c166fd873b5\"><p name=\"a4be50e0-42b3-4208-90d5-e24b6bb39d1d\" id=\"a4be50e0-42b3-4208-90d5-e24b6bb39d1d\">活動量自体は少なめの1ヶ月でしたが、濃密な体験が多かったです。<br>7月は AI DevEx Conference のブースもあり、また忙しくなりそうな予感です。走りきれるように頑張ります。</p>",
+  "separator": null,
+  "publish_at": "2026-07-05T17:34:12.000+09:00",
+  "created_at": "2026-07-05T15:58:23.000+09:00",
+  "note_url": "https://note.com/kyamamoto9120/n/n6d5043b00b93",
+  "price": 0,
+  "is_limited": false,
+  "is_trial": false,
+  "eyecatch": "https://assets.st-note.com/production/uploads/images/291687797/rectangle_large_type_2_60f13eb49a19bc98bf756488450cefdc.png?fit=bounds&quality=85&width=1280",
+  "eyecatch_alt": "見出し画像",
+  "eyecatch_width": 1920,
+  "eyecatch_height": 1005,
+  "hashtags": [],
+  "pictures": [],
+  "embedded_contents": [
+    {
+      "key": "embd146b2de5e21",
+      "url": "https://x.com/kyamamoto9120/status/2068587860035506589",
+      "service": "twitter",
+      "identifier": null,
+      "caption": null,
+      "html_for_embed": "<span><blockquote class=\"twitter-tweet\" data-dnt=\"true\" align=\"center\"><p lang=\"ja\" dir=\"ltr\">そして、ようやくnote 30週連続投稿〜<br>なんでも良いから書き続けてみる、というのも結構難しい。しばらくは個人開発ツールを紹介し続けるけど、その先に書くものは未定。 <a href=\"https://t.co/DQLMWyArM9\">pic.twitter.com/DQLMWyArM9</a></p>&mdash; 山本一将｜焚き火を愛するエンジニア (@kyamamoto9120) <a href=\"https://x.com/kyamamoto9120/status/2068587860035506589?ref_src=twsrc%5Etfw\">June 21, 2026</a></blockquote>\n<script async src=\"https://platform.x.com/widgets.js\" charset=\"utf-8\"></script>\n\n</span>",
+      "html_for_display": null
+    },
+    {
+      "key": "embb04b6f8ef6db",
+      "url": "https://giftee.connpass.com/event/391373/",
+      "service": "external-article",
+      "identifier": null,
+      "caption": null,
+      "html_for_embed": "<span><div class=\"external-article-widget\">\n<a href=\"https://giftee.connpass.com/event/391373/\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong class=\"external-article-widget-title\">\nTSUDOI by giftee Tech #3 「裏側の奮闘を自慢しよう選手権」 (2026/06/02 19:00〜)\n</strong>\n<em class=\"external-article-widget-description\">\n## 🎁 TSUDOI by giftee Techとは  株式会社ギフティは、『eギフトを軸として、人、企業、街の間に、\n</em>\n<em class=\"external-article-widget-url\">\ngiftee.connpass.com\n</em>\n</a><a class=\"external-article-widget-image\" href=\"https://giftee.connpass.com/event/391373/\" rel=\"nofollow noopener\" style=\"background-image: url('https://assets.st-note.com/production/uploads/ext/79e3aed6ccf5d8b352edbc4978f9976fbde09d5aa7a06fd04a65c2c1dd88.png?x-type=ogp');\" target=\"_blank\"></a>\n\n</div>\n</span>",
+      "html_for_display": null
+    },
+    {
+      "key": "emb8231a7e31db5",
+      "url": "https://www.docswell.com/s/kyamamoto9120/KJW8M3-2026-06-02-190000",
+      "service": "oembed",
+      "identifier": null,
+      "caption": null,
+      "html_for_embed": "<span><div class=\"fude-iframe-oembed-widget\" style=\"width: 100%;\">\n<div class=\"fude-iframe-oembed-widget__wrap\" style=\"padding-bottom: 56%;\">\n<div class=\"fude-iframe-oembed-widget__inner\">\n<iframe allow=\"clipboard-write\" allowtransparency=\"true\" class=\"fude-iframe-oembed-widget__iframe\" frameborder=\"0\" scrolling=\"no\" src=\"https://www.docswell.com/slide/KJW8M3/embed\"></iframe>\n</div>\n</div>\n<div class=\"fude-iframe-oembed-widget__domain\">\n<a class=\"fude-iframe-oembed-widget__link\" href=\"https://www.docswell.com/\" target=\"_blank\">\nwww.docswell.com\n</a>\n</div>\n</div>\n</span>",
+      "html_for_display": null
+    },
+    {
+      "key": "embaff9a184d706",
+      "url": "https://bashowotsukuru.connpass.com/event/391702/",
+      "service": "external-article",
+      "identifier": null,
+      "caption": null,
+      "html_for_embed": "<span><div class=\"external-article-widget\">\n<a href=\"https://bashowotsukuru.connpass.com/event/391702/\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong class=\"external-article-widget-title\">\n【再増枠】エンジニアのキャリアを知るナイト (2026/06/10 19:00〜)\n</strong>\n<em class=\"external-article-widget-description\">\n2026/05/15 参加者枠を増枠しました。 2026/05/26 参加者枠をさらに増枠しました。  ## エンジニアの\n</em>\n<em class=\"external-article-widget-url\">\nbashowotsukuru.connpass.com\n</em>\n</a><a class=\"external-article-widget-image\" href=\"https://bashowotsukuru.connpass.com/event/391702/\" rel=\"nofollow noopener\" style=\"background-image: url('https://assets.st-note.com/production/uploads/ext/fb9c3f1cdc87dabfc0d71bcb3d55531076b655f60f7b208ce54a0a02c831.png?x-type=ogp');\" target=\"_blank\"></a>\n\n</div>\n</span>",
+      "html_for_display": null
+    },
+    {
+      "key": "emb0a68c77ebf51",
+      "url": "https://2323-code.hatenablog.com/entry/2026/06/14/132551",
+      "service": "external-article",
+      "identifier": null,
+      "caption": null,
+      "html_for_embed": "<span><div class=\"external-article-widget\">\n<a href=\"https://2323-code.hatenablog.com/entry/2026/06/14/132551\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong class=\"external-article-widget-title\">\nエンジニアのキャリアを知るナイトを開催しました【イベントレポ】 - 歩くパワースポットでありたい。\n</strong>\n<em class=\"external-article-widget-description\">\nはじめに 「自分はこの先どうしたいかな」 「このまま今の仕事を続けようか迷う」 そう感じたことがある人は少なくないのではな\n</em>\n<em class=\"external-article-widget-url\">\n2323-code.hatenablog.com\n</em>\n</a><a class=\"external-article-widget-image\" href=\"https://2323-code.hatenablog.com/entry/2026/06/14/132551\" rel=\"nofollow noopener\" style=\"background-image: url('https://assets.st-note.com/production/uploads/ext/ada544f94fa07c4d88ee225308e2e346c2c31582140971d03b9e49f98acb.png?x-type=ogp');\" target=\"_blank\"></a>\n\n</div>\n</span>",
+      "html_for_display": null
+    },
+    {
+      "key": "emb3e5aa6fe0bf9",
+      "url": "https://emoasis.connpass.com/event/394361/",
+      "service": "external-article",
+      "identifier": null,
+      "caption": null,
+      "html_for_embed": "<span><div class=\"external-article-widget\">\n<a href=\"https://emoasis.connpass.com/event/394361/\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong class=\"external-article-widget-title\">\n【EM Oasis #12】「勝手に生まれる余白」なんてない 〜AI時代のセルフマネジメント〜 (2026/06/22 19:00〜)\n</strong>\n<em class=\"external-article-widget-description\">\n# 「勝手に生まれる余白」なんてない 〜AI時代のセルフマネジメント〜  ## 概要  AI時代、机上では「無限に何でもで\n</em>\n<em class=\"external-article-widget-url\">\nemoasis.connpass.com\n</em>\n</a><a class=\"external-article-widget-image\" href=\"https://emoasis.connpass.com/event/394361/\" rel=\"nofollow noopener\" style=\"background-image: url('https://assets.st-note.com/production/uploads/ext/8ceb4b6b467535ecd4c479f99d735a1bdfc58eb9f467f21a7e18f3413929.png?x-type=ogp');\" target=\"_blank\"></a>\n\n</div>\n</span>",
+      "html_for_display": null
+    },
+    {
+      "key": "emb583e257ae743",
+      "url": "https://note.com/kyamamoto9120/n/ne9078fc0db95",
+      "service": "note",
+      "identifier": "ne9078fc0db95",
+      "caption": null,
+      "html_for_embed": "<iframe class=\"note-embed\" height=\"210\" scrolling=\"no\" src=\"https://note.com/embed/notes/ne9078fc0db95\" style=\"border: 0; display: block; max-width: 99%; width: 494px; padding: 0px; margin: 10px 0px; position: static; visibility: visible;\"></iframe>\n",
+      "html_for_display": null
+    },
+    {
+      "key": "emb3e0548451315",
+      "url": "https://linedevelopercommunity.connpass.com/event/395376/",
+      "service": "external-article",
+      "identifier": null,
+      "caption": null,
+      "html_for_embed": "<span><div class=\"external-article-widget\">\n<a href=\"https://linedevelopercommunity.connpass.com/event/395376/\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong class=\"external-article-widget-title\">\nLINE APIで試したんだけど、聞いてほしい Night LT #03 (2026/06/25 19:00〜)\n</strong>\n<em class=\"external-article-widget-description\">\n## Communityへの参加方法    * Discord(こちらがメインで動いております) https://disc\n</em>\n<em class=\"external-article-widget-url\">\nlinedevelopercommunity.connpass.com\n</em>\n</a><a class=\"external-article-widget-image\" href=\"https://linedevelopercommunity.connpass.com/event/395376/\" rel=\"nofollow noopener\" style=\"background-image: url('https://assets.st-note.com/production/uploads/ext/93ac7dfd1cfe1a537e7846cb8608434571729d65dc95f516e8c2e10f4cba.png?x-type=ogp');\" target=\"_blank\"></a>\n\n</div>\n</span>",
+      "html_for_display": null
+    },
+    {
+      "key": "embf612e20fefda",
+      "url": "https://zenn.dev/kyamamoto9120/articles/8f7e8777264a5d",
+      "service": "external-article",
+      "identifier": null,
+      "caption": null,
+      "html_for_embed": "<span><div class=\"external-article-widget\">\n<a href=\"https://zenn.dev/kyamamoto9120/articles/8f7e8777264a5d\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong class=\"external-article-widget-title\">\nステートレスチャネルアクセストークンで作る GAS 製 LINE エコーボット\n</strong>\n<em class=\"external-article-widget-description\">\n\n</em>\n<em class=\"external-article-widget-url\">\nzenn.dev\n</em>\n</a><a class=\"external-article-widget-image\" href=\"https://zenn.dev/kyamamoto9120/articles/8f7e8777264a5d\" rel=\"nofollow noopener\" style=\"background-image: url('https://assets.st-note.com/production/uploads/ext/b196756bfd49a709a0387d047f00a725a65d7ba9b866af7991347294475c.png?x-type=ogp');\" target=\"_blank\"></a>\n\n</div>\n</span>",
+      "html_for_display": null
+    },
+    {
+      "key": "embdd6a1f7a5f5a",
+      "url": "https://fortee.jp/pdeconf-2026/proposal/482f4647-5041-4da8-b5ca-51cb1ee183c1",
+      "service": "external-article",
+      "identifier": null,
+      "caption": null,
+      "html_for_embed": "<span><div class=\"external-article-widget\">\n<a href=\"https://fortee.jp/pdeconf-2026/proposal/482f4647-5041-4da8-b5ca-51cb1ee183c1\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong class=\"external-article-widget-title\">\n機能はAIが作る時代に、誰も気づかない細部をなぜ作り込むのか\n</strong>\n<em class=\"external-article-widget-description\">\n【セッション概要】 サイドバーのメニューにマウスを乗せたとき横にサブメニューが開きます。 そこへ斜めに動かすと途中で別のメ\n</em>\n<em class=\"external-article-widget-url\">\nfortee.jp\n</em>\n</a><a class=\"external-article-widget-image\" href=\"https://fortee.jp/pdeconf-2026/proposal/482f4647-5041-4da8-b5ca-51cb1ee183c1\" rel=\"nofollow noopener\" style=\"background-image: url('https://assets.st-note.com/production/uploads/ext/b350094dd6c294f69263266205ddae6da99a2078efcf23e5bb60116b79a3.png?x-type=ogp');\" target=\"_blank\"></a>\n\n</div>\n</span>",
+      "html_for_display": null
+    },
+    {
+      "key": "embdee7215239c6",
+      "url": "https://fortee.jp/fec-kansai-2026/proposal/e93396ce-b0e0-4c24-bc8b-cb0ad0942675",
+      "service": "external-article",
+      "identifier": null,
+      "caption": null,
+      "html_for_embed": "<span><div class=\"external-article-widget\">\n<a href=\"https://fortee.jp/fec-kansai-2026/proposal/e93396ce-b0e0-4c24-bc8b-cb0ad0942675\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong class=\"external-article-widget-title\">\n「ここ、なんか違う」をエージェントに届ける技術\n</strong>\n<em class=\"external-article-widget-description\">\n【セッション概要】 Agentic Coding が当たり前になったフロントエンド開発で、一つ解かれていない課題があります\n</em>\n<em class=\"external-article-widget-url\">\nfortee.jp\n</em>\n</a><a class=\"external-article-widget-image\" href=\"https://fortee.jp/fec-kansai-2026/proposal/e93396ce-b0e0-4c24-bc8b-cb0ad0942675\" rel=\"nofollow noopener\" style=\"background-image: url('https://assets.st-note.com/production/uploads/ext/06502e89af6a296096a527d2b3ba80b46c020c38b7d74d52e7a5fe7acaf9.png?x-type=ogp');\" target=\"_blank\"></a>\n\n</div>\n</span>",
+      "html_for_display": null
+    }
+  ],
+  "user": {
+    "urlname": "kyamamoto9120",
+    "nickname": "山本一将｜焚き火を愛するエンジニア"
+  },
+  "_fetched_at": "2026-08-31T01:40:59.148Z"
+}

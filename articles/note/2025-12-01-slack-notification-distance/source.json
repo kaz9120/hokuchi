@@ -1,0 +1,85 @@
+{
+  "id": 136304239,
+  "key": "n4800ace68f95",
+  "slug": "slug-n4800ace68f95",
+  "type": "TextNote",
+  "status": "published",
+  "format": "4.0",
+  "name": "Slackの通知、多すぎませんか？ フルリモート半年で見つけた「ちょうどいい」距離感",
+  "description": "",
+  "body": "<p name=\"b56e57f4-d10a-4754-ad87-855c5ed2b114\" id=\"b56e57f4-d10a-4754-ad87-855c5ed2b114\">本記事は&nbsp;<a href=\"https://adventar.org/calendars/11936\" target=\"_blank\" rel=\"nofollow noopener\">MOSH Advent Calendar 2025</a>&nbsp; の1日目の記事です。</p><p name=\"ed8f6c84-cf78-409e-b3f0-1b398816d8df\" id=\"ed8f6c84-cf78-409e-b3f0-1b398816d8df\">MOSHにジョインして、気づけば半年が経ちました。 <br>本記事では、フル出社の前職からフルリモートの MOSH に転職して模索した<strong>「Slack通知との向き合い方」</strong>についてご紹介します。</p><h2 name=\"30dc6b12-7d96-4584-b502-7f9b93c55d09\" id=\"30dc6b12-7d96-4584-b502-7f9b93c55d09\">「あれ、仕事が進まないぞ…？」</h2><p name=\"b70df27e-d665-464d-8a4e-ca4ae0d22ba8\" id=\"b70df27e-d665-464d-8a4e-ca4ae0d22ba8\">私が前職まで働いていた環境は「フル出社」が基本でした。 「ちょっといいですか？」と口頭で話すのが当たり前だったので、Slackの通知も十分さばききれる量でした。</p><p name=\"242789c0-b4e1-42bd-b035-546689c96d31\" id=\"242789c0-b4e1-42bd-b035-546689c96d31\">しかし、フルリモートの会社となると勝手が大きく異なります。 当然ながら、すべての会話がテキストベースで流れてきます。</p><p name=\"884534a3-8156-459a-8b5d-140e8468cd5f\" id=\"884534a3-8156-459a-8b5d-140e8468cd5f\">広範囲へのメンション、botからのアラート、気になるチャンネルの未読バッジ…。 最初の頃は「早くキャッチアップしなければ」と意気込んで、通知が来るたびにすべて反応していたのですが、ふと気づきました。</p><p name=\"11011653-9cab-414b-9eb4-a64b09faab89\" id=\"11011653-9cab-414b-9eb4-a64b09faab89\">「あれ、今日あんまり作業が進んでいないぞ…？」</p><p name=\"52baaf95-47e2-42e1-902a-c3c765f5a757\" id=\"52baaf95-47e2-42e1-902a-c3c765f5a757\">通知が来るたびに思考が中断され、対応して、また集中し直して…。エンジニアの方なら共感していただけると思うのですが、このコンテキストスイッチは脳のメモリをかなり消費します。</p><p name=\"675c2e58-64f5-4ed5-a0c5-c987d95d91ff\" id=\"675c2e58-64f5-4ed5-a0c5-c987d95d91ff\">「これは運用を見直さないと、パフォーマンスが出せない」 と感じ、Slackとの付き合い方を本気で再設計することにしました。</p><h2 name=\"7926064c-c431-41d4-bf26-d5ecb0cf24f2\" id=\"7926064c-c431-41d4-bf26-d5ecb0cf24f2\">「プロジェクトごと」に分けるのをやめた</h2><p name=\"3ada60c4-7769-46c0-abce-0e1b1a58913e\" id=\"3ada60c4-7769-46c0-abce-0e1b1a58913e\">どう整理すべきか悩んでいた時、X（Twitter）で興味深い投稿を見かけました。チャンネルは「内容」ではなく「閲覧頻度」で分けると良い、という内容です。</p><figure name=\"7179df86-2317-48c4-80dc-bbc82f3d8b4a\" id=\"7179df86-2317-48c4-80dc-bbc82f3d8b4a\" data-src=\"https://x.com/iwashi86/status/1973174358777667817\" data-identifier=\"null\" embedded-service=\"twitter\" embedded-content-key=\"embab756893acee\"><blockquote class=\"twitter-tweet\"><p>Slack のチャンネルが増えて、整理に困ってない？、こんな方法があるよ、という記事。<br><br>・Slackチャンネルの整理方法を「内容」ではなく「閲覧頻度」に変える<br>・具体的には、チャンネルを「今すぐ読む」「1時間ごとに読む」「毎日読む」「いつでも読む」といったセクションに分ける…</p>— iwashi / Yoshimasa Iwase (@iwashi86) <a href=\"https://twitter.com/iwashi86/status/1973174358777667817?ref_src=twsrc%5Etfw\" rel=\"nofollow noopener\">September 30, 2025</a></blockquote>\n\n\n</figure><p name=\"5033e5fc-91a3-4ee2-aae0-2e0e97a0ebab\" id=\"5033e5fc-91a3-4ee2-aae0-2e0e97a0ebab\">この視点は、私にとって目からウロコでした。 それまでの私は「開発チーム」「通知」「全社連絡」のように「情報の意味」でセクションを分けていました。しかし、実際の業務フローにおいて重要なのは「どこのチームの情報か」よりも「今すぐ見るべきか、後でいいか」という時間軸です。</p><p name=\"d6fdca9a-6a0b-450d-a431-662d150d8212\" id=\"d6fdca9a-6a0b-450d-a431-662d150d8212\">なるほどと思い、この考え方をベースに自分なりにアレンジを加えたのが今の運用方法です。</p><h2 name=\"83a9f281-276b-4648-8aab-202bbe2d184f\" id=\"83a9f281-276b-4648-8aab-202bbe2d184f\">「自分から見に行く」のか「呼ばれたら行く」のか</h2><p name=\"32b97f08-3248-4a92-817d-89f904a1eb78\" id=\"32b97f08-3248-4a92-817d-89f904a1eb78\">私が実践して一番しっくり来たのは<strong>「優先度」</strong>と<strong>「スタンス（能動・受動）」</strong>の2軸で分類する方法です。</p><p name=\"feb9ff03-1528-4e49-87bb-3e350e691e2b\" id=\"feb9ff03-1528-4e49-87bb-3e350e691e2b\">実際のSlackサイドバーは、以下のような4つのグループで構成されています。</p><figure name=\"551ac569-6364-4f65-8fd0-1854460fab07\" id=\"551ac569-6364-4f65-8fd0-1854460fab07\"><img src=\"https://assets.st-note.com/img/1764545407-e4wmIcN508jUzJXKo3WyugbD.png\" alt=\"\" width=\"327\" height=\"228\"><figcaption></figcaption></figure><h3 name=\"ae077aba-0279-4553-acda-71fbabe9880d\" id=\"ae077aba-0279-4553-acda-71fbabe9880d\">① P0: 優先度 高 / 能動的</h3><p name=\"77469537-38bf-433a-a2dd-aad8414cedc4\" id=\"77469537-38bf-433a-a2dd-aad8414cedc4\">業務中に最も集中してアクセスしたいチャンネルを集めたセクションです。基本的には自分がメインで動いているプロジェクトやチームのチャンネルだけが含まれます。</p><ul name=\"2acfccad-ea96-425b-aa40-4ebcab6eaedc\" id=\"2acfccad-ea96-425b-aa40-4ebcab6eaedc\"><li><p name=\"663520a3-72dc-4804-b9a0-eb368a47795d\" id=\"663520a3-72dc-4804-b9a0-eb368a47795d\"><strong>フィルター条件：</strong>すべて</p></li><li><p name=\"70b293ac-aaad-4f19-847f-522aa12bbf29\" id=\"70b293ac-aaad-4f19-847f-522aa12bbf29\"><strong>開閉状態：</strong>常に開いている状態</p></li></ul><p name=\"3b003976-eef1-4806-be9b-c2932485ceee\" id=\"3b003976-eef1-4806-be9b-c2932485ceee\">このセクションに含まれるチャンネルの未読はなるべく早く読みたいですし、自分から書き込みにも行くのでチャンネルを開くコストはなるべく抑えたいです。 そのため、セクションを開閉したりするコストを省き、ワンクリックでアクセスできるように設定しています。</p><figure name=\"0fcb4620-01f2-4523-a0c0-f9c1cde1a815\" id=\"0fcb4620-01f2-4523-a0c0-f9c1cde1a815\"><img src=\"https://assets.st-note.com/img/1764518136-Px1jYcy3oRWlnSztBkhC5d4I.png\" alt=\"\" width=\"232\" height=\"159\"><figcaption></figcaption></figure><h3 name=\"4b1c5743-7eba-4b03-803e-3a03a8154af1\" id=\"4b1c5743-7eba-4b03-803e-3a03a8154af1\">② P1: 優先度 高 / 受動的</h3><p name=\"ecabaa12-512b-42a4-b6ee-035eaa4bea99\" id=\"ecabaa12-512b-42a4-b6ee-035eaa4bea99\">自分からチャンネルを開くことは多くないけれど、何か未読のメッセージが届いたらいち早くアクションをしたいチャンネルをこのセクションに入れています。代表的なチャンネルはシステムのエラー通知が届くチャンネルです。</p><ul name=\"c055c63f-46b7-4a3a-a6fd-7297d5c4f69d\" id=\"c055c63f-46b7-4a3a-a6fd-7297d5c4f69d\"><li><p name=\"42f5d9f1-e76e-494e-8d09-6b68ab312e33\" id=\"42f5d9f1-e76e-494e-8d09-6b68ab312e33\"><strong>フィルター条件：</strong>未読メッセージ</p></li><li><p name=\"92dc73e2-70f9-451c-b765-d1490536e415\" id=\"92dc73e2-70f9-451c-b765-d1490536e415\"><strong>開閉状態：</strong>常に開いている状態</p></li></ul><p name=\"7397d3ab-d2f3-47f1-9685-6b8d35102524\" id=\"7397d3ab-d2f3-47f1-9685-6b8d35102524\">エラー通知は<strong>「何もないなら見なくていいけれど、異常があれば即座に知りたい」</strong>情報です。 ここは「未読メッセージ」だけ表示するという設定にしており、平和な時はセクションの中身が空っぽで視界に入らないため、無駄なノイズが生まれません。</p><figure name=\"25d45d0e-9480-4dc8-b356-dde3afa2262e\" id=\"25d45d0e-9480-4dc8-b356-dde3afa2262e\"><img src=\"https://assets.st-note.com/img/1764518177-sTFkMglLPCoDvS7Y1n28GQmK.png\" alt=\"\" width=\"235\" height=\"163\"><figcaption></figcaption></figure><h3 name=\"7b2dcd45-effd-4f82-ba4d-51a04c5a29dc\" id=\"7b2dcd45-effd-4f82-ba4d-51a04c5a29dc\">③ P2: 優先度 低 / 能動的</h3><p name=\"9517787b-a870-47a3-a5ad-f40e93062899\" id=\"9517787b-a870-47a3-a5ad-f40e93062899\">エンジニア組織全体や全社チャンネルなど、能動的に利用するが範囲の広いチャンネルなどはリアルタイム性がちょっと低くても問題がないことが多いです。そういったチャンネルはこのセクションにまとめます。</p><ul name=\"39b60679-7167-4fa2-9315-160014d05ad5\" id=\"39b60679-7167-4fa2-9315-160014d05ad5\"><li><p name=\"dfbd823c-79f6-4978-a9da-a3bbad4569fa\" id=\"dfbd823c-79f6-4978-a9da-a3bbad4569fa\"><strong>フィルター条件：</strong>すべて</p></li><li><p name=\"e5c0dcfb-b9a9-4b74-8efa-62812f990e04\" id=\"e5c0dcfb-b9a9-4b74-8efa-62812f990e04\"><strong>開閉状態：</strong>通常は閉じておき、必要な時に開く</p></li></ul><p name=\"20557b9c-782d-4983-be75-e5b870b396f9\" id=\"20557b9c-782d-4983-be75-e5b870b396f9\">このセクションはアクセスする頻度は低いのですが、必要があればなるべく少ない手数でアクセスできるのが望ましいです。そのため、フィルターはかけずに全てのチャンネルが表示される状態にはするのですが、ノイズにならないよう普段は畳んでおきます。</p><h3 name=\"6d319bc1-220d-4419-b0b1-3b5f4e27c99a\" id=\"6d319bc1-220d-4419-b0b1-3b5f4e27c99a\">④ P3: 優先度 低 / 受動的</h3><p name=\"d8e76497-f599-44f5-b859-d468d7d62b64\" id=\"d8e76497-f599-44f5-b859-d468d7d62b64\">優先度も低く、自分から開くことはないチャンネルを集めたセクションです。雑談チャンネルや分報（times）などがここに当たります。</p><ul name=\"c87b123d-dcf2-4b2e-908e-2de9535b794a\" id=\"c87b123d-dcf2-4b2e-908e-2de9535b794a\"><li><p name=\"be7f682e-213d-411c-a5c3-d3344b1ead90\" id=\"be7f682e-213d-411c-a5c3-d3344b1ead90\"><strong>フィルター条件：</strong>メンション</p></li><li><p name=\"6b85702f-6674-4ffa-b042-cb7634875435\" id=\"6b85702f-6674-4ffa-b042-cb7634875435\"><strong>開閉状態：</strong>常に開いている状態<br> </p></li></ul><p name=\"a8a51889-9b81-4af8-b80b-61c90f684ef3\" id=\"a8a51889-9b81-4af8-b80b-61c90f684ef3\">これらのチャンネルはメンションが飛んできた時だけリアルタイムに反応し、それ以外の内容は時間ができた時にまとめて未読メッセージを読んでいます。 少し極端かもしれませんが、集中したい時に「お菓子食べたい」といった雑談通知で思考が止まるのは避けたいのです。1日1回、仕事終わりにまとめて眺めて「盛り上がってるな」と楽しむくらいが私にはちょうど良い距離感でした。</p><figure name=\"3efc7a9e-8171-45a8-a49d-eba80902d962\" id=\"3efc7a9e-8171-45a8-a49d-eba80902d962\"><img src=\"https://assets.st-note.com/img/1764518221-3XL5D8BtMlErC0zsQkIijTOA.png\" alt=\"\" width=\"232\" height=\"161\"><figcaption></figcaption></figure><h2 name=\"3f4fb88e-d82a-4c20-bea3-baa629f0f1d1\" id=\"3f4fb88e-d82a-4c20-bea3-baa629f0f1d1\">情報を「浴びる」のではなく「取りに行く」</h2><p name=\"2972348f-f48b-474f-b1c6-04f2e72401ba\" id=\"2972348f-f48b-474f-b1c6-04f2e72401ba\">フルリモート環境では「情報を取り逃がして孤立するのが怖い」という不安と、「すべて追っていたらパンクする」という現実の板挟みになりがちです。</p><p name=\"b9bcd8ed-446a-4096-afee-6b719e4ddf9a\" id=\"b9bcd8ed-446a-4096-afee-6b719e4ddf9a\">しかし、こうして「自分から取りに行く情報」と「来たら反応する情報」を明確に分けたことで、心理的にも随分と楽になりました。</p><p name=\"ae119560-90f6-44da-9e07-6694b71d7c9a\" id=\"ae119560-90f6-44da-9e07-6694b71d7c9a\">大切なのはツールに使われるのではなく、自分のペースで情報の流入をコントロールすること。 「サイドバーをどう設定するか」という地味な話ですが、リモートワークで機嫌よく成果を出し続けるためには意外と重要な工夫なのかもしれません。</p><h2 name=\"ea727b77-6b91-4af7-a971-faa6885df566\" id=\"ea727b77-6b91-4af7-a971-faa6885df566\">おわりに</h2><p name=\"d888bb27-9db7-4457-8689-25a76f8ab7c6\" id=\"d888bb27-9db7-4457-8689-25a76f8ab7c6\">この運用に変えてから、情報のキャッチアップ漏れを防ぎつつ、しっかりと「コードを書く時間」や「深く考える時間」を確保できるようになりました。</p><p name=\"c5dad034-0800-41c5-97db-5b0afc4f67e1\" id=\"c5dad034-0800-41c5-97db-5b0afc4f67e1\">もし「通知が多すぎてしんどい…」と感じている方がいれば、一度「プロジェクトごと」の整理をやめて、「見る頻度」で並べ替えてみてはいかがでしょうか。頭の中がスッキリして、本来の業務により集中できるかもしれません。</p>",
+  "separator": null,
+  "publish_at": "2025-12-01T09:29:10.000+09:00",
+  "created_at": "2025-12-01T00:10:30.000+09:00",
+  "note_url": "https://note.com/kyamamoto9120/n/n4800ace68f95",
+  "price": 0,
+  "is_limited": false,
+  "is_trial": false,
+  "eyecatch": "https://assets.st-note.com/production/uploads/images/233172976/rectangle_large_type_2_bc0017a73f9dfc5add3be1464a51a40a.png?fit=bounds&quality=85&width=1280",
+  "eyecatch_alt": "見出し画像",
+  "eyecatch_width": 1280,
+  "eyecatch_height": 670,
+  "hashtags": [
+    "#業務効率化",
+    "#リモートワーク",
+    "#slack"
+  ],
+  "pictures": [
+    {
+      "caption": null,
+      "key": "1764545407-e4wmIcN508jUzJXKo3WyugbD",
+      "url": "https://assets.st-note.com/img/1764545407-e4wmIcN508jUzJXKo3WyugbD.png",
+      "thumbnail_url": "https://assets.st-note.com/img/1764545407-e4wmIcN508jUzJXKo3WyugbD.png",
+      "alt": "画像1",
+      "width": null,
+      "height": null,
+      "index": 0
+    },
+    {
+      "caption": null,
+      "key": "1764518136-Px1jYcy3oRWlnSztBkhC5d4I",
+      "url": "https://assets.st-note.com/img/1764518136-Px1jYcy3oRWlnSztBkhC5d4I.png",
+      "thumbnail_url": "https://assets.st-note.com/img/1764518136-Px1jYcy3oRWlnSztBkhC5d4I.png",
+      "alt": "画像2",
+      "width": null,
+      "height": null,
+      "index": 1
+    },
+    {
+      "caption": null,
+      "key": "1764518177-sTFkMglLPCoDvS7Y1n28GQmK",
+      "url": "https://assets.st-note.com/img/1764518177-sTFkMglLPCoDvS7Y1n28GQmK.png",
+      "thumbnail_url": "https://assets.st-note.com/img/1764518177-sTFkMglLPCoDvS7Y1n28GQmK.png",
+      "alt": "画像3",
+      "width": null,
+      "height": null,
+      "index": 2
+    },
+    {
+      "caption": null,
+      "key": "1764518221-3XL5D8BtMlErC0zsQkIijTOA",
+      "url": "https://assets.st-note.com/img/1764518221-3XL5D8BtMlErC0zsQkIijTOA.png",
+      "thumbnail_url": "https://assets.st-note.com/img/1764518221-3XL5D8BtMlErC0zsQkIijTOA.png",
+      "alt": "画像4",
+      "width": null,
+      "height": null,
+      "index": 3
+    }
+  ],
+  "embedded_contents": [
+    {
+      "key": "embab756893acee",
+      "url": "https://x.com/iwashi86/status/1973174358777667817",
+      "service": "twitter",
+      "identifier": null,
+      "caption": null,
+      "html_for_embed": "<span><blockquote class=\"twitter-tweet\" data-dnt=\"true\" align=\"center\"><p lang=\"ja\" dir=\"ltr\">Slack のチャンネルが増えて、整理に困ってない？、こんな方法があるよ、という記事。<br><br>・Slackチャンネルの整理方法を「内容」ではなく「閲覧頻度」に変える<br>・具体的には、チャンネルを「今すぐ読む」「1時間ごとに読む」「毎日読む」「いつでも読む」といったセクションに分ける…</p>&mdash; iwashi / Yoshimasa Iwase (@iwashi86) <a href=\"https://twitter.com/iwashi86/status/1973174358777667817?ref_src=twsrc%5Etfw\">September 30, 2025</a></blockquote>\n<script async src=\"https://platform.twitter.com/widgets.js\" charset=\"utf-8\"></script>\n\n</span>",
+      "html_for_display": null
+    }
+  ],
+  "user": {
+    "urlname": "kyamamoto9120",
+    "nickname": "山本一将｜焚き火を愛するエンジニア"
+  },
+  "_fetched_at": "2026-08-31T01:42:15.869Z"
+}

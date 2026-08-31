@@ -1,0 +1,97 @@
+{
+  "id": 175133170,
+  "key": "n7bdc354dac45",
+  "slug": "slug-n7bdc354dac45",
+  "type": "TextNote",
+  "status": "published",
+  "format": "4.0",
+  "name": "サクッと作れる楽しさに、飽きた",
+  "description": "",
+  "body": "<p name=\"cad902b2-535b-48c8-9ac2-f03a31a7359c\" id=\"cad902b2-535b-48c8-9ac2-f03a31a7359c\">自分が欲しいツールがその日のうちに動く。 最初はそれだけで楽しかった。</p><p name=\"b68471e7-0da8-4311-af5b-156e5571ceef\" id=\"b68471e7-0da8-4311-af5b-156e5571ceef\">でも、すぐに飽きた。</p><p name=\"2e19d24f-0e04-4963-bf62-3d49bfffe91e\" id=\"2e19d24f-0e04-4963-bf62-3d49bfffe91e\">なんでも作れることに、そこまでの価値はなかった。動くものが増えるほど、使わないものも増える。作った時点で満足して、二度と開かないツールがいくつもあります。</p><p name=\"04487734-eddb-4339-8294-a044d504c9c3\" id=\"04487734-eddb-4339-8294-a044d504c9c3\">面白くなってきたのは、そのあとでした。</p><hr name=\"39b04262-f18f-48c9-87c5-bbe035f04503\" id=\"39b04262-f18f-48c9-87c5-bbe035f04503\"><p name=\"97cb225f-6c21-45f2-b431-a71a5c9477e5\" id=\"97cb225f-6c21-45f2-b431-a71a5c9477e5\">8月25日(火)、新宿の「山手ウエスト #1」でこの話をします！<br>この記事は勉強会でお話しすることの予告編です。</p><figure name=\"4e0545fe-4a9a-4050-9799-1f4894e7637f\" id=\"4e0545fe-4a9a-4050-9799-1f4894e7637f\"><a href=\"https://yamanote-west.connpass.com/event/399789/\" target=\"_blank\" rel=\"nofollow noopener\"><img src=\"https://assets.st-note.com/img/1786852068-s5LohQPbiAuZM1e8dtjc40q2.png\" alt=\"\" width=\"620\" height=\"326\"></a><figcaption>山手線の西側で開催する勉強会、少ないよね！から始まったみたいです</figcaption></figure><h3 name=\"0fb08555-8766-4f42-9b6c-e1b9c3eb723d\" id=\"0fb08555-8766-4f42-9b6c-e1b9c3eb723d\">設定項目を増やしていた時期</h3><p name=\"dcb5716c-463e-409f-852c-e4b18cd34ae7\" id=\"dcb5716c-463e-409f-852c-e4b18cd34ae7\">いま「noteカバー画像」というツールを作っています。noteの見出し画像を作るためだけのツール。毎週noteを書くので、毎週必要になる。</p><p name=\"e7bc5c1a-173a-4d8b-86d0-d39625a3a907\" id=\"e7bc5c1a-173a-4d8b-86d0-d39625a3a907\">開発当初から、機能は絞ったつもりでした。自分が使いやすいように、と。</p><p name=\"f0146d47-1186-42c1-a6b6-6c70401253b3\" id=\"f0146d47-1186-42c1-a6b6-6c70401253b3\">ただ、途中で欲が出ます。出てくる画像のバリエーションが足りない。質も足りない。そう感じて、設定項目を増やす方向に舵を切りました。</p><figure name=\"578034e6-32c3-4049-bf23-fd4fbb578cdc\" id=\"578034e6-32c3-4049-bf23-fd4fbb578cdc\"><img src=\"https://assets.st-note.com/img/1786852639-ul7tFTK5a1VrQbjECsSDOxwg.png\" alt=\"\" width=\"620\" height=\"577\"><figcaption>増え続ける設定項目の画面設計</figcaption></figure><p name=\"3e548928-9bef-40b3-b014-1fc704af0839\" id=\"3e548928-9bef-40b3-b014-1fc704af0839\">タイトルをどこに置くか。号数をどう見せるか。写真に重ねる暗部をどっち向きにするか。リード文を出すか、出さないか。</p><figure name=\"b6eb5a87-496a-4b22-afb5-4f4654531fad\" id=\"b6eb5a87-496a-4b22-afb5-4f4654531fad\"><img src=\"https://assets.st-note.com/img/1786852535-ixYeQCdNk0obfwDaLRsGq9OX.png\" alt=\"\" width=\"620\" height=\"370\"><figcaption>サイドパネルの情報量が大変なことに…</figcaption></figure><p name=\"855708d3-5e73-4315-84b2-7ba8e8f0a1f2\" id=\"855708d3-5e73-4315-84b2-7ba8e8f0a1f2\">選べる幅は広がった。でも、使うのが面倒になった。</p><p name=\"bbae177c-c2d5-4b4c-9287-d111ba325ea3\" id=\"bbae177c-c2d5-4b4c-9287-d111ba325ea3\">毎回この画面と向き合って、6つの中からタイトルの位置を選ぶ。それは私がやりたかったことではない。私が欲しかったのは、開いて数十秒で納得できる画像が出ることでした。</p><h3 name=\"dc55419c-cd95-4abf-a67e-f1c45300274c\" id=\"dc55419c-cd95-4abf-a67e-f1c45300274c\">100個並べて、選ぶ</h3><p name=\"5729adcc-df4b-478d-bbca-c1382197462f\" id=\"5729adcc-df4b-478d-bbca-c1382197462f\">そこでやったのが、レイアウト案を100個作らせることです。</p><p name=\"4f059511-feb3-45f1-a18c-7608a45bbc02\" id=\"4f059511-feb3-45f1-a18c-7608a45bbc02\">写真もタイトルも入れず、矩形だけの抽象で100通りの組み方を並べる。そこから自分の好みで12を選ぶ。</p><figure name=\"7fdd56aa-6be0-44ab-b8b8-0a57d6b3263b\" id=\"7fdd56aa-6be0-44ab-b8b8-0a57d6b3263b\"><img src=\"https://assets.st-note.com/img/1786852750-Ad5bODi81cRPzSY9VyL7TaoZ.png\" alt=\"\" width=\"620\" height=\"370\"><figcaption>AI は嫌な顔せずにひたすら案出ししてくれます</figcaption></figure><p name=\"a3855bc1-83dd-4c03-9c20-2d834c41cf3f\" id=\"a3855bc1-83dd-4c03-9c20-2d834c41cf3f\">選んでいると、自分が何を良いと思っているのかが分かってきます。タイトルは下段が落ち着く。号数は角に小さく置きたい。事前には言えなかった。並べられて、初めて分かった。</p><p name=\"8ac34e0b-4f52-4b87-a1d9-72e903479171\" id=\"8ac34e0b-4f52-4b87-a1d9-72e903479171\">いま画面に残っている設定は、タイトル・号数・日付・レイアウトの4つです。</p><figure name=\"2621a335-5c6f-4f8f-9f2d-333d63f11361\" id=\"2621a335-5c6f-4f8f-9f2d-333d63f11361\"><img src=\"https://assets.st-note.com/img/1786852807-aMr5Ik4PEz0dDehj2uwSQfNq.png\" alt=\"\" width=\"620\" height=\"370\"><figcaption>最新の画面。レイアウトも直感的に選べます。</figcaption></figure><p name=\"105c607a-200b-4218-927c-82bf93e724cb\" id=\"105c607a-200b-4218-927c-82bf93e724cb\">設定は減って、出てくる画像の質は上がりました。</p><h3 name=\"4c41036f-0109-47ef-8524-a834aa4afb7b\" id=\"4c41036f-0109-47ef-8524-a834aa4afb7b\">感情なら言語化できる</h3><p name=\"0d44557b-fe67-4e8d-b1d5-31619a03a457\" id=\"0d44557b-fe67-4e8d-b1d5-31619a03a457\">デザイナーではないので、理想のUXを自力で設計する力はありません。</p><p name=\"0ebf62ba-aed0-4d17-b61d-85048645d63b\" id=\"0ebf62ba-aed0-4d17-b61d-85048645d63b\">でも、自分の感情なら言語化できる。</p><p name=\"0ae94361-ac69-4fcb-a202-9e737b6d75cb\" id=\"0ae94361-ac69-4fcb-a202-9e737b6d75cb\">「この項目、毎回触るのが面倒だ」 「この画像、なんとなく安っぽい」</p><p name=\"3c1786ae-3101-4931-bd9e-0124827ece31\" id=\"3c1786ae-3101-4931-bd9e-0124827ece31\">これをそのままAIに渡す。何が足りないのかを一緒に掘って、UXの形に落としてもらう。この往復が、いまいちばん楽しい。</p><p name=\"e6d297a9-6dbd-42d0-9389-8ff4b9959593\" id=\"e6d297a9-6dbd-42d0-9389-8ff4b9959593\">なんでもできるツールを作るのではなく、少ない入力で質を上げる。この感覚は、実務で機能を設計するときにも効いています。</p><h3 name=\"ab82153d-fbfa-4756-9fef-246de9098bf4\" id=\"ab82153d-fbfa-4756-9fef-246de9098bf4\">8月25日、新宿</h3><p name=\"4291de63-a764-4fe4-b14a-288f108af96c\" id=\"4291de63-a764-4fe4-b14a-288f108af96c\">「山手ウエスト #1『AI開発、最近どうですか?』」に登壇します。<br>この話を、もう少し具体的にする予定です。</p><p name=\"34939c2f-e854-42f5-8bfd-9a6d1d8d07bb\" id=\"34939c2f-e854-42f5-8bfd-9a6d1d8d07bb\">新宿が近い人はぜひ。</p><figure name=\"c4c5603b-695c-4d70-82a8-119de8eb32f0\" id=\"c4c5603b-695c-4d70-82a8-119de8eb32f0\" data-src=\"https://yamanote-west.connpass.com/event/399789/\" data-identifier=\"null\" embedded-service=\"external-article\" embedded-content-key=\"embf5511c6818d7\"> \n<a href=\"https://yamanote-west.connpass.com/event/399789/\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong>\n山手ウエスト #1 「AI開発、最近どうですか？」@新宿 (2026/08/25 19:30〜)\n</strong>\n<em>\n## 山手ウエストとは  都内のエンジニア勉強会は、日本橋や品川など23区の「東側」での開催が多め。  「山手ウエスト」は\n</em>\n<em>\nyamanote-west.connpass.com\n</em>\n</a><a href=\"https://yamanote-west.connpass.com/event/399789/\" rel=\"nofollow noopener\" target=\"_blank\"></a>\n\n \n</figure>",
+  "separator": null,
+  "publish_at": "2026-08-16T13:07:17.000+09:00",
+  "created_at": "2026-08-16T12:44:43.000+09:00",
+  "note_url": "https://note.com/kyamamoto9120/n/n7bdc354dac45",
+  "price": 0,
+  "is_limited": false,
+  "is_trial": false,
+  "eyecatch": "https://assets.st-note.com/production/uploads/images/303991283/rectangle_large_type_2_ab79428051cecb7dec82b04070f8e66a.png?fit=bounds&quality=85&width=1280",
+  "eyecatch_alt": "見出し画像",
+  "eyecatch_width": 1920,
+  "eyecatch_height": 1005,
+  "hashtags": [
+    "#エンジニア",
+    "#個人開発",
+    "#勉強会",
+    "#UX",
+    "#AI駆動開発"
+  ],
+  "pictures": [
+    {
+      "caption": null,
+      "key": "1786852639-ul7tFTK5a1VrQbjECsSDOxwg",
+      "url": "https://assets.st-note.com/img/1786852639-ul7tFTK5a1VrQbjECsSDOxwg.png",
+      "thumbnail_url": "https://assets.st-note.com/img/1786852639-ul7tFTK5a1VrQbjECsSDOxwg.png",
+      "alt": "画像1",
+      "width": null,
+      "height": null,
+      "index": 0
+    },
+    {
+      "caption": null,
+      "key": "1786852535-ixYeQCdNk0obfwDaLRsGq9OX",
+      "url": "https://assets.st-note.com/img/1786852535-ixYeQCdNk0obfwDaLRsGq9OX.png",
+      "thumbnail_url": "https://assets.st-note.com/img/1786852535-ixYeQCdNk0obfwDaLRsGq9OX.png",
+      "alt": "画像2",
+      "width": null,
+      "height": null,
+      "index": 1
+    },
+    {
+      "caption": null,
+      "key": "1786852750-Ad5bODi81cRPzSY9VyL7TaoZ",
+      "url": "https://assets.st-note.com/img/1786852750-Ad5bODi81cRPzSY9VyL7TaoZ.png",
+      "thumbnail_url": "https://assets.st-note.com/img/1786852750-Ad5bODi81cRPzSY9VyL7TaoZ.png",
+      "alt": "画像3",
+      "width": null,
+      "height": null,
+      "index": 2
+    },
+    {
+      "caption": null,
+      "key": "1786852807-aMr5Ik4PEz0dDehj2uwSQfNq",
+      "url": "https://assets.st-note.com/img/1786852807-aMr5Ik4PEz0dDehj2uwSQfNq.png",
+      "thumbnail_url": "https://assets.st-note.com/img/1786852807-aMr5Ik4PEz0dDehj2uwSQfNq.png",
+      "alt": "画像4",
+      "width": null,
+      "height": null,
+      "index": 3
+    },
+    {
+      "caption": null,
+      "key": "1786852068-s5LohQPbiAuZM1e8dtjc40q2",
+      "url": "https://assets.st-note.com/img/1786852068-s5LohQPbiAuZM1e8dtjc40q2.png",
+      "thumbnail_url": "https://assets.st-note.com/img/1786852068-s5LohQPbiAuZM1e8dtjc40q2.png",
+      "alt": "画像5",
+      "width": null,
+      "height": null,
+      "index": 4
+    }
+  ],
+  "embedded_contents": [
+    {
+      "key": "embf5511c6818d7",
+      "url": "https://yamanote-west.connpass.com/event/399789/",
+      "service": "external-article",
+      "identifier": null,
+      "caption": null,
+      "html_for_embed": "<span><div class=\"external-article-widget\">\n<a href=\"https://yamanote-west.connpass.com/event/399789/\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong class=\"external-article-widget-title\">\n山手ウエスト #1 「AI開発、最近どうですか？」@新宿 (2026/08/25 19:30〜)\n</strong>\n<em class=\"external-article-widget-description\">\n## 山手ウエストとは  都内のエンジニア勉強会は、日本橋や品川など23区の「東側」での開催が多め。  「山手ウエスト」は\n</em>\n<em class=\"external-article-widget-url\">\nyamanote-west.connpass.com\n</em>\n</a><a class=\"external-article-widget-image\" href=\"https://yamanote-west.connpass.com/event/399789/\" rel=\"nofollow noopener\" style=\"background-image: url('https://assets.st-note.com/production/uploads/ext/cb08ceb935c3f919d055fb1c90da1b21f020b4d1d3825befb70be71319eb.png?x-type=ogp');\" target=\"_blank\"></a>\n\n</div>\n</span>",
+      "html_for_display": null
+    }
+  ],
+  "user": {
+    "urlname": "kyamamoto9120",
+    "nickname": "山本一将｜焚き火を愛するエンジニア"
+  },
+  "_fetched_at": "2026-08-31T01:40:39.113Z"
+}

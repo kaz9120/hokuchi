@@ -23,6 +23,7 @@ articles/note/
 | `hokuchi-note sync` | 一覧取得 → 記事取得 → 画像取得 → build → verify → index | 使う |
 | `hokuchi-note build [dir...]` | `source.json` から `index.md` を作り直す | 使わない |
 | `hokuchi-note verify [dir...]` | 取り込みの忠実さを検査する。欠落があれば終了コード 1 | 使わない |
+| `hokuchi-note lint [原稿.md...]` | 原稿の文体を検査する。引数を省くと公開済み記事全部 | 使わない |
 | `hokuchi-note index` | `articles/note/README.md` を作り直す | 使わない |
 
 `tools/notes` で一度 `npm link` すると `hokuchi-note` として使える。`npm test` は変換規則の回帰テストとアーカイブ全体の検査を回す。
@@ -70,6 +71,21 @@ note の body HTML が使う語彙は有限で、次の対応で Markdown にす
 - **見出し画像** — 実解像度が原本の宣言サイズ以上か (縮小版を掴んでいないか)
 - **front matter** — タイトル・note key・URL・公開日・ハッシュタグが原本と一致するか
 - **構造** — 見出し・リスト項目・区切り線・コードブロック・引用・目次・太字・斜体の数。front matter と埋め込みブロックの中身は数えない
+
+## 文体の検査 (lint)
+
+`verify` が「取り込みが忠実か」を見るのに対し、`lint` は「文章が研ぎ澄まされているか」を見る。別物なので実装も分けてある (`src/lint.mjs`)。執筆の手順は writing-note skill が持ち、lint はそのうち機械で数えられる部分だけを担う (ADR-0020)。
+
+見るのは、文と段落の長さ、ぼかし表現の密度、ハイカロリーな語、最上級表現、型どおりの言い回し、共感を求める表現、キザな言い回し、一人称の揺れ、文末のリズム、冒頭と結びの重さ、漢字率、見出しの中身、タグの数。
+
+閾値は公開済み 44 本の実測から引いている。理想値ではなく「自分が実際に書けている水準」を基準にするためで、**公開済み記事が error を出さず、warn が改善余地として出る位置**に合わせてある。記事が増えたら測り直す。
+
+```
+hokuchi-note lint articles/note/drafts/<slug>/index.md   # 原稿を検査する
+hokuchi-note lint                                        # 公開済み全部 (閾値の校正用)
+```
+
+濃いかどうか、フックが効いているかは lint では測れない。それは人が読んで決める。
 
 ## 記事を書き足したとき
 

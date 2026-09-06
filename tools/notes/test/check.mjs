@@ -5,7 +5,8 @@
 // (3) リンク付き画像: <a><img></a> の href を落とさない
 // (4) 本文の記法ガード: 行頭の「- 」「## 」、&nbsp;、コード内のフェンス
 // (5) verify の負のテスト: 欠落を作れば必ず error になる
-// (6) アーカイブ全体が検査を通る (articles/note があるときだけ)
+// (6) 文体 lint: AI 臭い原稿を捕まえ、研ぎ澄まされた原稿を通す
+// (7) アーカイブ全体が検査を通る (articles/note があるときだけ)
 
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -16,6 +17,7 @@ import { parseHTML, decodeEntities, textOf } from '../src/html.mjs';
 import { parseNote } from '../src/parse.mjs';
 import { toMarkdown } from '../src/markdown.mjs';
 import { verifyArticle } from '../src/verify.mjs';
+import { lintDraft } from '../src/lint.mjs';
 import { listArticleDirs } from '../src/build.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -163,7 +165,57 @@ const md = (note) => toMarkdown({ title: note.name ?? 't' }, parseNote(note).blo
   ok('verify は欠落・順序・リンクの取り違え・縮小画像を検知する');
 }
 
-// (6) アーカイブ全体 ---------------------------------------------------------
+// (6) 原稿の文体 lint --------------------------------------------------------
+{
+  const bad = `---
+title: 【完全保存版】エンジニアのための通知術
+hashtags:
+  - エンジニア
+---
+
+本記事では、フルリモートで働き始めてから半年が経った頃に集中力の低下を感じるようになったことをきっかけに、Slack の通知設定を根本から見直した経緯についてご紹介します。
+
+僕がやったのは圧倒的に効果のある方法で、業界初の試みと言えるでしょう。皆さんも経験があると思いますが、通知は集中力を奪うものなのかもしれません。そう思います。気がします。
+
+## おわりに
+
+この経験をこれからも大切にしていきたいと思います。通知と向き合うことは、自分と向き合うことなのかもしれません。そんな日々を、これからも続けていきたいと思っています。
+`;
+  const ids = new Set(lintDraft(bad).map((f) => f.id));
+  for (const want of [
+    'opening-boilerplate', 'ai-phrase', 'first-person', 'high-calorie',
+    'superlative', 'sympathy-seeking', 'hedging', 'closing-poem', 'heading-empty', 'tag-count',
+  ]) {
+    assert.ok(ids.has(want), `lint が ${want} を検出する`);
+  }
+
+  const good = `---
+title: サクッと作れる楽しさに、飽きた
+hashtags:
+  - エンジニア
+  - 個人開発
+  - AI駆動開発
+---
+
+自分が欲しいツールがその日のうちに動く。最初はそれだけで楽しかった。
+
+でも、すぐに飽きた。
+
+## 100個並べて、選ぶ
+
+そこでやったのが、レイアウト案を100個作らせることです。写真もタイトルも入れず、矩形だけの抽象で100通り並べる。そこから自分の好みで12を選ぶ。
+
+選べる幅は広がった。でも、使うのが面倒になった。
+
+新宿が近い人はぜひ。
+`;
+  const goodFindings = lintDraft(good);
+  assert.deepEqual(goodFindings.filter((f) => f.severity !== 'info'), [],
+    `研ぎ澄まされた原稿は warn を出さない: ${JSON.stringify(goodFindings)}`);
+  ok('lint は AI 臭い原稿を捕まえ、研ぎ澄まされた原稿を通す');
+}
+
+// (7) アーカイブ全体 ---------------------------------------------------------
 {
   const root = path.join(repoRoot, 'articles/note');
   const dirs = listArticleDirs(root);

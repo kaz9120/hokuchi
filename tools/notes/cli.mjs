@@ -13,7 +13,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { listNotes, fetchNote, freezeNote } from './src/api.mjs';
 import { downloadImage, downloadEyecatch } from './src/assets.mjs';
-import { buildArticle, articleIndex, listArticleDirs, readSource, SOURCE } from './src/build.mjs';
+import { buildArticle, articleIndex, listArticleDirs, readSource, SOURCE, INDEX } from './src/build.mjs';
+import { lintDraft, draftStats } from './src/lint.mjs';
 import { verifyArticle } from './src/verify.mjs';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -31,6 +32,7 @@ usage:
   hokuchi-note sync   [--user <urlname>] [--only <key>] [--root <dir>]
   hokuchi-note build  [<記事ディレクトリ>...]
   hokuchi-note verify [<記事ディレクトリ>...]
+  hokuchi-note lint   [<原稿.md>...]        note の原稿を文体で検査する
   hokuchi-note index  [--root <dir>]
 `);
   process.exit(code);
@@ -167,6 +169,32 @@ function cmdVerify(opts) {
   return errors === 0;
 }
 
+// 原稿の文体検査。公開済み記事に回すと、閾値が自分の水準に合っているかを
+// 確かめられる (校正用)。
+function cmdLint(opts) {
+  const files = opts.rest.length
+    ? opts.rest.map((p) => path.resolve(p))
+    : listArticleDirs(opts.root).map((d) => path.join(d, INDEX));
+  const SEV_ORDER = { error: 0, warn: 1, info: 2 };
+  const SEV_LABEL = { error: 'ERROR', warn: 'WARN ', info: 'INFO ' };
+  const total = { error: 0, warn: 0, info: 0 };
+
+  for (const file of files) {
+    const md = fs.readFileSync(file, 'utf8');
+    const findings = lintDraft(md).sort((a, b) => SEV_ORDER[a.severity] - SEV_ORDER[b.severity]);
+    for (const f of findings) total[f.severity]++;
+    if (findings.length === 0) {
+      if (files.length === 1) out(`lint ${path.basename(file)}: 指摘なし`);
+      continue;
+    }
+    const s = draftStats(md);
+    out(`${files.length === 1 ? file : path.basename(path.dirname(file))}  (${s.chars}字 / ${s.paragraphs}段落 / 文の中央値 ${s.medianSentence}字)`);
+    for (const f of findings) out(`  [${SEV_LABEL[f.severity]}] ${f.id.padEnd(20)} ${f.message}`);
+  }
+  out(`lint: ${files.length} 本 · error ${total.error} · warn ${total.warn} · info ${total.info}`);
+  return total.error === 0;
+}
+
 function cmdIndex(opts) {
   const dirs = listArticleDirs(opts.root).reverse(); // 新しい順
   const rows = dirs.map((dir) => {
@@ -196,6 +224,7 @@ switch (cmd) {
   case 'sync': process.exit((await cmdSync(opts)) ? 0 : 1); break;
   case 'build': cmdBuild(opts); break;
   case 'verify': process.exit(cmdVerify(opts) ? 0 : 1); break;
+  case 'lint': process.exit(cmdLint(opts) ? 0 : 1); break;
   case 'index': cmdIndex(opts); break;
   default: usage();
 }

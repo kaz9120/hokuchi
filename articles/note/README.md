@@ -4,10 +4,11 @@
 読む用の Markdown (`index.md`) の 2 層でアーカイブしています。取り込みと検査は
 `tools/notes` の `hokuchi-note` が行います。詳しくは [ADR-0019](../../docs/adr/0019-note-archive-two-layer.md)。
 
-全 44 本。
+全 45 本。
 
 | 公開日 | タイトル | 原文 |
 |---|---|---|
+| 2026-09-06 | [飲食目的での勉強会参加について](2026-09-06-not-the-free-food/) | [note](https://note.com/kyamamoto9120/n/nc7c5a7c5bf19) |
 | 2026-08-30 | [2026年8月の活動振り返り](2026-08-30-monthly-review/) | [note](https://note.com/kyamamoto9120/n/n939ade14dfb8) |
 | 2026-08-23 | [ドキュメントは、AI に渡す前に作り直す](2026-08-23-rewrite-docs-for-ai/) | [note](https://note.com/kyamamoto9120/n/n26fe67d1c050) |
 | 2026-08-16 | [サクッと作れる楽しさに、飽きた](2026-08-16-tired-of-quick-builds/) | [note](https://note.com/kyamamoto9120/n/n7bdc354dac45) |

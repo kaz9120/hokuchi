@@ -47,8 +47,7 @@ AIが「何を作るか」以外のほぼすべてを代替していく時代、
 
 ドラッカーの「事業の定義は顧客と市場から始まる」という考え方をエンジニアリングマネジメントに当てはめた講演。Engineering Ladders のコンピテンシーフレームワークを用いて EM の役割を明確にし他職種との比較を行うお話しは非常に参考になった。
 
-:::embed{service="speakerdeck" url="https://speakerdeck.com/zigorou/totupumanezimentotokonpitensikarakao-eruenziniaringumanezimento"}
-:::
+https://speakerdeck.com/zigorou/totupumanezimentotokonpitensikarakao-eruenziniaringumanezimento
 
 ## 会場の様子
 
@@ -82,10 +81,7 @@ AI × 各社が向き合う課題、みたいな話をさまざま聞くこと�
 
 二次会はゆるやかな雰囲気。翌日仕事でしたが目一杯飲みました。
 
-:::embed{service="twitter" url="https://x.com/DShuhari/status/2029192809568452763"}
-> イデアのような二次会をやらせていただきました。大感謝！ #emconf_jp@Keisuke69 @hirata_4 @ysk_118 @kkun_22 @kyamamoto9120 pic.twitter.com/ESMvVSSSyR
-> — 辻井 耀 / リンクアンドモチベーション (@DShuhari) March 4, 2026
-:::
+https://x.com/DShuhari/status/2029192809568452763
 
 ---
 

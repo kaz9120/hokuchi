@@ -14,18 +14,11 @@ hashtags:
 気付けば40本目の note 記事です。順調に継続されています。  
 写真は横浜ランドマークで撮影したカビゴンです。
 
-:::toc
-:::
-
 ## 7/6 (月) AI時代のエンジニア生存戦略
 
 ROSCA主催のイベントに登壇させていただきました。
 
-:::embed{service="external-article" url="https://rosca.connpass.com/event/395936/"}
-**【満員御礼増枠！】AI時代のエンジニア生存戦略 (2026/07/06 19:30〜)**
-\# 【エンジニアの生存戦略】AI時代に「自分の価値」をどう担保するか？ 生成AIの急速な進化により、開発現場の景色は一変
-rosca.connpass.com
-:::
+https://rosca.connpass.com/event/395936/
 
 熱量に溢れたイベントで、参加者の出席率もよく椅子が足りなくなってしまったので用意されたラグに座って話を聞く方もいるほどでした！
 
@@ -37,31 +30,19 @@ rosca.connpass.com
 
 mento、DressCode と MOSH の3社共催イベントです。
 
-:::embed{service="external-article" url="https://mosh.connpass.com/event/393744/"}
-**ハーネスエンジニアリング × AI Meetup (2026/07/08 19:30〜)**
-\# ハーネスエンジニアリング × AI Meetup とは ハーネスエンジニアリング × AI Meetup は、men
-mosh.connpass.com
-:::
+https://mosh.connpass.com/event/393744/
 
 ハーネスエンジニアリング、という言葉自体の良し悪しはさておき、このようなスタートアップ３社が実践している話を聞けるのは貴重な機会だったかなと思います。
 
 ドリンクも料理も素敵なものをご用意いただいて、とても楽しかったです！
 
-:::embed{service="twitter" url="https://x.com/yug1224/status/2075379657474781661"}
-> そういえば先日の居酒屋MOSH大変良かった🍻
-> MOSH社のオサレなスペースにて、mento社提供のオサレなフードと、Dress Code社提供のドリンクで盛り上がった🎉#MOSHTech pic.twitter.com/LAKcphiZR9
-> — ぷーじ (@yug1224) July 10, 2026
-:::
+https://x.com/yug1224/status/2075379657474781661
 
 ## 7/10 (金) LINE DC Generative AI Meetup #8
 
 私が運営する LINE Developer Community の勉強会です。この週３つ目のイベントです。
 
-:::embed{service="external-article" url="https://linedevelopercommunity.connpass.com/event/397834/"}
-**LINE DC Generative AI Meetup #8 (2026/07/10 19:30〜)**
-\## イベント概要 \\-- 書籍『MastraによるAIエージェント開発・運用［実践入門］』発売記念！著者陣と生成AIを
-linedevelopercommunity.connpass.com
-:::
+https://linedevelopercommunity.connpass.com/event/397834/
 
 この Generative AI Meetup はかれこれ丸2年以上続いているシリーズになるのですが、毎回オフラインの場に集まる価値を強く感じるイベントです。
 
@@ -71,22 +52,13 @@ linedevelopercommunity.connpass.com
 
 Findy さんのカンファレンスにブースを出しました。
 
-:::embed{service="external-article" url="https://dev-productivity-con.findy-code.io/aidevex2026"}
-**AI DevEx2026｜AI時代の開発組織の生産性を紐解き、未来を探る**
-AI DevEx Conference 2026 - Future of Development Productivity
-dev-productivity-con.findy-code.io
-:::
+https://dev-productivity-con.findy-code.io/aidevex2026
 
 昨年までは開発生産性カンファレンスと呼ばれていたイベントですが、今年からは AI DevEx ということで AI 色が極めて強いイベントだったと思います。
 
 弊社からは VPoT の鈴木が登壇しました。
 
-:::embed{service="twitter" url="https://x.com/SoartecL/status/2080121634355392814"}
-> 本日の登壇資料です🙌
->
-> "AI時代における開発生産性と進化可能性を高める技術戦略"https://t.co/aDbEyrtzcl#aidevex_findy
-> — SoarTec.lab (@SoartecL) July 23, 2026
-:::
+https://x.com/SoartecL/status/2080121634355392814
 
 手前味噌ですが、本当に良い話でした！  
 今の MOSH の強さを正しく伝えることができる発表で、この資料は折に触れて紹介していきたいと思いました。
@@ -96,24 +68,12 @@ dev-productivity-con.findy-code.io
 dip × MOSH のデザインシステム勉強会を開催しました。  
 TSKaigi のブール出展のご縁で実現したイベントです。
 
-:::embed{service="external-article" url="https://dip-dev.connpass.com/event/397535/"}
-**デザインシステム勉強会 (2026/07/31 19:00〜)**
-\# 📌 イベント概要 当イベントは、デザインシステムに取り組む2社（ディップ × MOSH）による合同勉強会です。デザイ
-dip-dev.connpass.com
-:::
+https://dip-dev.connpass.com/event/397535/
 
 良い刺激がたくさん得られたイベントでした。  
 私は当初登壇する予定はなかったのですが、前日夜にMOSH側の登壇予定者に欠員が出たこと、VPoT が登壇を後押ししてくれたことでお話しすることになりました。
 
-:::embed{service="twitter" url="https://x.com/kyamamoto9120/status/2083193477735596404"}
-> 今日の勉強会、本当に良い会でした！
->
-> ディップさんの若くてエネルギッシュな推進力を感じる時間で、OSTからも学びを得て帰るんだという強い意志を感じて、刺激になりました😊
->
-> VPoTからの後押しで登壇したのも良かったです！
-> やっぱり、せっかく行くなら発表しないと、ですね😌#dip_mosh_design pic.twitter.com/SXSbSHuoLQ
-> — 山本一将｜焚き火を愛するエンジニア (@kyamamoto9120) July 31, 2026
-:::
+https://x.com/kyamamoto9120/status/2083193477735596404
 
 最近少し忙しくて体力的にも厳しく参加自体も考えようかと思っていたのですが、この後押しは救いでした。やっぱり忙しい時こそイベントに行くべきです。元気をもらいましたし、考えを整理する時間にもなりました。
 
@@ -134,9 +94,7 @@ dip-dev.connpass.com
 
 Dev将が刺激になって、というわけではないのですが、長年休止中だったコンピュータ将棋の開発を Claude Code に完全に実装を任せるという形で再開しました。
 
-:::embed{service="note" url="https://note.com/kyamamoto9120/n/n8e50f15a69e0"}
-**コンピュータ将棋の開発を、Claude Code と再開してみた**
-:::
+https://note.com/kyamamoto9120/n/n8e50f15a69e0
 
 こちらについては、また記事を書く予定です。
 
@@ -145,10 +103,7 @@ Dev将が刺激になって、というわけではないのですが、長年�
 穴埋め要因としてですが、初めて社団戦に参加しました。  
 2フロア一杯に人が集まり将棋を指す光景は圧巻でした！
 
-:::embed{service="twitter" url="https://x.com/kyamamoto9120/status/2081198382333546771"}
-> 穴埋め要員ですが、初めて社団戦来てます！ pic.twitter.com/qejD0sWDXf
-> — 山本一将｜焚き火を愛するエンジニア (@kyamamoto9120) July 26, 2026
-:::
+https://x.com/kyamamoto9120/status/2081198382333546771
 
 棋力的に3部は厳しすぎましたが、ちょっと勉強を再開しようかなとも思いました。
 

@@ -23,7 +23,7 @@ AIに、センスは頼めるのか。
 
 まずは成果物からお見せします。note-ogp という、note 記事の見出し画像を作ることに特化したアプリです。
 
-<https://note-ogp.y-kaz.com/>
+https://note-ogp.y-kaz.com/
 
 画像を1枚選び、タイトルと号数、日付を入力して、いくつかのパラメータを設定する。それだけで、ある程度オシャレな見出し画像ができあがります。
 
@@ -49,9 +49,7 @@ AIに、センスは頼めるのか。
 
 そして Claude Design が登場します。真っ先にチャレンジしたかったのが、センスの良い見出し画像を作る努力でした。実際には忙しくてすぐには触れず、ゴールデンウィークに時間が作れてようやく着手しています。当時の速報記事がこちらです。
 
-:::embed{service="note" url="https://note.com/kyamamoto9120/n/nbe133d5a7dfc"}
-**Claude Design がすごかった**
-:::
+https://note.com/kyamamoto9120/n/nbe133d5a7dfc
 
 ここから、Claude Design と見出し画像を追求する日々が始まりました。
 

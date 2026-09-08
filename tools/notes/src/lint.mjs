@@ -18,15 +18,15 @@ export function splitFrontMatter(md) {
   return m ? { fm: m[1], body: md.slice(m[0].length) } : { fm: null, body: md };
 }
 
-/** 地の文の段落だけを返す。見出し・画像・引用・コード・埋め込みは除く。 */
+/** 地の文の段落だけを返す。見出し・画像・引用・コード・埋め込み (URL だけの行)・HTML コメントは除く。 */
 export function proseBlocks(body) {
   const stripped = body
-    .replace(/^:::[\s\S]*?^:::$/gm, '')
+    .replace(/<!--[\s\S]*?-->/g, '')
     .replace(/^(`{3,})[^\n]*\n[\s\S]*?^\1$/gm, '');
   return stripped
     .split(/\n\s*\n/)
     .map((b) => b.trim())
-    .filter((b) => b && !/^(#{1,6} |!\[|\[!\[|> |\||---$|\*)/.test(b))
+    .filter((b) => b && !/^(#{1,6} |!\[|\[!\[|> |\||---$|\*|https?:\/\/\S+$)/.test(b))
     .map((b) => b.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/<([^>\s]+)>/g, '$1').replace(/\\(.)/g, '$1'));
 }
 

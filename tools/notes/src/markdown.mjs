@@ -3,8 +3,8 @@
 // index.md は source.json から決定的に導かれる生成物で、人が手で直す場所では
 // ない。だから「復元できるか」より「読めるか」を優先してよい。復元の責任は
 // source.json が負う (ADR-0019)。
-// ただし埋め込みだけは例外で、素の URL に潰すと種別が失われるため
-// `:::embed{service="..." url="..."}` ディレクティブで残す。
+// 本文は note のエディタにそのまま貼れる形にする (ADR-0021)。埋め込みは URL だけ
+// の 1 行 (note が貼り付け時にカードへ変える)、目次は出さない。
 
 // ---------------------------------------------------------------------------
 // YAML front matter (依存を足さないための最小実装)
@@ -55,7 +55,7 @@ function inlineToMd(inline, { escape = true } = {}) {
         const label = inlineToMd(node.children, { escape });
         const plain = label.replace(/\\(.)/g, '$1');
         if (node.href === '') out += label;
-        else if (plain === node.href) out += `<${node.href}>`;
+        else if (plain === node.href) out += node.href;  // 素の URL。note に貼るときに <> が邪魔になる
         else out += `[${label}](${node.href})`;
         break;
       }
@@ -81,27 +81,11 @@ const captionToMd = (caption) =>
 // ---------------------------------------------------------------------------
 // 埋め込み
 // ---------------------------------------------------------------------------
-function embedToMd(block) {
-  const attrs = [`service="${block.service}"`, `url="${block.url}"`];
-  const body = [];
-
-  // 埋め込み先のテキストは他人が書いた文で、「## 」や「- 」で始まることがある。
-  // ディレクティブの中でも Markdown として解釈されるのでガードする。
-  const safe = (s) => guardLineStarts(escapeText(s));
-  if (block.service === 'twitter') {
-    if (block.text) body.push(prefixLines(safe(block.text), '> '));
-    if (block.byline) body.push(`> — ${escapeText(block.byline)}`);
-  } else if (block.service === 'external-article') {
-    if (block.title) body.push(`**${escapeText(block.title)}**`);
-    if (block.description) body.push(safe(block.description));
-    if (block.site) body.push(escapeText(block.site));
-  } else if (block.title) {
-    body.push(`**${escapeText(block.title)}**`);
-  }
-
-  const inner = body.length ? `\n${body.join('\n')}\n` : '\n';
-  return `:::embed{${attrs.join(' ')}}${inner}:::`;
-}
+// URL だけの 1 行にする (ADR-0021)。note のエディタは URL を 1 行貼るとカードに
+// 変えるので、原稿と同じ形になる。ポスト本文や記事タイトルは index.md に出さず、
+// source.json (embedded_contents のスナップショット) が持つ。verify は URL だけの
+// 行を原本の data-src と突き合わせて埋め込みを見分ける。
+const embedToMd = (block) => block.url;
 
 // ---------------------------------------------------------------------------
 // ブロック
@@ -145,9 +129,10 @@ function blockToMd(block) {
     case 'hr':
       return '---';
     case 'toc':
-      return ':::toc\n:::';
+      // 目次は note が見出しから作る部品で、記事の内容ではない。出さない。
+      return '';
     case 'unknown':
-      return `:::unknown{tag="${block.tag}"}\n${block.text}\n:::`;
+      return `<!-- unknown: ${block.tag} -->\n${guardLineStarts(escapeText(block.text))}`;
     default:
       return '';
   }

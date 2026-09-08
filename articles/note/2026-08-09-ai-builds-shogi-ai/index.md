@@ -15,9 +15,7 @@ hashtags:
 
 3週間前、コンピュータ将棋の開発を Claude Code と再開した話を書きました。3日でルール通りに指せるエンジンができた、というところまでです。
 
-:::embed{service="note" url="https://note.com/kyamamoto9120/n/n8e50f15a69e0"}
-**コンピュータ将棋の開発を、Claude Code と再開してみた**
-:::
+https://note.com/kyamamoto9120/n/n8e50f15a69e0
 
 あれから3週間。コードは相変わらず1行も書いていません。  
 というより、このリポジトリではドキュメントを含めて1ファイルも編集していないし、コマンドも実行していません。
@@ -109,12 +107,7 @@ floodgate というコンピュータ将棋の自動対局場があります。
 
 先日、たまたま floodgate を観戦していたら一手詰めに気付いていない局面を見かけました。ご機嫌なまま、負けてました。
 
-:::embed{service="twitter" url="https://x.com/kyamamoto9120/status/2084692145462792581"}
-> 【コンピュータ将棋の話】
-> たまたま floodgate 見ていたタイミングでの将棋、この局面で一手詰めに気付いていないのはバグっている気がする。
-> Claude Code に floodgate の棋譜全部精査してもらったほうが良いな。https://t.co/Ugql4L6YEt pic.twitter.com/lfCeFcO8sO
-> — 山本一将｜焚き火を愛するエンジニア (@kyamamoto9120) August 4, 2026
-:::
+https://x.com/kyamamoto9120/status/2084692145462792581
 
 気付けたのは偶然見ていたからです。  
 392局ぶんの棋譜を人間が精査するのは大変ですが、Claude Code ならできます。実戦の棋譜には、SPRT の数字に出ない違和感が埋まっているはずです。

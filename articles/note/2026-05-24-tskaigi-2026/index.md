@@ -14,11 +14,7 @@ hashtags:
 
 TSKaigi 2026 が 5月22, 23日に開催されました。
 
-:::embed{service="external-article" url="https://2026.tskaigi.org/"}
-**TSKaigi 2026**
-TSKaigiは日本最大級のTypeScriptをテーマとした技術カンファレンスです。2026/5/22 (金) - 23
-2026.tskaigi.org
-:::
+https://2026.tskaigi.org/
 
 MOSHはゴールドスポンサーとしてブース出展しており、私も2日間ブースに立たせていただいたので、ささやかながらレポートを残します！
 
@@ -40,12 +36,7 @@ MOSHはゴールドスポンサーとしてブース出展しており、私も2
 
 MOSH のスポンサーブースは部屋に入ってすぐの柱側で最高の立地でした！
 
-:::embed{service="twitter" url="https://x.com/tskaigi/status/2057995678874538001"}
-> 【TSKaigi 2026スポンサーブース紹介】
-> ゴールドスポンサー
-> MOSH株式会社 @MOSHinc_jp #TSKaigi #TSKaigi2026 pic.twitter.com/8Nkz4o33ls
-> — TSKaigi (@tskaigi) May 23, 2026
-:::
+https://x.com/tskaigi/status/2057995678874538001
 
 今回は特に出し物など用意せず、ノベルティをお渡ししつつMOSHの話をさせていただくことに集中していました。
 
@@ -61,12 +52,7 @@ MOSH のスポンサーブースは部屋に入ってすぐの柱側で最高の
 
 提供しているサービスをどのようにAIにフィットさせていくかは各社悩まれている部分だと思います。その課題に対して、一つの実現方法としてMOSHの取り組みを紹介させていただきました。
 
-:::embed{service="twitter" url="https://x.com/SoartecL/status/2058056689912520843"}
-> 本日の登壇資料です🙌
->
-> "TypeScriptで実現する既存APIを活用したリモートMCPサーバー構築"https://t.co/XwnY1LqJKG#TSKaigi #TSKaigi2026 #tskaigi_upsider
-> — SoarTec.lab (@SoartecL) May 23, 2026
-:::
+https://x.com/SoartecL/status/2058056689912520843
 
 セッション後にはブースでMCPが動く様子を実際に実演し、こちらも多くの方に足を運んでいただけました。
 
@@ -94,11 +80,7 @@ MOSH のスポンサーブースは部屋に入ってすぐの柱側で最高の
 そんな大盛り上がりで2日間のイベントは終了しましたが、この後もアフターイベントがたくさん予定されています！  
 MOSHも6/10に9社合同でのイベントを予定しているので、こちらもぜひご参加いただけると嬉しいです✨
 
-:::embed{service="external-article" url="https://findy.connpass.com/event/392420/"}
-**TSKaigi Night talks 〜after conference〜 (2026/06/10 19:00〜)**
-\## 📝イベント概要 今年のTSKaigiはプロポーザルの倍率も非常に高く、惜しくも採択されなかった方々の中にも、熱量の
-findy.connpass.com
-:::
+https://findy.connpass.com/event/392420/
 
 そして、次回はTSKaigiは仙台と発表されました！  
 昨年の金沢に続く地方開催ですね。こちらも非常に楽しみです。

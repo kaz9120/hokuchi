@@ -32,8 +32,7 @@ hashtags:
 
 2026年1月、LINE API Platform Evangelist（LAPE）に認定されました。
 
-:::embed{service="note" url="https://note.com/linedc/n/ne1ec9eb84e2d"}
-:::
+https://note.com/linedc/n/ne1ec9eb84e2d
 
 LINE Developer Communityというコミュニティがあります。LINEの開発者向けプロダクトに興味のあるLINEヤフー社外の有志のエンジニア・クリエイターを中心に運営されているコミュニティです。
 
@@ -97,10 +96,6 @@ LINE Developer Communityを、自助・共助・公助がちゃんと噛み合�
 
 LINE Developer Communityはconnpassで定期的にイベントを開催しています。気になった方はぜひ覗いてみてください！
 
-:::embed{service="external-article" url="https://linedevelopercommunity.connpass.com/"}
-**LINE Developer Community**
-\## はじめに ようこそ LINE Developer Community へ！ このコミュニティは、有志メンバーを
-linedevelopercommunity.connpass.com
-:::
+https://linedevelopercommunity.connpass.com/
 
 これからも、どうぞよろしくお願いします。

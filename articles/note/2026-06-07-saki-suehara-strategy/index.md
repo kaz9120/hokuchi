@@ -16,9 +16,7 @@ hashtags:
 
 イベントレポートはこちら
 
-:::embed{service="note" url="https://note.com/kyamamoto9120/n/n61400091e36c"}
-**アニメから得た学びを発表会2026 参加レポート**
-:::
+https://note.com/kyamamoto9120/n/n61400091e36c
 
 ---
 

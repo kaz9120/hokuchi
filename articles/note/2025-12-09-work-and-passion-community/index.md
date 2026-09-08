@@ -21,21 +21,13 @@ LINE API Expert として企画・運営に携わるコミュニティですが�
 
 一つは、亀田さんのイベントにハンズオン講師として参加した企画。
 
-:::embed{service="external-article" url="https://linedevelopercommunity.connpass.com/event/351970/"}
-**【告知用】LINE と AWS Step Functions で作る予約システム (2025/05/17 13:30〜)**
-※参加希望の方はこちらのURLから詳細ご確認下さい！ https://awsbasics.connpass.com/e
-linedevelopercommunity.connpass.com
-:::
+https://linedevelopercommunity.connpass.com/event/351970/
 
 270名もの申し込みをいただいたイベントで、参加者全員が完走できることを目標にハンズオンの準備をしました。考えることも多かった分、学びが多いイベントになりました。
 
 もう一つ、心に残っているのはLINEミニアプリの開発イベント。
 
-:::embed{service="external-article" url="https://linedevelopercommunity.connpass.com/event/371941/"}
-**生成AI×LINEミニアプリ実践編 AIエンジニア×Expertに学ぶサービス開発事例 (2025/10/28 20:00〜)**
-\## イベント概要📝 LINE Bot、LINEミニアプリとAIの活用術 AI エンジニアの Yongtae Hwan
-linedevelopercommunity.connpass.com
-:::
+https://linedevelopercommunity.connpass.com/event/371941/
 
 個人開発されていて実際に運用されているアプリを題材に、これから個人開発でサービスを作りたい方へ、コンセプト作りから実装までを伝える場をイメージして企画しました。
 
@@ -45,21 +37,13 @@ linedevelopercommunity.connpass.com
 
 ただただ楽しかったのは焚き火LT会です。
 
-:::embed{service="external-article" url="https://kaitou.connpass.com/event/363314/"}
-**キャンプ場で焚き火を囲んでLT会 (2025/09/27 13:00〜)**
-\# 焚き火LTとは？ キャンプ場を貸し切ってLT会をします。 LTの内容は \* おすすめのキャンプのスポット
-kaitou.connpass.com
-:::
+https://kaitou.connpass.com/event/363314/
 
 初めてのグルキャンでしたが、キャンプの新しい楽しみ方を学びました。LT会も良かった。「バック・トゥ・ザ・フューチャー」を初めて通しで見れたのも良い思い出です。
 
 私が運営に関わる EM Oasis でも、新しい試みをしました。
 
-:::embed{service="external-article" url="https://emoasis.connpass.com/event/372027/"}
-**共に歩むEMたち 〜LTで打ち明け、全員で解を探す〜【EM Oasis #10】 (2025/11/19 19:00〜)**
-\# 【共に歩むEMたち 〜LTで打ち明け、全員で解を探す〜】 ## 概要 エンジニアリングマネージャーとして働く中で、
-emoasis.connpass.com
-:::
+https://emoasis.connpass.com/event/372027/
 
 普段はOSTでお悩みを解決するスタイルですが、今回はトピックオーナーに最初にLTをしてもらう形式に。 次世代のEMがふらっと入りやすい場にしたかったんですが、参加者のバランスもよく、小規模ながらとても温かい時間になりました。
 
@@ -67,11 +51,7 @@ emoasis.connpass.com
 
 そして、今日のアドカレの主催でもある「横浜北部ソフトウェアエンジニアの集い」。
 
-:::embed{service="external-article" url="https://yokohama-north.connpass.com/event/370555/"}
-**【参加枠増枠】Yokohama North Meetup #10 (2025/11/05 19:00〜)**
-\# ⚡Yokohama North Meetup について 本イベントは株式会社ディー・エヌ・エーに会場および一部飲食物
-yokohama-north.connpass.com
-:::
+https://yokohama-north.connpass.com/event/370555/
 
 「技術スタックが同じだから」とか「同じ職種だから」という理由で集まるわけじゃない。 ただ「住んでいる場所が近い」というだけで繋がる面白さ。
 
@@ -98,11 +78,7 @@ Discordにはローカルトークが流れてくる。これが、本来のコ�
 
 これは技術広報の人格で書く文章です。今月から、MOSHでもTech Meetupを定期開催することになりました！
 
-:::embed{service="external-article" url="https://mosh.connpass.com/event/377406/"}
-**MOSH Tech Meetup Vol.1-2025年にやったここでしか言えないAIでやったこと (2025/12/17 19:00〜)**
-\# MOSH Tech Meetup とは MOSH Tech Meetup は、MOSHのエンジニア・デザイナー・PM
-mosh.connpass.com
-:::
+https://mosh.connpass.com/event/377406/
 
 「情熱がめぐる経済をつくる」をミッションに掲げるMOSHはコミュニティとの親和性が高い会社だと思っています。横浜北部の集まりで感じたような、肩の力を抜いて話せる「地域コミュニティに近い温度感」を持った場にしたいと（個人的には）思っています。
 

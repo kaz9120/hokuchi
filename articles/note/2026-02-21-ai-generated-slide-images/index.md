@@ -19,11 +19,9 @@ Geminiに「1ページ目のスライド画像を作って」と投げる。
 今週の登壇資料は、こうやって作った。  
 実際にできたスライドがこちら。
 
-:::embed{service="oembed" url="https://www.docswell.com/s/kyamamoto9120/5REL6G-2026-02-16-193000"}
-:::
+https://www.docswell.com/s/kyamamoto9120/5REL6G-2026-02-16-193000
 
-:::embed{service="oembed" url="https://www.docswell.com/s/kyamamoto9120/KPGVLQ-2026-02-19-193000"}
-:::
+https://www.docswell.com/s/kyamamoto9120/KPGVLQ-2026-02-19-193000
 
 年間20回以上、勉強会やカンファレンスで登壇する。そのたびにスライドを作る。スライドだけは人間が手を動かすものだと思ってきた。
 
@@ -49,10 +47,7 @@ Geminiに「1ページ目のスライド画像を作って」と投げる。
 
 私のスライド作りの考え方は『slide:ology\[スライドロジ―\]』という本がベースになっている。
 
-:::embed{service="external-article" url="https://www.amazon.co.jp/dp/4861009448"}
-**slide:ology\[スライドロジ―\]―プレゼンテーション、ビジュアルの革新**
-www.amazon.co.jp
-:::
+https://www.amazon.co.jp/dp/4861009448
 
 話を聞くことと文字を読むことは両立しづらい。スライドはあくまで理解を助けるもので、メインは話を聞いてほしい。  
 この思想だと、Marpでは図やレイアウトの自由度に限界があった。

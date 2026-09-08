@@ -14,16 +14,11 @@ hashtags:
 
 焚き火を囲んで星空の下 LT をする、「焚き火を愛するエンジニア」のために存在するような素敵なイベントの第２回が5月16, 17日に開催されました。
 
-:::embed{service="external-article" url="https://kaitou.connpass.com/event/379977/"}
-**キャンプ場で焚き火を囲んでLT会 #2 (2026/05/16 13:00〜)**
-\# 焚き火LTとは？ キャンプ場を貸し切ってLT会をします。 LTの内容は \* おすすめのキャンプのスポット
-kaitou.connpass.com
-:::
+https://kaitou.connpass.com/event/379977/
 
 以前にも紹介している通り、私は公共交通機関と徒歩でキャンプをします。
 
-:::embed{service="oembed" url="https://www.docswell.com/s/kyamamoto9120/KPGVLQ-2026-02-19-193000"}
-:::
+https://www.docswell.com/s/kyamamoto9120/KPGVLQ-2026-02-19-193000
 
 焚き火LT会には興味があるが車を持っていない、と言う人にも可能性を示すために少し記録を残します。
 
@@ -31,11 +26,7 @@ kaitou.connpass.com
 
 今回は「19」という千葉県香取市のプライベートキャンプ場での開催です。
 
-:::embed{service="external-article" url="https://19camp.com/"}
-**19 -Juke- 公式サイト**
-3,000㎡もある広大なサイトを1日1グループ限定で貸切できるちょっと贅沢なプライベートキャンプ場。 キャンプ場内には、給
-19camp.com
-:::
+https://19camp.com/
 
 私は通常のキャンプと同様に、愛用のキャリーバッグにパッキングして出かけます。
 
@@ -82,43 +73,24 @@ kaitou.connpass.com
 
 イベントは乾杯からスタート！
 
-:::embed{service="twitter" url="https://x.com/kazu_kichi_67/status/2055555683131789454"}
-> カンパーイ！ #焚き火LT pic.twitter.com/GzLvGAOq9C
-> — kazu_kichi_67 (@kazu_kichi_67) May 16, 2026
-:::
+https://x.com/kazu_kichi_67/status/2055555683131789454
 
 すごい肉が出てきたりと、まずは美味しいものを頂きながら語らいます。
 
-:::embed{service="twitter" url="https://x.com/kyamamoto9120/status/2055565028607365435"}
-> すごい肉出てきた！#焚き火LT pic.twitter.com/HW5yZp8zSb
-> — 山本一将｜焚き火を愛するエンジニア (@kyamamoto9120) May 16, 2026
-:::
+https://x.com/kyamamoto9120/status/2055565028607365435
 
 LT会が始まるのは暗くなってから。焚き火をしながら進行します。
 
-:::embed{service="twitter" url="https://x.com/kyamamoto9120/status/2055593393712202174"}
-> 始まります！#焚き火LT pic.twitter.com/bRvXw9YT8U
-> — 山本一将｜焚き火を愛するエンジニア (@kyamamoto9120) May 16, 2026
-:::
+https://x.com/kyamamoto9120/status/2055593393712202174
 
-:::embed{service="twitter" url="https://x.com/ryugen04/status/2055594000942538972"}
-> リアル焚き火をしながらのLT#焚き火LT pic.twitter.com/yG1fhZbm1Y
-> — ryugen (@ryugen04) May 16, 2026
-:::
+https://x.com/ryugen04/status/2055594000942538972
 
-:::embed{service="twitter" url="https://x.com/natty_natty254/status/2055594382280245384"}
-> いよいよ本編
->  #焚き火LT pic.twitter.com/DZQfUJVmFv
-> — なってぃ (@natty_natty254) May 16, 2026
-:::
+https://x.com/natty_natty254/status/2055594382280245384
 
 私はスマートフォンから資料投影してLTです。  
 今回はフォーキングの紹介をさせてもらいました！
 
-:::embed{service="twitter" url="https://x.com/Kaitou1192/status/2055599949518410086"}
-> 今回に相応しいお話。 #焚き火LT pic.twitter.com/ccKmSu5nRR
-> — Kaitou (@Kaitou1192) May 16, 2026
-:::
+https://x.com/Kaitou1192/status/2055599949518410086
 
 ## キャンプ初心者でもOK
 
@@ -133,7 +105,4 @@ LT会が始まるのは暗くなってから。焚き火をしながら進行し
 
 次回は「極」の開催かもしれません。楽しみです！！
 
-:::embed{service="twitter" url="https://x.com/Kaitou1192/status/2055915331542217047"}
-> 焚き火LT極 みたいなのを、やりたいというお話になっていたのを思い出した。来年2月開催かな？ #焚き火LT
-> — Kaitou (@Kaitou1192) May 17, 2026
-:::
+https://x.com/Kaitou1192/status/2055915331542217047

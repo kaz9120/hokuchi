@@ -22,11 +22,7 @@ hashtags:
 CfPが通っていたので、レギュラートーク枠で登壇しました。  
 テーマは「『咲-Saki-』末原恭子に学ぶ凡人の生存戦略」。
 
-:::embed{service="external-article" url="https://fortee.jp/engineers-anime-2026/proposal/8159fb26-ca93-4d92-bb4f-d7efa160247d"}
-**『咲-Saki-』末原恭子に学ぶ凡人の生存戦略**
-エンジニアとして働いていると、周囲が「一晩で新しい技術をキャッチアップする」「とんでもない速度で機能を開発をする」といった
-fortee.jp
-:::
+https://fortee.jp/engineers-anime-2026/proposal/8159fb26-ca93-4d92-bb4f-d7efa160247d
 
 登壇資料は公開しない予定なので、ここでは選んだ背景だけ。
 
@@ -37,14 +33,7 @@ fortee.jp
 
 プロポーザルを書くにあたって、何とかこの素晴らしいキャラクターを紹介できればと思い、改めて漫画を読み返しながら向き合いましたが、本当に楽しくて、このイベントにおいての一番良い時間だったかもしれません。
 
-:::embed{service="twitter" url="https://x.com/engineers_anime/status/2042827401072439738"}
-> 🍩【劇場版】アニメから得た学びを発表会2026🍩 #エンジニアニメ
->
-> 山本一将(@kyamamoto9120) さんによる
-> 『『咲-Saki-』末原恭子に学ぶ凡人の生存戦略』
-> 始まりました！https://t.co/u7NLKtbMlB pic.twitter.com/40TSLRj1Xr
-> — エンジニアニメ@技術書典20 け03 (@engineers_anime) April 11, 2026
-:::
+https://x.com/engineers_anime/status/2042827401072439738
 
 余談ですが、発表時はここ数年で一番緊張していました。  
 自分の話ではなく、末原恭子の魅力を伝えなければならないと意気込んでしまったのだと思います。貴重な体験でした。
@@ -53,11 +42,7 @@ fortee.jp
 
 どのセッションも本当に面白かったのですが、一つ選ぶならこちらです。
 
-:::embed{service="external-article" url="https://fortee.jp/engineers-anime-2026/proposal/cc31762f-09cf-43e1-9574-d7d633c2ee9e"}
-**「ひゃくえむ。」から学ぶ進むためのGUTS駆動**
-良いプログラマー、企画立案者、提案者になるためには何が必要だろうか？世の中にはそのための方法論が満ち溢れている。しかしそれ
-fortee.jp
-:::
+https://fortee.jp/engineers-anime-2026/proposal/cc31762f-09cf-43e1-9574-d7d633c2ee9e
 
 「ひゃくえむ。」、見たくなりました。  
 やりたいことに対して腹を括って向き合う、GUTS駆動やっていきたいと思います💪
@@ -66,16 +51,7 @@ fortee.jp
 
 ドーナツ交流会や懇親会など、交流の企画も居心地がよかった。
 
-:::embed{service="twitter" url="https://x.com/engineers_anime/status/2042937239290925499"}
-> 【劇場版】アニメから得た学びを発表会2026
->
-> ご参加いただいた皆さま、本当にありがとうございました！
->
-> 最後はみんなで「どんどんドーナツどーんと行こう！」🍩の掛け声とともに記念撮影📸
->
-> また次回、お会いしましょう！#エンジニアニメ pic.twitter.com/faxJ2JiyUZ
-> — エンジニアニメ@技術書典20 け03 (@engineers_anime) April 11, 2026
-:::
+https://x.com/engineers_anime/status/2042937239290925499
 
 最近のアニメもキャッチアップしながら、また通常回も参加していきたいなと思いました！  
 運営、スポンサー、登壇者、参加者のみなさま、本当にありがとうございました〜🙌

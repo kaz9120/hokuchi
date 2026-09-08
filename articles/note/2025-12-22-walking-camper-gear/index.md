@@ -15,9 +15,7 @@ hashtags:
 
 先日の記事で、私が徒歩キャンパーであると紹介しました。
 
-:::embed{service="note" url="https://note.com/kyamamoto9120/n/n9fa1d9410717"}
-**徒歩キャンパーの私がたどり着いた「最高のキャンプ場」**
-:::
+https://note.com/kyamamoto9120/n/n9fa1d9410717
 
 電車やバスを乗り継ぐ徒歩キャンプのスタイルは、持っていける荷物にどうしても限界があります。だからこそ、道具選びはシビアになります。
 
@@ -30,11 +28,7 @@ hashtags:
 
 いきなり「軽さは正義」というセオリーを破るのですが、テントだけはどうしても譲れません。軽いテントは機能美ゆえに形が似てくるのですが、このテントが持つ独特なフォルムは代わりがききません。
 
-:::embed{service="external-article" url="https://www.naturum.co.jp/product/?itemcd=9936772&group=1&ref=ducknot"}
-**ダックノット(DUCKNOT) ハンティング ドーム テント 2P 720300**
-【6500円以上送料無料】ダックノット(DUCKNOT) ハンティング ドーム テント 2P 720300はナチュラム。口
-www.naturum.co.jp
-:::
+https://www.naturum.co.jp/product/?itemcd=9936772&group=1&ref=ducknot
 
 ミニマムな構成にしても2.5kg。徒歩で運ぶには正直、重いです。  
 でも、自立式で設営が楽ですし、キャノピーが広いのでタープを持っていく必要はありません。
@@ -45,11 +39,7 @@ www.naturum.co.jp
 
 椅子は軽さを求めた結果、ここに行き着きました。定番のチェアワンも良い椅子ですが、徒歩には少し重いです！
 
-:::embed{service="external-article" url="https://webshop.montbell.jp/goods/disp.php?product_id=1822229"}
-**【モンベル】グラウンドチェア**
-ヘリノックス・チェアの中で最も座面が低いロータイプモデルです。座った時の姿勢に無理がないよう他モデルより深めのシート設計に
-webshop.montbell.jp
-:::
+https://webshop.montbell.jp/goods/disp.php?product_id=1822229
 
 足を投げ出して地面に近い目線で焚き火を眺める。 座面も広くてゆったりできるので、今のところ他の選択肢が考えられないくらい馴染んでいます。
 
@@ -58,10 +48,7 @@ webshop.montbell.jp
 焚き火台はいろいろと使ってきましたが、今の一軍はこれです。   
 ミニマム構成なら500gという軽さなのに、火床が広いのが魅力。
 
-:::embed{service="external-article" url="https://www.amazon.co.jp/dp/B0CRHHLK4J"}
-**TOKYO CRAFTS マクライト2 焚き火台 【コンパクト/大型/軽量/薪割り不要/組み立て簡単/ゴトク付き】 ソロ ファミリー 焚火調理 火力調整不要**
-www.amazon.co.jp
-:::
+https://www.amazon.co.jp/dp/B0CRHHLK4J
 
 軽量な焚き火台って薪を小さく割らないといけないものが多いんですが、これは市販の大きな薪をそのまま雑に載せても大丈夫。 この「雑に扱える」感じが性格に合っている気がします。
 
@@ -69,10 +56,7 @@ www.amazon.co.jp
 
 キャンプを始めた頃からずっと使っています。 もうかなりボロボロで見た目は良くないんですが、機能的に困ることがないので買い替えていません。
 
-:::embed{service="external-article" url="https://www.amazon.co.jp/dp/B00DBLLSTW"}
-**Kinco Gloves Unlined Split Cowhide Leather Driver 50M**
-www.amazon.co.jp
-:::
+https://www.amazon.co.jp/dp/B00DBLLSTW
 
 ナイフの扱いもスムーズですし、火のついた薪をちょっと動かすくらいなら熱さも感じません。 なにより安いので、汚れや傷を気にせずガシガシ使えるのが楽ですね。もし今のものが壊れても、また同じものを買うと思います。
 
@@ -80,10 +64,7 @@ www.amazon.co.jp
 
 地味ですが、あると便利なのがこれです。口がガバッと開くので水が注ぎやすく、中までしっかり洗えるので清潔に保てます。使い終わればくるくると丸めてコンパクトに。
 
-:::embed{service="external-article" url="https://www.amazon.co.jp/dp/B09KLHB3FN"}
-**岩谷マテリアル 水タンク ウォッシャブル ウォーターバッグ 5L オリーブグリーン WWB-5OL 注ぎやすいコック付き キャンプ レジャー 防災 約37×36×16cm**
-www.amazon.co.jp
-:::
+https://www.amazon.co.jp/dp/B09KLHB3FN
 
 ただ一つ、当時の自分を問い詰めたいのが「なぜ5Lを選んだのか」という点です。大は小を兼ねると思ったのですが、ふたりキャンプでもオーバースペックでした。撤収時に余った水を捨てるたび、3Lに買い直すか悩みます。
 
@@ -91,10 +72,7 @@ www.amazon.co.jp
 
 いわゆる多目的シートなんですが、NASAが開発した素材を使っているらしく、我が家では「NASA」と呼んでいます。
 
-:::embed{service="external-article" url="https://www.amazon.co.jp/dp/B000BS01SW"}
-**Grabber(グラバー) オールウエザーブランケット OD(オリーブドラブ) 22144**
-www.amazon.co.jp
-:::
+https://www.amazon.co.jp/dp/B000BS01SW
 
 荷物置きとして地面に敷いたり、ちょっと寒い時に羽織ったり。 シルバーの面は体温の80%を反射してくれるそうで、いざという時の保険にもなっています。軽いし、雑に使いまくれる頼れる一枚です。
 

@@ -70,7 +70,7 @@ snapcrop は画像編集アプリではありません。Figma や Photoshop の
 
 ## 使ってみてください
 
-<https://snapcrop.y-kaz.com/>
+https://snapcrop.y-kaz.com/
 
 ブラウザで開いて、Cmd+V で画像を貼るか、画面キャプチャボタンを押すだけです。
 

@@ -86,8 +86,4 @@ hashtags:
 
 新宿が近い人はぜひ。
 
-:::embed{service="external-article" url="https://yamanote-west.connpass.com/event/399789/"}
-**山手ウエスト #1 「AI開発、最近どうですか？」@新宿 (2026/08/25 19:30〜)**
-\## 山手ウエストとは 都内のエンジニア勉強会は、日本橋や品川など23区の「東側」での開催が多め。 「山手ウエスト」は
-yamanote-west.connpass.com
-:::
+https://yamanote-west.connpass.com/event/399789/

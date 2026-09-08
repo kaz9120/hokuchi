@@ -12,12 +12,7 @@ hashtags:
 
 ぐちポジ.fmにゲストとしてご招待いただきまして、これから3週間配信されます🙌
 
-:::embed{service="twitter" url="https://x.com/guchi_posi_fm/status/2048086732113908184"}
-> https://t.co/RdynfeI0rE
-> 新しいエピソードが配信されました！
-> #75 多彩なキャリアストーリー w/ 山本一将｜焚き火を愛するエンジニアhttps://t.co/edBc3zgQNO#ぐちポジfm
-> — ぐちポジ.fm (@guchi_posi_fm) April 25, 2026
-:::
+https://x.com/guchi_posi_fm/status/2048086732113908184
 
 ポッドキャスト不慣れなので手探り感全開でしたが、楽しい収録だったので記録を残しておきます。
 

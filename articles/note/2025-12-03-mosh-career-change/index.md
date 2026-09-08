@@ -44,11 +44,7 @@ hashtags:
 
 そんな不安を抱える中で参加した R35.Meetup は、「もう少し大胆にチャレンジしてみても良いんじゃないか」と背中を押してくれるイベントでした。
 
-:::embed{service="external-article" url="https://cross-rel.connpass.com/event/329288/"}
-**R35. Meetup (2024/10/15 18:30〜)**
-\## イベント開催の背景 テクノロジーの進化とともに、テック界隈のプロフェッショナルの役割も大きく変化してきました。20
-cross-rel.connpass.com
-:::
+https://cross-rel.connpass.com/event/329288/
 
 登壇もパネルディスカッションも懇親会も、とにかく面白かったです。  
 キャリアについての様々な考え方に触れましたし、同年代の方々のチャレンジは純粋に刺激になりました。
@@ -60,9 +56,7 @@ cross-rel.connpass.com
 
 MOSH に入社した理由は MOSH のポッドキャストでもお話ししたので、ぜひこちらを聞いてみてください！
 
-:::embed{service="oembed" url="https://open.spotify.com/episode/2egF4krKTIYUeeQ6CorMLF?si=Jr1XBgJlSQOhP-vZQSnTBw"}
-**Spotify Embed: #10「カオスを求めてMOSHに入社した理由」Product Engineer 山本一将 - MOSH Tech Radio**
-:::
+https://open.spotify.com/episode/2egF4krKTIYUeeQ6CorMLF?si=Jr1XBgJlSQOhP-vZQSnTBw
 
 正直にいうと自分のキャリアに対しての明確なビジョンはなく、威勢よく転職活動を始めたものの、あるのは「事業を伸ばしたい」という漠然とした思いと、「自分の力を試したい」というエゴだけでした。
 

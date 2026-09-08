@@ -28,7 +28,7 @@ hashtags:
 >   
 > 出題範囲は、この世のすべて。  
 > 全500問が、あなたの知を問う。
-*<https://www.kentei-uketsuke.com/knowledge/>*
+*https://www.kentei-uketsuke.com/knowledge/*
 
 「出題範囲は、この世のすべて」。  
 なかなか思いきったことを言っています。

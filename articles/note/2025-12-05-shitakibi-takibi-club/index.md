@@ -24,11 +24,7 @@ hashtags:
 
 詳しくは、今年のイベントの情報が公開されているので以下のURLをご参照ください！
 
-:::embed{service="external-article" url="https://www.herofield.com/event/takibi/"}
-**イベント:焚火クラブ | イベント情報**
-イベント:焚火クラブ通信(ブログ)「イベント:焚火クラブ」の記事一覧です。
-www.herofield.com
-:::
+https://www.herofield.com/event/takibi/
 
 ## とにかく気楽。お散歩感覚で行ける
 

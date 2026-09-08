@@ -22,8 +22,7 @@ hashtags:
 
 掲載されたのは私の想いの一部なので、この機会に残りを書いておきます。
 
-:::embed{service="speakerdeck" url="https://speakerdeck.com/wabi_1318/aishi-dai-ni-nazeenziniahamadaji-marunoka"}
-:::
+https://speakerdeck.com/wabi_1318/aishi-dai-ni-nazeenziniahamadaji-marunoka
 
 ## 覚えているのは技術のほうではありません
 
@@ -55,9 +54,7 @@ hashtags:
 あれは嘘ではありません。ただ、相手のためという側からしか書いていませんでした。裏返すと、自分のためでもあります。  
 私が持っていないものを持っている人に会いに行きたい。
 
-:::embed{service="note" url="https://note.com/kyamamoto9120/n/nfd82304e4849"}
-**LINE API Platform Evangelistになりました**
-:::
+https://note.com/kyamamoto9120/n/nfd82304e4849
 
 運営をしていていちばん嬉しいのも、初めて参加した人が「また来たい」と言う瞬間です。教えたわけではなく、その人の中にもともとあった一歩を見せてもらう。それだけのことなのに、何度経験しても飽きません。
 

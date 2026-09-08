@@ -19,9 +19,7 @@ hashtags:
 
 前回、AquaVoiceという音声入力ツールについて記事を書いた。
 
-:::embed{service="note" url="https://note.com/kyamamoto9120/n/n8fa537d1c18b"}
-**音声入力、前から知ってたのに使ってなかった理由**
-:::
+https://note.com/kyamamoto9120/n/n8fa537d1c18b
 
 あれから毎日、音声入力を使っている。そんな中、Typelessというツールに出会った。
 
@@ -32,14 +30,7 @@ Typeless に対してのプライバシーリスクが報告されています�
 
 私は、一旦 Typeless の利用をやめて AquaVoice に戻すことにしました。
 
-:::embed{service="twitter" url="https://x.com/medmuspg/status/2021198792524169650"}
-> 【注意喚起】音声入力アプリ「Typeless」をリバースエンジニアリングした結果、かなり深刻なプライバシーリスクが見つかったので共有します。
->
-> ■ 結論から
->
-> Typelessは「On-device history」「Zero data…
-> — げれげれ (@medmuspg) February 10, 2026
-:::
+https://x.com/medmuspg/status/2021198792524169650
 
 ## 「そのまま出す」と「整えて出す」
 

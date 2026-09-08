@@ -28,8 +28,7 @@ EM Oasisで「余白」をテーマに取り上げるのは、実は今回が2�
 招待講演は、株式会社カケハシの Head of Engineering、小田中育生さん。  
 著書『エンジニアのための自己管理入門』の内容をベースに、今回のテーマに合わせた形でセルフマネジメントの話をしていただきました。
 
-:::embed{service="speakerdeck" url="https://speakerdeck.com/ikuodanaka/self-management-that-creates-breathing-room"}
-:::
+https://speakerdeck.com/ikuodanaka/self-management-that-creates-breathing-room
 
 講演の導入で小田中さんが引用したのが「ジェポンズのパラドックス」です。19世紀の産業革命のとき、資源の利用効率が上がるほどかえって資源の利用量が増えてしまった。  
 AIの時代にも同じことが起きている。仕事は速くなったはずなのに、私たちは全然楽になっていない。「時間がない」が日常になっている。会場の参加者も深くうなずいていました。
@@ -41,11 +40,7 @@ AIの時代にも同じことが起きている。仕事は速くなったはず
 
 講演の後半では、書籍で取り上げているセルフマネジメントの実践についても話が広がりました。『エンジニアのための自己管理入門』、まだ読んでいない方はぜひ。
 
-:::embed{service="external-article" url="https://www.shoeisha.co.jp/book/detail/9784798194066"}
-**エンジニアのための自己管理入門 堅牢でスケーラブルな働き方を構築する技術 | 翔泳社**
-がんばりすぎるあなたのために 働きやすさを取り戻すセルフマネジメントのノウハウ 忙しい。やることは多い。学ぶべきことも増
-www.shoeisha.co.jp
-:::
+https://www.shoeisha.co.jp/book/detail/9784798194066
 
 ## LT：さとぽんさん「余白の作法 〜AI時代の、余白の使いかた〜」
 
@@ -54,8 +49,7 @@ www.shoeisha.co.jp
 LTは、リンクアンドモチベーションVPoEのさとぽんさん。  
 さとぽんさんも「余白」での登壇は2回目で、前回の第9回では「EMの仕事＝余白のデザイン！」というタイトルで話してくれました。
 
-:::embed{service="speakerdeck" url="https://speakerdeck.com/lmi/emoasis-12-link-and-motivation"}
-:::
+https://speakerdeck.com/lmi/emoasis-12-link-and-motivation
 
 今回のタイトルは「余白の作法」。前回が「余白をどう設計するか」だったのに対し、今回は「余白をどう使うか」に視点が移っていました。
 
@@ -92,14 +86,9 @@ EM Oasisでは毎回、OST（オープンスペーステクノロジー）形式
 
 「こういう場があるのか」と思った方、ぜひ一度足を運んでみてください。
 
-:::embed{service="external-article" url="https://emoasis.connpass.com/"}
-**EM Oasis**
-\# コミュニティ説明 本コミュニティーはEMの 1. 学び 2. 広がり 3. 繋がり 4. 癒し 5. 遊び の場とな
-emoasis.connpass.com
-:::
+https://emoasis.connpass.com/
 
-:::embed{service="twitterProfile" url="https://x.com/EMOasisCOMM"}
-:::
+https://x.com/EMOasisCOMM
 
 ## 謝辞
 

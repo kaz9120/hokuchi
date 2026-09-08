@@ -11,16 +11,12 @@ hashtags:
 ---
 
 > "Shock! Shock!"
-*<https://www-cs-faculty.stanford.edu/~knuth/papers/claude-cycles.pdf>*
+*https://www-cs-faculty.stanford.edu/~knuth/papers/claude-cycles.pdf*
 
 クヌース先生が2026年2月28日に発表した論文の書き出しだ。  
 こちらの記事のおかげで、このような論文があることを知ることができた。
 
-:::embed{service="external-article" url="https://qiita.com/nogataka/items/ecbaedb3d7ffc29c9fb2"}
-**コンピュータ科学の神様が「AIに負けた」日 — Donald Knuth『Claude's Cycles』を読み解く - Qiita**
-はじめに：「Shock! Shock!」 2026年2月28日、コンピュータ科学の世界に小さな衝撃が走った。 Donald
-qiita.com
-:::
+https://qiita.com/nogataka/items/ecbaedb3d7ffc29c9fb2
 
 クヌース先生を知らない方のために補足すると、コンピュータ科学の世界で「神」と呼ばれる人物。代表作『The Art of Computer Programming』はこの分野の聖書ともいわれている。
 
@@ -54,10 +50,7 @@ GPT-4のインパクトは、Bonanzaが渡辺明竜王に挑んだ頃に近い�
 
 あの後、少し意地になって自分の開発していたソフトで検証した。
 
-:::embed{service="twitter" url="https://x.com/kyamamoto9120/status/589357152663248896"}
-> AWAKEが２八角を打った局面、ひまわりはこれだけ読めば回避できるらしい。 pic.twitter.com/FZBemHR7os
-> — 山本一将｜焚き火を愛するエンジニア (@kyamamoto9120) April 18, 2015
-:::
+https://x.com/kyamamoto9120/status/589357152663248896
 
 当該局面を38時間探索させ続けた。1時間の探索では悪手を指してしまうかもしれない。でも38時間かければ回避する。そして、この38時間を5分に縮めること自体は、コンピュータの歴史にとってそう長くかかる問題ではない。
 

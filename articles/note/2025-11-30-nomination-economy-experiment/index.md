@@ -22,14 +22,9 @@ hashtags:
 
 この転身については幾度かアウトプットしているので、興味のある方はご覧いただけると嬉しいです。
 
-:::embed{service="external-article" url="https://findy-code.io/engineer-lab/careershift_kyamamoto"}
-**「技術者としてこのままで大丈夫か」 鉄道システム開発者が“知識0の状態”でWebエンジニアに転身した理由 - Findy Engineer Lab**
-鉄道システムの開発から、なぜ知識がまったくないWebの領域へ飛び込んだのか？ ユニークビジョン株式会社の山本一将さんに転身
-findy-code.io
-:::
+https://findy-code.io/engineer-lab/careershift_kyamamoto
 
-:::embed{service="oembed" url="https://www.docswell.com/s/kyamamoto9120/5JQYMJ-2025-10-08-190000"}
-:::
+https://www.docswell.com/s/kyamamoto9120/5JQYMJ-2025-10-08-190000
 
 専門領域はバックエンドですが、インフラから機械学習まで「なんとかする」のが得意です。かつては趣味で作った将棋プログラムで世界大会9位に入賞するなど、ロジックを突き詰めることには自信があります。
 

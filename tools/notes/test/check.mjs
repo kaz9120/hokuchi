@@ -1,7 +1,7 @@
 // check.mjs — npm test. Plain assert-based checks, no framework.
 //
 // (1) HTML パーサ: 属性・エンティティ・入れ子
-// (2) 埋め込み: 種別と URL が :::embed に残る (過去の取り込み失敗の本丸)
+// (2) 埋め込み: URL だけの 1 行として残る (過去の取り込み失敗の本丸)
 // (3) リンク付き画像: <a><img></a> の href を落とさない
 // (4) 本文の記法ガード: 行頭の「- 」「## 」、&nbsp;、コード内のフェンス
 // (5) verify の負のテスト: 欠落を作れば必ず error になる
@@ -57,12 +57,11 @@ const md = (note) => toMarkdown({ title: note.name ?? 't' }, parseNote(note).blo
     ],
   };
   const out = md(note);
-  assert.match(out, /^:::embed\{service="twitter" url="https:\/\/x\.com\/u\/status\/1"\}$/m);
-  assert.match(out, /^:::embed\{service="external-article" url="https:\/\/example\.com\/a"\}$/m);
-  assert.match(out, /> ポスト本文/);
-  assert.match(out, /> — 名前 \(@u\) May 1, 2026/);
-  assert.match(out, /\*\*記事タイトル\*\*/);
-  ok('埋め込みは種別・URL・本文テキストを保って :::embed になる');
+  // note のエディタに貼ればカードになる、URL だけの 1 行 (ADR-0021)
+  assert.match(out, /^本文\n\nhttps:\/\/x\.com\/u\/status\/1\n\nhttps:\/\/example\.com\/a$/m);
+  assert.ok(!out.includes('ポスト本文') && !out.includes('記事タイトル'), '埋め込み先のテキストは index.md に出さない');
+  assert.ok(!out.includes(':::'), '独自のディレクティブを出さない');
+  ok('埋め込みは URL だけの 1 行になり、順序を保つ');
 }
 
 // (3) リンク付き画像 ---------------------------------------------------------
@@ -115,16 +114,19 @@ const md = (note) => toMarkdown({ title: note.name ?? 't' }, parseNote(note).blo
   };
   fs.writeFileSync(path.join(dir, 'source.json'), JSON.stringify(source));
   const fm = '---\ntitle: t\nnote_key: nX\nnote_url: https://note.com/x\npublished_at: "2026-01-01T00:00:00+09:00"\n---\n';
-  const good = `${fm}\n残る文\n\n消える文\n\n:::embed{service="twitter" url="https://x.com/u/status/9"}\n:::\n`;
+  const good = `${fm}\n残る文\n\n消える文\n\nhttps://x.com/u/status/9\n`;
   fs.writeFileSync(path.join(dir, 'index.md'), good);
   assert.deepEqual(verifyArticle(dir).errors, [], '過不足なければ error は出ない');
 
   fs.writeFileSync(path.join(dir, 'index.md'), good.replace('消える文\n\n', ''));
   assert.match(verifyArticle(dir).errors.join('\n'), /本文が落ちている/, '本文の欠落を検知する');
 
-  fs.writeFileSync(path.join(dir, 'index.md'), good.replace(/:::embed\{[^\n]*\}\n:::/, 'https://x.com/u/status/9'));
-  const stripped = verifyArticle(dir).errors.join('\n');
-  assert.match(stripped, /埋め込み twitter/, '埋め込みを素の URL に潰したら検知する');
+  fs.writeFileSync(path.join(dir, 'index.md'), good.replace('https://x.com/u/status/9\n', ''));
+  assert.match(verifyArticle(dir).errors.join('\n'), /埋め込み \(twitter\) が落ちている/, '埋め込みの欠落を検知する');
+
+  // URL が文中に紛れたら埋め込みではない
+  fs.writeFileSync(path.join(dir, 'index.md'), good.replace('\nhttps://x.com/u/status/9', '\n参照 https://x.com/u/status/9'));
+  assert.match(verifyArticle(dir).errors.join('\n'), /埋め込み \(twitter\) が落ちている/, 'URL だけの行でなければ埋め込みと数えない');
 
   // 「含まれるか」だけの検査だと素通りする欠陥 — 順序の入れ替え
   fs.writeFileSync(path.join(dir, 'index.md'), good.replace('残る文\n\n消える文', '消える文\n\n残る文'));

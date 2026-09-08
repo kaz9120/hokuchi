@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>hokuchi note</title>
+<style>
+  :root {
+    --ink: #1f2328; --muted: #6b7280; --line: #e5e7eb; --bg: #fff; --side: #f8f9fa;
+    --accent: #2b7a78; --warn: #b45309; --error: #b91c1c; --info: #4b5563; --hit: #fff3bf;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; color: var(--ink); background: var(--bg);
+    font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", system-ui, sans-serif; }
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; min-height: 100vh; }
+  main { padding: 48px 32px 160px; }
+  article { max-width: 640px; margin: 0 auto; font-size: 17px; line-height: 1.95; }
+  article h1 { font-size: 28px; line-height: 1.5; margin: 0 0 8px; }
+  .meta { color: var(--muted); font-size: 13px; margin-bottom: 40px; }
+  .meta span + span::before { content: " · "; }
+  .eyecatch { margin: 0 0 32px; }
+  .eyecatch img { width: 100%; border-radius: 6px; display: block; }
+  article h2 { font-size: 22px; margin: 2.2em 0 0.8em; line-height: 1.5; }
+  article h3 { font-size: 18px; margin: 1.8em 0 0.6em; }
+  article p { margin: 0 0 1.5em; }
+  article figure { margin: 2em 0; }
+  article img { max-width: 100%; display: block; margin: 0 auto; border-radius: 4px; }
+  article figcaption { text-align: center; color: var(--muted); font-size: 13px; margin-top: 8px; }
+  article blockquote { margin: 1.5em 0; padding: 4px 0 4px 20px; border-left: 3px solid var(--line); color: #374151; }
+  article blockquote p:last-child { margin-bottom: 0; }
+  article pre { background: #f3f4f6; padding: 14px 16px; border-radius: 6px; overflow-x: auto; font-size: 14px; line-height: 1.6; }
+  article code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.92em; }
+  article hr { border: 0; text-align: center; margin: 2.5em 0; }
+  article hr::after { content: "＊＊＊"; color: var(--muted); letter-spacing: 0.5em; }
+  article ul, article ol { padding-left: 1.6em; margin: 0 0 1.5em; }
+  article a { color: var(--accent); }
+  .embed { display: block; border: 1px solid var(--line); border-radius: 8px; padding: 14px 18px; margin: 1.5em 0;
+    text-decoration: none; color: var(--ink); background: #fafafa; }
+  .embed-host { display: block; font-size: 12px; color: var(--muted); }
+  .embed-url { display: block; font-size: 14px; word-break: break-all; }
+  [data-block] { border-radius: 4px; }
+  [data-block].flash { background: var(--hit); transition: background 0.2s; }
+  article ::selection { background: #cfe8e6; }
+
+  aside { background: var(--side); border-left: 1px solid var(--line); padding: 20px 20px 40px; font-size: 13px;
+    position: sticky; top: 0; height: 100vh; overflow-y: auto; overflow-x: hidden; overflow-wrap: anywhere; }
+  aside h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 24px 0 8px; }
+  aside h2:first-child { margin-top: 0; }
+  .stats { color: var(--muted); }
+  .stats b { color: var(--ink); font-weight: 600; }
+  .lint { list-style: none; padding: 0; margin: 0; }
+  .lint li { padding: 6px 8px; border-radius: 4px; margin-bottom: 4px; background: #fff; border: 1px solid var(--line); cursor: default; }
+  .lint li.at { cursor: pointer; }
+  .lint li.at:hover { border-color: var(--accent); }
+  .sev { font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 3px; margin-right: 6px; color: #fff; vertical-align: 1px; }
+  .sev-error { background: var(--error); } .sev-warn { background: var(--warn); } .sev-info { background: var(--info); }
+  .lint .id { color: var(--muted); font-size: 11px; margin-left: 4px; }
+  .fb { list-style: none; padding: 0; margin: 0; }
+  .fb li { background: #fff; border: 1px solid var(--line); border-radius: 4px; padding: 8px; margin-bottom: 6px; }
+  .fb .where { color: var(--muted); font-size: 11px; }
+  .fb .quote { color: #374151; border-left: 2px solid var(--line); padding-left: 8px; margin: 6px 0; white-space: pre-wrap; font-size: 12px; }
+  .fb .comment { white-space: pre-wrap; }
+  .empty { color: var(--muted); }
+  textarea { width: 100%; min-height: 60px; font: inherit; padding: 8px; border: 1px solid var(--line); border-radius: 4px; resize: vertical; }
+  button { font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 4px; border: 1px solid var(--accent); background: var(--accent); color: #fff; cursor: pointer; }
+  button.ghost { background: #fff; color: var(--accent); }
+  button:disabled { opacity: 0.5; cursor: default; }
+  .row { display: flex; gap: 8px; margin-top: 8px; align-items: center; flex-wrap: wrap; }
+  .images { font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .images div { margin-bottom: 4px; }
+  .hint { color: var(--muted); font-size: 11px; margin-top: 6px; }
+
+  /* 選択のすぐ下に出る入力欄 */
+  #inline { position: absolute; display: none; z-index: 20; width: 380px; background: #fff; border: 1px solid var(--accent);
+    border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); padding: 8px 10px; }
+  #inline .quote { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+  #inline textarea { min-height: 38px; height: 38px; padding: 6px 8px; border: 0; border-radius: 0; resize: none; font-size: 14px; line-height: 1.5; }
+  #inline textarea:focus { outline: none; }
+  #inline .hint { margin-top: 2px; }
+
+  #offline { position: fixed; top: 0; left: 0; right: 340px; background: var(--error); color: #fff; padding: 8px 16px; font-size: 13px;
+    display: none; z-index: 40; text-align: center; }
+  #toast { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); background: var(--ink); color: #fff;
+    padding: 10px 16px; border-radius: 6px; font-size: 13px; display: none; z-index: 30; max-width: 80vw; }
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    aside { position: static; height: auto; border-left: 0; border-top: 1px solid var(--line); }
+    #offline { right: 0; }
+  }
+</style>
+</head>
+<body>
+<div id="offline">サーバに繋がりません。ターミナルで hokuchi-note serve が動いているか確かめてください</div>
+<div class="layout">
+  <main>
+    <article id="article"></article>
+  </main>
+  <aside>
+    <h2>原稿</h2>
+    <div class="stats" id="stats"></div>
+    <div class="row">
+      <button id="paste">note に貼る本文をコピー</button>
+      <button id="open" class="ghost">assets を開く</button>
+    </div>
+    <div class="images" id="images"></div>
+
+    <h2>lint</h2>
+    <ul class="lint" id="lint"></ul>
+
+    <h2>未反映のフィードバック</h2>
+    <ul class="fb" id="fb"></ul>
+    <div class="row">
+      <button id="copy-fb">ターミナルに貼る</button>
+      <button id="clear-fb" class="ghost">全部消す</button>
+    </div>
+    <div class="hint">本文の文を選ぶと、その場に入力欄が出ます。Enter で送信</div>
+    <textarea id="general" placeholder="全体へのコメント"></textarea>
+    <div class="row"><button id="send-general">送る</button><span class="hint">Cmd+Enter でも送れます</span></div>
+  </aside>
+</div>
+
+<div id="inline">
+  <div class="quote" id="inline-quote"></div>
+  <textarea id="inline-text" placeholder="どう直したいか。「くどい」「具体が欲しい」で十分" rows="1"></textarea>
+  <div class="hint" id="inline-where">Enter で送信 · Shift+Enter で改行 · Esc で閉じる</div>
+</div>
+<div id="toast"></div>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var state = null;
+  var pending = null; // { quote, block, heading }
+  var offline = false;
+
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+  function toast(msg, ms) {
+    var t = $('toast'); t.textContent = msg; t.style.display = 'block';
+    clearTimeout(toast.h); toast.h = setTimeout(function () { t.style.display = 'none'; }, ms || 2600);
+  }
+  function setOffline(on) {
+    if (offline === on) return;
+    offline = on;
+    $('offline').style.display = on ? 'block' : 'none';
+  }
+
+  function renderArticle(s) {
+    var y = window.scrollY;
+    var head = '<h1>' + esc(s.title) + '</h1>' +
+      '<div class="meta"><span>' + s.stats.chars + ' 字</span><span>' + s.stats.paragraphs + ' 段落</span>' +
+      (s.tags.length ? '<span>#' + s.tags.map(esc).join(' #') + '</span>' : '') + '</div>' +
+      (s.eyecatch ? '<div class="eyecatch"><img src="' + esc(s.eyecatch) + '" alt=""></div>' : '');
+    $('article').innerHTML = head + s.html;
+    window.scrollTo(0, y);
+  }
+
+  function feedbackText(list) {
+    return list.map(function (f) {
+      return '## ' + f.stamp + ' — ' + f.where + '\n\n' +
+        (f.quote ? f.quote.split('\n').map(function (l) { return '> ' + l; }).join('\n') + '\n\n' : '') + f.comment + '\n';
+    }).join('\n');
+  }
+
+  function renderSide(s) {
+    $('stats').innerHTML = '<b>' + s.stats.chars + '</b> 字 · <b>' + s.stats.paragraphs + '</b> 段落 · 文の中央値 <b>' +
+      s.stats.medianSentence + '</b> 字 · 見出し ' + s.stats.headings + ' · 画像 ' + s.stats.images;
+    $('images').innerHTML = (s.eyecatch ? '<div>見出し画像: ' + esc(s.eyecatch.split('/').pop()) + '</div>' : '') +
+      s.images.map(function (im) {
+        return '<div>画像 ' + im.n + '/' + s.images.length + ': ' + esc(im.file) + (im.caption ? ' — ' + esc(im.caption) : '') + '</div>';
+      }).join('');
+
+    var order = { error: 0, warn: 1, info: 2 };
+    var lint = s.lint.slice().sort(function (a, b) { return order[a.severity] - order[b.severity]; });
+    $('lint').innerHTML = lint.length ? lint.map(function (f, i) {
+      return '<li class="' + (f.at ? 'at' : '') + '" data-i="' + i + '"><span class="sev sev-' + f.severity + '">' +
+        f.severity.toUpperCase() + '</span>' + esc(f.message) + '<span class="id">' + esc(f.id) + '</span></li>';
+    }).join('') : '<li class="empty">指摘なし</li>';
+    $('lint').onclick = function (e) {
+      var li = e.target.closest('li[data-i]'); if (!li) return;
+      var f = lint[Number(li.dataset.i)]; if (!f || !f.at) return;
+      jumpTo(f.at);
+    };
+
+    $('fb').innerHTML = s.feedback.length ? s.feedback.map(function (f) {
+      return '<li><div class="where">' + esc(f.stamp) + ' — ' + esc(f.where) + '</div>' +
+        (f.quote ? '<div class="quote">' + esc(f.quote) + '</div>' : '') +
+        '<div class="comment">' + esc(f.comment) + '</div></li>';
+    }).join('') : '<li class="empty">なし</li>';
+    $('copy-fb').disabled = !s.feedback.length;
+    $('clear-fb').disabled = !s.feedback.length;
+  }
+
+  function jumpTo(text) {
+    var needle = text.replace(/\s+/g, '');
+    var blocks = document.querySelectorAll('#article [data-block]');
+    for (var i = 0; i < blocks.length; i++) {
+      if (blocks[i].textContent.replace(/\s+/g, '').indexOf(needle) !== -1) { flash(blocks[i]); return; }
+    }
+    toast('本文の中に見つかりませんでした');
+  }
+  function flash(el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.classList.add('flash');
+    setTimeout(function () { el.classList.remove('flash'); }, 1600);
+  }
+
+  function headingBefore(el) {
+    var n = el;
+    while (n && n.id !== 'article') {
+      var p = n.previousElementSibling;
+      while (p) { if (/^H[23]$/.test(p.tagName)) return p.textContent.trim(); p = p.previousElementSibling; }
+      n = n.parentElement;
+    }
+    return '';
+  }
+
+  // --- 選択 → その場の入力欄 ------------------------------------------------
+  var box = $('inline');
+  var input = $('inline-text');
+  function closeBox() { box.style.display = 'none'; pending = null; }
+  function openBox(sel) {
+    var range = sel.getRangeAt(0);
+    var start = range.startContainer.nodeType === 1 ? range.startContainer : range.startContainer.parentElement;
+    if (!start || !start.closest('#article')) return false;
+    var rect = range.getBoundingClientRect();
+    if (!rect.width && !rect.height) return false;
+    var blockEl = start.closest('[data-block]');
+    pending = { quote: sel.toString().trim(), block: blockEl ? blockEl.dataset.block : '', heading: blockEl ? headingBefore(blockEl) : '' };
+    if (!pending.quote) { pending = null; return false; }
+    $('inline-quote').textContent = pending.quote;
+    var where = (pending.block !== '' ? '段落 ' + pending.block : '') + (pending.heading ? ' / ' + pending.heading : '');
+    $('inline-where').textContent = (where ? where + ' · ' : '') + 'Enter で送信 · Shift+Enter で改行 · Esc で閉じる';
+    input.value = '';
+    input.style.height = '38px';
+    box.style.display = 'block';
+    var main = document.querySelector('main').getBoundingClientRect();
+    box.style.left = Math.max(main.left + 8, Math.min(main.right - 392, window.scrollX + rect.left)) + 'px';
+    box.style.top = (window.scrollY + rect.bottom + 8) + 'px';
+    input.focus({ preventScroll: true });
+    return true;
+  }
+  // mouseup で判定する (selectionchange だとドラッグ中に何度も開閉する)
+  document.addEventListener('mouseup', function (e) {
+    if (box.contains(e.target)) return;
+    setTimeout(function () {
+      var sel = document.getSelection();
+      if (!sel || sel.isCollapsed || !sel.rangeCount) { if (!input.value.trim()) closeBox(); return; }
+      openBox(sel);
+    }, 10);
+  });
+  input.addEventListener('input', function () {
+    input.style.height = '38px';
+    input.style.height = Math.min(160, input.scrollHeight) + 'px';
+  });
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { e.preventDefault(); closeBox(); return; }
+    if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && e.keyCode !== 229) {
+      e.preventDefault();
+      var text = input.value.trim(); if (!text || !pending) return;
+      var p = pending; closeBox();
+      document.getSelection().removeAllRanges();
+      send({ quote: p.quote, block: p.block, heading: p.heading, comment: text });
+    }
+  });
+  document.addEventListener('keydown', function (e) {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && document.activeElement === $('general')) $('send-general').click();
+  });
+
+  function post(path, payload) {
+    return fetch(path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload || {}) })
+      .then(function (r) { return r.json(); })
+      .then(function (r) { if (r.error) throw new Error(r.error); return r; });
+  }
+  function send(payload) {
+    return post('/__feedback', payload)
+      .then(function (r) { toast('送りました (未反映 ' + r.count + ' 件)'); return refresh(true); })
+      .catch(function (e) { toast('送れませんでした: ' + e.message, 6000); });
+  }
+  $('send-general').addEventListener('click', function () {
+    var text = $('general').value.trim(); if (!text) return;
+    $('general').value = '';
+    send({ quote: '', block: '', heading: '', comment: text });
+  });
+
+  // --- ターミナルへ / 消す ---------------------------------------------------
+  $('copy-fb').addEventListener('click', function () {
+    if (!state || !state.feedback.length) return;
+    var text = '原稿 ' + state.path + ' へのフィードバックです。反映して、反映した節を feedback.md から消してください。\n\n' +
+      feedbackText(state.feedback);
+    navigator.clipboard.writeText(text)
+      .then(function () { toast('コピーしました。ターミナルに貼ってください (' + state.feedback.length + ' 件)'); })
+      .catch(function (e) { toast('コピーできませんでした: ' + e.message, 6000); });
+  });
+  $('clear-fb').addEventListener('click', function () {
+    post('/__clear').then(function () { toast('feedback.md を空にしました'); return refresh(true); })
+      .catch(function (e) { toast('消せませんでした: ' + e.message, 6000); });
+  });
+
+  // --- 貼る / 開く ----------------------------------------------------------
+  $('paste').addEventListener('click', function () {
+    fetch('/__paste').then(function (r) { return r.text(); }).then(function (text) {
+      return navigator.clipboard.writeText(text).then(function () {
+        var n = state ? state.images.length : 0;
+        toast('クリップボードに入れました' + (n ? '。画像 ' + n + ' 枚は「（画像 n/N: …）」の行を消して入れてください' : ''), 5000);
+      });
+    }).catch(function (e) { toast('コピーできませんでした: ' + e.message, 6000); });
+  });
+  $('open').addEventListener('click', function () {
+    post('/__open').then(function (r) { toast('開きました: ' + r.dir); })
+      .catch(function (e) { toast('開けませんでした: ' + e.message, 6000); });
+  });
+
+  // --- 追従 -----------------------------------------------------------------
+  function refresh(force) {
+    return fetch('/__draft').then(function (r) { return r.json(); }).then(function (s) {
+      setOffline(false);
+      if (s.error) { toast(s.error, 6000); return; }
+      var first = !state;
+      var changed = first || s.mtime !== state.mtime;
+      var fbChanged = first || JSON.stringify(s.feedback) !== JSON.stringify(state.feedback);
+      state = s;
+      if (changed) { renderArticle(s); document.title = s.title + ' — hokuchi note'; }
+      if (changed || fbChanged || force) renderSide(s);
+      if (changed && !first) toast('原稿が更新されました');
+    }).catch(function () { setOffline(true); });
+  }
+  refresh();
+  setInterval(refresh, 1500);
+})();
+</script>
+</body>
+</html>

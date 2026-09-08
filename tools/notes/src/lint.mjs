@@ -61,11 +61,11 @@ const count = (text, word) => text.split(word).length - 1;
 /**
  * note の原稿を検査する。
  * @param {string} md - 原稿 (front matter は任意)
- * @returns {Array<{severity, id, message}>}
+ * @returns {Array<{severity, id, message, at?: string}>} at は該当箇所を探すための本文の抜粋 (serve が使う)
  */
 export function lintDraft(md) {
   const findings = [];
-  const add = (severity, id, message) => findings.push({ severity, id, message });
+  const add = (severity, id, message, at) => findings.push(at ? { severity, id, message, at } : { severity, id, message });
 
   const { fm, body } = splitFrontMatter(md);
   const paras = proseBlocks(body);
@@ -84,7 +84,7 @@ export function lintDraft(md) {
   // 個別に挙げるのは 80 字超だけにして、あとは記事全体の率で見る。
   for (const s of sentences) {
     const n = visibleLength(s);
-    if (n > 80) add(SEV.warn, 'sentence-too-long', `1 文 ${n} 字。切る: ${s.slice(0, 32)}…`);
+    if (n > 80) add(SEV.warn, 'sentence-too-long', `1 文 ${n} 字。切る: ${s.slice(0, 32)}…`, s);
   }
   const longRate = sentences.filter((s) => visibleLength(s) > 60).length / sentences.length;
   if (longRate > 0.15) {
@@ -99,16 +99,16 @@ export function lintDraft(md) {
   // 実測は中央値 60 字、120 字超が 5%。文字の壁を作らない。
   for (const p of paras) {
     const n = visibleLength(p);
-    if (n > 200) add(SEV.warn, 'paragraph-too-long', `1 段落 ${n} 字。改行を入れる: ${p.slice(0, 30)}…`);
-    else if (n > 120) add(SEV.info, 'paragraph-long', `1 段落 ${n} 字: ${p.slice(0, 30)}…`);
+    if (n > 200) add(SEV.warn, 'paragraph-too-long', `1 段落 ${n} 字。改行を入れる: ${p.slice(0, 30)}…`, p.slice(0, 30));
+    else if (n > 120) add(SEV.info, 'paragraph-long', `1 段落 ${n} 字: ${p.slice(0, 30)}…`, p.slice(0, 30));
   }
 
   // --- 語彙 -----------------------------------------------------------------
-  for (const w of HIGH_CALORIE) if (count(text, w)) add(SEV.warn, 'high-calorie', `ハイカロリーな語「${w}」`);
-  for (const w of SUPERLATIVE) if (count(text, w)) add(SEV.error, 'superlative', `最上級表現「${w}」は客観的な根拠がなければ使わない`);
-  for (const w of AI_PHRASES) if (count(text, w)) add(SEV.warn, 'ai-phrase', `型どおりの言い回し「${w}」`);
-  for (const w of SYMPATHY) if (count(text, w)) add(SEV.warn, 'sympathy-seeking', `読者に共感を求める「${w}」`);
-  for (const w of KIZA) if (count(text, w)) add(SEV.warn, 'affected', `キザな言い回し「${w}」`);
+  for (const w of HIGH_CALORIE) if (count(text, w)) add(SEV.warn, 'high-calorie', `ハイカロリーな語「${w}」`, w);
+  for (const w of SUPERLATIVE) if (count(text, w)) add(SEV.error, 'superlative', `最上級表現「${w}」は客観的な根拠がなければ使わない`, w);
+  for (const w of AI_PHRASES) if (count(text, w)) add(SEV.warn, 'ai-phrase', `型どおりの言い回し「${w}」`, w);
+  for (const w of SYMPATHY) if (count(text, w)) add(SEV.warn, 'sympathy-seeking', `読者に共感を求める「${w}」`, w);
+  for (const w of KIZA) if (count(text, w)) add(SEV.warn, 'affected', `キザな言い回し「${w}」`, w);
 
   // --- ぼかし ---------------------------------------------------------------
   // 実測は千字あたり 1.5 回。体験を断定できていないと、ここが増える。
@@ -137,19 +137,20 @@ export function lintDraft(md) {
   // 実測の最終段落は中央値 44 字。まとめ直し・抱負・余韻はいらない。
   const last = paras[paras.length - 1];
   const lastSentences = toSentences(last);
-  if (lastSentences.length > 3) add(SEV.warn, 'closing-long', `結びが ${lastSentences.length} 文。3 文以内で終える`);
-  if (visibleLength(last) > 120) add(SEV.warn, 'closing-heavy', `結びが ${visibleLength(last)} 字。公開済み記事は 44 字前後`);
+  const lastAt = last.slice(0, 30);
+  if (lastSentences.length > 3) add(SEV.warn, 'closing-long', `結びが ${lastSentences.length} 文。3 文以内で終える`, lastAt);
+  if (visibleLength(last) > 120) add(SEV.warn, 'closing-heavy', `結びが ${visibleLength(last)} 字。公開済み記事は 44 字前後`, lastAt);
   if (/(いきたいと思います|と思っています|願いです|大切にしていきたい|感じた一日でした)[。！]?$/.test(last)) {
-    add(SEV.warn, 'closing-poem', '結びが抱負・余韻で着地している。次のアクションか、一番言いたかったことで終える');
+    add(SEV.warn, 'closing-poem', '結びが抱負・余韻で着地している。次のアクションか、一番言いたかったことで終える', lastAt);
   }
 
   // --- 冒頭 -----------------------------------------------------------------
   const first = paras[0];
   if (/^(本記事|この記事)(は|では)/.test(first)) {
-    add(SEV.warn, 'opening-boilerplate', '冒頭が記事の説明から始まっている。場面かエピソードから入る');
+    add(SEV.warn, 'opening-boilerplate', '冒頭が記事の説明から始まっている。場面かエピソードから入る', first.slice(0, 30));
   }
   if (visibleLength(first) > 160) {
-    add(SEV.warn, 'opening-heavy', `冒頭の段落が ${visibleLength(first)} 字。公開済み記事は 41 字前後`);
+    add(SEV.warn, 'opening-heavy', `冒頭の段落が ${visibleLength(first)} 字。公開済み記事は 41 字前後`, first.slice(0, 30));
   }
 
   // --- 漢字の詰まり ---------------------------------------------------------
@@ -160,7 +161,7 @@ export function lintDraft(md) {
     if (kanjiRate > 0.42) add(SEV.warn, 'kanji-dense', `漢字が ${(kanjiRate * 100).toFixed(0)}% (公開済み記事は 33%)。ひらがなに開く`);
   }
   for (const m of text.matchAll(/[一-鿿]{7,}/g)) {
-    add(SEV.info, 'kanji-run', `漢字が ${m[0].length} 字続く「${m[0]}」`);
+    add(SEV.info, 'kanji-run', `漢字が ${m[0].length} 字続く「${m[0]}」`, m[0]);
   }
 
   // --- 見出し ---------------------------------------------------------------
@@ -169,8 +170,8 @@ export function lintDraft(md) {
   const EMPTY_HEADINGS = ['おわりに', 'はじめに', 'まとめ', '最後に', 'さいごに', '前置き', '背景', 'おまけ'];
   for (const m of body.matchAll(/^#{2,3} (.+)$/gm)) {
     const h = m[1].trim().replace(/\\(.)/g, '$1');
-    if (EMPTY_HEADINGS.includes(h)) add(SEV.info, 'heading-empty', `見出し「${h}」に中身がない。何が書いてあるかを出す`);
-    if (visibleLength(h) > 40) add(SEV.info, 'heading-long', `見出しが ${visibleLength(h)} 字 (平均 18 字): ${h.slice(0, 24)}…`);
+    if (EMPTY_HEADINGS.includes(h)) add(SEV.info, 'heading-empty', `見出し「${h}」に中身がない。何が書いてあるかを出す`, h);
+    if (visibleLength(h) > 40) add(SEV.info, 'heading-long', `見出しが ${visibleLength(h)} 字 (平均 18 字): ${h.slice(0, 24)}…`, h.slice(0, 24));
   }
 
   // --- front matter (公開の準備) --------------------------------------------

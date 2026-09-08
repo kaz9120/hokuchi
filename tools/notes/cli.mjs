@@ -7,6 +7,7 @@
 //   hokuchi-note index                                      articles/note/README.md を作り直す
 //   hokuchi-note lint    [<原稿.md>...]                      原稿の文体を検査する
 //   hokuchi-note paste   <原稿.md> [--stdout]                原稿を note に貼れる形でクリップボードへ
+//   hokuchi-note serve   <原稿dir|index.md> [--port <n>]     原稿をブラウザで見せ、フィードバックを受ける
 //
 // npm link (tools/notes で一度実行) で hokuchi-note コマンドとして使う。
 
@@ -20,6 +21,7 @@ import { buildArticle, articleIndex, listArticleDirs, readSource, SOURCE, INDEX 
 import { lintDraft, draftStats } from './src/lint.mjs';
 import { verifyArticle } from './src/verify.mjs';
 import { toPasteText } from './src/paste.mjs';
+import { serve, resolveDraft, FEEDBACK } from './src/serve.mjs';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const DEFAULT_ROOT = path.join(REPO_ROOT, 'articles/note');
@@ -38,19 +40,21 @@ usage:
   hokuchi-note verify [<記事ディレクトリ>...]
   hokuchi-note lint   [<原稿.md>...]        note の原稿を文体で検査する
   hokuchi-note paste  <原稿.md> [--stdout]  原稿を note に貼れる形でクリップボードに入れる
+  hokuchi-note serve  <原稿dir|index.md> [--port <n>]  原稿をブラウザで見せ、コメントを feedback.md に受ける
   hokuchi-note index  [--root <dir>]
 `);
   process.exit(code);
 }
 
 function parseArgs(argv) {
-  const opts = { root: DEFAULT_ROOT, user: DEFAULT_USER, only: null, stdout: false, rest: [] };
+  const opts = { root: DEFAULT_ROOT, user: DEFAULT_USER, only: null, stdout: false, port: 4647, rest: [] };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--root') opts.root = path.resolve(argv[++i]);
     else if (a === '--user') opts.user = argv[++i];
     else if (a === '--only') opts.only = argv[++i];
     else if (a === '--stdout') opts.stdout = true;
+    else if (a === '--port') opts.port = Number(argv[++i]);
     else if (a.startsWith('-')) usage();
     else opts.rest.push(a);
   }
@@ -229,6 +233,21 @@ function cmdPaste(opts) {
   return copied;
 }
 
+// 原稿をブラウザで見せ、文を選んだコメントを feedback.md に受ける (ADR-0022)。
+// Claude は feedback.md を読んで原稿を直し、反映した節を消す。
+async function cmdServe(opts) {
+  if (opts.rest.length !== 1) usage();
+  const draft = resolveDraft(opts.rest[0]);
+  await serve(draft, opts.port);
+  out(
+    `serving ${path.relative(process.cwd(), draft)} -> http://localhost:${opts.port}/\n` +
+    `  文を選ぶと入力欄が出る。Enter で ${path.join(path.dirname(draft), FEEDBACK)} に追記\n` +
+    `  「ターミナルに貼る」で未反映のフィードバックがクリップボードに入る。原稿を書き換えると画面が追従する\n` +
+    `  止めるときは Ctrl-C (このプロセスが生きている間だけ画面が動く)`
+  );
+  if (process.platform === 'darwin') spawnSync('open', [`http://localhost:${opts.port}/`]);
+}
+
 function cmdIndex(opts) {
   const dirs = listArticleDirs(opts.root).reverse(); // 新しい順
   const rows = dirs.map((dir) => {
@@ -260,6 +279,7 @@ switch (cmd) {
   case 'verify': process.exit(cmdVerify(opts) ? 0 : 1); break;
   case 'lint': process.exit(cmdLint(opts) ? 0 : 1); break;
   case 'paste': process.exit(cmdPaste(opts) ? 0 : 1); break;
+  case 'serve': await cmdServe(opts); break;
   case 'index': cmdIndex(opts); break;
   default: usage();
 }

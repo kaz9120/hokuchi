@@ -19,6 +19,8 @@ import { toMarkdown } from '../src/markdown.mjs';
 import { verifyArticle } from '../src/verify.mjs';
 import { lintDraft } from '../src/lint.mjs';
 import { toPasteText } from '../src/paste.mjs';
+import { renderBody, inlineHtml } from '../src/render.mjs';
+import { appendFeedback, readFeedback, draftState, serve } from '../src/serve.mjs';
 import { listArticleDirs } from '../src/build.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -246,6 +248,69 @@ https://x.com/u/status/1
   assert.match(text, /^## 見出し\n\n本文 \*\*太字\*\*\n\n（画像 1/m, '見出し・強調・段落はそのまま');
   assert.match(text, /\nhttps:\/\/x\.com\/u\/status\/1\n$/, '埋め込みの URL 行はそのまま');
   ok('paste は画像行だけを置き換え、それ以外の本文を変えない');
+}
+
+// (6c) serve: 描画とフィードバックの往復 ------------------------------------
+{
+  assert.equal(inlineHtml('**太字** と *斜体* と `code` と [リンク](https://a.example/) と https://b.example/x'),
+    '<strong>太字</strong> と <em>斜体</em> と <code>code</code> と <a href="https://a.example/" target="_blank" rel="noopener">リンク</a> と ' +
+    '<a href="https://b.example/x" target="_blank" rel="noopener">https://b.example/x</a>');
+  assert.equal(inlineHtml('\\- 記法ではない \\*星\\* <tag>'), '- 記法ではない *星* &lt;tag&gt;');
+
+  const { html, blocks } = renderBody([
+    '## 見出し', '', '段落 1 行目  ', '2 行目', '', '![alt](assets/a.png)', '*キャプション*', '',
+    'https://x.com/u/status/1', '', '> 引用', '', '- 項目 1', '- 項目 2', '', '```', '## コードの中', '```', '', '---', '',
+  ].join('\n'));
+  assert.equal(blocks, 8);
+  assert.match(html, /<h2 data-block="0">見出し<\/h2>/);
+  assert.match(html, /<p data-block="1">段落 1 行目<br>\n2 行目<\/p>/);
+  assert.match(html, /<figure data-block="2"><img src="assets\/a.png" alt="alt"><figcaption>キャプション<\/figcaption><\/figure>/);
+  assert.match(html, /<a class="embed" data-block="3" href="https:\/\/x.com\/u\/status\/1"/);
+  assert.match(html, /<blockquote data-block="4"><p>引用<\/p><\/blockquote>/);
+  assert.match(html, /<ul data-block="5"><li>項目 1<\/li><li>項目 2<\/li><\/ul>/);
+  assert.match(html, /<pre data-block="6"><code>## コードの中<\/code><\/pre>/);
+  assert.match(html, /<hr data-block="7">/);
+  ok('render は原稿の記法を、ブロック番号付きの HTML にする');
+
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'hokuchi-serve-'));
+  const draft = path.join(dir, 'index.md');
+  fs.writeFileSync(draft, '---\ntitle: t\nhashtags:\n  - a\n---\n\n## 見出し\n\n本文です。圧倒的に良い。\n');
+  const fb = path.join(dir, 'feedback.md');
+  appendFeedback(fb, { quote: '本文です。', block: 1, heading: '見出し', comment: 'くどい\n具体を' });
+  appendFeedback(fb, { quote: '', block: '', heading: '', comment: '全体に長い' });
+  const entries = readFeedback(fb);
+  assert.equal(entries.length, 2);
+  assert.equal(entries[0].where, '段落 1 / 見出し「見出し」');
+  assert.equal(entries[0].quote, '本文です。');
+  assert.equal(entries[0].comment, 'くどい\n具体を');
+  assert.equal(entries[1].where, '全体');
+  assert.throws(() => appendFeedback(fb, { comment: '  ' }), /空/);
+
+  const s = draftState(draft);
+  assert.equal(s.title, 't');
+  assert.deepEqual(s.tags, ['a']);
+  assert.equal(s.feedback.length, 2);
+  assert.ok(s.lint.some((f) => f.id === 'high-calorie' && f.at === '圧倒的'), 'lint の指摘に位置の手掛かり (at) が付く');
+
+  // http の往復。port 0 で空きポートを取る
+  const server = await serve(dir, 0);
+  const base = `http://localhost:${server.address().port}`;
+  const page = await (await fetch(`${base}/`)).text();
+  assert.match(page, /<article id="article">/);
+  const st = await (await fetch(`${base}/__draft`)).json();
+  assert.equal(st.blocks, 2);
+  const posted = await (await fetch(`${base}/__feedback`, {
+    method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ quote: '良い', block: 1, heading: '見出し', comment: '断定しすぎ' }),
+  })).json();
+  assert.equal(posted.count, 3);
+  assert.equal((await (await fetch(`${base}/__paste`)).text()).trim(), '## 見出し\n\n本文です。圧倒的に良い。');
+  assert.equal((await (await fetch(`${base}/__clear`, { method: 'POST' })).json()).count, 0);
+  assert.equal(readFeedback(fb).length, 0, '全部消すと feedback.md が空になる');
+  assert.equal((await fetch(`${base}/../etc/passwd`)).status, 404);
+  server.close();
+  fs.rmSync(dir, { recursive: true, force: true });
+  ok('serve は原稿を配信し、コメントを feedback.md に追記する');
 }
 
 // (7) アーカイブ全体 ---------------------------------------------------------

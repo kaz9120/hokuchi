@@ -18,6 +18,7 @@ import { parseNote } from '../src/parse.mjs';
 import { toMarkdown } from '../src/markdown.mjs';
 import { verifyArticle } from '../src/verify.mjs';
 import { lintDraft } from '../src/lint.mjs';
+import { toPasteText } from '../src/paste.mjs';
 import { listArticleDirs } from '../src/build.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -215,6 +216,36 @@ hashtags:
   assert.deepEqual(goodFindings.filter((f) => f.severity !== 'info'), [],
     `研ぎ澄まされた原稿は warn を出さない: ${JSON.stringify(goodFindings)}`);
   ok('lint は AI 臭い原稿を捕まえ、研ぎ澄まされた原稿を通す');
+}
+
+// (6b) 貼り付け用の変換 ------------------------------------------------------
+{
+  const draft = `---
+title: t
+eyecatch: assets/eye.png
+---
+
+## 見出し
+
+本文 **太字**
+
+![](assets/a.png)
+*キャプション [元](https://example.com/src)*
+
+[![alt](assets/b.png)](https://example.com/dest)
+
+https://x.com/u/status/1
+`;
+  const { text, images, eyecatch } = toPasteText(draft);
+  assert.equal(eyecatch, 'assets/eye.png');
+  assert.equal(images.length, 2);
+  assert.ok(!text.includes('!['), '画像行を残さない');
+  assert.ok(!text.includes('---\ntitle'), 'front matter を落とす');
+  assert.match(text, /^（画像 1\/2: a\.png ｜ キャプション: キャプション 元 \(https:\/\/example\.com\/src\)）$/m);
+  assert.match(text, /^（画像 2\/2: b\.png ｜ リンク: https:\/\/example\.com\/dest）$/m);
+  assert.match(text, /^## 見出し\n\n本文 \*\*太字\*\*\n\n（画像 1/m, '見出し・強調・段落はそのまま');
+  assert.match(text, /\nhttps:\/\/x\.com\/u\/status\/1\n$/, '埋め込みの URL 行はそのまま');
+  ok('paste は画像行だけを置き換え、それ以外の本文を変えない');
 }
 
 // (7) アーカイブ全体 ---------------------------------------------------------

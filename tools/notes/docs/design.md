@@ -24,6 +24,7 @@ articles/note/
 | `hokuchi-note build [dir...]` | `source.json` から `index.md` を作り直す | 使わない |
 | `hokuchi-note verify [dir...]` | 取り込みの忠実さを検査する。欠落があれば終了コード 1 | 使わない |
 | `hokuchi-note lint [原稿.md...]` | 原稿の文体を検査する。引数を省くと公開済み記事全部 | 使わない |
+| `hokuchi-note paste <原稿.md>` | 原稿を note に貼れる形にしてクリップボードへ。`--stdout` で標準出力 | 使わない |
 | `hokuchi-note index` | `articles/note/README.md` を作り直す | 使わない |
 
 `tools/notes` で一度 `npm link` すると `hokuchi-note` として使える。`npm test` は変換規則の回帰テストとアーカイブ全体の検査を回す。
@@ -88,6 +89,16 @@ hokuchi-note lint                                        # 公開済み全部 (�
 ```
 
 濃いかどうか、フックが効いているかは lint では測れない。それは人が読んで決める。
+
+## note に貼る (paste)
+
+note のエディタは Markdown を貼ると見出しや強調を解釈するが、画像行 `![alt](path)` が 1 つでも混ざると本文全体が素のテキストとして入る (実測)。ローカルの画像はどのみち貼れないので、`paste` が画像行とキャプションを Markdown の意味を持たない 1 行に置き換え、残りはそのままクリップボードに入れる。
+
+```
+（画像 2/5: 1786852639-ul7tFTK5a1VrQbjECsSDOxwg.png ｜ キャプション: 増え続ける設定項目の画面設計）
+```
+
+あわせて画像の一覧を番号付きで出し、`assets/` を Finder で開く。note 側では、この行を消してその位置に画像を入れ、キャプションを付ける。原稿の側は `![alt](assets/…)` のままにする。プレビューで見えることと、`verify` が画像の並びと実体を検査することを保つためである (ADR-0021)。
 
 ## 記事を書き足したとき
 

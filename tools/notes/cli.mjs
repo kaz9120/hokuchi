@@ -5,17 +5,21 @@
 //   hokuchi-note build   [<記事ディレクトリ>...]             source.json から index.md を作り直す
 //   hokuchi-note verify  [<記事ディレクトリ>...]             取り込みの忠実さを検査する
 //   hokuchi-note index                                      articles/note/README.md を作り直す
+//   hokuchi-note lint    [<原稿.md>...]                      原稿の文体を検査する
+//   hokuchi-note paste   <原稿.md> [--stdout]                原稿を note に貼れる形でクリップボードへ
 //
 // npm link (tools/notes で一度実行) で hokuchi-note コマンドとして使う。
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { listNotes, fetchNote, freezeNote } from './src/api.mjs';
 import { downloadImage, downloadEyecatch } from './src/assets.mjs';
 import { buildArticle, articleIndex, listArticleDirs, readSource, SOURCE, INDEX } from './src/build.mjs';
 import { lintDraft, draftStats } from './src/lint.mjs';
 import { verifyArticle } from './src/verify.mjs';
+import { toPasteText } from './src/paste.mjs';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const DEFAULT_ROOT = path.join(REPO_ROOT, 'articles/note');
@@ -33,18 +37,20 @@ usage:
   hokuchi-note build  [<記事ディレクトリ>...]
   hokuchi-note verify [<記事ディレクトリ>...]
   hokuchi-note lint   [<原稿.md>...]        note の原稿を文体で検査する
+  hokuchi-note paste  <原稿.md> [--stdout]  原稿を note に貼れる形でクリップボードに入れる
   hokuchi-note index  [--root <dir>]
 `);
   process.exit(code);
 }
 
 function parseArgs(argv) {
-  const opts = { root: DEFAULT_ROOT, user: DEFAULT_USER, only: null, rest: [] };
+  const opts = { root: DEFAULT_ROOT, user: DEFAULT_USER, only: null, stdout: false, rest: [] };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--root') opts.root = path.resolve(argv[++i]);
     else if (a === '--user') opts.user = argv[++i];
     else if (a === '--only') opts.only = argv[++i];
+    else if (a === '--stdout') opts.stdout = true;
     else if (a.startsWith('-')) usage();
     else opts.rest.push(a);
   }
@@ -195,6 +201,34 @@ function cmdLint(opts) {
   return total.error === 0;
 }
 
+// 原稿を note のエディタに貼れる形にしてクリップボードへ。画像は note 側で
+// 入れるしかないので、番号付きの一覧を出し、assets/ を Finder で開く。
+function cmdPaste(opts) {
+  if (opts.rest.length !== 1) usage();
+  const file = path.resolve(opts.rest[0]);
+  const { text, images, eyecatch } = toPasteText(fs.readFileSync(file, 'utf8'));
+
+  if (opts.stdout) {
+    process.stdout.write(text);
+    return true;
+  }
+  const copied = spawnSync('pbcopy', { input: text }).status === 0;
+  out(copied ? `paste: ${path.basename(path.dirname(file))} の本文をクリップボードに入れました` :
+    'paste: pbcopy が使えません。--stdout で出力してください');
+
+  if (eyecatch) out(`  見出し画像: ${eyecatch}`);
+  for (const img of images) {
+    const extra = [img.caption && `キャプション: ${img.caption}`, img.link && `リンク: ${img.link}`].filter(Boolean);
+    out(`  画像 ${img.n}/${images.length}: ${img.file}${extra.length ? `  (${extra.join(' / ')})` : ''}`);
+  }
+  if (images.length || eyecatch) {
+    const assetsDir = path.join(path.dirname(file), 'assets');
+    if (fs.existsSync(assetsDir) && process.platform === 'darwin') spawnSync('open', [assetsDir]);
+    out('  本文の「（画像 n/N: …）」の行を消して、その位置に画像を入れてください');
+  }
+  return copied;
+}
+
 function cmdIndex(opts) {
   const dirs = listArticleDirs(opts.root).reverse(); // 新しい順
   const rows = dirs.map((dir) => {
@@ -225,6 +259,7 @@ switch (cmd) {
   case 'build': cmdBuild(opts); break;
   case 'verify': process.exit(cmdVerify(opts) ? 0 : 1); break;
   case 'lint': process.exit(cmdLint(opts) ? 0 : 1); break;
+  case 'paste': process.exit(cmdPaste(opts) ? 0 : 1); break;
   case 'index': cmdIndex(opts); break;
   default: usage();
 }

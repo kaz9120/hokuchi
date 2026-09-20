@@ -1,0 +1,37 @@
+{
+  "skill_name": "writing-note",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "7月の ROSCA 勉強会で話した「AI時代のエンジニア生存戦略」を note にしたいです。素材は talks/2026-07-ai-survival/deck.yaml で、notes に話した内容がほぼ入っています。スタンダードくらいの長さでお願いします。",
+      "expected_output": "articles 相当の index.md。芯の 1 文があり、密の場面が 1 つ立っていて、背景や一般論は短く通過している",
+      "files": [
+        "talks/2026-07-ai-survival/deck.yaml"
+      ],
+      "assertions": [
+        "骨組みの各ブロックに密か粗かの割り振りが明記されている (decisions.md または骨組み)",
+        "見出しごとの字数で、最大のブロックが本文の 30% 以上を占める (山が 1 つ見える)",
+        "密の場所に、素材由来の固有名詞・数字・発言が 5 つ以上入っている",
+        "冒頭の段落が 60 字以内で、背景説明や記事の説明から始まっていない",
+        "node tools/notes/cli.mjs lint の error が 0",
+        "素材 (deck.yaml) にない体験・発言・数字を捏造していない"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Fable 5 meetup の LT (talks/2026-08-fable5-meetup/deck.yaml) を note の記事にまとめたいです。10 人に聞いた話なので、聞いてきた立場で書きたいです。",
+      "expected_output": "index.md。10 人分を均等に並べず、いちばん効く声か数字を 1 つ密にしている",
+      "files": [
+        "talks/2026-08-fable5-meetup/deck.yaml"
+      ],
+      "assertions": [
+        "骨組みの各ブロックに密か粗かの割り振りが明記されている (decisions.md または骨組み)",
+        "見出しごとの字数で、最大のブロックが本文の 30% 以上を占める (山が 1 つ見える)",
+        "密の場所に、素材由来の固有名詞・数字・発言が 5 つ以上入っている",
+        "冒頭の段落が 60 字以内で、背景説明や記事の説明から始まっていない",
+        "node tools/notes/cli.mjs lint の error が 0",
+        "素材 (deck.yaml) にない体験・発言・数字を捏造していない"
+      ]
+    }
+  ]
+}

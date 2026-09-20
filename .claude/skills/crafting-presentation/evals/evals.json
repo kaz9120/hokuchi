@@ -1,0 +1,38 @@
+{
+  "skill_name": "crafting-presentation",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "来月の社内 LT 会 (MOSH として、10 分) で、note に書いた「ドキュメントは、AI に渡す前に作り直す」の話をします。articles/note/2026-08-23-rewrite-docs-for-ai を元にスライドを作ってください。聴衆は MOSH のエンジニアで、Claude Code は全員が日常的に使っています。",
+      "expected_output": "deck.yaml と描画結果。山 (実物に留まる場所) が 1〜2 つあり、1 語の粗スライドで間をつないでいる",
+      "files": [
+        "articles/note/2026-08-23-rewrite-docs-for-ai/index.md"
+      ],
+      "assertions": [
+        "wave.mjs で山が 1 つ以上ある",
+        "wave.mjs で中間帯 (20〜40 秒) が content の 6 割以下",
+        "10 秒以下の粗スライドが 3 枚以上ある",
+        "山のスライドに実物 (image / code / post / chart / diagram / quote) がある",
+        "hokuchi lint の error が 0",
+        "notes の秒数の合計が持ち時間の ±15% に収まる"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "将棋 AI を Claude Code と作り直している話で 5 分 LT をやります。個人としての登壇です。素材は articles/note/2026-07-19-restart-computer-shogi と articles/note/2026-08-09-ai-builds-shogi-ai。聴衆は AI 駆動開発の勉強会に来るエンジニアです。",
+      "expected_output": "deck.yaml と描画結果。5 分で山が 1 つ、残りは粗で走っている",
+      "files": [
+        "articles/note/2026-07-19-restart-computer-shogi/index.md",
+        "articles/note/2026-08-09-ai-builds-shogi-ai/index.md"
+      ],
+      "assertions": [
+        "wave.mjs で山が 1 つ以上ある",
+        "wave.mjs で中間帯 (20〜40 秒) が content の 6 割以下",
+        "10 秒以下の粗スライドが 3 枚以上ある",
+        "山のスライドに実物 (image / code / post / chart / diagram / quote) がある",
+        "hokuchi lint の error が 0",
+        "notes の秒数の合計が持ち時間の ±15% に収まる"
+      ]
+    }
+  ]
+}

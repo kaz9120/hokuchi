@@ -1,0 +1,119 @@
+{
+  "id": 179716870,
+  "key": "naee0fa8d73ee",
+  "slug": "slug-naee0fa8d73ee",
+  "type": "TextNote",
+  "status": "published",
+  "format": "4.0",
+  "name": "「好き」を語り合ったMOSH Tech Meetup #5",
+  "description": "",
+  "body": "<p name=\"2176cc9a-3fd4-4e7f-913e-cbc657679770\" id=\"2176cc9a-3fd4-4e7f-913e-cbc657679770\">4ヶ月ぶりの開催となった MOSH Tech Meetup は、過去一番の盛り上がりだったかもしれません。発表枠は増枠しても8枠すべて埋まり、参加もほぼ満席でした。</p><figure name=\"810361ad-bcf4-4abb-99ac-5bba50387516\" id=\"810361ad-bcf4-4abb-99ac-5bba50387516\" data-src=\"https://mosh.connpass.com/event/400858/\" data-identifier=\"null\" embedded-service=\"external-article\" embedded-content-key=\"emb3c77e7612607\"> \n<a href=\"https://mosh.connpass.com/event/400858/\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong>\n[発表枠増枠]MOSH Tech Meetup #5 あなたが「好きなこと」× エンジニアリング (2026/09/09 19:30〜)\n</strong>\n<em>\n## MOSH Tech Meetup #5 あなたが「好きなこと」× エンジニアリング  MOSH Tech Meetu\n</em>\n<em>\nmosh.connpass.com\n</em>\n</a><a href=\"https://mosh.connpass.com/event/400858/\" rel=\"nofollow noopener\" target=\"_blank\"></a>\n\n \n</figure><p name=\"b4d19e44-9da7-4d66-a3dc-12f71f9f9ad9\" id=\"b4d19e44-9da7-4d66-a3dc-12f71f9f9ad9\">企画から当日の司会まで頑張ってくれたのはスーさん（<a href=\"https://x.com/suguru_ohki\" target=\"_blank\" rel=\"nofollow noopener\">@suguru_ohki</a>）で、私は本当に当日の受付くらいしかしていません。</p><p name=\"ffa176d4-e92a-4db9-b662-1566f380d005\" id=\"ffa176d4-e92a-4db9-b662-1566f380d005\">ただ、一緒に技術広報をする仲間として本当に素敵なイベントだったなと思い、あくまで個人の感想として記事を書きます。</p><h2 name=\"45f86e6d-a9ba-4395-85fd-11595574f54d\" id=\"45f86e6d-a9ba-4395-85fd-11595574f54d\">会社紹介に違和感を感じていた</h2><p name=\"1cfc97c6-a66a-4548-bb3f-8c48691de565\" id=\"1cfc97c6-a66a-4548-bb3f-8c48691de565\">MOSH がどんな会社だか説明する時に、プロダクトや技術スタックを紹介するのが基本かなと思います。</p><p name=\"66f3987d-c3e6-4e19-a212-ee3385247dc5\" id=\"66f3987d-c3e6-4e19-a212-ee3385247dc5\">ただ、MOSH においてはそんなつまらない説明は嫌だなとずっと思っていました。</p><p name=\"fb5a3870-a51f-4309-ad95-1423abb3f1c6\" id=\"fb5a3870-a51f-4309-ad95-1423abb3f1c6\">MOSH は「情熱がめぐる経済をつくる」をミッションに、個人が自身の「好き」や専門性、情熱を活かしたサービスをファンや受講者に直接届けて収益を得られる経済圏の実現を目指す会社です。</p><p name=\"7f7e7109-5074-479e-b1d8-62f43714f86c\" id=\"7f7e7109-5074-479e-b1d8-62f43714f86c\">実現方法の話より先に、この面白さを伝えたいと思っていました。</p><h2 name=\"086e0b19-06bc-42c3-a052-46d392cd23b1\" id=\"086e0b19-06bc-42c3-a052-46d392cd23b1\">「好きなこと」× エンジニアリングを話す会</h2><p name=\"ace91eba-657e-4022-b5fc-ee2b4fa0df7b\" id=\"ace91eba-657e-4022-b5fc-ee2b4fa0df7b\">そんな中企画された今回の MOSH Tech Meetup は、まさに MOSH の魅力を届けるのにぴったりなテーマだと感じました。</p><p name=\"b15b0ac8-1ed6-428c-9835-18518dbd9cdd\" id=\"b15b0ac8-1ed6-428c-9835-18518dbd9cdd\">今回は以下の8名の方にご登壇いただきました。資料が出ているものはリンクしています。</p><figure name=\"16cbcd0e-1477-4227-a361-96f84ee1b15e\" id=\"16cbcd0e-1477-4227-a361-96f84ee1b15e\"><img src=\"https://assets.st-note.com/img/1789170930-Vulv1XMEqztx5DBwR8bZsSf9.png\" alt=\"\" width=\"620\" height=\"349\"><figcaption></figcaption></figure><ul name=\"ea02a728-5c04-4581-86ba-d160e6fa7932\" id=\"ea02a728-5c04-4581-86ba-d160e6fa7932\"><li><p name=\"a5a7da86-a57a-476e-9667-7de5e69d502a\" id=\"a5a7da86-a57a-476e-9667-7de5e69d502a\">Kaitou さん「AI時代にこそ学ぶべきアンドリュー・ワイエス」</p></li><li><p name=\"da418eeb-a9bd-4b8e-89f2-d86d5c4bf121\" id=\"da418eeb-a9bd-4b8e-89f2-d86d5c4bf121\">masuipeo さん「フォルダのない世界へようこそ」</p></li></ul><figure name=\"0b0fdc4b-30f7-43cb-86f0-79830f52f2be\" id=\"0b0fdc4b-30f7-43cb-86f0-79830f52f2be\" data-src=\"https://www.docswell.com/s/masuipeo/KVJ2GE-2026-09-09\" data-identifier=\"null\" embedded-service=\"oembed\" embedded-content-key=\"embaea523df4629\"> \n \n \n\n \n \n \n<a href=\"https://www.docswell.com/\" target=\"_blank\" rel=\"nofollow noopener\">\nwww.docswell.com\n</a>\n \n \n</figure><ul name=\"3883b56d-9f5f-45d8-a2a7-90bc0eaecc60\" id=\"3883b56d-9f5f-45d8-a2a7-90bc0eaecc60\"><li><p name=\"3b076525-d383-4c05-9418-c76505129b5d\" id=\"3b076525-d383-4c05-9418-c76505129b5d\">ぶりお さん「大好きなアレをMCPにしてみた」</p></li></ul><figure name=\"d83a0f96-a1be-4ae4-b66d-83ca1442584d\" id=\"d83a0f96-a1be-4ae4-b66d-83ca1442584d\" data-src=\"https://slide.burio16.com/my-favorite-thing\" data-identifier=\"null\" embedded-service=\"external-article\" embedded-content-key=\"emb075de162a3c4\"> \n<a href=\"https://slide.burio16.com/my-favorite-thing\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong>\n大好きなアレをMCPにしてみた\n</strong>\n<em>\nMOSH Tech Meetup #5 あなたが「好きなこと」× エンジニアリング での発表資料 by ぶりお @buri\n</em>\n<em>\nslide.burio16.com\n</em>\n</a><a href=\"https://slide.burio16.com/my-favorite-thing\" rel=\"nofollow noopener\" target=\"_blank\"></a>\n\n \n</figure><ul name=\"dbe52518-4110-4b8c-82ff-3446811ac35f\" id=\"dbe52518-4110-4b8c-82ff-3446811ac35f\"><li><p name=\"96066be4-1e5d-47b9-94b4-ae88c5e41996\" id=\"96066be4-1e5d-47b9-94b4-ae88c5e41996\">もずます さん「CLIオタクのキーボード事情」</p></li></ul><figure name=\"5b1c5960-015d-4b6d-a2f4-b984b108e514\" id=\"5b1c5960-015d-4b6d-a2f4-b984b108e514\" data-src=\"https://talks.mozumasu.com/terminal-keyboard/\" data-identifier=\"null\" embedded-service=\"external-article\" embedded-content-key=\"embcbfcfaf9c6dd\"> \n<a href=\"https://talks.mozumasu.com/terminal-keyboard/\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong>\nCLIオタクのキーボード事情\n</strong>\n<em>\nMOSH Tech Meetup 2026.9.9 の登壇資料\n</em>\n<em>\ntalks.mozumasu.com\n</em>\n</a><a href=\"https://talks.mozumasu.com/terminal-keyboard/\" rel=\"nofollow noopener\" target=\"_blank\"></a>\n\n \n</figure><ul name=\"faab75bb-6eaa-4ee5-82b7-28bff1a45919\" id=\"faab75bb-6eaa-4ee5-82b7-28bff1a45919\"><li><p name=\"44cd8470-b214-4ee3-97ef-3c432adbeb7a\" id=\"44cd8470-b214-4ee3-97ef-3c432adbeb7a\">モブエンジニア さん「物理もいいけど仮想もね 〜SD-WANの推しポイント〜」</p></li></ul><figure name=\"546cdd7b-d58f-4312-a6fd-8f68f2bfb37f\" id=\"546cdd7b-d58f-4312-a6fd-8f68f2bfb37f\" data-src=\"https://speakerdeck.com/masakiokuda/physical-is-great-but-so-is-virtual-key-selling-points-of-sd-wan\" data-identifier=\"null\" embedded-service=\"speakerdeck\" embedded-content-key=\"emb4a00277470c6\">  </figure><ul name=\"c7aff2ca-d431-4cc1-b75f-4784164a8e4c\" id=\"c7aff2ca-d431-4cc1-b75f-4784164a8e4c\"><li><p name=\"e88f38a2-640a-49bd-8ec4-c9f05833672d\" id=\"e88f38a2-640a-49bd-8ec4-c9f05833672d\">honyanya さん「AIでとっ散らかったmacOS環境をAnsibleでお片付け」</p></li></ul><figure name=\"f307655d-2467-496b-9819-a7ac54a4867a\" id=\"f307655d-2467-496b-9819-a7ac54a4867a\" data-src=\"https://speakerdeck.com/honyanya/automating-macos-cleanup-with-ansible-and-ai\" data-identifier=\"null\" embedded-service=\"speakerdeck\" embedded-content-key=\"emb791061b9dfca\">  </figure><ul name=\"6498e6a5-dd70-457b-b58f-ddb9da410772\" id=\"6498e6a5-dd70-457b-b58f-ddb9da410772\"><li><p name=\"777045ec-4759-4c85-8ddb-607d8fa37e30\" id=\"777045ec-4759-4c85-8ddb-607d8fa37e30\">TinyKitten さん「個人開発基盤をまるごとCloudflareに引っ越して爆速で総合的体験を向上させた話」</p></li></ul><figure name=\"fb5b4720-58f6-4ea8-b8d7-04c643db18c5\" id=\"fb5b4720-58f6-4ea8-b8d7-04c643db18c5\" data-src=\"https://speakerdeck.com/tinykitten/kojin-kaihatsu-kiban-o-marugoto-cloudflare-ni-hikkoshi-te-de-sougouteki-taiken-o-koujou-saseta-hanashi\" data-identifier=\"null\" embedded-service=\"speakerdeck\" embedded-content-key=\"emba97b7d9dd834\">  </figure><ul name=\"9d6e439c-6334-41f8-9c4a-391df2609ffe\" id=\"9d6e439c-6334-41f8-9c4a-391df2609ffe\"><li><p name=\"d439436e-d0c0-4d0a-bdef-aa9638579f54\" id=\"d439436e-d0c0-4d0a-bdef-aa9638579f54\">Wonder さん「マフィアを目指そう※超健全」</p></li></ul><figure name=\"5067ac86-299f-4eef-b1f7-3c051cab2f6c\" id=\"5067ac86-299f-4eef-b1f7-3c051cab2f6c\" data-src=\"https://speakerdeck.com/iwonder118/mafia-o-mezasou-choukenzen\" data-identifier=\"null\" embedded-service=\"speakerdeck\" embedded-content-key=\"emba65eb7d67128\">  </figure><p name=\"697e6fbf-6788-4b17-9597-e404801ee0c4\" id=\"697e6fbf-6788-4b17-9597-e404801ee0c4\">画家、フォルダ、タコス、キーボード、SD-WAN、Ansible、個人開発、マフィア。並びだけ見ると無秩序ですが、「好きを本気で語っている」点では全部同じでした。皆さま本当に情熱を持ってお話しされていて、きっちり時間は守りながらも濃密で面白いお話でした。</p><p name=\"4800d7f2-2fe4-463d-b6d7-9b842d94fc49\" id=\"4800d7f2-2fe4-463d-b6d7-9b842d94fc49\">こういった「好き」や情熱を支えるのが MOSH のミッションです。このような場を提供できてよかったと感じました。</p><p name=\"2b8892f8-e1ea-42d2-92af-fe427799026e\" id=\"2b8892f8-e1ea-42d2-92af-fe427799026e\">当日の様子は <a href=\"https://x.com/search?q=%23MOSHTech\" target=\"_blank\" rel=\"nofollow noopener\">#MOSHTech</a> にも残っています。</p><p name=\"1632860e-66c1-4f79-85fb-f90abc666361\" id=\"1632860e-66c1-4f79-85fb-f90abc666361\">懇親会もずっと盛り上がっていました。発表の続きがそのまま会話になっていて、トークテーマが多すぎて全然話し足りなかったくらいです。受付側から見ていちばんうれしかったのは、「次は自分も話したい」という声が場の中から出ていたことでした。🙏</p><h2 name=\"c04c22f9-c210-41a9-8a2f-86d43a375114\" id=\"c04c22f9-c210-41a9-8a2f-86d43a375114\">次回の予定</h2><p name=\"0ce9335a-7c4a-4879-92e2-51275b906348\" id=\"0ce9335a-7c4a-4879-92e2-51275b906348\">次回も、似たようなテーマでの開催を予定しております。確定ではないですが、11/25 (水) で計画しています。</p><p name=\"aa2a3a13-37fa-4469-a7f1-2b35352bcfd7\" id=\"aa2a3a13-37fa-4469-a7f1-2b35352bcfd7\">今度はもっと登壇枠を増やして、よりたくさんの「好き」に触れられる時間にしたいです。そして私も、焚き火を愛するエンジニアとして発表したい！！</p><p name=\"202780a8-1acc-4e64-b040-1646248d1460\" id=\"202780a8-1acc-4e64-b040-1646248d1460\">また、イベントページを公開したら宣伝するのでお待ちください〜🙌</p>",
+  "separator": null,
+  "publish_at": "2026-09-12T09:25:49.000+09:00",
+  "created_at": "2026-09-11T19:23:55.000+09:00",
+  "note_url": "https://note.com/kyamamoto9120/n/naee0fa8d73ee",
+  "price": 0,
+  "is_limited": false,
+  "is_trial": false,
+  "eyecatch": "https://assets.st-note.com/production/uploads/images/312634549/rectangle_large_type_2_baeddff58c69092e0414881e4a89e157.png?fit=bounds&quality=85&width=1280",
+  "eyecatch_alt": "見出し画像",
+  "eyecatch_width": 660,
+  "eyecatch_height": 345,
+  "hashtags": [
+    "#エンジニア",
+    "#勉強会",
+    "#イベントレポート",
+    "#MOSHTech"
+  ],
+  "pictures": [
+    {
+      "caption": null,
+      "key": "1789170930-Vulv1XMEqztx5DBwR8bZsSf9",
+      "url": "https://assets.st-note.com/img/1789170930-Vulv1XMEqztx5DBwR8bZsSf9.png",
+      "thumbnail_url": "https://assets.st-note.com/img/1789170930-Vulv1XMEqztx5DBwR8bZsSf9.png",
+      "alt": "画像1",
+      "width": null,
+      "height": null,
+      "index": 0
+    }
+  ],
+  "embedded_contents": [
+    {
+      "key": "emb3c77e7612607",
+      "url": "https://mosh.connpass.com/event/400858/",
+      "service": "external-article",
+      "identifier": null,
+      "caption": null,
+      "html_for_embed": "<span><div class=\"external-article-widget\">\n<a href=\"https://mosh.connpass.com/event/400858/\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong class=\"external-article-widget-title\">\n[発表枠増枠]MOSH Tech Meetup #5 あなたが「好きなこと」× エンジニアリング (2026/09/09 19:30〜)\n</strong>\n<em class=\"external-article-widget-description\">\n## MOSH Tech Meetup #5 あなたが「好きなこと」× エンジニアリング  MOSH Tech Meetu\n</em>\n<em class=\"external-article-widget-url\">\nmosh.connpass.com\n</em>\n</a><a class=\"external-article-widget-image\" href=\"https://mosh.connpass.com/event/400858/\" rel=\"nofollow noopener\" style=\"background-image: url('https://assets.st-note.com/production/uploads/ext/7744616e37c34294d7b0d510d5d38ea4a08fbf1e1b1fd3fd590c005eae81.png?x-type=ogp');\" target=\"_blank\"></a>\n\n</div>\n</span>",
+      "html_for_display": null
+    },
+    {
+      "key": "embaea523df4629",
+      "url": "https://www.docswell.com/s/masuipeo/KVJ2GE-2026-09-09",
+      "service": "oembed",
+      "identifier": null,
+      "caption": null,
+      "html_for_embed": "<span><div class=\"fude-iframe-oembed-widget\" style=\"width: 100%;\">\n<div class=\"fude-iframe-oembed-widget__wrap\" style=\"padding-bottom: 56%;\">\n<div class=\"fude-iframe-oembed-widget__inner\">\n<iframe allow=\"clipboard-write\" allowtransparency=\"true\" class=\"fude-iframe-oembed-widget__iframe\" frameborder=\"0\" scrolling=\"no\" src=\"https://www.docswell.com/slide/KVJ2GE/embed\"></iframe>\n</div>\n</div>\n<div class=\"fude-iframe-oembed-widget__domain\">\n<a class=\"fude-iframe-oembed-widget__link\" href=\"https://www.docswell.com/\" target=\"_blank\">\nwww.docswell.com\n</a>\n</div>\n</div>\n</span>",
+      "html_for_display": null
+    },
+    {
+      "key": "emb075de162a3c4",
+      "url": "https://slide.burio16.com/my-favorite-thing",
+      "service": "external-article",
+      "identifier": null,
+      "caption": null,
+      "html_for_embed": "<span><div class=\"external-article-widget\">\n<a href=\"https://slide.burio16.com/my-favorite-thing\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong class=\"external-article-widget-title\">\n大好きなアレをMCPにしてみた\n</strong>\n<em class=\"external-article-widget-description\">\nMOSH Tech Meetup #5 あなたが「好きなこと」× エンジニアリング での発表資料 by ぶりお @buri\n</em>\n<em class=\"external-article-widget-url\">\nslide.burio16.com\n</em>\n</a><a class=\"external-article-widget-image\" href=\"https://slide.burio16.com/my-favorite-thing\" rel=\"nofollow noopener\" style=\"background-image: url('https://assets.st-note.com/production/uploads/ext/d8b283a4cbe7da2874a6b2424700a6b2b8b0d1ebdf9ac2901a4abd49ff86.png?x-type=ogp');\" target=\"_blank\"></a>\n\n</div>\n</span>",
+      "html_for_display": null
+    },
+    {
+      "key": "embcbfcfaf9c6dd",
+      "url": "https://talks.mozumasu.com/terminal-keyboard/",
+      "service": "external-article",
+      "identifier": null,
+      "caption": null,
+      "html_for_embed": "<span><div class=\"external-article-widget\">\n<a href=\"https://talks.mozumasu.com/terminal-keyboard/\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong class=\"external-article-widget-title\">\nCLIオタクのキーボード事情\n</strong>\n<em class=\"external-article-widget-description\">\nMOSH Tech Meetup 2026.9.9 の登壇資料\n</em>\n<em class=\"external-article-widget-url\">\ntalks.mozumasu.com\n</em>\n</a><a class=\"external-article-widget-image\" href=\"https://talks.mozumasu.com/terminal-keyboard/\" rel=\"nofollow noopener\" style=\"background-image: url('https://assets.st-note.com/production/uploads/ext/05df821d0a0a3dc7f2a280e3663f18d9933ef6e1adef1f2621f71b135ebc.png?x-type=ogp');\" target=\"_blank\"></a>\n\n</div>\n</span>",
+      "html_for_display": null
+    },
+    {
+      "key": "emb4a00277470c6",
+      "url": "https://speakerdeck.com/masakiokuda/physical-is-great-but-so-is-virtual-key-selling-points-of-sd-wan",
+      "service": "speakerdeck",
+      "identifier": null,
+      "caption": null,
+      "html_for_embed": "<span><div style=\"left: 0; width: 100%; height: 0; position: relative; padding-bottom: 70.7042%;\"><iframe src=\"https://speakerdeck.com/player/c0fdb878a8da41dab3ac52c762479eeb\" style=\"top: 0; left: 0; width: 100%; height: 100%; position: absolute; border: 0;\" allowfullscreen scrolling=\"no\"></iframe></div></span>",
+      "html_for_display": null
+    },
+    {
+      "key": "emb791061b9dfca",
+      "url": "https://speakerdeck.com/honyanya/automating-macos-cleanup-with-ansible-and-ai",
+      "service": "speakerdeck",
+      "identifier": null,
+      "caption": null,
+      "html_for_embed": "<span><div style=\"left: 0; width: 100%; height: 0; position: relative; padding-bottom: 56.1972%;\"><iframe src=\"https://speakerdeck.com/player/2cbc6b2de8c14b0f80e96e1b9888b631\" style=\"top: 0; left: 0; width: 100%; height: 100%; position: absolute; border: 0;\" allowfullscreen scrolling=\"no\"></iframe></div></span>",
+      "html_for_display": null
+    },
+    {
+      "key": "emba97b7d9dd834",
+      "url": "https://speakerdeck.com/tinykitten/kojin-kaihatsu-kiban-o-marugoto-cloudflare-ni-hikkoshi-te-de-sougouteki-taiken-o-koujou-saseta-hanashi",
+      "service": "speakerdeck",
+      "identifier": null,
+      "caption": null,
+      "html_for_embed": "<span><div style=\"left: 0; width: 100%; height: 0; position: relative; padding-bottom: 56.1972%;\"><iframe src=\"https://speakerdeck.com/player/db05663ff8dd4f5c9ddc05bd39abdf2b\" style=\"top: 0; left: 0; width: 100%; height: 100%; position: absolute; border: 0;\" allowfullscreen scrolling=\"no\"></iframe></div></span>",
+      "html_for_display": null
+    },
+    {
+      "key": "emba65eb7d67128",
+      "url": "https://speakerdeck.com/iwonder118/mafia-o-mezasou-choukenzen",
+      "service": "speakerdeck",
+      "identifier": null,
+      "caption": null,
+      "html_for_embed": "<span><div style=\"left: 0; width: 100%; height: 0; position: relative; padding-bottom: 56.1972%;\"><iframe src=\"https://speakerdeck.com/player/21f9b09ba57a44cba5906e2f1d77b0b4\" style=\"top: 0; left: 0; width: 100%; height: 100%; position: absolute; border: 0;\" allowfullscreen scrolling=\"no\"></iframe></div></span>",
+      "html_for_display": null
+    }
+  ],
+  "user": {
+    "urlname": "kyamamoto9120",
+    "nickname": "山本一将｜焚き火を愛するエンジニア"
+  },
+  "_fetched_at": "2026-09-20T02:33:34.117Z"
+}

@@ -4,10 +4,11 @@
 読む用の Markdown (`index.md`) の 2 層でアーカイブしています。取り込みと検査は
 `tools/notes` の `hokuchi-note` が行います。詳しくは [ADR-0019](../../docs/adr/0019-note-archive-two-layer.md)。
 
-全 46 本。
+全 47 本。
 
 | 公開日 | タイトル | 原文 |
 |---|---|---|
+| 2026-09-20 | [「名作に墨汁をぶっかけた」 50代・木村一基九段に学ぶ、AI時代の生き方](2026-09-20-ink-on-a-masterpiece/) | [note](https://note.com/kyamamoto9120/n/n17aad592b35a) |
 | 2026-09-12 | [「好き」を語り合ったMOSH Tech Meetup #5](2026-09-12-mosh-tech-meetup-5/) | [note](https://note.com/kyamamoto9120/n/naee0fa8d73ee) |
 | 2026-09-06 | [飲食目的での勉強会参加について](2026-09-06-not-the-free-food/) | [note](https://note.com/kyamamoto9120/n/nc7c5a7c5bf19) |
 | 2026-08-30 | [2026年8月の活動振り返り](2026-08-30-monthly-review/) | [note](https://note.com/kyamamoto9120/n/n939ade14dfb8) |

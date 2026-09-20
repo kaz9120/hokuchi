@@ -70,3 +70,4 @@ hokuchi における意思決定の記録。決定に至る過程（選択肢・
 | [0020](0020-note-writing-skill-and-style-lint.md) | note の執筆はスキルで進め、文体の規範は実測から引いて lint に落とす | 承認 | リポジトリ全体 / tools/notes |
 | [0021](0021-note-markdown-paste-ready.md) | note アーカイブの index.md は note のエディタにそのまま貼れる Markdown にする | 承認 | リポジトリ全体 / tools/notes |
 | [0022](0022-note-serve-feedback-loop.md) | note の原稿レビューは serve のフィードバックループで回す | 承認 | tools/notes |
+| [0023](0023-somitsu-as-design-target.md) | 粗密を構成の設計対象にし、スキルで山を先に決める | 承認 | リポジトリ全体 (skills) |

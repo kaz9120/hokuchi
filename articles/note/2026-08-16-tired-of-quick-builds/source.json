@@ -85,7 +85,7 @@
       "service": "external-article",
       "identifier": null,
       "caption": null,
-      "html_for_embed": "<span><div class=\"external-article-widget\">\n<a href=\"https://yamanote-west.connpass.com/event/399789/\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong class=\"external-article-widget-title\">\n山手ウエスト #1 「AI開発、最近どうですか？」@新宿 (2026/08/25 19:30〜)\n</strong>\n<em class=\"external-article-widget-description\">\n## 山手ウエストとは  都内のエンジニア勉強会は、日本橋や品川など23区の「東側」での開催が多め。  「山手ウエスト」は\n</em>\n<em class=\"external-article-widget-url\">\nyamanote-west.connpass.com\n</em>\n</a><a class=\"external-article-widget-image\" href=\"https://yamanote-west.connpass.com/event/399789/\" rel=\"nofollow noopener\" style=\"background-image: url('https://assets.st-note.com/production/uploads/ext/cb08ceb935c3f919d055fb1c90da1b21f020b4d1d3825befb70be71319eb.png?x-type=ogp');\" target=\"_blank\"></a>\n\n</div>\n</span>",
+      "html_for_embed": "<span><div class=\"external-article-widget\">\n<a href=\"https://yamanote-west.connpass.com/event/399789/\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong class=\"external-article-widget-title\">\n山手ウエスト #1 「AI開発、最近どうですか？」@新宿 (2026/08/25 19:30〜)\n</strong>\n<em class=\"external-article-widget-description\">\n## 山手ウエストとは  都内のエンジニア勉強会は、日本橋や品川など23区の「東側」での開催が多め。  「山手ウエスト」は\n</em>\n<em class=\"external-article-widget-url\">\nyamanote-west.connpass.com\n</em>\n</a><a class=\"external-article-widget-image\" href=\"https://yamanote-west.connpass.com/event/399789/\" rel=\"nofollow noopener\" style=\"background-image: url('https://assets.st-note.com/production/uploads/ext/d45b8b052918a3890043a10a2e2e91686165cd56de67c5d54b07a5733f2a.png?x-type=ogp');\" target=\"_blank\"></a>\n\n</div>\n</span>",
       "html_for_display": null
     }
   ],
@@ -93,5 +93,5 @@
     "urlname": "kyamamoto9120",
     "nickname": "山本一将｜焚き火を愛するエンジニア"
   },
-  "_fetched_at": "2026-08-31T01:40:39.113Z"
+  "_fetched_at": "2026-09-20T04:25:25.629Z"
 }

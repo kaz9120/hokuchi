@@ -21,7 +21,7 @@
 
 | 用語 | 定義 |
 |------|------|
-| deck | 1 つのプレゼンテーション全体。`title`・`audience`・`scales`・`theme` 参照・`slides` を持つ (第 3 章) |
+| deck | 1 つのプレゼンテーション全体。`title`・`message`・`audience`・`scales`・`theme` 参照・`slides` を持つ (第 3 章) |
 | theme | デッキが参照する共有基盤。色・書体・グリッド・タイプスケールを名前付きスロットに固定する (第 2 章、ADR-0003) |
 | slide | 1 枚のスライド。1 枚 = 1 アイデア (`idea`) を守る (第 4 章、p.109) |
 | element | スライドを構成する要素。15 種 (statement / bullets / image / diagram / chart / quote / code / post / link / stat / table / versus / agenda / video / raw、第 6 章) |
@@ -48,7 +48,7 @@ theme.yaml   # schema/theme.schema.json で検証する
 - MINOR — 後方互換の追加 (任意フィールドの追加、enum への値追加)
 - PATCH — 仕様の明確化。スキーマの受理集合は変えない
 
-スキーマを進化させるときは、本書末尾の「付録 A: マイグレーションノート」に変更点を追記します。現行版は deck スキーマが `0.2.0` (image-stage と overlap の shared、ADR-0015)、theme スキーマが `0.3.0` (stage_margin 撤去、ADR-0014) です。1.0.0 未満のため、破壊的変更が MINOR で起こりうる不安定版として扱います。
+スキーマを進化させるときは、本書末尾の「付録 A: マイグレーションノート」に変更点を追記します。現行版は deck スキーマが `0.5.0` (中核メッセージと聴衆プロフィール、statement-stage の headline、chart の emphasis。ADR-0024・ADR-0025)、theme スキーマが `0.5.0` (本文系タイプスケールの下限。ADR-0025) です。どちらも後方互換の追加なので、古い `schema_version` を書いたファイルはそのまま妥当です。スキーマは `schema_version` の形 (semver) だけを検査し、値による分岐はしません。1.0.0 未満のため、破壊的変更が MINOR で起こりうる不安定版として扱います。
 
 ---
 
@@ -191,21 +191,39 @@ theme:
 | フィールド | 型 | 必須 | 意味 |
 |-----------|----|----|------|
 | `deck.title` | 文字列 | 必須 | デッキのタイトル |
-| `deck.audience` | `{ who, action }` | 必須 | 聴衆プロファイル。レンダリングされない設計メタデータ (p.34-37) |
+| `deck.message` | 文字列 | 任意 | 中核メッセージ。聴衆に理解してほしいことを話者の言葉で 1 文にしたもの (p.39、ADR-0024)。書かなければ message-missing lint が info を出す |
+| `deck.audience` | `{ who, why?, pains?, gains?, objections?, action? }` | 必須 | 聴衆プロフィール。レンダリングされない設計メタデータ (p.34-37) |
 | `deck.scales` | 名前付きスケールのマップ | 任意 | 軸レンジの共有定義 (ADR-0008-5) |
 | `deck.theme` | 文字列 (パス) | 必須 | テーマファイルへの相対パス |
 | `slides` | slide の配列 | 必須 | 1 枚以上 |
 
-`audience.who` は聴衆、`audience.action` はプレゼン後に取ってほしい行動です (p.37 の第 5 質問)。
+`message` はデッキの芯です。各スライドの `idea` は、この 1 文を聴衆に理解してもらうための部品として書きます。本は「伝えるべきメッセージ」と「行動への呼びかけ」を別の問いとして扱います (p.39)。そのため行動は `message` に混ぜず、`audience.action` に分けます。
+
+`audience` の各欄は、本の聴衆プロフィールの 7 つの質問 (p.35-36) のうち、スライドの論点を導くものを写しています。
+
+| フィールド | 型 | 必須 | 意味 (本の質問) |
+|-----------|----|----|------|
+| `who` | 文字列 | 必須 | 聴衆はどんな人か (第 1 問)。集団の 1 行より、名前のつく 1〜2 人で書くべきである |
+| `why` | 文字列 | 任意 | 何を得に来たか (第 2 問) |
+| `pains` | 文字列 または 文字列の配列 | 任意 | 聴衆を悩ませていること (第 3 問) |
+| `gains` | 文字列 または 文字列の配列 | 任意 | 聴衆の問題をどう解決するか。聴衆にとってのメリット (第 4 問) |
+| `objections` | 文字列 または 文字列の配列 | 任意 | どんな反発を受けるか (第 6 問) |
+| `action` | 文字列 | 任意 | プレゼン後に取ってほしい行動 (第 5 問)。0.4.0 までは必須だった |
 
 `scales` は、連続する chart スライドが軸を揃えるための名前付きスケールです (ADR-0008-5、NOTES §2.6)。各スケールは `x` / `y` の軸レンジ (`min`, `max`) を持ち、chart 要素が `scale:` で名前参照します。
 
 ```yaml
-schema_version: "0.1.0"
+schema_version: "0.5.0"
 deck:
   title: "スライドは、意図で書く"
+  message: "スライドの見た目は、書き手が意図を宣言すればレンダラが導出できる"
   audience:
     who: "Code to Slide ツールに表現力の限界を感じているエンジニア"
+    why: "図とレイアウトで Markdown が行き詰まる理由と、その抜け道を知りたい"
+    pains:
+      - "図は画像を貼るか Mermaid に任せるしかない"
+    objections:
+      - "YAML を手で書くのは Markdown より面倒ではないか"
     action: "次の登壇資料を、ピクセルではなく意図で書いてみる"
   scales:
     revenue:
@@ -244,7 +262,9 @@ role は舞台の枠 (レターボックス・バンパー・ロゴ許可・ヘ�
 | `title` | 適用 | 不可 | タイトルスライド |
 | `transition` | 適用 | 不可 | 場面のつなぎ (p.232) |
 | `content` | 適用 | 不可 | 本編 |
-| `closer` | 外す | 許可 | 行動喚起で閉じるバンパー (p.37, p.137) |
+| `closer` | 外す | 許可 | 締めのバンパー。まとめ・中心テーマへの帰着・行動への誘いのいずれかで閉じる (p.41, p.137, p.245, p.269) |
+
+closer は話全体を総括する位置です。本の締めの実例は「最後にまとめのスライド」(p.41) で、話の終わりに聴衆を中心テーマへ連れ戻します (p.245)。本はプレゼンの成功を「見識・行動・態度のどれかが変わること」とします (p.269)。行動への誘いは締め方の 1 つであり、既定ではありません。0.4.0 までは closer を「行動喚起で閉じるバンパー」と定めていました。
 
 opener / closer はレターボックスを外し、ロゴを許可します。それ以外のスライドにロゴ要素があると logo-bumper lint が警告します (第 9 章、p.137)。
 
@@ -852,3 +872,10 @@ design.md §8 から次を引き継ぎます。
 - `0.2.0` (deck のみ) — ADR-0015。`layout` に `image-stage` (headline 任意 + image 必須) を追加。`diagram` に `shared: { label?, emphasis? }` (cluster.overlap の交差領域) を追加。後方互換 (0.1.0 のデッキはそのまま妥当)
 - `0.3.0` (deck) — ADR-0016。要素 8 種 (code / post / link / stat / table / versus / agenda / video) と対応する 8 つの `*-stage`、chart intent `composition` を追加。lint に code-budget / table-size / agenda-source を追加し pie-rules が実働化。後方互換 (0.2.0 のデッキはそのまま妥当)
 - `0.4.0` (theme) — ADR-0016。`type.mono` (任意) と scale トークン `code` / `stat` を追加。後方互換 (0.3.0 のテーマはそのまま妥当)
+- `0.5.0` (deck・theme) — ADR-0024・ADR-0025。slide:ology の読み直しに合わせた版。後方互換で、0.4.0 以前のデッキとテーマはそのまま妥当 (deck 0.4.0 は欠番。0.3.0 から直接上がった)
+  - deck の設計メタデータ: `deck.message` (中核メッセージ、任意) を追加。`deck.audience` に `why`・`pains`・`gains`・`objections` (任意) を追加し、`action` を任意に下げた (`who` は必須のまま)。`role: closer` の意味を「行動喚起で閉じる」から「締め (まとめ・中心テーマへの帰着・行動への誘いのいずれか)」に改めた (§3、§4.1)
+  - 語彙: statement-stage に任意スロット `headline` を追加。chart-stage で headline を省略したとき、chart の `message` を見出しとして描く。chart に `emphasis` (強調する系列ラベルの配列) を追加し、指定外の系列を neutral 系の色に落とす。複数系列は凡例ではなく直接ラベルで描く。composition の単一系列は、構成比の差が小さいとき円ではなく 100% 基準の横棒に導出する
+  - 描画の実装: SPA のプレゼンテーションで `bullets.reveal`・`diagram.reveal`・`build` (show / dim / emphasize) を実装した。静的出力は全ステップ表示後の姿を描く。`transform` は未実装のまま残す。`connect: push-*` を画面遷移として実装し、push で連なるスライド列では chapter・フッタ・ロゴを外す
+  - 型の下限 (theme): 本文系のタイプスケール (node・attribution など) を `type.body.min_size_pt` 以上に上げた。1px = 0.75pt で換算する
+  - lint: `bullet-count` を廃止し `bullet-parallel` (warn) に置き換えた。`min-type` (warn)、`layers`・`glance`・`form-fallback`・`message-missing` (いずれも info) を追加した (§9)
+  - 出典: `slideument`・`one-idea`・closer・§7 のアニメーションの役割などの出典ページを原文に合わせて直した。`slideument` の閾値は本の数値ではなく hokuchi の独自値だと明記した

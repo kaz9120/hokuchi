@@ -138,6 +138,48 @@ versusThreeSides.slides.find((s) => s.id === 's-versus').elements[0].sides = [
 assert.equal(validateDeckSchema(versusThreeSides), false);
 ok('versus with 3 sides fails schema (maxItems 2)');
 
+// (6b) deck schema 0.5.0 (ADR-0024) — deck.message and the audience profile
+// fields are optional; audience.action is no longer required, who still is.
+{
+  const v050 = structuredClone(newKindDeck);
+  v050.schema_version = '0.5.0';
+  v050.deck.message = '聴衆に理解してほしいことの 1 文';
+  v050.deck.audience = {
+    who: 'テスト',
+    why: '何を得に来たか',
+    pains: ['悩み 1', '悩み 2'],
+    gains: '得られるもの',
+    objections: ['反発'],
+  };
+  assert.equal(validateDeckSchema(v050), true, JSON.stringify(validateDeckSchema.errors));
+
+  const noWho = structuredClone(v050);
+  delete noWho.deck.audience.who;
+  assert.equal(validateDeckSchema(noWho), false, 'audience.who stays required');
+
+  const emptyPains = structuredClone(v050);
+  emptyPains.deck.audience.pains = [];
+  assert.equal(validateDeckSchema(emptyPains), false, 'an empty pains array is rejected');
+  ok('deck schema 0.5.0 accepts deck.message and audience why/pains/gains/objections without action');
+}
+
+// Every existing deck under examples/ and talks/ stays valid under 0.5.0
+// (ADR-0024: the additions are backward compatible; old schema_version
+// strings are accepted as-is because the schema only checks the semver shape).
+{
+  const repoRoot = path.join(root, '../..');
+  const deckFiles = [
+    ...fs.readdirSync(path.join(root, 'examples')).map((d) => path.join(root, 'examples', d, 'deck.yaml')),
+    ...fs.readdirSync(path.join(repoRoot, 'talks'), { withFileTypes: true })
+      .filter((d) => d.isDirectory())
+      .flatMap((d) => fs.readdirSync(path.join(repoRoot, 'talks', d.name))
+        .filter((f) => /^deck.*\.yaml$/.test(f))
+        .map((f) => path.join(repoRoot, 'talks', d.name, f))),
+  ].filter((f) => fs.existsSync(f));
+  for (const f of deckFiles) loadDeck(f);
+  ok(`all ${deckFiles.length} existing decks (examples/ + talks/) pass the 0.5.0 deck schema`);
+}
+
 // load.mjs resolves code.src to code.code by reading the file relative to
 // the deck (ADR-0016) — the same convention as diagram edge sugar, applied
 // eagerly so code-budget lint has text to measure without a render pass.

@@ -519,6 +519,7 @@
       "required": ["label", "items"],
       "properties": {
         "label": { "type": "string" },
+        "description": { "type": "string" },
         "items": {
           "type": "array",
           "minItems": 1,

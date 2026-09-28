@@ -1057,6 +1057,7 @@ function measureVersus(el, ctx, avail) {
   const fsLabel = scale.heading;
   const fsItem = Math.round(scale.bullet * 0.8);
   const padX = 40, padY = 36, labelGap = 26, itemGap = Math.round(fsItem * 0.9);
+  const descGap = 12; // 見出しと説明文の間
   const dividerW = 64;
   // ラベル (見出し行) と左端が揃うとドットが見出しより左にはみ出て見えるため、
   // bullets の修正 (コミット a6f5233) と同じ考え方で項目全体を内側へ寄せる
@@ -1065,13 +1066,20 @@ function measureVersus(el, ctx, avail) {
 
   const panelInnerW = Math.max(260, Math.min(420, Math.round((avail.w - dividerW) / 2) - padX * 2));
 
+  // 説明文は両パネルで高い方に揃える。行数が違うと項目の開始位置が左右でずれる
+  const descLineH = Math.round(fsItem * 1.5);
+  const descLines = Math.max(0, ...el.sides.map((side) => (
+    side.description ? estimateWrappedLines(side.description, fsItem, panelInnerW) : 0
+  )));
+  const descBoxH = descLines * descLineH;
   const contentH = (side) => {
     const labelLines = estimateWrappedLines(side.label, fsLabel, panelInnerW);
+    const descH = descLines ? descBoxH + descGap : 0;
     const itemsH = side.items.reduce((t, it) => {
       const lines = estimateWrappedLines(it, fsItem, panelInnerW - itemIndent - 26); // インデント + ドット分を差し引く
       return t + lines * Math.round(fsItem * 1.5);
     }, 0) + (side.items.length - 1) * itemGap;
-    return labelLines * Math.round(fsLabel * 1.3) + labelGap + itemsH;
+    return labelLines * Math.round(fsLabel * 1.3) + descH + labelGap + itemsH;
   };
   const panelH = Math.max(...el.sides.map(contentH)) + padY * 2;
   const panelW = panelInnerW + padX * 2;
@@ -1081,7 +1089,7 @@ function measureVersus(el, ctx, avail) {
   return {
     w: round(w), h: round(h),
     render: () => createElement(Versus, {
-      el, panelW, panelH: h, fsLabel, fsItem, padX, padY, labelGap, itemGap, itemIndent, dividerW,
+      el, panelW, panelH: h, fsLabel, fsItem, padX, padY, labelGap, descGap, descBoxH, itemGap, itemIndent, dividerW,
     }),
   };
 }
@@ -1575,6 +1583,7 @@ svg.lead{display:block;max-width:100%;max-height:100%;overflow:visible}
 .versus-em{border-color:${C.highlight};border-width:3px}
 .versus-dim{opacity:.6}
 .versus-label{font-family:${fonts.display};font-weight:${fonts.wDisplay};color:${C.textStrong};line-height:1.3}
+.versus-desc{color:${C.text};line-height:1.5}
 .versus-items{list-style:none;display:flex;flex-direction:column}
 .versus-items li{display:flex;align-items:baseline;gap:16px;color:${C.text};line-height:1.4}
 .versus-items .dot{flex:0 0 auto;width:10px;height:10px;border-radius:50%;

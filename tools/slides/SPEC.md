@@ -658,7 +658,7 @@ Zenn や note の記事、公開資料を「OGP カード + QR」の定型で紹
 |-----------|----|----|------|
 | `sides` | side の配列 (ちょうど 2 つ) | 必須 | 左・右のパネル |
 
-side は `{ label (必須), items (必須、1〜4 項目), emphasis? (bool) }` です。`emphasis: true` の側が推し (結論の側) として強調されます。
+side は `{ label (必須), description? (説明の地の文 1〜2 行), items (必須、1〜4 項目), emphasis? (bool) }` です。`description` は見出しの直下に箇条書きではない本文として描画します。側の定義を一文で述べてから、items に具体例を並べるときに使います。`emphasis: true` の側が推し (結論の側) として強調されます。
 
 ```yaml
 - kind: versus

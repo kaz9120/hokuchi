@@ -40,7 +40,7 @@ export function CodePanel({ filename, labelH, fs, lineH, padX, padY, lines }) {
 
 /** versus — 左右 2 枚の対比 (SPEC §6.12)。両パネルは高い方の高さを共有し、
  * 項目数が違っても対称に読める。 */
-export function Versus({ el, panelW, panelH, fsLabel, fsItem, padX, padY, labelGap, itemGap, itemIndent, dividerW }) {
+export function Versus({ el, panelW, panelH, fsLabel, fsItem, padX, padY, labelGap, descGap, descBoxH, itemGap, itemIndent, dividerW }) {
   const hasEmphasis = el.sides.some((s) => s.emphasis);
   const panelClass = (side) => {
     if (side.emphasis) return 'versus-panel versus-em';
@@ -60,6 +60,11 @@ export function Versus({ el, panelW, panelH, fsLabel, fsItem, padX, padY, labelG
             <div className="versus-label jp" style={{ fontSize: fsLabel }}>
               <InlineText text={side.label} />
             </div>
+            {descBoxH > 0 && (
+              <div className="versus-desc jp" style={{ fontSize: fsItem, marginTop: descGap, minHeight: descBoxH }}>
+                {side.description && <InlineText text={side.description} />}
+              </div>
+            )}
             <ul
               className="versus-items"
               style={{ fontSize: fsItem, gap: itemGap, marginTop: labelGap, paddingLeft: itemIndent }}

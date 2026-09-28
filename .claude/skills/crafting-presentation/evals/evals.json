@@ -4,15 +4,19 @@
     {
       "id": 1,
       "prompt": "来月の社内 LT 会 (MOSH として、10 分) で、note に書いた「ドキュメントは、AI に渡す前に作り直す」の話をします。articles/note/2026-08-23-rewrite-docs-for-ai を元にスライドを作ってください。聴衆は MOSH のエンジニアで、Claude Code は全員が日常的に使っています。",
-      "expected_output": "deck.yaml と描画結果。山 (実物に留まる場所) が 1〜2 つあり、1 語の粗スライドで間をつないでいる",
+      "expected_output": "deck.yaml と描画結果。中核メッセージが deck.message にあり、課題が取り組みより前に置かれ、まとめの章で総括して終わる",
       "files": [
         "articles/note/2026-08-23-rewrite-docs-for-ai/index.md"
       ],
       "assertions": [
-        "wave.mjs で山が 1 つ以上ある",
-        "wave.mjs で中間帯 (20〜40 秒) が content の 6 割以下",
-        "10 秒以下の粗スライドが 3 枚以上ある",
-        "山のスライドに実物 (image / code / post / chart / diagram / quote) がある",
+        "deck.message があり、行動の命令ではなく理解の形 (〜は〜である) で書かれている",
+        "deck.audience に who と why と gains がある",
+        "メッセージマップ (章・理解すること・厚み) を deck.yaml より先に提示している",
+        "取り組み・解決策のスライドより前に、それが解く課題のスライドがある",
+        "closer の直前か closer 自体に、話全体を総括するまとめがある。行動を押しつける問いかけで締めていない",
+        "聴衆役のサブエージェントを、会話の文脈を渡さずに起動し、その指摘への対応を記録している",
+        "quote-stage が 2 枚以下",
+        "statement-stage の support が content の半数未満",
         "hokuchi lint の error が 0",
         "notes の秒数の合計が持ち時間の ±15% に収まる"
       ]
@@ -20,16 +24,18 @@
     {
       "id": 2,
       "prompt": "将棋 AI を Claude Code と作り直している話で 5 分 LT をやります。個人としての登壇です。素材は articles/note/2026-07-19-restart-computer-shogi と articles/note/2026-08-09-ai-builds-shogi-ai。聴衆は AI 駆動開発の勉強会に来るエンジニアです。",
-      "expected_output": "deck.yaml と描画結果。5 分で山が 1 つ、残りは粗で走っている",
+      "expected_output": "deck.yaml と描画結果。完全版を作ってから 5 分に削っている。本題の章に実物がある",
       "files": [
         "articles/note/2026-07-19-restart-computer-shogi/index.md",
         "articles/note/2026-08-09-ai-builds-shogi-ai/index.md"
       ],
       "assertions": [
-        "wave.mjs で山が 1 つ以上ある",
-        "wave.mjs で中間帯 (20〜40 秒) が content の 6 割以下",
-        "10 秒以下の粗スライドが 3 枚以上ある",
-        "山のスライドに実物 (image / code / post / chart / diagram / quote) がある",
+        "deck.message があり、行動の命令ではなく理解の形で書かれている",
+        "持ち時間を考える前に完全版を書き、その後に削っている (削る前後の枚数か差分を示している)",
+        "本題の章に、実物 (image / code / chart / post のいずれか) のスライドがある",
+        "初出の用語 (Elo、打率など) が、使う前か同じスライドで説明されている",
+        "話者に向けた比喩や造語 (定義のない言葉) が画面に無い",
+        "箇条書きの項目間で、文末と句点の有無が揃っている (hokuchi lint に bullet-parallel の warn が無い)",
         "hokuchi lint の error が 0",
         "notes の秒数の合計が持ち時間の ±15% に収まる"
       ]

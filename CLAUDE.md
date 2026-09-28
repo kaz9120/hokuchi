@@ -38,7 +38,7 @@ tools/
     docs/design.md 生きた設計書
     spike/         捨て前提の試作（検証記録として保持）
 .claude/skills/
-  crafting-presentation/  対話からスライドを作る skill（Phase 0〜7）
+  crafting-presentation/  対話からスライドを作る skill（Phase 0〜8。ADR-0024）
   writing-note/           note の記事を書く skill（Phase 0〜7。ADR-0020）
 ```
 

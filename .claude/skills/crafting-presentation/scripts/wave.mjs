@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// wave.mjs — デッキの粗密の波を 1 枚 1 行で並べる (references/somitsu.md 手順 5)。
+// wave.mjs — デッキの粗密の波を 1 枚 1 行で並べる (references/reduce.md 手順 4)。
 //
 //   node .claude/skills/crafting-presentation/scripts/wave.mjs <deck.yaml>
 //
@@ -110,7 +110,20 @@ if (hasSec) {
   if (secs.length && mid / secs.length > 0.6) process.stdout.write(`  → content の 6 割超が中間帯。平らである${peaks.length ? ' (山はあっても谷がないので、山に見えない)' : ''}\n`);
   for (const p of peaks) if (!p.artifact) process.stdout.write(`  → ${p.ids[0]}: 60 秒以上話すのに実物がない。聴衆の目が行く先を置く\n`);
 } else {
-  process.stdout.write('  notes に【N秒】がない。秒数を振ってから見直す (somitsu.md 手順 2)\n');
+  process.stdout.write('  notes に【N秒】がない。秒数を振ってから見直す (reduce.md 手順 4)\n');
+}
+// 章ごとの合計。メッセージマップで決めた厚みと、実際の時間配分を突き合わせる (reduce.md 手順 1)。
+if (hasSec) {
+  const byChapter = new Map();
+  deck.slides.forEach((s, i) => {
+    const key = s.chapter ?? `(${s.role})`;
+    byChapter.set(key, (byChapter.get(key) ?? 0) + (rows[i].sec ?? 0));
+  });
+  const total = [...byChapter.values()].reduce((a, b) => a + b, 0) || 1;
+  process.stdout.write('\n  章ごとの時間\n');
+  for (const [ch, sec] of byChapter) {
+    process.stdout.write(`  ${String(sec).padStart(5)} 秒 ${String(Math.round((sec / total) * 100)).padStart(3)}%  ${ch}\n`);
+  }
 }
 const withSupport = body.filter((r) => r.hasSupport).length;
 if (body.length && withSupport / body.length > 0.5) {

@@ -34,7 +34,11 @@ import { Link, Post } from './components/elements/Social.jsx';
 import { Dag, StepRow, Timeline } from './components/svg/Flow.jsx';
 import { Cycle, Enclosed, Overlap, Radial, RingCluster } from './components/svg/Cluster.jsx';
 import { Layer, Matrix } from './components/svg/Structure.jsx';
-import { AxisChart, Donut, StackedComposition } from './components/svg/Chart.jsx';
+import {
+  AxisChart, Donut, HBar100, StackedComposition,
+  axisGeometry, barLabelLayout, hbarHeight, hbarLabelPlan, lineLabelPadR, seriesLabelWidth,
+} from './components/svg/Chart.jsx';
+import { compositionForm } from './chart-policy.mjs';
 
 // ---------------------------------------------------------------------------
 // Canvas + composition constants (ADR-0014 — renderer-internal, not spec)
@@ -49,6 +53,7 @@ const RING_ECC_MAX = 1.15; // 環の離心率上限。これ以内ならノー�
 const PLOT_ASPECT = { trend: 2.0, comparison: 1.6, distribution: 1.6, composition: 1.0 }; // プロット領域の理想 w/h。composition は円なので正方形寄り
 const CHART_PAD = { l: 84, r: 60, t: 26, b: 64 }; // 軸ラベルがプロットの外側に要する余白
 const DONUT_PAD = 110; // 扇形の外側に置くラベル (カテゴリ + %) 用の余白
+const HBAR_MAX_W = 1000; // 100% 横棒の帯の最大幅。舞台いっぱいに伸ばすと端の区画が視線から遠くなる
 
 // Type-scale defaults mirror theme.schema.json so a theme that omits a token
 // still renders. Present tokens in the theme win.
@@ -654,8 +659,7 @@ function resolveYRange(el, ctx) {
   return { min: Math.min(0, ...all), max: niceCeil(Math.max(...all)) };
 }
 
-/** {x, y} on a circle of radius r centred at (cx, cy), angle in radians
- * (SVG convention: 0 = 3 o'clock, increasing = clockwise since y grows down). */
+/** composition intent, 単一系列で差が大きい → ドーナツ。 */
 function measureDonut(el, ctx, avail) {
   const ideal = PLOT_ASPECT.composition;
   const inner = { w: Math.max(120, avail.w - DONUT_PAD * 2), h: Math.max(120, avail.h - DONUT_PAD * 2) };
@@ -667,44 +671,74 @@ function measureDonut(el, ctx, avail) {
 }
 
 /**
+ * composition intent, 単一系列で差が小さい → 100% 横棒 (SPEC §6.5, p.91)。
+ * 舞台の幅いっぱいを 1 本の帯に使い、高さは帯とラベルの段数で決まる。
+ */
+function measureHBar100(el, ctx, avail) {
+  const w = Math.min(avail.w, HBAR_MAX_W);
+  const h = hbarHeight(hbarLabelPlan(el, ctx, w));
+  return { w: round(w), h: round(h), render: (b) => createElement(HBar100, { el, box: b, ctx }) };
+}
+
+/**
  * composition intent, multiple series → 100% 積み上げ棒 (SPEC §6.5, ADR-0016)。
  * x が各棒、series が層。層ごとの割合は棒単位 (カテゴリ単位) で合計を
  * 100% に正規化する — 系列間の絶対量は composition の主題ではない。
+ * 右端の棒の横に系列名を直接置くぶん、右の余白を系列名の幅に広げる。
  */
 function measureStackedComposition(el, ctx, avail) {
-  const pad = CHART_PAD;
+  const pad = { ...CHART_PAD, r: Math.max(CHART_PAD.r, seriesLabelWidth(el, ctx) + 40) };
   const ideal = PLOT_ASPECT.comparison; // 棒グラフの一種として、比較と同じ横広めの理想比を使う
   const plotH = Math.min(avail.h - pad.t - pad.b, (avail.w - pad.l - pad.r) / ideal);
   return {
     w: round(plotH * ideal + pad.l + pad.r),
     h: round(plotH + pad.t + pad.b),
-    render: (b) => createElement(StackedComposition, { el, box: b, ctx, pad: CHART_PAD }),
+    render: (b) => createElement(StackedComposition, { el, box: b, ctx, pad }),
   };
+}
+
+/**
+ * 軸チャートの余白。複数系列は直接ラベルの置き場を取る (p.94)。折れ線は
+ * 終端ラベルのぶん右を、棒は棒の上に載るラベルのぶん上を広げる。上の広げ幅は
+ * 仮の箱でラベルを並べてみて、はみ出した量から決める。
+ */
+function axisPad(el, ctx, avail, yMin, yMax, ideal) {
+  const pad = { ...CHART_PAD };
+  if ((el.data.series || []).length < 2) return pad;
+  if (el.intent === 'trend') {
+    pad.r = Math.max(pad.r, lineLabelPadR(el, ctx));
+    return pad;
+  }
+  const plotH = Math.min(avail.h - pad.t - pad.b, (avail.w - pad.l - pad.r) / ideal);
+  const box = { w: plotH * ideal + pad.l + pad.r, h: plotH + pad.t + pad.b };
+  const { minTop } = barLabelLayout(el, axisGeometry(el, box, pad, yMin, yMax), ctx, box.w);
+  if (minTop < 12) pad.t += 12 - minTop + 12; // 12: 箱の縁との間隔 + 縮んだ plot で上端が上がる分の見込み
+  return pad;
 }
 
 /**
  * Chart measure (ADR-0014): the plot area wants an intent-specific aspect
  * (PLOT_ASPECT); the axis-label padding sits outside the plot as constants,
  * so the reported box is the padded plot. composition dispatches to its own
- * measure/render pair — a donut or a 100% stacked bar share nothing with the
- * axis-driven trend/comparison/distribution family (ADR-0016).
+ * measure/render pair — a donut, a 100% bar or a 100% stacked bar share
+ * nothing with the axis-driven trend/comparison/distribution family
+ * (ADR-0016, ADR-0025)。
  */
 function measureChart(el, ctx, avail) {
   if (el.intent === 'composition') {
-    return (el.data.series || []).length === 1
-      ? measureDonut(el, ctx, avail)
-      : measureStackedComposition(el, ctx, avail);
+    const form = compositionForm(el);
+    if (form === 'donut') return measureDonut(el, ctx, avail);
+    if (form === 'bar100') return measureHBar100(el, ctx, avail);
+    return measureStackedComposition(el, ctx, avail);
   }
-  const pad = CHART_PAD;
   const ideal = PLOT_ASPECT[el.intent] ?? 1.6;
+  const { min, max } = resolveYRange(el, ctx);
+  const pad = axisPad(el, ctx, avail, min, max, ideal);
   const plotH = Math.min(avail.h - pad.t - pad.b, (avail.w - pad.l - pad.r) / ideal);
   return {
     w: round(plotH * ideal + pad.l + pad.r),
     h: round(plotH + pad.t + pad.b),
-    render: (b) => {
-      const { min, max } = resolveYRange(el, ctx);
-      return createElement(AxisChart, { el, box: b, ctx, pad: CHART_PAD, yMin: min, yMax: max });
-    },
+    render: (b) => createElement(AxisChart, { el, box: b, ctx, pad, yMin: min, yMax: max }),
   };
 }
 

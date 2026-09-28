@@ -517,6 +517,7 @@ opener / closer はレターボックスを外し、ロゴを許可します。�
 | `message` | 文字列 | 必須 | データの意味。message のない chart は書けない (C5、p.84) |
 | `data` | 正準形または source 糖衣 | 必須 | データ本体 |
 | `annotations` | 注釈オブジェクトの配列 | 任意 | 第 3 レイヤー。意味を語る |
+| `emphasis` | 系列ラベルの配列 | 任意 | 強調する系列。指定すると、それ以外の系列は無彩色に落ちる (p.95, p.97、ADR-0025)。diagram や statement の同名フィールドとは別物 |
 | `scale` | 文字列 (`deck.scales` の名前) | 任意 | 共有軸スケールの参照 (ADR-0008-5) |
 | `detail` | `appendix` | 任意 | 完全版データを配布資料へ回す (p.84, p.86、第 10 章) |
 
@@ -524,7 +525,11 @@ opener / closer はレターボックスを外し、ロゴを許可します。�
 
 `annotations` の各要素は `{ at | at_index, annotate, style }` です。`at` は x 配列の値との完全一致で解決します。表記ゆれで黙って壊れることを防ぐため、解決できない `at` は annotation-anchor lint がエラーとして検出します (ADR-0008-4)。位置で指したい場合は `at_index` (0 起点の整数) を使います。`at` と `at_index` はどちらか一方だけ持ちます。`style` は `highlight` とします (色値リテラルは書けません)。
 
-`composition` は全体に占める割合を言います (p.91、ADR-0016)。単一系列は円 (ドーナツ) に、複数系列は 100% 積み上げ棒に導出されます。円は 12 時起点・時計回り・8 項目以内で (§8.4)、逸脱は pie-rules lint が警告します。
+`emphasis` は `data.series` の `label` との完全一致で系列を指します。強調系列は `highlight` か `core` で、それ以外の系列はパレットの無彩色から導いた色で描かれます (§8.4)。series に無いラベルは、強調が黙って消えることを防ぐため chart-emphasis-ref lint がエラーとして検出します (ADR-0025)。
+
+複数系列のチャートは凡例を持ちません。系列名はデータの隣に直接ラベルとして描かれます (p.94、ADR-0025)。ラベルの位置はレンダラが決めます (ADR-0014)。
+
+`composition` は全体に占める割合を言います (p.91、ADR-0016)。複数系列は 100% 積み上げ棒に導出されます。単一系列は、構成比の差が大きいときは円 (ドーナツ) に、差が小さいときは 100% 基準の横棒に導出されます (p.91、ADR-0025)。角度では小さな差を読み分けられないためです。差の大小を分ける閾値はレンダラの内部ポリシーで、書き手は指定しません。円は 12 時起点・時計回り・8 項目以内で (§8.4)、逸脱は pie-rules lint が警告します。
 
 背景レイヤー (目盛・グリッド線) を書き手は触りません。3D・グラデーション・枠線などのチャートジャンク (p.94) は、そもそも指定する場所がありません (ADR-0002)。
 
@@ -809,6 +814,10 @@ build:
 
 チャートは 3 レイヤーで描きます (p.92-93)。背景 (目盛・グリッド線) は `neutral.line` で最小限、データは `core`、強調は `highlight` とします。3D・グラデーション・枠線などのチャートジャンクを描いてはならない (p.94)。円グラフは 12 時起点・時計回り・8 項目以内とします (p.91)。
 
+`emphasis` のある chart では、強調しない系列を `neutral` 系の無彩色 (`muted` から `line` の間) に落とし、背景から読める濃さを保ちます。強調系列は `highlight` か `core` で描き、強調しない系列より手前に重ねます (p.95, p.97)。
+
+複数系列は凡例を描かず、系列名をデータの隣に直接置きます (p.94)。折れ線は線の終端に、棒は棒の上に、積み上げ棒は層の横に置き、ラベル同士が重なってはならない。
+
 ### 8.5 ブランド枠の描画 (ADR-0010)
 
 brand を持つテーマでは、レンダラは各スライドに 3 つのレイヤーを足します。背景アート (舞台の下、キャンバス全面に object-fit: cover)、ロゴ (右上)、フッタ (右下)。`foreground: light` の背景では前景色 (テキスト・強調・箇条書きドット・アクセントバー) を白系に反転し、ロゴは `src_invert` に切り替えます。参照されたアセットは render 時に出力ディレクトリ (`theme-assets/`、deck 側の image src は `assets/`) へコピーされ、出力は自己完結を保ちます。
@@ -832,15 +841,16 @@ linter はエラーで止めず警告を中心とします。ただし逸脱は�
 | `glance` | info | headline が 1 行に収まらない (明示の改行がある、または字幅が舞台幅 ÷ `heading` を超える。全角 1、半角 0.6 で数える)。または content の主役の statement が 30 字 (空白を除く) を超え、3 秒で読めない。閾値は目安 (§11) | p.160, p.164 |
 | `form-fallback` | info | diagram の form が専用の描画を持たず、横並びのステップ (flow.linear と同じ形) で描かれる。現状は flow.network・radial.semi・radial.coreless・pictogram.* と、カタログ外の subtype | ADR-0025 |
 | `message-missing` | info | `deck.message` (中核メッセージ) が無い | ADR-0024, p.39 |
-| `pie-rules` | warn | 円グラフが 9 項目以上、または合計が 100% でない | p.91 |
+| `pie-rules` | warn | 円 (ドーナツ) に導出される composition が 9 項目以上、または合計が 100% でない。100% 横棒・積み上げ棒に導出されるものは対象外 (ADR-0025) | p.91 |
 | `axis-lock` | warn | 連続する chart 間で軸位置が揃わない (共有 `scale` 未指定)。軸を持たない composition が絡むペアは対象外 (ADR-0016) | p.90 |
-| `contrast` | warn | 背景とのコントラスト不足、グレースケール変換で判別不能な系列 | p.152, p.156 |
+| `contrast` | warn | 背景とのコントラスト不足、グレースケール変換で判別不能な系列。chart の系列色は `emphasis` を踏まえて判定し、無彩色に落とした系列どうしは比べない (ADR-0025) | p.152, p.156 |
 | `whitespace` | warn | `whitespace_min` を既定値 0.3 未満に下げた | p.126-127 |
 | `gaze` | warn | 人物画像の視線がコンテンツと逆向き (`gaze: away-from-content`) | p.117 |
 | `logo-bumper` | warn | opener / closer 以外のスライドにロゴ要素 | p.137 |
 | `raw-budget` | warn | raw 要素がデッキの 1 割超 | p.135 |
 | `deck-size` | info | 内容スライドが 10 枚超 (10/20/30 は文脈依存) | p.254 |
 | `annotation-anchor` | error | chart の `at` が x 配列の値と一致しない | ADR-0008-4 |
+| `chart-emphasis-ref` | error | chart の `emphasis` が `data.series` のラベルと一致しない | ADR-0025 |
 | `edge-ref` | error | diagram の edge が存在しないノード id を参照 | ADR-0008-7 |
 | `icon-exists` | error | `icon` の名前がテーマの icon_set のカタログに存在しない | ADR-0013 |
 | `shrink-report` | info | 主役要素が舞台に収まらず縮小された | ADR-0008-2 |

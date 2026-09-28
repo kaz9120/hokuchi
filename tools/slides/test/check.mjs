@@ -271,8 +271,9 @@ pieTooManyItemsDeck.slides[0].elements.push({
   intent: 'composition',
   message: '検証用',
   data: {
+    // 隣り合う比がどれも 0.8 以下 → 円に導出される (ADR-0025)
     x: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'],
-    series: [{ label: '割合', values: [11, 11, 11, 11, 11, 11, 11, 11, 12] }],
+    series: [{ label: '割合', values: [24, 19, 15, 12, 9.5, 7.5, 6, 4.5, 2.5] }],
   },
 });
 const pieItemFindings = lint(pieTooManyItemsDeck, theme).filter((f) => f.id === 'pie-rules');
@@ -286,12 +287,61 @@ pieBadSumDeck.slides[0].elements.push({
   slot: 'chart-check',
   intent: 'composition',
   message: '検証用',
-  data: { x: ['a', 'b', 'c'], series: [{ label: '割合', values: [30, 30, 30] }] },
+  data: { x: ['a', 'b', 'c'], series: [{ label: '割合', values: [50, 25, 10] }] },
 });
 const pieSumFindings = lint(pieBadSumDeck, theme).filter((f) => f.id === 'pie-rules');
 assert.equal(pieSumFindings.length, 1);
 assert.match(pieSumFindings[0].message, /合計/);
 ok('pie-rules lint flags single-series composition charts whose total is off by 100±2');
+
+// composition の単一系列は、構成比の差が小さいと 100% 横棒に導出される (ADR-0025, p.91)。
+// 円にならないので pie-rules は黙る。
+const { compositionForm, seriesColors, deemphasisColor, flatPalette, contrastRatio } = await import('../src/chart-policy.mjs');
+const comp = (values) => ({ intent: 'composition', data: { x: values.map((_, i) => `c${i}`), series: [{ label: 's', values }] } });
+assert.equal(compositionForm(comp([60, 40])), 'donut');
+assert.equal(compositionForm(comp([55, 25, 15, 5])), 'donut');
+assert.equal(compositionForm(comp([50, 26, 24])), 'bar100', 'Mid-Cap と Small-Cap のように差の小さい組がある');
+assert.equal(compositionForm(comp([50, 20, 20, 10])), 'bar100', '同率の組がある');
+assert.equal(compositionForm({ intent: 'composition', data: { x: ['a'], series: [{ label: 'p', values: [1] }, { label: 'q', values: [1] }] } }), 'stacked');
+ok('compositionForm derives donut / 100% bar / stacked from the share gaps');
+
+const barCompositionDeck = structuredClone(deck);
+barCompositionDeck.slides[0].elements.push({
+  kind: 'chart', slot: 'chart-check', intent: 'composition', message: '検証用',
+  data: { x: ['Large', 'Mid', 'Small'], series: [{ label: '割合', values: [50, 26, 30] }] },
+});
+assert.equal(lint(barCompositionDeck, theme).filter((f) => f.id === 'pie-rules').length, 0);
+ok('pie-rules lint is silent when a single-series composition derives to a 100% bar');
+
+// emphasis — 強調しない系列は無彩色、強調系列は highlight か core (ADR-0025, p.95, p.97)。
+const P = flatPalette(theme.theme.palette);
+const multi = (emphasis) => ({
+  intent: 'trend', emphasis,
+  data: { x: ['a', 'b'], series: [{ label: 'A', values: [1, 2] }, { label: 'B', values: [2, 1] }, { label: 'C', values: [3, 3] }] },
+});
+assert.deepEqual(seriesColors(multi(undefined), P).map((c) => c.color), P.core.slice(0, 3));
+const one = seriesColors(multi(['B']), P);
+assert.deepEqual(one.map((c) => c.role), ['deemph', 'emph', 'deemph']);
+assert.equal(one[1].color, P.highlight);
+assert.equal(one[0].color, one[2].color);
+const two = seriesColors(multi(['C', 'A']), P);
+assert.equal(two[2].color, P.core[0], '強調系列は emphasis の宣言順に core を回す');
+assert.equal(two[0].color, P.core[1]);
+assert.ok(contrastRatio(deemphasisColor(P), P.bg) >= 3, '無彩色は背景と 3:1 を保つ');
+const moshP = flatPalette(loadTheme(path.join(root, 'themes/mosh.yaml')).theme.palette);
+assert.equal(seriesColors(multi(['B']), moshP)[1].color, moshP.core[0], 'highlight が背景と 3:1 を割るテーマは core[0]');
+ok('seriesColors grays out non-emphasized series and keeps 3:1 against the background');
+
+const emphDeck = structuredClone(deck);
+emphDeck.slides[0].elements.push({
+  kind: 'chart', slot: 'chart-check', intent: 'comparison', message: '検証用', emphasis: ['ツール', '手作業 '],
+  data: { x: ['a', 'b'], series: [{ label: '手作業', values: [3, 2] }, { label: 'ツール', values: [1, 1] }] },
+});
+const emphFindings = lint(emphDeck, theme).filter((f) => f.id === 'chart-emphasis-ref');
+assert.equal(emphFindings.length, 1);
+assert.equal(emphFindings[0].severity, 'error');
+assert.match(emphFindings[0].message, /手作業 /);
+ok('chart-emphasis-ref lint errors when an emphasis label is not a series label');
 
 // intent: composition charts (donut / 100% stacked bar) have no axis, so a
 // consecutive pair where either side is composition must not fire axis-lock
@@ -684,5 +734,33 @@ ok('renderDeck adds no embed-related output when the deck has no source post (AD
   assert.ok(plain.includes('id="hokuchi-builds"'), 'intent-talk の reveal は計画を出す');
   ok('段階表示: ステップ数の計算、静的出力の全表示、push 列でクロームを外す (ADR-0025)');
 }
+// chart の描画 (ADR-0025)。複数系列は系列名を直接ラベルで描き、emphasis の外は
+// 無彩色に落ちる。差の小さい単一系列の composition は円ではなく横棒になる。
+const chartDeck = structuredClone(deck);
+chartDeck.slides = [
+  baseSlide('s-chart-emph', 'chart-stage', [{
+    kind: 'chart', slot: 'chart', intent: 'trend', message: '検証用', emphasis: ['系列かきく'],
+    data: { x: ['a', 'b', 'c'], series: [{ label: '系列あいう', values: [1, 2, 3] }, { label: '系列かきく', values: [3, 2, 1] }] },
+  }]),
+  baseSlide('s-chart-bars', 'chart-stage', [{
+    kind: 'chart', slot: 'chart', intent: 'comparison', message: '検証用',
+    data: { x: ['a', 'b'], series: [{ label: '系列さしす', values: [5, 4] }, { label: '系列たちつ', values: [2, 3] }] },
+  }]),
+  baseSlide('s-chart-close', 'chart-stage', [{
+    kind: 'chart', slot: 'chart', intent: 'composition', message: '検証用',
+    data: { x: ['大', '中', '小', 'い', 'ろ', 'は'], series: [{ label: '割合', values: [20, 18, 17, 16, 15, 14] }] },
+  }]),
+];
+const chartDoc = renderDeck(chartDeck, theme, { deckDir: path.dirname(deckPath), themeDir: path.dirname(themePath) }).pages['index.html'];
+for (const label of ['系列あいう', '系列かきく', '系列さしす', '系列たちつ']) {
+  assert.ok(chartDoc.includes(`>${label}</text>`), `direct label for ${label}`);
+}
+const gray = seriesColors(chartDeck.slides[0].elements[0], flatPalette(theme.theme.palette))[0].color;
+assert.ok(chartDoc.includes(`stroke="${gray}"`), 'non-emphasized series is drawn in the derived gray');
+assert.ok(chartDoc.includes(`stroke="${theme.theme.palette.highlight}"`), 'emphasized series is drawn in highlight');
+const closeSlide = chartDoc.slice(chartDoc.indexOf('s-chart-close'));
+assert.ok(!/<path d="M [^"]* A /.test(closeSlide), 'close shares do not derive to a donut');
+for (const pct of ['20%', '18%', '14%']) assert.ok(closeSlide.includes(`>${pct}</text>`), `100% bar labels ${pct}`);
+ok('renderDeck draws direct series labels, grays out non-emphasized series and derives close shares to a 100% bar');
 
 console.log(`\n${passed} checks passed.`);

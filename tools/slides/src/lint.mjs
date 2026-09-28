@@ -14,6 +14,7 @@
 
 import { iconExists } from './icons.mjs';
 import { CANVAS, MARGIN } from './geometry.mjs';
+import { DEEMPH_FLOOR_CONTRAST, compositionForm, flatPalette, seriesColors } from './chart-policy.mjs';
 
 const cpLen = (s) => [...String(s)].length;
 
@@ -326,16 +327,15 @@ export function lint(deckRoot, themeRoot) {
     }
   }
 
-  // pie-rules — composition intent の単一系列の項目数 / 合計 (ADR-0016)。
-  // 複数系列の composition は 100% 積み上げ棒に導出されるため、円グラフの規則
-  // (8 項目以内・合計 100%) の対象外。
+  // pie-rules — 円 (ドーナツ) に導出される composition の項目数 / 合計 (ADR-0016)。
+  // 複数系列は 100% 積み上げ棒、差の小さい単一系列は 100% 横棒に導出されるため
+  // (ADR-0025)、円グラフの規則 (8 項目以内・合計 100%) の対象外。
   for (const s of slides) {
     for (const ch of kinds(s, 'chart')) {
-      if (ch.intent !== 'composition') continue;
-      const series = ch.data.series || [];
-      if (series.length !== 1) continue;
+      if (ch.intent !== 'composition' || !ch.data.series) continue;
+      if (compositionForm(ch) !== 'donut') continue;
       const xs = ch.data.x || [];
-      const values = series[0].values || [];
+      const values = ch.data.series[0].values || [];
       const sum = values.reduce((a, b) => a + b, 0);
       if (xs.length >= 9) {
         add('pie-rules', 'warn', s.id, `円グラフの項目が ${xs.length} 個。8 項目以内を推奨`);
@@ -363,21 +363,32 @@ export function lint(deckRoot, themeRoot) {
   // contrast — static judgment from declared palette (no image analysis).
   const core = theme.palette.core;
   const bg = theme.palette.neutral.bg;
+  // chart の系列色は emphasis を踏まえてレンダラと同じ規則で求める (ADR-0025)。
+  // 無彩色に落とした系列どうしは同じ色で描くのが意図なので、組として比べない。
+  const flatP = flatPalette(theme.palette);
   for (const s of slides) {
     for (const ch of kinds(s, 'chart')) {
       const nSeries = ch.data.series ? ch.data.series.length : 0;
+      const cols = nSeries ? seriesColors(ch, flatP) : [];
       if (nSeries >= 2) {
-        // Grayscale separability of the core colors actually assigned.
+        // Grayscale separability of the colors actually assigned.
         for (let i = 0; i < nSeries; i++) {
           for (let j = i + 1; j < nSeries; j++) {
-            const d = Math.abs(relLuminance(core[i % core.length]) - relLuminance(core[j % core.length]));
+            if (cols[i].role === 'deemph' && cols[j].role === 'deemph') continue;
+            const d = Math.abs(relLuminance(cols[i].color) - relLuminance(cols[j].color));
             if (d < 0.12) {
               add('contrast', 'warn', s.id, `系列 ${i + 1} と ${j + 1} の色がグレースケールで判別しにくい`);
             }
           }
         }
+        const gray = cols.find((c) => c.role === 'deemph');
+        if (gray && contrastRatio(gray.color, bg) < DEEMPH_FLOOR_CONTRAST) {
+          add('contrast', 'warn', s.id, `強調しない系列の無彩色が背景に埋もれる (コントラスト ${DEEMPH_FLOOR_CONTRAST}:1 未満)`);
+        }
       } else if (nSeries === 1) {
-        if (contrastRatio(core[0], bg) < 3) {
+        // composition の単一系列は項目ごとに core を回すので、系列の色ではなく core[0] を見る
+        const c = ch.intent === 'composition' ? core[0] : cols[0].color;
+        if (contrastRatio(c, bg) < 3) {
           add('contrast', 'warn', s.id, 'データ系列と背景のコントラストが不足している');
         }
       }
@@ -426,6 +437,18 @@ export function lint(deckRoot, themeRoot) {
         } else if (!xs.includes(ann.at)) {
           add('annotation-anchor', 'error', s.id, `annotation at:"${ann.at}" が x 配列の値と一致しない`);
         }
+      }
+    }
+  }
+
+  // chart-emphasis-ref — chart の emphasis が series のラベルと一致しない (error)。
+  // annotation-anchor と同じく、表記ゆれで強調が黙って消えることを防ぐ (ADR-0025)。
+  for (const s of slides) {
+    for (const ch of kinds(s, 'chart')) {
+      if (!ch.emphasis || !ch.data.series) continue;
+      const labels = ch.data.series.map((x) => x.label);
+      for (const e of ch.emphasis) {
+        if (!labels.includes(e)) add('chart-emphasis-ref', 'error', s.id, `emphasis "${e}" が series のラベルと一致しない`);
       }
     }
   }

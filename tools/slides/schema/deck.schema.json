@@ -387,6 +387,13 @@
             }
           }
         },
+        "emphasis": {
+          "description": "強調する系列ラベル。それ以外の系列は無彩色に落ちる (ADR-0025)",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string" }
+        },
         "scale": { "type": "string" },
         "detail": { "enum": ["appendix"] }
       }

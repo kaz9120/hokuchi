@@ -82,9 +82,12 @@ theme:
 ```yaml
 deck:
   title: "..."
-  audience:                 # 聴衆プロファイル (p.34-37)。レンダリングされない設計メタデータ
-    who: "..."
-    action: "プレゼン後に取ってほしい行動"
+  message: "聴衆に理解してほしいことの 1 文"   # 中核メッセージ。各スライドの idea はこの部品 (p.39、ADR-0024)
+  audience:                 # 聴衆プロフィール (p.34-37)。レンダリングされない設計メタデータ
+    who: "..."              # 必須。集団の 1 行より、名前のつく 1〜2 人
+    why: "何を得に来たか"
+    pains: ["..."]          # pains / gains / objections は任意 (SPEC §3)
+    action: "プレゼン後に取ってほしい行動"   # 任意。message とは別の問い (p.39)
   theme: ./theme.yaml
 
 slides:

@@ -55,7 +55,7 @@ const fitFs = (base, text, avail) => {
  * (x, y) はカードの左上。アイコンの太さはテーマ由来で、強調は 1 段だけ太くする
  * (ADR-0013)。step row と環の双方が使う。
  */
-export function NodeCard({ ctx, x, y, w, h, hot, label, detail, icon, badge }) {
+export function NodeCard({ ctx, x, y, w, h, hot, label, detail, icon, badge, b = {} }) {
   const { C, fonts, scale } = ctx;
   const fsL = fitFs(hot ? scale.node + 2 : scale.node, label, w - 30);
   const fsD = detail ? fitFs(scale.axis, detail, w - 26) : scale.axis;
@@ -70,7 +70,7 @@ export function NodeCard({ ctx, x, y, w, h, hot, label, detail, icon, badge }) {
   const labelY = cursor + fsL * 0.82;
 
   return (
-    <g>
+    <g {...b}>
       <rect
         x={round(x)} y={round(y)} width={round(w)} height={round(h)} rx="18"
         fill={C.surface} stroke={hot ? C.highlight : C.line} strokeWidth={hot ? 3 : 2}
@@ -95,6 +95,7 @@ export function NodeCard({ ctx, x, y, w, h, hot, label, detail, icon, badge }) {
         />
       )}
       <text
+        className="nc-label"
         x={round(cx)} y={round(labelY)} textAnchor="middle"
         fill={hot ? C.textStrong : C.text}
         fontSize={fsL} fontWeight={fonts.wDisplay} fontFamily={fonts.display}

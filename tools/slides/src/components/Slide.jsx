@@ -3,6 +3,10 @@
 // ブランド枠 (ADR-0010) は舞台の外側にあり、role が背景グループを決め、
 // それ以外はテーマが決める。背景の foreground: light は前景を白系に反転させる
 // (.inv)。
+//
+// push で連なるスライド列 (SPEC §7.2) では、章ラベル・ロゴ・フッタを外す。
+// 画面ごと押し出す遷移のつなぎ目に装飾が挟まると、パノラマが切れて見える
+// (p.212)。判定は renderDeck が ctx.inPush に入れる。
 
 import path from 'node:path';
 
@@ -48,9 +52,9 @@ export function Slide({ slide, ctx, children }) {
           alt=""
         />
       )}
-      {slide.chapter && !isBumper && <div className="chapter">{slide.chapter}</div>}
+      {slide.chapter && !isBumper && !ctx.inPush && <div className="chapter">{slide.chapter}</div>}
       {children}
-      <BrandFrame slide={slide} ctx={ctx} inverted={inverted} />
+      {!ctx.inPush && <BrandFrame slide={slide} ctx={ctx} inverted={inverted} />}
     </div>
   );
 }

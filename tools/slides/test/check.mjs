@@ -21,6 +21,7 @@ import { loadDeck, loadTheme, normalizeEdge } from '../src/load.mjs';
 import { lint, hasError } from '../src/lint.mjs';
 import { resolveLinkOgp } from '../src/ogp.mjs';
 import { iconExists, promoteWeight } from '../src/icons.mjs';
+import { buildPlan, resolveRef } from '../src/build.mjs';
 
 // ローダー登録後に解決する (ADR-0018、cli.mjs と同じ理由)
 const { renderDeck } = await import('../src/render.mjs');
@@ -431,5 +432,115 @@ assert.ok(!noEmbedPages['index.html'].includes('class="post-embed"'),
 assert.ok(!noEmbedPages['index.html'].includes('twitter-tweet'),
   'deck with no source post gets no blockquote.twitter-tweet at all');
 ok('renderDeck adds no embed-related output when the deck has no source post (ADR-0017 決定 4)');
+
+// ---------------------------------------------------------------------------
+// (11) 段階表示と画面遷移 (SPEC §6.2 / §6.4 / §7、ADR-0025) — ステップ数の
+// 計算、静的出力が全表示になること、push 列でクロームが外れること。
+// ---------------------------------------------------------------------------
+{
+  const headline = { kind: 'statement', slot: 'headline', text: '見出し' };
+  const bulletsSlide = {
+    id: 'b', role: 'content', idea: 'x', layout: 'list-stage', elements: [
+      headline, { kind: 'bullets', slot: 'list', items: ['一', '二', '三'], reveal: 'one-by-one' },
+    ],
+  };
+  const pb = buildPlan(bulletsSlide);
+  assert.equal(pb.steps, 3, 'one-by-one: 項目数ぶんのステップ');
+  assert.deepEqual(pb.states[0], { '1.i0': 'hide', '1.i1': 'hide', '1.i2': 'hide' }, '入った直後は全項目が隠れる');
+  assert.deepEqual(pb.states[2], { '1.i0': 'dim', '1.i2': 'hide' }, '2 回送ると 1 項目目が dim、3 項目目は隠れたまま');
+  assert.deepEqual(pb.states[3], { '1.i0': 'dim', '1.i1': 'dim' });
+  assert.deepEqual(pb.final, {}, 'reveal の dim は静的出力に持ち込まない');
+
+  const diagramSlide = {
+    id: 'd', role: 'content', idea: 'x', layout: 'diagram-stage', elements: [
+      headline, {
+        kind: 'diagram', slot: 'diagram', form: 'flow.cycle', reveal: 'sequential',
+        nodes: [{ id: 'a', label: 'A' }, { id: 'b', label: 'B' }, { id: 'c', label: 'C' }],
+        edges: [{ from: 'a', to: 'b' }, { from: 'c', to: 'a' }],
+      },
+    ],
+  };
+  const pd = buildPlan(diagramSlide);
+  assert.equal(pd.steps, 3, 'sequential: ノード数ぶんのステップ');
+  assert.equal(pd.states[1]['1.e0'], 'hide', 'a だけのときは a→b はまだ出ない');
+  assert.equal(pd.states[2]['1.e0'], undefined, 'b が出たら a→b も出る');
+  assert.equal(pd.states[2]['1.e1'], 'hide', 'c→a は c が出るまで出ない');
+  assert.deepEqual(pd.states[3], {}, '最後は全部出ている');
+
+  const buildSlide = {
+    id: 'x', role: 'content', idea: 'x', layout: 'diagram-stage', elements: [
+      headline, {
+        kind: 'diagram', slot: 'diagram', form: 'flow.linear',
+        nodes: [{ id: 'p', label: 'P' }, { id: 'q', label: 'Q' }],
+      },
+    ],
+    build: [
+      { show: ['diagram'] },
+      { dim: ['diagram.p'], emphasize: ['diagram.q'] },
+      { transform: { target: 'diagram', to: 'x' } },
+      { show: ['nope'] },
+    ],
+  };
+  const px = buildPlan(buildSlide);
+  assert.equal(px.steps, 4, 'transform と未解決参照のステップも送り回数に数える');
+  assert.deepEqual(px.states[0], { 1: 'hide' }, '最初に show される要素は入った直後に隠れる');
+  assert.deepEqual(px.states[2], { '1.n.p': 'dim', '1.n.q': 'em' });
+  assert.deepEqual(px.final, { '1.n.p': 'dim', '1.n.q': 'em' }, 'build の dim / emphasize は静的出力に残る');
+  assert.deepEqual(px.unresolved, ['nope']);
+  assert.equal(resolveRef(buildSlide, 'headline'), '0', '名前付きパターンの要素は slot 名で引ける');
+  assert.equal(resolveRef(buildSlide, 'diagram.zzz'), null, '存在しないノードは解決しない');
+  assert.equal(resolveRef({ elements: [{ kind: 'image', id: 'hero', src: 'x' }] }, 'hero'), '0', 'grid-direct の要素は id で引ける');
+  assert.equal(buildPlan({ ...buildSlide, build: undefined }), null, '段階表示の無いスライドは計画を持たない');
+
+  const buildDeck = {
+    schema_version: '0.3.0',
+    deck: { title: '段階表示の検証', audience: { who: 'テスト', action: 'テスト' }, theme: './theme.yaml' },
+    slides: [
+      bulletsSlide, diagramSlide, buildSlide,
+      { id: 'pa', role: 'content', idea: 'x', chapter: '章', layout: 'statement-stage',
+        elements: [{ kind: 'statement', slot: 'statement', text: 'a' }] },
+      { id: 'pb', role: 'content', idea: 'x', chapter: '章', layout: 'statement-stage', connect: 'push-left',
+        elements: [{ kind: 'statement', slot: 'statement', text: 'b' }] },
+      { id: 'pc', role: 'content', idea: 'x', chapter: '章', layout: 'statement-stage', connect: 'cut',
+        elements: [{ kind: 'statement', slot: 'statement', text: 'c' }] },
+    ],
+  };
+  assert.equal(validateDeckSchema(buildDeck), true, JSON.stringify(validateDeckSchema.errors));
+  const html = renderDeck(buildDeck, theme, {
+    deckDir: path.dirname(deckPath), themeDir: path.dirname(themePath),
+  }).pages['index.html'];
+  const section = (id) => html.slice(html.indexOf(`data-slide-id="${id}"`), html.indexOf('</section>', html.indexOf(`data-slide-id="${id}"`)));
+
+  assert.ok(!/data-bx="hide"/.test(html), '静的出力に hide は書かれない (全ステップ表示後の姿)');
+  assert.equal((section('b').match(/data-b="1\.i\d"/g) || []).length, 3, '箇条書きの各項目が対象になる');
+  assert.ok(!/data-bx=/.test(section('b')), 'reveal の箇条書きは静的出力で全項目が通常の濃さ');
+  assert.ok(/data-b="1\.n\.p" data-bx="dim"/.test(section('x')), 'build の dim が静的出力に焼き込まれる');
+  assert.ok(/data-b="1\.n\.q" data-bx="em"/.test(section('x')), 'build の emphasize が静的出力に焼き込まれる');
+  assert.ok(/data-b="1\.e1"/.test(section('d')), 'cycle の弧はエッジの添字で対象になる');
+
+  const builds = JSON.parse(html.match(/<script type="application\/json" id="hokuchi-builds">([^<]*)<\/script>/)[1]);
+  assert.deepEqual(Object.keys(builds), ['1', '2', '3'], '段階表示を持つスライドだけが計画を持つ (1 起点)');
+  assert.equal(builds[1].steps, 3);
+  assert.equal(builds[1].states.length, 4);
+
+  assert.ok(/data-slide-id="pb" data-connect="push-left"/.test(html), 'push の接続が section に載る');
+  assert.ok(!/data-connect="cut"/.test(html), 'cut は既定の切り替えなので載せない');
+  assert.ok(!section('pa').includes('class="chapter"'), 'push 列の起点は chapter を外す');
+  assert.ok(!section('pb').includes('class="chapter"'), 'push で入るスライドは chapter を外す');
+  assert.ok(section('pc').includes('class="chapter"'), 'cut で入る列外のスライドは chapter を残す');
+
+  const plain = renderDeck(deck, theme, {
+    deckDir: path.dirname(deckPath), themeDir: path.dirname(themePath),
+  }).pages['index.html'];
+  const plainNoBuild = structuredClone(deck);
+  for (const s of plainNoBuild.slides) for (const e of s.elements) delete e.reveal;
+  const plainHtml = renderDeck(plainNoBuild, theme, {
+    deckDir: path.dirname(deckPath), themeDir: path.dirname(themePath),
+  }).pages['index.html'];
+  assert.ok(!/data-b=/.test(plainHtml) && !plainHtml.includes('id="hokuchi-builds"'),
+    '段階表示の無いデッキは対象属性も計画も出さない');
+  assert.ok(plain.includes('id="hokuchi-builds"'), 'intent-talk の reveal は計画を出す');
+  ok('段階表示: ステップ数の計算、静的出力の全表示、push 列でクロームを外す (ADR-0025)');
+}
 
 console.log(`\n${passed} checks passed.`);

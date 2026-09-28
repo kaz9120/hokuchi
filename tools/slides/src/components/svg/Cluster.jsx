@@ -4,7 +4,6 @@
 // 環上の座標そのものは render.mjs の ringPositions と ringArcEdge が出す。
 // ここはその結果を受け取って描く。
 
-import { Fragment } from 'react';
 import { round } from '../../geometry.mjs';
 import { estW } from '../../text.mjs';
 import { ArrowDef, NodeCard, SvgLead, markerRef } from './Primitives.jsx';
@@ -59,7 +58,7 @@ export function Overlap({ el, box, ctx, r, dist }) {
       <g>
         {el.nodes.map((nd, i) => (
           <circle
-            key={nd.id}
+            key={nd.id} {...ctx.b.node(el, nd.id)}
             cx={round(centers[i].x)} cy={round(centers[i].y)} r={round(r)}
             fill={C.surface} fillOpacity="0.55"
             stroke={emph.has(nd.id) ? C.highlight : C.line}
@@ -67,7 +66,7 @@ export function Overlap({ el, box, ctx, r, dist }) {
           />
         ))}
       </g>
-      <g>
+      <g {...ctx.b.shared(el)}>
         {el.shared?.emphasis && (
           <defs>
             {Array.from({ length: n - 1 }, (_, i) => (
@@ -98,7 +97,7 @@ export function Overlap({ el, box, ctx, r, dist }) {
           const lx = c.x + ((c.x - gx) / dl) * r * 0.32;
           const ly = c.y + ((c.y - gy) / dl) * r * 0.32;
           return (
-            <Fragment key={nd.id}>
+            <g key={nd.id} {...ctx.b.node(el, nd.id)}>
               <text
                 x={round(lx)} y={round(ly)} textAnchor="middle"
                 fill={hot ? C.textStrong : C.text}
@@ -115,7 +114,7 @@ export function Overlap({ el, box, ctx, r, dist }) {
                   {nd.detail}
                 </text>
               )}
-            </Fragment>
+            </g>
           );
         })}
       </g>
@@ -134,6 +133,7 @@ export function Enclosed({ el, box, ctx, members, cardW, cardH, gap, headH }) {
   const x0 = (box.w - rowW) / 2;
   return (
     <SvgLead box={box}>
+      <g {...ctx.b.node(el, group.id)}>
       <rect
         x="0" y="0" width={round(box.w)} height={round(box.h)} rx="22"
         fill={C.surface} fillOpacity="0.45"
@@ -154,12 +154,14 @@ export function Enclosed({ el, box, ctx, members, cardW, cardH, gap, headH }) {
           {group.detail}
         </text>
       )}
+      </g>
       {members.map((nd, i) => (
         <NodeCard
           key={nd.id}
           ctx={ctx}
           x={x0 + i * (cardW + gap)} y={headH} w={cardW} h={cardH}
           hot={emph.has(nd.id)} label={nd.label} detail={nd.detail} icon={nd.icon} badge={null}
+          b={ctx.b.node(el, nd.id)}
         />
       ))}
     </SvgLead>
@@ -188,7 +190,7 @@ export function RingCluster({ el, box, ctx, cardW, cardH, pos, exitRect }) {
     let nx = -(p2.y - p1.y) / dl, ny = (p2.x - p1.x) / dl;
     if (nx * (mx - box.w / 2) + ny * (my - box.h / 2) < 0) { nx = -nx; ny = -ny; }
     return (
-      <Fragment key={k}>
+      <g key={k} {...ctx.b.edge(el, k)}>
         <line
           x1={round(p1.x)} y1={round(p1.y)} x2={round(p2.x)} y2={round(p2.y)}
           stroke={C.muted} strokeWidth="2.5" opacity="0.7"
@@ -201,7 +203,7 @@ export function RingCluster({ el, box, ctx, cardW, cardH, pos, exitRect }) {
             {e.label}
           </text>
         )}
-      </Fragment>
+      </g>
     );
   });
 
@@ -217,6 +219,7 @@ export function RingCluster({ el, box, ctx, cardW, cardH, pos, exitRect }) {
               ctx={ctx}
               x={rc.x} y={rc.y} w={rc.w} h={rc.h}
               hot={emph.has(n.id)} label={n.label} detail={n.detail} icon={n.icon} badge={null}
+              b={ctx.b.node(el, n.id)}
             />
           );
         })}
@@ -246,7 +249,7 @@ export function Radial({ el, box, ctx, cardW, cardH, pts, exitRect }) {
       const p2 = exitRect(b, a, rectFor(b), 14);
       return (
         <line
-          key={k}
+          key={k} {...ctx.b.edge(el, k)}
           x1={round(p1.x)} y1={round(p1.y)} x2={round(p2.x)} y2={round(p2.y)}
           stroke={C.muted} strokeWidth="3" markerEnd={markerRef(ctx)}
         />
@@ -258,7 +261,7 @@ export function Radial({ el, box, ctx, cardW, cardH, pts, exitRect }) {
       const p2 = exitRect(p, pts[core.id], rectFor(p), 8);
       return (
         <line
-          key={n.id}
+          key={n.id} {...ctx.b.node(el, n.id)}
           x1={round(p1.x)} y1={round(p1.y)} x2={round(p2.x)} y2={round(p2.y)}
           stroke={C.muted} strokeWidth="2" opacity="0.6"
         />
@@ -278,6 +281,7 @@ export function Radial({ el, box, ctx, cardW, cardH, pts, exitRect }) {
               ctx={ctx}
               x={rc.x} y={rc.y} w={rc.w} h={rc.h}
               hot={emph.has(n.id)} label={n.label} detail={n.detail} icon={n.icon} badge={null}
+              b={ctx.b.node(el, n.id)}
             />
           );
         })}
@@ -302,7 +306,7 @@ export function Cycle({ el, box, ctx, cardW, cardH, pos, arcs }) {
       <g>
         {arcs.map((arc, k) => (
           <path
-            key={k}
+            key={k} {...ctx.b.edge(el, arc.index)}
             d={arc.d} fill="none" stroke={C.muted} strokeWidth="3" markerEnd={markerRef(ctx)}
           />
         ))}
@@ -314,13 +318,14 @@ export function Cycle({ el, box, ctx, cardW, cardH, pos, arcs }) {
             ctx={ctx}
             x={n.x - cardW / 2} y={n.y - cardH / 2} w={cardW} h={cardH}
             hot={emph.has(n.id)} label={n.label} detail={n.detail} icon={n.icon} badge={null}
+            b={ctx.b.node(el, n.id)}
           />
         ))}
       </g>
       <g>
         {arcs.map((arc, k) => arc.label && arc.text && (
           <text
-            key={k}
+            key={k} {...ctx.b.edge(el, arc.index)}
             x={round(arc.label.x)} y={round(arc.label.y)} textAnchor={arc.label.anchor}
             fill={C.muted} fontSize={scale.axis} fontFamily={fonts.body}
           >

@@ -30,7 +30,7 @@ export function GridDirect({ slide, ctx, renderCell }) {
         const style = cellStyle(a.cell);
         if (el.kind === 'statement' || el.kind === 'quote') {
           return (
-            <div className="grid-cell" style={style} key={i}>
+            <div className="grid-cell" style={style} key={i} {...ctx.b.el(el)}>
               <div className="grid-caption jp">
                 <InlineText text={el.text} emphasis={el.kind === 'statement' ? el.emphasis : undefined} />
               </div>
@@ -38,7 +38,7 @@ export function GridDirect({ slide, ctx, renderCell }) {
           );
         }
         return (
-          <div className="grid-cell" style={style} key={i}>
+          <div className="grid-cell" style={style} key={i} {...ctx.b.el(el)}>
             {renderCell(el)}
           </div>
         );

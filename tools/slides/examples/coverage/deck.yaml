@@ -449,6 +449,115 @@ slides:
     notes: |
       検証点: 行間、ドット位置、長文項目の折り返し。
 
+  # --- 段階表示と画面遷移 (SPEC §6.2 / §6.4 / §7、ADR-0025) ---
+  # 静的出力 (shot・一覧) は全ステップを表示し終えた姿になる。SPA で → を
+  # 押して、ステップが進んでから次のスライドへ移ることを確かめる。
+  - id: bullets-reveal
+    role: content
+    idea: "bullets.reveal: 1 項目ずつ出し、済んだ項目は dim"
+    layout: list-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "1 項目ずつ出す (reveal: one-by-one)"
+      - kind: bullets
+        slot: list
+        items:
+          - "話していない項目は隠す"
+          - "済んだ項目はグレーにする"
+          - "静的出力では全項目が同じ濃さ"
+        reveal: one-by-one
+    notes: |
+      検証点: 入った直後は見出しだけ。→ 3 回で 3 項目が順に出て、前の項目が dim
+      になる。shot では 3 項目とも通常の濃さ。
+
+  - id: diagram-reveal
+    role: content
+    idea: "diagram.reveal: ノードを順に出し、エッジは両端がそろったら出す"
+    layout: diagram-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "図を順に出す (reveal: sequential)"
+      - kind: diagram
+        slot: diagram
+        form: flow.cycle
+        nodes:
+          - { id: write, label: "書く" }
+          - { id: render, label: "描画する" }
+          - { id: check, label: "目で見る" }
+        edges:
+          - write -> render
+          - render -> check
+          - { from: check, to: write, label: "次の周へ" }
+        reveal: sequential
+    notes: |
+      検証点: → ごとにノードが 1 枚ずつ出る。「次の周へ」の弧は最後のノードと
+      同時に出る (両端がそろうのがそこだから)。
+
+  - id: build-explicit
+    role: content
+    idea: "build: show → dim + emphasize の明示ステップ"
+    layout: diagram-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "どこで詰まっているか"
+      - kind: diagram
+        slot: diagram
+        form: flow.linear
+        nodes:
+          - { id: plan, label: "計画" }
+          - { id: build, label: "実装" }
+          - { id: review, label: "レビュー" }
+        edges: [plan -> build, build -> review]
+    build:
+      - show: [diagram]
+      - dim: [diagram.plan, diagram.build]
+        emphasize: [diagram.review]
+    notes: |
+      検証点: 入った直後は見出しだけ。→ で図が出て、次の → で計画と実装が dim、
+      レビューが強調される。静的出力は最後の姿 (dim と強調が残る)。
+
+  - id: panorama-1
+    role: content
+    chapter: "段階表示"
+    idea: "connect: push の起点。push 列の一部なので chapter・ロゴ・フッタが外れる"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "1 枚目から"
+    notes: |
+      検証点: chapter を書いてあるが描かれない。ロゴとフッタも無い。
+
+  - id: panorama-2
+    role: content
+    chapter: "段階表示"
+    idea: "connect: push-left。画面ごと左へ押し出して、つながった 1 枚に見せる"
+    layout: statement-stage
+    connect: push-left
+    elements:
+      - kind: statement
+        slot: statement
+        text: "横へつながり"
+    notes: |
+      検証点: → で 1 枚目が左へ押し出され、この 1 枚が右から入る。← で逆向き。
+
+  - id: panorama-3
+    role: content
+    chapter: "段階表示"
+    idea: "connect: push-up。縦のつなぎ"
+    layout: statement-stage
+    connect: push-up
+    elements:
+      - kind: statement
+        slot: statement
+        text: "下へ抜ける"
+    notes: |
+      検証点: → で 2 枚目が上へ押し出され、この 1 枚が下から入る。次のスライド
+      は cut なので、この 1 枚までが push 列。
+
   # chart-comparison と隣接させない (軸域が違うので axis-lock の共有対象ではない)
   - id: chart-distribution
     role: content

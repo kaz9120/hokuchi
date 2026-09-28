@@ -20,6 +20,7 @@ import qrcode from 'qrcode-generator';
 import { iconExists, iconInner, promoteWeight } from './icons.mjs';
 import { cpLen, esc, estW, estimateWrappedLines } from './text.mjs';
 import { CANVAS, MARGIN, boxStyle, round, stageRect } from './geometry.mjs';
+import { buildPlan, edgeKey, elementKey, inPushChain, itemKey, nodeKey, sharedKey } from './build.mjs';
 import { InlineText } from './components/InlineText.jsx';
 import { GridDirect } from './components/GridDirect.jsx';
 import { ProfileStage } from './components/ProfileStage.jsx';
@@ -102,7 +103,7 @@ function makeContext(deckRoot, themeRoot, opts = {}) {
     return rel;
   }
 
-  return {
+  const ctx_ = {
     deck: deckRoot.deck,
     slides: deckRoot.slides,
     grid: { rows: T.grid.rows ?? 6, pattern: T.grid.pattern },
@@ -124,6 +125,16 @@ function makeContext(deckRoot, themeRoot, opts = {}) {
     themeDir: opts.themeDir || process.cwd(),
     assets,
     useAsset,
+    // 段階表示の対象に付ける属性 (SPEC §7.1, ADR-0025)。計画 (ctx.plan) は
+    // renderSlide がスライドごとに差し替える。段階表示の無いスライドでは空で、
+    // 出力は従来と 1 バイトも変わらない。
+    b: {
+      el: (el) => bAttrs(ctx_, elementKey(ctx_.slide, el)),
+      item: (el, i) => bAttrs(ctx_, itemKey(elementKey(ctx_.slide, el), i)),
+      node: (el, id) => bAttrs(ctx_, nodeKey(elementKey(ctx_.slide, el), id)),
+      edge: (el, i) => bAttrs(ctx_, edgeKey(elementKey(ctx_.slide, el), i)),
+      shared: (el) => bAttrs(ctx_, sharedKey(elementKey(ctx_.slide, el))),
+    },
     C: {
       bg: P.neutral.bg,
       surface: P.neutral.surface,
@@ -135,6 +146,17 @@ function makeContext(deckRoot, themeRoot, opts = {}) {
       core: P.core,
     },
   };
+  return ctx_;
+}
+
+/**
+ * 段階表示の対象に付ける属性。data-b は対象の key、data-bx は現在の状態
+ * (静的出力では最終ステップの姿)。実行時スクリプトが data-bx を書き換える。
+ */
+function bAttrs(ctx, key) {
+  if (!ctx.plan) return {};
+  const v = ctx.plan.final[key];
+  return v ? { 'data-b': key, 'data-bx': v } : { 'data-b': key };
 }
 
 // ---------------------------------------------------------------------------
@@ -606,12 +628,12 @@ function cycleNode(el, box, ctx) {
   ]));
 
   const arcs = [];
-  for (const edge of el.edges || []) {
+  (el.edges || []).forEach((edge, index) => {
     const a = byId[edge.from], b = byId[edge.to];
-    if (!a || !b) continue; // edge-ref lint が報告する。描画は黙って飛ばす
+    if (!a || !b) return; // edge-ref lint が報告する。描画は黙って飛ばす
     const arc = ringArcEdge(a, b, ring, rects, ctx);
-    if (arc) arcs.push({ ...arc, text: edge.label });
-  }
+    if (arc) arcs.push({ ...arc, text: edge.label, index });
+  });
   return createElement(Cycle, { el, box, ctx, cardW, cardH, pos, arcs });
 }
 
@@ -1177,6 +1199,8 @@ function leadStage(slide, ctx, slotName, measureFn, align = 'center') {
   return createElement(Stage, {
     headlineHtml: head ? inlineText(head.text, head.emphasis) : null,
     headFontSize: ctx.scale.heading,
+    headB: head ? ctx.b.el(head) : {},
+    leadB: ctx.b.el(el),
     lead: m.render({ w: m.w, h: m.h }),
     leadW: round(m.w),
     leadH: round(m.h),
@@ -1213,7 +1237,9 @@ function measureList(el, ctx, avail) {
   const h = Math.min(avail.h, estH(fs) + (n - 1) * gap);
   return {
     w: avail.w, h: round(h),
-    render: () => createElement(Bullets, { items: el.items, fs, gap, indent }),
+    render: () => createElement(Bullets, {
+      items: el.items, fs, gap, indent, itemB: (i) => ctx.b.item(el, i),
+    }),
   };
 }
 
@@ -1357,6 +1383,8 @@ const stripPreloads = (html) => html.replace(/<link rel="preload"[^>]*\/>/g, '')
 
 function renderSlide(slide, ctx) {
   ctx.slideKey = slide.id; // namespaces intra-SVG ids in the single-document SPA
+  ctx.slide = slide;
+  ctx.plan = buildPlan(slide);
   const body = renderSlideBody(slide, ctx);
   return stripPreloads(renderToStaticMarkup(createElement(Slide, { slide, ctx }, body)));
 }
@@ -1627,7 +1655,33 @@ svg.lead{display:block;max-width:100%;max-height:100%;overflow:visible}
 .inv .table-rule{background:rgba(255,255,255,.5)}
 .inv .agenda-num{color:rgba(255,255,255,.65)}
 
-.err{color:${C.highlight};font-size:28px}`;
+.err{color:${C.highlight};font-size:28px}
+${buildCss(ctx)}`;
+}
+
+/**
+ * 段階表示の見た目 (SPEC §6.2 / §6.4 / §7.1、ADR-0025)。data-bx が状態を持つ。
+ * 動きはフェードだけにする — 本は意味のない動きを退けている (p.200, p.220)。
+ * hide は発表中 (body.deck) だけ効く。一覧モードと静的出力は hide を持たない。
+ * 要素全体への emphasize は、見出しを除いて見た目を持たない (要素の中の
+ * 何を強めるかは要素ごとに違い、全体を一律に塗ると主役が崩れるため)。
+ */
+function buildCss(ctx) {
+  const { C, fonts } = ctx;
+  return `
+[data-b]{transition:opacity .3s ease,visibility .3s}
+body.deck [data-bx=hide]{opacity:0;visibility:hidden}
+[data-bx=dim]{opacity:.3}
+.headline[data-bx=em]{color:${C.highlight}}
+.bullets li[data-bx=em]{color:${C.textStrong};font-weight:${fonts.wDisplay}}
+.inv .bullets li[data-bx=em]{color:#ffffff}
+g[data-bx=em]>rect{stroke:${C.highlight};stroke-width:3}
+g[data-bx=em]>.nc-label{fill:${C.textStrong}}
+g[data-bx=em]>circle{fill:${C.highlight}}
+circle[data-bx=em]{stroke:${C.highlight};stroke-width:3}
+g[data-bx=em]>path,g[data-bx=em]>line,path[data-bx=em],line[data-bx=em]{stroke:${C.highlight}}
+text[data-bx=em]{fill:${C.highlight}}
+@media (prefers-reduced-motion:reduce){[data-b]{transition:none}}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -1636,8 +1690,10 @@ svg.lead{display:block;max-width:100%;max-height:100%;overflow:visible}
 // Every slide lives in the single index.html as <section class="page" id="pNN">.
 // The load-bearing mechanism is CSS :target — deck mode shows exactly the slide
 // named by the URL hash with no JS required, which keeps shot (headless Chrome
-// on index.html#pNN) independent of script timing. JS adds only keyboard
-// navigation, viewport scaling, and the g-key list-mode toggle.
+// on index.html#pNN) independent of script timing. JS adds keyboard
+// navigation (段階表示のステップ送りと push 遷移を含む、ADR-0025), viewport
+// scaling, and the g-key list-mode toggle. The static markup already carries
+// the fully-built state, so no-JS / shot output never hides anything.
 // ---------------------------------------------------------------------------
 const num = (i) => String(i + 1).padStart(2, '0');
 
@@ -1653,8 +1709,8 @@ body{background:${galleryBg};font-family:${ctx.fonts.body}}
 /* deck mode — one slide at a time, selected purely by :target */
 body.deck{overflow:hidden}
 body.deck .page{display:none}
-body.deck .page:target{display:flex;position:fixed;inset:0;align-items:center;justify-content:center}
-body.deck .page:target .frame{transform:scale(var(--s,1))}
+body.deck .page:target,body.deck .page.leaving{display:flex;position:fixed;inset:0;align-items:center;justify-content:center}
+body.deck .page:target .frame,body.deck .page.leaving .frame{transform:scale(var(--s,1))}
 body.deck .cap,body.deck .deck-head{display:none}
 
 /* list mode (g key) — all slides stacked with captions, for review/annotation */
@@ -1669,23 +1725,79 @@ body.list .deck-head{width:${CANVAS.w}px;margin:0 auto 44px;color:${ctx.C.text}}
 .deck-head p{color:${ctx.C.muted};margin-top:10px;font-size:18px}`;
 }
 
-/** Hash navigation (← → Space Home End), fit-to-viewport scale, g = list mode. */
+/**
+ * 発表の操作 (ADR-0012、ADR-0025)。
+ *
+ * - → / Space / PageDown は、そのスライドの段階表示を 1 ステップ進め、
+ *   出し切ったら次のスライドへ移る。← / PageUp は逆にたどる。前のスライドへ
+ *   戻ったときは、そのスライドの最終ステップから始まる
+ * - スライドの選択は従来どおり CSS :target が担う。ページを開いた直後や、
+ *   ブラウザの戻る・URL の直接入力で移ったときは、段階表示を当てない静的な
+ *   姿 (全ステップ表示後) のまま。shot はこの経路なので、スクリプトの
+ *   タイミングに依存しない
+ * - connect: push-* のスライドへ隣から移るときは、2 枚を並べて押し出す
+ *   (SPEC §7.2)。戻るときは逆向きに押し戻す。動きを減らす設定では切り替えるだけ
+ * - g で一覧モード。一覧に入るときは静的な姿に戻す
+ */
 function navScript(total) {
   return `<script>(()=>{const total=${total},pad=n=>String(n).padStart(2,'0');
+const bs=document.getElementById('hokuchi-builds'),B=bs?JSON.parse(bs.textContent):{};
 const cur=()=>{const m=location.hash.match(/^#p(\\d+)$/);return m?Number(m[1]):1};
-const go=n=>{if(n>=1&&n<=total)location.hash='#p'+pad(n)};
+const page=n=>document.getElementById('p'+pad(n));
+const nSteps=n=>B[n]?B[n].steps:0;
+const paint=(n,st)=>{const p=page(n);if(!p||!B[n])return;
+for(const el of p.querySelectorAll('[data-b]')){const v=st[el.dataset.b];
+if(v)el.setAttribute('data-bx',v);else el.removeAttribute('data-bx')}};
+const still=n=>{if(B[n])paint(n,B[n].final)};
+let step=null,at=cur(),settle=null;
+const setStep=(n,k)=>{step=k;if(B[n])paint(n,k==null?B[n].final:B[n].states[k])};
 const fit=()=>document.documentElement.style.setProperty('--s',Math.min(innerWidth/${CANVAS.w},innerHeight/${CANVAS.h}));
+const reduce=matchMedia('(prefers-reduced-motion: reduce)');
+const DIR={'push-left':[-1,0],'push-right':[1,0],'push-up':[0,-1],'push-down':[0,1]};
+const push=(from,to,[dx,dy],back)=>{const s=back?-1:1,W=innerWidth,H=innerHeight;
+const tr=f=>'translate('+f*dx*W+'px,'+f*dy*H+'px)';
+from.classList.add('leaving');
+const o={duration:450,easing:'cubic-bezier(.4,0,.2,1)'};
+const a=from.animate([{transform:tr(0)},{transform:tr(s)}],o),b=to.animate([{transform:tr(-s)},{transform:tr(0)}],o);
+return()=>{a.cancel();b.cancel();from.classList.remove('leaving')}};
+const enter=(n,k,dir)=>{if(n<1||n>total)return;const from=at;
+if(settle){settle();settle=null}
+setStep(n,k);at=n;location.hash='#p'+pad(n);
+if(from===n)return;
+const conn=dir>0?page(n).dataset.connect:dir<0?page(from).dataset.connect:null;
+if(conn&&DIR[conn]&&!reduce.matches&&page(from)){
+const done=push(page(from),page(n),DIR[conn],dir<0);
+const t=setTimeout(()=>{if(settle===fin){settle=null;fin()}},460);
+const fin=()=>{clearTimeout(t);done();still(from)};settle=fin}
+else still(from)};
+const next=()=>{const n=cur();if(step!=null&&step<nSteps(n))setStep(n,step+1);else enter(n+1,0,1)};
+const prev=()=>{const n=cur();if(step!=null&&step>0)setStep(n,step-1);else enter(n-1,nSteps(n-1),-1)};
+addEventListener('hashchange',()=>{const n=cur();if(n===at)return;
+if(settle){settle();settle=null}still(at);at=n;step=null;still(n)});
+addEventListener('beforeprint',()=>still(cur()));
+addEventListener('afterprint',()=>{if(step!=null)setStep(cur(),step)});
 if(!location.hash)location.replace('#p01');
 fit();addEventListener('resize',fit);
-addEventListener('keydown',e=>{if(e.defaultPrevented)return;const t=e.target;
+addEventListener('keydown',e=>{if(e.defaultPrevented)return;const t=e.composedPath?e.composedPath()[0]:e.target;
 if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable))return;
 if(e.key==='g'){const b=document.body,list=b.classList.toggle('list');b.classList.toggle('deck',!list);
-if(list)document.getElementById('p'+pad(cur()))?.scrollIntoView({block:'start'});return}
+if(list){if(settle){settle();settle=null}still(cur());step=null;document.getElementById('p'+pad(cur()))?.scrollIntoView({block:'start'})}return}
 if(document.body.classList.contains('list'))return;
-if(e.key==='ArrowRight'||e.key===' ')go(cur()+1);
-else if(e.key==='ArrowLeft')go(cur()-1);
-else if(e.key==='Home')go(1);
-else if(e.key==='End')go(total)})})()</script>`;
+if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){e.preventDefault();next()}
+else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();prev()}
+else if(e.key==='Home')enter(1,0,0);
+else if(e.key==='End')enter(total,0,0)})})()</script>`;
+}
+
+/** 段階表示の計画 (build.mjs) を実行時スクリプトへ渡す。無ければ何も出さない。 */
+function buildsJson(plans) {
+  const entries = plans
+    .map((p, i) => p && [i + 1, { steps: p.steps, states: p.states, final: p.final }])
+    .filter(Boolean);
+  if (!entries.length) return '';
+  // </script> で閉じられないよう < を逃がす
+  const json = JSON.stringify(Object.fromEntries(entries)).replace(/</g, '\\u003c');
+  return `<script type="application/json" id="hokuchi-builds">${json}</script>`;
 }
 
 /**
@@ -1729,12 +1841,17 @@ export function renderDeck(deckRoot, themeRoot, opts = {}) {
   // ctx.slideIndex is scoped per slide (agenda needs its own document
   // position to find the chapter strictly before it) — same one-context,
   // set-before-use pattern as ctx.slideKey below in renderSlide.
+  const plans = [];
   const sections = ctx.slides.map((s, i) => {
     ctx.slideIndex = i;
+    ctx.inPush = inPushChain(ctx.slides, i);
+    const frame = renderSlide(s, ctx);
+    plans.push(ctx.plan);
+    const connect = s.connect && s.connect !== 'cut' ? ` data-connect="${esc(s.connect)}"` : '';
     return `
-  <section class="page" id="p${num(i)}" data-slide-id="${esc(s.id)}">
+  <section class="page" id="p${num(i)}" data-slide-id="${esc(s.id)}"${connect}>
     <div class="cap"><b>${num(i)} · ${esc(s.id)}</b> &nbsp; ${esc(typeof s.layout === 'object' ? 'grid-direct' : s.layout)} · role:${esc(s.role)}<br>idea: ${esc(s.idea)}${s.notes ? `<div class="notes">${esc(String(s.notes).trim())}</div>` : ''}</div>
-    <div class="frame">${renderSlide(s, ctx)}</div>
+    <div class="frame">${frame}</div>
   </section>`;
   }).join('');
 
@@ -1756,7 +1873,7 @@ ${fontLinks}
 <style>${css(ctx)}${spaCss(ctx)}</style>
 </head><body class="deck" data-slides="${total}">${head}
 <main>${sections}
-</main>${navScript(total)}${hasPostEmbed ? postEmbedScript() : ''}</body></html>`;
+</main>${buildsJson(plans)}${navScript(total)}${hasPostEmbed ? postEmbedScript() : ''}</body></html>`;
 
   return { pages: { 'index.html': doc }, assets: ctx.assets };
 }

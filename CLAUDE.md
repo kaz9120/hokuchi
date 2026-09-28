@@ -1,14 +1,14 @@
 # hokuchi（火口）
 
-発信に関するツールとドキュメントを置くリポジトリ。ブランド定義は `BRAND.md`（ビジュアルの一次ソース。実装トークンは hidoko の `packages/ui/src/tokens.css`）。
+発信に関するツールとドキュメントを置くリポジトリです。ブランド定義は `BRAND.md` にあります（ビジュアルの一次ソースです。実装トークンは hidoko の `packages/ui/src/tokens.css` にあります）。
 
 ## 意思決定の記録
 
-設計判断はすべて `docs/adr/` に ADR として記録する。フォーマットと索引は `docs/adr/README.md`。ADR は不変で、決定を変えるときは新しい ADR を書いて古い方を廃止にする。各ツールの `docs/design.md` は生きた設計書で、常に現在の設計を描く。
+設計判断はすべて、`docs/adr/` に ADR として記録します。フォーマットと索引は `docs/adr/README.md` にあります。ADR は書き換えません。決定を変えるときは新しい ADR を書き、古い方を廃止にします。各ツールの `docs/design.md` は生きた設計書で、いつも現在の設計を描いています。
 
 ## ディレクトリ
 
-発信物（コンテンツ）が主役、ツールは脇役。root は発信形態ごとのコンテンツと tools/ で構成する（ADR-0009）。
+主役は発信物（コンテンツ）で、ツールは脇役です。root は、発信形態ごとのコンテンツと tools/ で構成しています（ADR-0009）。
 
 ```
 docs/adr/          意思決定の記録（リポジトリ全体で単一系列）
@@ -42,12 +42,22 @@ tools/
   writing-note/           note の記事を書く skill（Phase 0〜7。ADR-0020）
 ```
 
-note の記事を書く依頼は writing-note skill に従う。原稿は `articles/note/drafts/<slug>/` に置き、`hokuchi-note lint` で文体を検査する。文体の規範は公開済み 44 本の実測から引いているので、記事が増えたら測り直す（ADR-0020）。
+## note の記事
 
-公開済み記事は `hokuchi-note sync`（`tools/notes`）で取り込む。`index.md` は生成物なので手で直さず、変換規則を直して `build` を回す。取り込みの欠落は `verify` が検査するので、記事を足したら必ず通す（ADR-0019）。
+記事を書く依頼は、writing-note skill に従ってください。原稿は `articles/note/drafts/<slug>/` に置き、`hokuchi-note lint` で文体を検査します。文体の規範は、公開済み記事の実測（2026-09 時点で 44 本）から引いています。記事が増えたら測り直してください（ADR-0020）。
 
-スライドを作る依頼は crafting-presentation skill に従う。デッキは `talks/<YYYY-MM-slug>/deck.yaml` に置く。テーマは登壇の立場で選び、相対パスで参照する（個人は `tools/slides/themes/hokuchi.yaml`、MOSH としては `tools/slides/themes/mosh.yaml`。コピーしない。ADR-0010）。発表が終わったら最終レンダリングを `final/` にコミットして凍結する。レンダラは進化するので、deck.yaml だけでは当時の見た目を再現できない。人間の細かいレビューは `hokuchi serve` のアノテーション (ADR-0011) で受ける。
+公開済みの記事は、`hokuchi-note sync` で取り込みます。`index.md` は生成物なので、手では直しません。直したいときは変換規則を直して、`build` を回します。取り込みの欠落は `verify` が検査するので、記事を足したら必ず通してください（ADR-0019）。
+
+`hokuchi-note` が PATH に無いときは、リポジトリのルートから `node tools/notes/cli.mjs <サブコマンド>` で同じように動きます。
+
+## スライド
+
+スライドを作る依頼は、crafting-presentation skill に従ってください。デッキは `talks/<YYYY-MM-slug>/deck.yaml` に置きます。
+
+テーマは登壇の立場で選び、相対パスで参照します。個人としては `tools/slides/themes/hokuchi.yaml`、MOSH としては `tools/slides/themes/mosh.yaml` です。コピーはしません（ADR-0010）。
+
+発表が終わったら、最終レンダリングを `final/` にコミットして凍結します。レンダラは進化していくので、deck.yaml だけでは当時の見た目を再現できないためです。人間の細かいレビューは、`hokuchi serve` のアノテーションで受けます（ADR-0011）。
 
 ## コミット
 
-コミットメッセージは日本語、1 行目は「〜を追加」「〜を修正」のように変更内容を書く。
+コミットメッセージは日本語で書きます。1 行目には「〜を追加」「〜を修正」のように、変更内容を書いてください。

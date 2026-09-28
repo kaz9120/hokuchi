@@ -1,10 +1,10 @@
 # 要素と form の選択ガイド
 
-Phase 5 で「伝えたいこと」を要素と form に翻訳するための判断表。要素は 15 種 (statement / bullets / image / diagram / chart / quote / code / post / link / stat / table / versus / agenda / video / raw)。slide:ology 第 3〜4 章、SPEC 第 6 章、ADR-0016 に対応する。
+Phase 5 で「伝えたいこと」を要素と form に翻訳するための判断表です。要素は 15 種あります (statement / bullets / image / diagram / chart / quote / code / post / link / stat / table / versus / agenda / video / raw)。slide:ology 第 3〜4 章、SPEC 第 6 章、ADR-0016 に対応しています。
 
 ## 0. まず何を選ぶか — 判断の入口
 
-伝えたいことの形から要素を選ぶ。上から順に当てはめ、最初に合致したものを使う。
+伝えたいことの形から要素を選びます。上から順に当てはめ、最初に合致したものを使ってください。
 
 | 伝えたいこと | 要素 | レイアウトパターン |
 |------------|------|------------------|
@@ -25,21 +25,21 @@ Phase 5 で「伝えたいこと」を要素と form に翻訳するための判
 | 情景・感情・被写体・世界観 (フルブリード) | image | grid-direct (full-bleed) |
 | 上のどれでもなく、並列な短い項目 | bullets | list-stage |
 
-箇条書きは最後の手段。「関係があるなら diagram、数値なら chart、対立なら versus、1 点を刺すなら statement か stat」で置き換えられないかを先に考える。並列性のない項目 (時系列・因果) を bullets にすると流れが消える。`bullets.items` は 5 項目まで (`bullet-count` lint)、ネストは書けない (p.171)。
+箇条書きは最後の手段です。先に、ほかの要素で置き換えられないかを考えてください。関係があるなら diagram、数値なら chart、対立なら versus、1 点を刺すなら statement か stat です。並列性のない項目 (時系列・因果) を bullets にすると、流れが消えます。`bullets.items` は 5 項目までで (`bullet-count` lint)、ネストは書けません (p.171)。
 
-同様に、画像も最後の手段に近い。コードのスクショは code、ポストのスクショは post、OGP のスクショは link で書けないかを先に疑う。画像に焼いた瞬間、テーマ追従・再レンダリング・handout の可読性が失われる (ADR-0016)。
+画像も、最後の手段に近い扱いです。コードのスクショは code、ポストのスクショは post、OGP のスクショは link で書けないかを先に確かめてください。画像に焼いた瞬間に、テーマ追従・再レンダリング・handout の可読性が失われます (ADR-0016)。
 
-これは「要素で書けるものを画像にしない」という話であって、実物を避ける話ではない。当時の画面、現場の写真、手書きのメモのように、要素では再現できない実物は密の山の核になる (`somitsu.md`)。山のスライドでは実物を大きく見せる。
+これは「要素で書けるものを画像にしない」という話で、実物を避ける話ではありません。当時の画面、現場の写真、手書きのメモのように、要素では再現できない実物は密の山の核になります (`somitsu.md`)。山のスライドでは、実物を大きく見せてください。
 
-主役級の要素 (diagram / chart / statement のほか code / post / link / stat / table / versus / agenda / video) は 1 枚に 1 つ。2 つ以上あると `one-idea` lint が warn を出す。2 つ要るならスライドを分ける。
+主役級の要素 (diagram / chart / statement のほか code / post / link / stat / table / versus / agenda / video) は、1 枚に 1 つにします。2 つ以上あると `one-idea` lint が warn を出します。2 つ要るなら、スライドを分けてください。
 
 ---
 
 ## 1. diagram — 6 類型から form を選ぶ
 
-図は「絵」ではなく関係の型として宣言する (slide:ology 第 3 章)。`form` は `<family>.<subtype>` で書く。family は 5 つ。slide:ology の 6 類型のうち「データ」は chart 要素になるので、diagram の family からは外れる。
+図は「絵」ではなく、関係の型として宣言します (slide:ology 第 3 章)。`form` は `<family>.<subtype>` の形で書きます。family は 5 つです。slide:ology の 6 類型のうち「データ」は chart 要素になるので、diagram の family からは外れています。
 
-伝えたい関係から family と subtype を選ぶ。
+伝えたい関係から、family と subtype を選びます。
 
 | 伝えたい関係 | family.subtype | 例 |
 |------------|---------------|----|
@@ -60,30 +60,30 @@ Phase 5 で「伝えたいこと」を要素と form に翻訳するための判
 | 日付つきの経緯・ロードマップ | `flow.timeline` | 沿革、プロジェクトの歩み (label = 出来事、detail = 日付。等間隔配置) |
 | 具体物の手順・内部・経路・位置・影響 | `pictogram.process` / `.cutaway` / `.route` / `.location` / `.influence` | 組立手順、断面図、道案内、地図ピン、因果 |
 
-subtype カタログは網羅ではない (p.73)。「これらのサンプルはけっして網羅的ではない」ので、近い family を選び、subtype はカタログから最も近いものを当てる。
+subtype のカタログは網羅ではありません (p.73)。原典にも「これらのサンプルはけっして網羅的ではない」とあります。近い family を選び、subtype はカタログからいちばん近いものを当ててください。
 
-補足のルール。
+補足のルールは次のとおりです。
 
-- ノードは `{ id, label, detail?, icon? }`。`icon` はテーマの icon_set のカタログにある名前で、label の上に描かれる (ADR-0013。カタログに無い名前は `icon-exists` エラー)
-- `emphasis` は強調するノード id の配列。サイズ・色は階層原則から導出される (p.119)
-- `edges` は `{ from, to, label? }`。糖衣で `"a -> b"` とも書ける (糖衣では label 不可)
-- 参照するノード id は必ず `nodes` に存在させる (無いと `edge-ref` エラー)
-- 複雑な図は `reveal: sequential` で段階的に開示する (p.78)
+- ノードは `{ id, label, detail?, icon? }` です。`icon` はテーマの icon_set のカタログにある名前で、label の上に描かれます (ADR-0013。カタログに無い名前は `icon-exists` エラー)
+- `emphasis` は、強調するノード id の配列です。サイズ・色は階層原則から導出されます (p.119)
+- `edges` は `{ from, to, label? }` です。糖衣で `"a -> b"` とも書けます (糖衣では label は書けません)
+- 参照するノード id は、必ず `nodes` に存在させます (無いと `edge-ref` エラー)
+- 複雑な図は、`reveal: sequential` で段階的に開示します (p.78)
 
-cluster と radial の使い分けの勘所。
+cluster と radial の使い分けの勘所は、次のとおりです。
 
-- `cluster.overlap` の主役はしばしば交差領域 (「A でも B でもある」)。そのときは `shared: { label: "...", emphasis: true }` で全円の共通部分にラベルと強調を宣言する (ADR-0015)
-- nodes[0] が特別な意味を持つ form が 2 つある。`radial.core` は nodes[0] が中心 (ハブ)、`cluster.enclosed` は nodes[0] が枠 (ラベル付きの境界) になり、残りが中身
-- `cluster.closure` は「順序も階層も関係もない、ただの仲間」を配置だけで見せる。位置に意味を持たせたい (象限で分類したい) なら `structure.matrix`。円環の知覚が立つのは 5 ノード以上で、4 以下だと matrix と紛らわしい
-- `cluster.linked` は「関係はあるが流れではない」対称な関連 (線に矢印が付かない)。方向・因果・時系列があるなら flow 系を使う
+- `cluster.overlap` の主役は、交差領域 (「A でも B でもある」) であることが多いです。そのときは `shared: { label: "...", emphasis: true }` で、全円の共通部分にラベルと強調を宣言します (ADR-0015)
+- nodes[0] が特別な意味を持つ form が 2 つあります。`radial.core` は nodes[0] が中心 (ハブ) で、`cluster.enclosed` は nodes[0] が枠 (ラベル付きの境界) です。残りのノードが中身になります
+- `cluster.closure` は、「順序も階層も関係もない、ただの仲間」を配置だけで見せます。位置に意味を持たせたい (象限で分類したい) なら、`structure.matrix` を使います。円環として知覚されるのは 5 ノード以上です。4 以下だと matrix と紛らわしくなります
+- `cluster.linked` は、「関係はあるが流れではない」対称な関連です (線に矢印が付きません)。方向・因果・時系列があるなら、flow 系を使います
 
-専用描画を持つ form は cycle / branch / converge / timeline / matrix / tree / layer / overlap / closure / enclosed / linked / radial.core。`flow.linear` は step-row (順序を持つ横並びカード) で描かれ、これが linear 本来の形。残る form (`flow.network`、`radial.semi` / `coreless`、`pictogram.*`) も同じ step-row に落ちるため、関係の型は絵に出ない。使うなら描画結果を確認する。
+専用の描画を持つ form は、cycle / branch / converge / timeline / matrix / tree / layer / overlap / closure / enclosed / linked / radial.core です。`flow.linear` は step-row (順序を持つ横並びカード) で描かれ、これが linear 本来の形です。残る form (`flow.network`、`radial.semi` / `coreless`、`pictogram.*`) も同じ step-row に落ちるため、関係の型は絵に出ません。使うなら、描画結果を確認してください。
 
 ---
 
 ## 2. chart — intent 3 種の使い分け
 
-チャートは「グラフ種類」ではなく intent (何を言いたいか) で宣言する。棒/折れ線/円の選択はレンダラが規則で決める (p.90-91)。`message` (データの意味) は必須。
+チャートは「グラフの種類」ではなく、intent (何を言いたいか) で宣言します。棒・折れ線・円の選択は、レンダラが規則で決めます (p.90-91)。`message` (データの意味) は必須です。
 
 | intent | 言いたいこと | 典型 | 例 |
 |--------|------------|------|----|
@@ -92,17 +92,17 @@ cluster と radial の使い分けの勘所。
 | `distribution` | ばらつきの中のパターン | 散布・ヒストグラム | 相関、正規分布 |
 | `composition` | 全体に占める割合 | 円 (単一系列)・100% 積み上げ棒 (複数系列) | シェア、時間配分 (ADR-0016) |
 
-- `message` にはデータそのものではなく「データの意味」を書く (p.84)。例: 「3 月の研修開始と売上の底が一致する」
-- 意味を語る第 3 レイヤーは `annotations: [{ at, annotate, style: highlight }]`。`at` は x 配列の値と完全一致 (ずれると `annotation-anchor` エラー)。位置指定なら `at_index`
-- 連続する chart で軸を揃えるなら `deck.scales` を定義し `scale:` で参照 (`axis-lock` 対策)
-- 完全版データは `detail: appendix` で配布資料へ回す。スライドは意味だけ
-- 円グラフは 8 項目以内・合計 100% (`pie-rules` lint)。背景の目盛・グリッド線・3D・枠線は書けない (チャートジャンク排除)
+- `message` には、データそのものではなく「データの意味」を書きます (p.84)。例: 「3 月の研修開始と売上の底が一致する」
+- 意味を語る第 3 レイヤーは、`annotations: [{ at, annotate, style: highlight }]` です。`at` は x 配列の値と完全に一致させます (ずれると `annotation-anchor` エラー)。位置で指定するなら `at_index` を使います
+- 連続する chart で軸を揃えるなら、`deck.scales` を定義して `scale:` で参照します (`axis-lock` 対策)
+- 完全版のデータは、`detail: appendix` で配布資料へ回します。スライドには意味だけを載せます
+- 円グラフは 8 項目以内で、合計 100% にします (`pie-rules` lint)。背景の目盛・グリッド線・3D・枠線は書けません (チャートジャンクの排除)
 
 ---
 
 ## 3. statement / quote / image / bullets を分ける基準
 
-同じ「短いテキスト」でも狙いで要素が変わる。
+同じ「短いテキスト」でも、狙いによって要素が変わります。
 
 | 要素 | 選ぶ基準 | 注意 |
 |------|---------|------|
@@ -111,13 +111,13 @@ cluster と radial の使い分けの勘所。
 | image | 情景・感情・被写体で世界観を作る。論理より情動 | `treatment` (full-bleed/framed/cutout)、`subject` で三分割配置、`gaze` は視線をコンテンツ側へ (逆向きは `gaze` lint)。`src` が無くても `prompt` を残す |
 | bullets | 上のどれでもなく、対等・並列な短い項目の列挙 | 最後の手段。5 項目まで、ネスト不可。並列性が無いなら散文か diagram に |
 
-判断に迷ったら「この内容は関係を持つか (→ diagram)、数値か (→ chart)、1 点に絞れるか (→ statement)」を先に問う。どれにも当てはまらない純粋な列挙だけが bullets に残る。
+判断に迷ったら、先に 3 つを問います。この内容は関係を持つか (→ diagram)、数値か (→ chart)、1 点に絞れるか (→ statement) です。どれにも当てはまらない純粋な列挙だけが、bullets に残ります。
 
 ---
 
 ## 4. 技術素材と紹介系 — 8 要素の使い分け (ADR-0016)
 
-「画像を作って貼る」前に、この 8 要素で書けないかを疑う。
+「画像を作って貼る」前に、この 8 要素で書けないかを確かめてください。
 
 | 要素 | 選ぶ基準 | 紛らわしい相手との境界 |
 |------|---------|---------------------|
@@ -132,4 +132,4 @@ cluster と radial の使い分けの勘所。
 
 ## 5. raw — 脱出口
 
-語彙で表せない 1 枚のためだけの口 (p.135「一貫したデザインを 20 枚見せた後の意図的な 1 枚」)。`svg` か `html` の少なくとも一方と、`waiver` (逸脱の理由) が必須。デッキの 1 割を超えると `raw-budget` warn。安易に使わない。raw に頼りたくなったら、まず diagram / chart / image で表せないかを疑う。
+raw は、語彙で表せない 1 枚のためだけの口です (p.135「一貫したデザインを 20 枚見せた後の意図的な 1 枚」)。`svg` か `html` の少なくとも一方と、`waiver` (逸脱の理由) が必須です。デッキの 1 割を超えると `raw-budget` warn が出ます。安易には使わないでください。raw に頼りたくなったら、まず diagram / chart / image で表せないかを確かめます。

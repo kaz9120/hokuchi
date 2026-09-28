@@ -97,6 +97,21 @@ function donutSlicePath(cx, cy, rOuter, rInner, a0, a1) {
 }
 
 /** composition intent, 単一系列で構成比の差が大きい → ドーナツ (SPEC §6.5, ADR-0016)。 */
+/**
+ * 単一系列の構成比 (円・100% 横棒) の区画の色。強調は highlight、それ以外は
+ * core を宣言順に使う。core の数を超えた区画は色を巡回させず無彩色に落とす。
+ * 巡回すると離れた区画が同じ色になり、同じものに見えるため (p.95 重要度の
+ * 低い情報はグレーに)。
+ */
+function sliceColor(C, i, hot) {
+  if (hot.has(i)) return C.highlight;
+  if (i < C.core.length) return C.core[i];
+  // 直前の区画 (core の最後) と同じ色にならないよう、重なる無彩色は外す。
+  const last = C.core[C.core.length - 1];
+  const tail = [C.line, C.muted].filter((c) => c !== last);
+  return tail[(i - C.core.length) % tail.length];
+}
+
 export function Donut({ el, box, ctx, pad }) {
   const { C, fonts, scale } = ctx;
   const cats = el.data.x;
@@ -123,7 +138,7 @@ export function Donut({ el, box, ctx, pad }) {
           <path
             key={i}
             d={donutSlicePath(cx, cy, rOuter, rInner, a0, a1)}
-            fill={hot.has(i) ? C.highlight : C.core[i % C.core.length]}
+            fill={sliceColor(C, i, hot)}
           />
         ))}
       </g>
@@ -216,7 +231,7 @@ export function HBar100({ el, box, ctx }) {
             x={round(x0 + (i > 0 ? SEP / 2 : 0))} y={round(barY)}
             width={round(Math.max(0, x1 - x0 - (i > 0 ? SEP / 2 : 0) - (i < segs.length - 1 ? SEP / 2 : 0)))}
             height={HBAR_THICKNESS}
-            fill={hot.has(i) ? C.highlight : C.core[i % C.core.length]}
+            fill={sliceColor(C, i, hot)}
           />
         ))}
       </g>

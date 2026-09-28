@@ -241,7 +241,11 @@ build:
 |--------|------|------|
 | slideument | 可視テキスト合計が閾値超過。日本語は 100 字で警告、150 字でエラー (50 語/75 語相当。換算係数は要検証) | p.26, p.164 |
 | one-idea | 主役級要素 (diagram/chart/statement のほか code/post/link/stat/table/versus/agenda/video、ADR-0016) が 1 枚に 2 つ以上 | p.109, p.256 |
-| bullet-count | bullets.items が 5 項目超 | p.171 |
+| bullet-parallel | 箇条書きの項目間で句点の有無、体言止めと文の混在が揃っていない。項目数は数えない (本は項目数のルールを退けている。p.170) | p.171 |
+| layers | 1 枚の情報レイヤー (headline・主役・主役内の副テキスト・support) が 4 つ以上 (info) | p.117 |
+| glance | headline が 1 行に収まらない、content の statement が 3 秒で読めない長さ (info) | p.160, p.164 |
+| form-fallback | 専用の描画を持たない diagram form を使った (info、ADR-0025) | — |
+| message-missing | deck.message (中核メッセージ) が無い (info、ADR-0024) | p.39 |
 | pie-rules | 円グラフ (chart intent: composition の単一系列) が 9 項目以上・合計が 100% でない (12 時起点・時計回りはレンダラが保証、ADR-0016) | p.91 |
 | axis-lock | 連続する chart スライド間で軸位置が揃わないデータ範囲。軸を持たない composition が絡むペアは対象外 (ADR-0016) | p.90 |
 | code-budget | code が 17 行以上、または 1 行が 81 桁以上 (ADR-0016) | — |

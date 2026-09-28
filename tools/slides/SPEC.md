@@ -809,7 +809,11 @@ linter はエラーで止めず警告を中心とします。ただし逸脱は�
 |----|-------|---------|------|
 | `slideument` | warn (100字) / error (150字) | 可視テキスト合計が閾値超過 (英語 50/75 語相当。換算は要検証)。profile-stage と code のテキストは参照素材のため対象外 (§5.1、§6.7)。post / link / stat / table / versus のテキストは数える | p.26, p.164 |
 | `one-idea` | warn | 主役級要素 (statement のほか diagram / chart / code / post / link / stat / table / versus / agenda / video) が 1 枚に 2 つ以上。従属スロット (headline / subtitle / attribution) に入った statement は主役級に数えない | p.109, p.256 |
-| `bullet-count` | warn | `bullets.items` が 5 項目超 | p.171 |
+| `bullet-parallel` | warn | 1 つの bullets の項目間で、句点の有無、または体言止めと文 (用言・助動詞で終わる) の混在が揃っていない。判定は末尾の仮名による近似で、「」で囲んだ引用と日本語で終わらない項目は比べない。profile-stage は対象外。項目数は数えない (本は項目数のルールを退けている。p.170) | p.171 |
+| `layers` | info | 1 枚の情報レイヤーが 4 つ以上。数えるのは headline・主役・主役内の副テキスト・support (title-stage の subtitle を含む) で、副テキストは種類ごとに 1 つと数える (diagram のノードの detail、diagram の edge label、chart の annotation、versus の description、stat の context)。chapter は常時の枠なので数えない。profile-stage は対象外 | p.117 |
+| `glance` | info | headline が 1 行に収まらない (明示の改行がある、または字幅が舞台幅 ÷ `heading` を超える。全角 1、半角 0.6 で数える)。または content の主役の statement が 30 字 (空白を除く) を超え、3 秒で読めない。閾値は目安 (§11) | p.160, p.164 |
+| `form-fallback` | info | diagram の form が専用の描画を持たず、横並びのステップ (flow.linear と同じ形) で描かれる。現状は flow.network・radial.semi・radial.coreless・pictogram.* と、カタログ外の subtype | ADR-0025 |
+| `message-missing` | info | `deck.message` (中核メッセージ) が無い | ADR-0024, p.39 |
 | `pie-rules` | warn | 円グラフが 9 項目以上、または合計が 100% でない | p.91 |
 | `axis-lock` | warn | 連続する chart 間で軸位置が揃わない (共有 `scale` 未指定)。軸を持たない composition が絡むペアは対象外 (ADR-0016) | p.90 |
 | `contrast` | warn | 背景とのコントラスト不足、グレースケール変換で判別不能な系列 | p.152, p.156 |
@@ -855,6 +859,11 @@ design.md §8 から次を引き継ぎます。
 5. shrink-report の真の判定はレンダラの実縮小に紐づく。lint の静的推定は list-stage の高さ超過など追跡可能なケースに限る
 6. video の実再生 (SPA プレゼンテーションモード) は ADR-0012 の進化と同時に設計する。それまで video はプレースホルダ描画のみ (ADR-0016)
 7. code の段階的ハイライト (emphasis を build で進める walk-through) は、実デッキで必要になった時点で reveal 語彙を設計する (ADR-0016)
+
+0.5.0 の lint (ADR-0025) から次を引き継ぎます。
+
+8. glance の閾値は字数の目安で、実測での調整が要る。statement の 30 字は、黙読を 1 秒あたり 10 字前後と見て 3 秒に掛けた値。導入時点で既存の 9 デッキの content statement (約 90 個) のうち、超えたのは 1 個だった。headline の 1 行の判定は字幅の近似で、実際の折り返しはレンダラが決める
+9. layers の副テキストの種類 (§9) と、bullet-parallel の体言止め・文の判定 (末尾の仮名による近似) は、実デッキで誤検出が見つかり次第直す。どちらも info・warn の出方が実感と合うと分かったら、昇格や閾値を見直す (ADR-0025 見直しの条件)
 
 なお初版の未決事項 4 (円グラフの宣言経路) は、chart intent `composition` の追加で解消した (ADR-0016)。
 

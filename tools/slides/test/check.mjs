@@ -308,6 +308,106 @@ const axisLockFindings = lint(axisLockCompositionDeck, theme).filter((f) => f.id
 assert.equal(axisLockFindings.length, 0);
 ok('axis-lock lint does not fire when either chart in a consecutive pair is intent: composition');
 
+// (8) lint rules from ADR-0024 / ADR-0025: bullet-parallel (replaces
+// bullet-count), layers, glance, form-fallback, message-missing.
+const withSlide = (slide) => {
+  const d = structuredClone(deck);
+  d.slides.push(slide);
+  return d;
+};
+const findingsFor = (d, id, slideId) =>
+  lint(d, theme).filter((f) => f.id === id && (slideId == null || f.slideId === slideId));
+const listSlide = (items) => baseSlide('s-bullets', 'list-stage', [{ kind: 'bullets', slot: 'list', items }]);
+
+{
+  const many = Array.from({ length: 8 }, (_, i) => `項目 ${i + 1} を確かめる`);
+  assert.equal(findingsFor(withSlide(listSlide(many)), 'bullet-count').length, 0, 'bullet-count is retired');
+  assert.equal(findingsFor(withSlide(listSlide(many)), 'bullet-parallel', 's-bullets').length, 0,
+    'eight parallel items are fine: item count is not a rule (p.170)');
+
+  const mixedEnding = findingsFor(withSlide(listSlide(['技術的負債が溜まる', '責任範囲の曖昧さ', '知識共有と人材育成'])), 'bullet-parallel', 's-bullets');
+  assert.equal(mixedEnding.length, 1);
+  assert.equal(mixedEnding[0].severity, 'warn');
+  assert.match(mixedEnding[0].message, /体言止め 2 \/ 文 1/);
+
+  const mixedPeriod = findingsFor(withSlide(listSlide(['聴衆を犠牲にしない。', '控えめに使う'])), 'bullet-parallel', 's-bullets');
+  assert.equal(mixedPeriod.length, 1);
+  assert.match(mixedPeriod[0].message, /句点あり 1 \/ なし 1/);
+
+  // Verb-derived nouns (ずれ・づくり・強み) and katakana ending in ー are nouns.
+  const nouns = ['期待のずれ', '共通認識づくり', 'チームの強み', 'トレードオフ', '人材育成'];
+  assert.equal(findingsFor(withSlide(listSlide(nouns)), 'bullet-parallel', 's-bullets').length, 0);
+  // Predicates in several inflections agree with each other.
+  const preds = ['まず認めよう', '差別化にはならない', '改善できる', '前からあった'];
+  assert.equal(findingsFor(withSlide(listSlide(preds)), 'bullet-parallel', 's-bullets').length, 0);
+  // Verbatim quotes are someone else's words and are not compared.
+  const quotes = ['「考慮漏れが怖い部分をやらせる」', '「人が判断できる難解なイシュー」'];
+  assert.equal(findingsFor(withSlide(listSlide(quotes)), 'bullet-parallel', 's-bullets').length, 0);
+  ok('bullet-parallel flags mixed endings and periods, and replaces bullet-count');
+}
+
+{
+  const diagramSlide = (nodes, edges, extra = []) => baseSlide('s-layers', 'diagram-stage', [
+    { kind: 'statement', slot: 'headline', text: '見出し' },
+    { kind: 'diagram', slot: 'diagram', form: 'flow.cycle', nodes, edges },
+    ...extra,
+  ]);
+  const plain = [{ id: 'a', label: 'A' }, { id: 'b', label: 'B' }];
+  const detailed = [{ id: 'a', label: 'A', detail: '補足' }, { id: 'b', label: 'B' }];
+  const labeled = [{ from: 'a', to: 'b', label: '関係' }];
+  assert.equal(findingsFor(withSlide(diagramSlide(detailed, [{ from: 'a', to: 'b' }])), 'layers', 's-layers').length, 0,
+    'headline + lead + one sub-text is 3 layers');
+  const four = findingsFor(withSlide(diagramSlide(detailed, labeled)), 'layers', 's-layers');
+  assert.equal(four.length, 1);
+  assert.equal(four[0].severity, 'info');
+  assert.match(four[0].message, /4 つ/);
+  const chapterOnly = withSlide({ ...diagramSlide(plain, labeled), chapter: '章' });
+  assert.equal(findingsFor(chapterOnly, 'layers', 's-layers').length, 0, 'chapter is not a layer');
+  ok('layers counts headline, lead, each kind of sub-text and support; flags 4+');
+}
+
+{
+  const statementSlide = (text) => baseSlide('s-glance', 'statement-stage', [{ kind: 'statement', slot: 'statement', text }]);
+  assert.equal(findingsFor(withSlide(statementSlide('人間を超えていくAIを\n開発者として間近で見た')), 'glance', 's-glance').length, 0);
+  const long = findingsFor(withSlide(statementSlide('2015年4月11日 将棋電王戦FINAL\n21手49分で、あっけなく終わった')), 'glance', 's-glance');
+  assert.equal(long.length, 1);
+  assert.equal(long[0].severity, 'info');
+
+  const headlineSlide = (text) => baseSlide('s-glance', 'list-stage', [
+    { kind: 'statement', slot: 'headline', text },
+    { kind: 'bullets', slot: 'list', items: ['a', 'b'] },
+  ]);
+  assert.equal(findingsFor(withSlide(headlineSlide('メンバーが入れ替わる中で立ち上がったチーム')), 'glance', 's-glance').length, 0);
+  assert.equal(findingsFor(withSlide(headlineSlide('メンバーが入れ替わり続ける中で、それでも前に進むために立ち上がった小さなチームの話')), 'glance', 's-glance').length, 1,
+    'a headline wider than one line');
+  assert.equal(findingsFor(withSlide(headlineSlide('前提は\n2 行に分けた')), 'glance', 's-glance').length, 1,
+    'an explicit line break makes a 2-line headline');
+  ok('glance flags a headline over one line and a content statement over the 3-second budget');
+}
+
+{
+  const formSlide = (form) => baseSlide('s-form', 'diagram-stage', [
+    { kind: 'diagram', slot: 'diagram', form, nodes: [{ id: 'a', label: 'A' }, { id: 'b', label: 'B' }] },
+  ]);
+  const fb = findingsFor(withSlide(formSlide('radial.semi')), 'form-fallback', 's-form');
+  assert.equal(fb.length, 1);
+  assert.equal(fb[0].severity, 'info');
+  for (const form of ['flow.linear', 'flow.cycle', 'structure.matrix', 'cluster.overlap', 'radial.core']) {
+    assert.equal(findingsFor(withSlide(formSlide(form)), 'form-fallback', 's-form').length, 0, `${form} has its own drawing`);
+  }
+  ok('form-fallback flags diagram forms drawn as the step-row fallback');
+}
+
+{
+  assert.equal(findingsFor(deck, 'message-missing').length, 0, 'intent-talk declares deck.message');
+  const noMessage = structuredClone(deck);
+  delete noMessage.deck.message;
+  const mm = findingsFor(noMessage, 'message-missing');
+  assert.equal(mm.length, 1);
+  assert.equal(mm[0].severity, 'info');
+  ok('message-missing reports a deck without deck.message');
+}
+
 // (3) render — one self-contained SPA document (ADR-0012).
 const { pages, assets } = renderDeck(deck, theme, {
   deckDir: path.dirname(deckPath),

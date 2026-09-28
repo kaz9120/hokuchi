@@ -303,6 +303,11 @@ function measureDiagram(el, ctx, avail) {
   switch (el.form) {
     case 'flow.cycle': {
       const box = fitAspect(RING_ASPECT, avail.w, avail.h);
+      // カードが横長だと正方に近い箱では隣が重なる。重ならない幅まで横に広げる
+      const card = cardMetrics(el, ctx);
+      const n = Math.max(3, el.nodes.length);
+      const needW = (card.w + 24) / Math.sin(Math.PI / n) + card.w + 8;
+      if (box.w < needW) box.w = Math.min(avail.w, needW);
       return { ...box, render: (b) => cycleNode(el, b, ctx) };
     }
     case 'radial.core': {
@@ -576,9 +581,12 @@ function ringPositions(el, box, cardW, cardH) {
   const rx0 = box.w / 2 - cardW / 2 - 4;
   const ry0 = Math.max(40, box.h / 2 - cardH / 2 - 4);
   const r = Math.min(rx0, ry0);
+  // 隣り合うカードが横に重ならない半径を下限にする。カードが横長だと
+  // 離心率の上限だけでは足りず、3 枚の環で下の 2 枚がぶつかる
+  const rxNoOverlap = (cardW + 24) / (2 * Math.sin(Math.PI / Math.max(3, el.nodes.length)));
   const ring = {
     cx: box.w / 2, cy: box.h / 2,
-    rx: Math.min(rx0, r * RING_ECC_MAX), ry: Math.min(ry0, r * RING_ECC_MAX),
+    rx: Math.min(rx0, Math.max(r * RING_ECC_MAX, rxNoOverlap)), ry: Math.min(ry0, r * RING_ECC_MAX),
   };
   const pos = el.nodes.map((n, i) => {
     const ang = -Math.PI / 2 + (2 * Math.PI * i) / el.nodes.length;

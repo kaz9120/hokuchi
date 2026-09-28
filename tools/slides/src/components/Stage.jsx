@@ -12,12 +12,14 @@
 // lead は移行の進み具合で React 要素にも HTML 文字列にもなる。文字列のときは
 // lead-box 自身に流し込むので、どちらでも構造は変わらない。
 
-export function Stage({ headlineHtml, headFontSize, lead, leadW, leadH, align = 'center' }) {
+// headB / leadB は段階表示の対象属性 (SPEC §7.1)。段階表示の無いスライドでは空。
+export function Stage({ headlineHtml, headFontSize, headB = {}, leadB = {}, lead, leadW, leadH, align = 'center' }) {
   const boxStyle = { width: `${leadW}px`, height: `${leadH}px` };
   return (
     <div className="stage">
       {headlineHtml != null && (
         <div
+          {...headB}
           className="headline jp"
           style={{ fontSize: `${headFontSize}px` }}
           dangerouslySetInnerHTML={{ __html: headlineHtml }}
@@ -25,8 +27,8 @@ export function Stage({ headlineHtml, headFontSize, lead, leadW, leadH, align = 
       )}
       <div className={`stage-lead ${align}`}>
         {typeof lead === 'string'
-          ? <div className="lead-box" style={boxStyle} dangerouslySetInnerHTML={{ __html: lead }} />
-          : <div className="lead-box" style={boxStyle}>{lead}</div>}
+          ? <div {...leadB} className="lead-box" style={boxStyle} dangerouslySetInnerHTML={{ __html: lead }} />
+          : <div {...leadB} className="lead-box" style={boxStyle}>{lead}</div>}
       </div>
     </div>
   );

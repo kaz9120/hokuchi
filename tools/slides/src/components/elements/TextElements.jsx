@@ -7,11 +7,11 @@ import { round } from '../../geometry.mjs';
 import { InlineText } from '../InlineText.jsx';
 
 /** bullets — 箇条書き (SPEC §6.2)。 */
-export function Bullets({ items, fs, gap, indent }) {
+export function Bullets({ items, fs, gap, indent, itemB = () => ({}) }) {
   return (
     <ul className="bullets" style={{ fontSize: fs, gap: round(gap), paddingLeft: indent }}>
       {items.map((it, i) => (
-        <li key={i}>
+        <li key={i} {...itemB(i)}>
           <span className="dot" />
           <span className="jp"><InlineText text={it} /></span>
         </li>

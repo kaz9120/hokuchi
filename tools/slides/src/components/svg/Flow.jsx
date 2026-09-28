@@ -4,7 +4,6 @@
 // 箱の寸法は measure が申告し、その中での配置はここが決める。ADR-0014 の
 // 「構図はレンダラ専有」の内側であり、スキーマにもテーマにも露出しない。
 
-import { Fragment } from 'react';
 import { round } from '../../geometry.mjs';
 import { estW } from '../../text.mjs';
 import { ArrowDef, EdgeLabel, NodeCard, SvgLead, markerRef } from './Primitives.jsx';
@@ -40,13 +39,13 @@ export function StepRow({ el, box, ctx }) {
     const x1 = l.x + cardW + 5, x2 = r.x - 7;
     if (x2 <= x1) return null;
     return (
-      <Fragment key={k}>
+      <g key={k} {...ctx.b.edge(el, k)}>
         <line
           x1={round(x1)} y1={round(cy)} x2={round(x2)} y2={round(cy)}
           stroke={C.muted} strokeWidth="3" markerEnd={markerRef(ctx)}
         />
         <EdgeLabel ctx={ctx} x={(x1 + x2) / 2} y={cy - 14}>{edge.label}</EdgeLabel>
-      </Fragment>
+      </g>
     );
   });
 
@@ -61,7 +60,7 @@ export function StepRow({ el, box, ctx }) {
             ctx={ctx}
             x={byId[nd.id].x} y={y} w={cardW} h={cardH}
             hot={emph.has(nd.id)} label={nd.label} detail={nd.detail} icon={nd.icon}
-            badge={i + 1}
+            badge={i + 1} b={ctx.b.node(el, nd.id)}
           />
         ))}
       </g>
@@ -111,7 +110,7 @@ export function Timeline({ el, box, ctx, fsLabel, fsDetail, stagger, labelRowH, 
         const hot = emph.has(nd.id);
         const row = stagger ? i % 2 : 0;
         return (
-          <Fragment key={nd.id}>
+          <g key={nd.id} {...ctx.b.node(el, nd.id)}>
             <circle
               cx={round(x)} cy={round(baseY)} r={hot ? dotR + 2 : dotR}
               fill={hot ? C.highlight : C.core[0]}
@@ -135,7 +134,7 @@ export function Timeline({ el, box, ctx, fsLabel, fsDetail, stagger, labelRowH, 
             >
               {nd.label}
             </text>
-          </Fragment>
+          </g>
         );
       })}
     </SvgLead>
@@ -182,7 +181,7 @@ export function Dag({ el, box, ctx, cols, cardW, cardH, colGap, rowGap }) {
     const drawJunction = merged && !junctionDrawn.has(e.to);
     if (drawJunction) junctionDrawn.add(e.to);
     return (
-      <Fragment key={k}>
+      <g key={k} {...ctx.b.edge(el, k)}>
         <path
           d={`M ${round(x1)} ${round(y1)} C ${mx} ${round(y1)}, ${mx} ${round(yEnd)}, ${round(x2)} ${round(yEnd)}`}
           fill="none" stroke={C.muted} strokeWidth="3"
@@ -195,7 +194,7 @@ export function Dag({ el, box, ctx, cols, cardW, cardH, colGap, rowGap }) {
           />
         )}
         <EdgeLabel ctx={ctx} x={mx} y={(y1 + yEnd) / 2 - 10}>{e.label}</EdgeLabel>
-      </Fragment>
+      </g>
     );
   });
 
@@ -212,6 +211,7 @@ export function Dag({ el, box, ctx, cols, cardW, cardH, colGap, rowGap }) {
               ctx={ctx}
               x={p.x} y={p.y} w={cardW} h={cardH}
               hot={emph.has(id)} label={p.label} detail={p.detail} icon={p.icon} badge={null}
+              b={ctx.b.node(el, id)}
             />
           );
         })}

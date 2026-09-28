@@ -18,6 +18,7 @@ export function Layer({ el, box, ctx, bandH, gap }) {
           ctx={ctx}
           x={0} y={i * (bh + gap)} w={box.w} h={bh}
           hot={emph.has(nd.id)} label={nd.label} detail={nd.detail} icon={nd.icon} badge={null}
+          b={ctx.b.node(el, nd.id)}
         />
       ))}
     </SvgLead>
@@ -36,6 +37,7 @@ export function Matrix({ el, box, ctx, cardW, cardH, gap }) {
           x={(i % 2) * (cardW + gap)} y={Math.floor(i / 2) * (cardH + gap)}
           w={cardW} h={cardH}
           hot={emph.has(nd.id)} label={nd.label} detail={nd.detail} icon={nd.icon} badge={null}
+          b={ctx.b.node(el, nd.id)}
         />
       ))}
     </SvgLead>

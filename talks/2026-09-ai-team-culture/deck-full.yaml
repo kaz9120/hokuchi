@@ -1,0 +1,1259 @@
+# 完全版「強いチームの作り方は、AI で変わるのか」(Dev's Garden 2026-09-29 の元データ)
+#
+# 10 分に削る前の、何も省略していない版。口頭の補足に逃がさず、画面だけで筋が通る状態を作る。
+# ここから削って deck.yaml (10 分版) を作る。削るときは章ごと落とすか、章内の説明を粗に落とす。
+#
+# 芯: AI は新しい課題を作らない。これまで放置できていた課題を、放置できなくする。
+# 構造: 普遍 (課題は新しいか → AI で何が変わったか)
+#       → MOSH 全体 (目指す開発組織と責任領域。技術的生産性 = ハード / 組織的生産性 = ソフト)
+#       → 技術的生産性 (今回は扱わない) → 組織的生産性 (本題: 起きていること → 組織 → チーム)
+#       → 現在地とこれから → まとめ
+# 解像度の比率: 普遍 2 分 / MOSH 1 分 / 技術 30 秒 / 組織 5 分 / 現在地 1 分
+# 用語は社内 Notion「スケールする組織に向けて」の責任領域の定義に揃える。
+schema_version: "0.1.0"
+deck:
+  title: "強いチームの作り方は、AI で変わるのか"
+  audience:
+    who: "AI で開発は速くなったのに、それがチームの成果につながっている実感を持てずにいるエンジニア"
+    action: "自分のチームで 30 分取って、AI へのスタンスを互いに話してみる"
+  theme: ../../tools/slides/themes/mosh.yaml
+
+slides:
+  # ================================================================= 枠
+  - id: title
+    role: title
+    idea: "イベントのテーマの手前にある問いを掲げる"
+    layout: title-stage
+    elements:
+      - kind: statement
+        slot: title
+        text: "強いチームの作り方は\nAI で変わるのか"
+      - kind: statement
+        slot: subtitle
+        text: "MOSH の現在地から考える"
+    notes: |
+      MOSH の山本です。
+      今日のテーマは「AI で開発が加速する今、強いチームをどう作る？」ですが、その手前の問いから
+      始めます。そもそも、強いチームの作り方は AI で変わるのか。
+      うまくいった話だけではなく、いま詰まっているところまでお話しします。
+      【20秒】
+
+  - id: profile
+    role: content
+    chapter: "自己紹介"
+    idea: "チームを持ちながら組織的生産性の会議体を回している立場を示す"
+    layout: profile-stage
+    elements:
+      - kind: image
+        slot: portrait
+        src: ./assets/profile.jpg
+        prompt: "登壇者のプロフィール写真"
+      - kind: statement
+        slot: name
+        text: "山本 一将｜焚き火を愛するエンジニア"
+      - kind: statement
+        slot: affiliation
+        text: "MOSH株式会社 Engineering Manager"
+      - kind: statement
+        slot: handle
+        text: "X: @kyamamoto9120"
+      - kind: bullets
+        slot: bio
+        items:
+          - "略歴 ── 鉄道システム開発、SNS マーケティングツール開発を経て、2025年より MOSH に参画"
+          - "実績 ── 2015年 世界コンピュータ将棋選手権 9位\n2024年 LINE API Expert 認定"
+          - "趣味 ── ヤクルトスワローズ、将棋、キャンプ、DQウォーク\n毎週 note を書いています"
+    notes: |
+      チームを 1 つ持ちながら、組織的生産性を担う Engineer Excellence 会議の進行役をしています。
+      チームの中の話と、組織全体の話の両方をします。
+      【30秒】
+
+  - id: agenda
+    role: content
+    chapter: "目次"
+    idea: "今日の道筋を先に渡す"
+    layout: agenda-stage
+    elements:
+      - kind: agenda
+        slot: agenda
+    notes: |
+      今日はこの順番で話します。
+      前半の 2 章は、MOSH に限らない一般的な話です。いま語られている課題が本当に新しいのか、
+      AI で何が変わったのかを確かめます。
+      そのあと、MOSH が強いチームをどう捉えているかを紹介して、本題の組織的生産性の話に入ります。
+      【25秒】
+
+  # ============================================== 01 この課題は新しいのか
+  - id: ch1-open
+    role: transition
+    idea: "イベントが挙げている課題を読み返すところから始める"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "この課題は新しいのか"
+    notes: |
+      まず、このイベントの募集文を読み返すところから始めます。
+      【5秒】
+
+  - id: listed-problems
+    role: content
+    chapter: "この課題は新しいのか"
+    idea: "イベントが挙げている組織課題をそのまま並べて見せる"
+    layout: list-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "このイベントが挙げている課題"
+      - kind: bullets
+        slot: list
+        items:
+          - "技術的負債が溜まる"
+          - "方針と責任範囲が曖昧"
+          - "スピードと品質の両立"
+          - "知識共有と人材育成"
+          - "評価と、期待のずれ"
+    notes: |
+      募集文に並んでいた課題です。言葉は縮めていますが、中身はそのままです。
+      開発速度が上がるほど技術的負債が溜まる。AI 活用の方針と責任範囲が曖昧になる。
+      短期のスピードと長期の品質をどう両立するか。チーム内の知識共有と人材育成。
+      成果をどう評価するか。現場とマネジメント層の期待がずれる。
+      今日ここに来た理由も、このどれかだと思います。私もそうでした。
+      【40秒】
+
+  - id: are-these-new
+    role: content
+    chapter: "この課題は新しいのか"
+    idea: "並んだ課題が AI 以後に生まれたものかを問い返す"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "これは AI が生んだ\n新しい課題でしょうか"
+        emphasis: ["新しい課題"]
+    notes: |
+      ひとつ聞かせてください。これは、AI が来たから新しく生まれた課題でしょうか。
+      【6秒】
+
+  - id: debt-is-old
+    role: content
+    chapter: "この課題は新しいのか"
+    idea: "技術的負債という言葉は三十年以上前からある"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "技術的負債は\n1992年に生まれた言葉です"
+      - kind: statement
+        slot: support
+        text: "ウォード・カニンガムが名付けてから 30 年以上"
+    notes: |
+      1 つずつ見ていきます。技術的負債という言葉は、1992 年にウォード・カニンガムが使ったものです。
+      私たちは 30 年以上前から、これに名前を付けて悩んできました。
+      【15秒】
+
+  - id: responsibility-is-old
+    role: content
+    chapter: "この課題は新しいのか"
+    idea: "方針と責任範囲の曖昧さも以前から存在していた"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "責任範囲の曖昧さも\n前からありました"
+      - kind: statement
+        slot: support
+        text: "レビューで誰が何を見るかを決めていたチームは少ない"
+    notes: |
+      方針と責任範囲の曖昧さも同じです。レビューで誰が何を見るのか、どこまで見たら通していいのか。
+      これを言葉にしていたチームは、多くなかったと思います。
+      【15秒】
+
+  - id: growth-is-old
+    role: content
+    chapter: "この課題は新しいのか"
+    idea: "育成と評価の難しさも以前から存在していた"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "育成と評価も\nずっと難しい問題でした"
+      - kind: statement
+        slot: support
+        text: "エンジニアの成果の測り方に、業界の答えはまだない"
+    notes: |
+      知識共有と人材育成、成果の評価、現場とマネジメントの期待のずれ。
+      これも AI の前から難しい問題でした。エンジニアの成果をどう測るかに、業界として答えが
+      出たことはありません。
+      【15秒】
+
+  - id: mostly-old
+    role: content
+    chapter: "この課題は新しいのか"
+    idea: "並んだ課題はほとんどが AI 以前から存在していた"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "ほとんどが前からあった課題です"
+    notes: |
+      並んでいた課題は、ほとんどが前からあったものです。
+      【5秒】
+
+  # ============================================== 02 AI で何が変わったのか
+  - id: ch2-open
+    role: transition
+    idea: "課題が前からあるなら AI で何が変わったのかを問う"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "AI で何が変わったのか"
+    notes: |
+      では、課題が前からあったものなら、AI で何が変わったのか。
+      【5秒】
+
+  - id: dora-amplifier
+    role: content
+    chapter: "AI で何が変わったのか"
+    idea: "DORA の調査は AI を増幅器として定義している"
+    layout: quote-stage
+    elements:
+      - kind: quote
+        slot: quote
+        text: "AI は増幅器として働く。\n高いパフォーマンスの組織では強みを、\n苦しんでいる組織では機能不全を大きくする。"
+        attribution: "DORA『State of AI-assisted Software Development』2025"
+    notes: |
+      DORA の 2025 年のレポートに、こう書かれています。AI は増幅器として働く。
+      もともと強い組織では、強みが大きくなる。もともと問題を抱えている組織では、その問題が
+      大きくなる。
+      AI そのものが組織を良くしたり悪くしたりするのではなく、元からあるものを大きくする、
+      という結論です。
+      【40秒】
+
+  - id: cant-ignore-anymore
+    role: content
+    chapter: "AI で何が変わったのか"
+    idea: "放置できていた課題が放置できない大きさになった"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "放置できていた課題が\n放置できなくなりました"
+        emphasis: ["放置できなくなりました"]
+      - kind: statement
+        slot: support
+        text: "大きくなったのは、前からあった弱いところ"
+    notes: |
+      変わったのはここです。
+      これまでは小さな問題だったので、放置していても開発は回っていました。それが増幅されて、
+      放置できない大きさになりました。
+      新しい課題が来たのではなく、見て見ぬふりができなくなった、ということです。
+      【25秒】
+
+  - id: for-example-review
+    role: content
+    chapter: "AI で何が変わったのか"
+    idea: "具体例としてコードレビューを挙げる"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "たとえば\nコードレビュー"
+    notes: |
+      分かりやすい例がコードレビューです。
+      【5秒】
+
+  - id: review-was-always-so
+    role: content
+    chapter: "AI で何が変わったのか"
+    idea: "レビューが本当に読まれているかは以前から分からなかった"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "本当に読んでいるかは\n前から分かりませんでした"
+    notes: |
+      LGTM とだけ書かれた承認が、本当に読んだ上でのものかどうか。前から分かりませんでした。
+      レビューの質が人によって違うことも、みんな知っていました。
+      【10秒】
+
+  - id: but-it-worked
+    role: content
+    chapter: "AI で何が変わったのか"
+    idea: "量が人の手に収まっていたので以前は回っていた"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "それでも回っていました"
+    notes: |
+      それでも回っていました。1 日に出てくる差分が数本なら、曖昧なままでも事故になりません。
+      【8秒】
+
+  - id: now-it-doesnt
+    role: content
+    chapter: "AI で何が変わったのか"
+    idea: "AI が書く量に人が読む量が追いつかなくなった"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "AI が書く量に\n人が読む量が追いつきません"
+    notes: |
+      いまは、AI が書く量に人が読む量が追いつきません。
+      誰が何を見るのかを決めてこなかったツケが、ここで一気に出てきます。
+      【10秒】
+
+  # ============================================== 03 MOSH が目指す開発組織
+  - id: ch3-open
+    role: transition
+    idea: "MOSH が強いチームをどう捉えているかの章へ入る"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "MOSH が目指す開発組織"
+    notes: |
+      ここから MOSH の話です。まず、MOSH が強いチームをどう捉えているかを紹介します。
+      【5秒】
+
+  - id: mosh-vision
+    role: content
+    chapter: "MOSH が目指す開発組織"
+    idea: "MOSH は目指す開発組織を言葉にしている"
+    layout: quote-stage
+    elements:
+      - kind: quote
+        slot: quote
+        text: "圧倒的なスピードと創造力で、\n迫力ある開発組織をつくる。"
+        attribution: "MOSH 開発組織の目指す状態"
+    notes: |
+      MOSH の開発組織は、目指す状態をこう書いています。
+      圧倒的なスピードと創造力で、迫力ある開発組織をつくる。
+      【10秒】
+
+  - id: three-domains
+    role: content
+    chapter: "MOSH が目指す開発組織"
+    idea: "責任領域を三つに分け、それぞれに推進主体を置いている"
+    layout: table-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "責任領域を三つに分けています"
+      - kind: table
+        slot: table
+        columns: ["区分", "推進主体", "責務"]
+        rows:
+          - ["プロダクト開発", "各チーム", "事業成果"]
+          - ["技術的生産性", "Productivity チーム", "技術基盤と信頼性"]
+          - ["組織的生産性", "Engineer Excellence 会議", "AI 活用とチームの改善"]
+        emphasis: { rows: [3] }
+    notes: |
+      そのために、CTO が責任領域を 3 つに分けました。
+      プロダクト開発は各チームが持ちます。
+      技術的生産性は Productivity チームが持ちます。技術基盤、信頼性、可観測性などです。
+      組織的生産性は Engineer Excellence 会議が持ちます。AI の活用と、各チームの生産性の改善です。
+      今日の本題は 3 行目です。
+      【25秒】
+
+  - id: hard-and-soft
+    role: content
+    chapter: "MOSH が目指す開発組織"
+    idea: "技術的生産性はハード、組織的生産性はソフトで、改善の仕方が違う"
+    layout: versus-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "ハードとソフトで改善の仕方が違う"
+      - kind: versus
+        slot: versus
+        sides:
+          - label: "ハード｜技術的生産性"
+            items:
+              - "機械で判定できる"
+              - "作った仕組みが効き続ける"
+              - "アウトプットに直接効く"
+          - label: "ソフト｜組織的生産性"
+            items:
+              - "人と人が話して決める"
+              - "放っておくとずれる"
+              - "人が替わると合意し直す"
+    notes: |
+      技術的生産性はハードの改善です。Linter やテストのように、機械で良し悪しを判定できます。
+      一度仕組みを作れば効き続けて、アウトプットに直接効きます。
+      組織的生産性はソフトの改善です。人と人の間で話して決めるしかありません。
+      放っておくとずれていくので、人が入れ替わるたびに合意し直すことになります。
+      【20秒】
+
+  - id: sorting
+    role: content
+    chapter: "MOSH が目指す開発組織"
+    idea: "イベントが挙げた課題の多くはソフト側にある"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "さっきの課題の多くは\nソフト側にあります"
+        emphasis: ["ソフト側"]
+    notes: |
+      最初に見た課題を振り返ると、技術的負債以外はほとんどがソフト側です。
+      【8秒】
+
+  # ============================================== 04 技術的生産性
+  - id: ch4-open
+    role: transition
+    idea: "技術的生産性は今日は深く扱わないと宣言する"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "技術的生産性"
+    notes: |
+      ハードの話は今日は深く扱いません。公開している資料を 3 本だけ紹介します。
+      【5秒】
+
+  - id: tech-link-strategy
+    role: content
+    chapter: "技術的生産性"
+    idea: "技術戦略の全体像は社外に公開されている"
+    layout: link-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "技術戦略の全体像"
+      - kind: link
+        slot: link
+        url: "https://speakerdeck.com/soarteclab/ai-devex-conference-2026"
+        title: "AI時代における開発生産性と進化可能性を高める技術戦略"
+        description: "鈴木翔大 / AI DevEX Conference 2026"
+    notes: |
+      VP of Technology の資料です。アーキテクチャとスキーマ駆動開発で、AI が一度に考える範囲を
+      小さくする話です。
+      【8秒】
+
+  - id: tech-link-design
+    role: content
+    chapter: "技術的生産性"
+    idea: "デザインシステムの整備でエージェントの実装品質を上げている"
+    layout: link-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "デザインシステムで UI の品質を上げる"
+      - kind: link
+        slot: link
+        url: "https://zenn.dev/moshjp/articles/39972d023f0440"
+        title: "コーディングエージェントが実装するUIの品質を上げるためにやったこと"
+        description: "MOSH デザインエンジニア dachi"
+    notes: |
+      デザインシステムを整えて、エージェントが書く UI の品質を上げた話です。
+      【8秒】
+
+  - id: tech-link-linter
+    role: content
+    chapter: "技術的生産性"
+    idea: "決定論的な Linter と Skills で人が見る範囲を減らしている"
+    layout: link-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "Linter と Skills で人が見る範囲を減らす"
+      - kind: link
+        slot: link
+        url: "https://www.docswell.com/s/jtitor/KN7Q7W-2026-08-31-183903"
+        title: "MOSHにおける決定論的Linter/Skills整備の実践と「見ない範囲」の広げ方"
+        description: "生産性チーム Yuki Okushi / 2026-08-31"
+    notes: |
+      機械で判定できるものを Linter と Skills に任せて、人がレビューで見る範囲を減らす話です。
+      【8秒】
+
+  # ============================================== 05 組織的生産性で起きていること
+  - id: ch5-open
+    role: transition
+    idea: "本題の組織的生産性の章へ入る"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "組織的生産性で起きていること"
+    notes: |
+      ここからが今日の本題です。組織的生産性で、いま何が起きているか。
+      【5秒】
+
+  - id: org-three-problems
+    role: content
+    chapter: "組織的生産性で起きていること"
+    idea: "組織的生産性で三つの課題が表に出てきた"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "三つの課題が表に出てきました"
+    notes: |
+      MOSH では 3 つの課題が表に出てきました。どれも前からあって、これまでは放置できていたものです。
+      【8秒】
+
+  - id: problem1
+    role: content
+    chapter: "組織的生産性で起きていること"
+    idea: "AI を使っていると言いにくい空気ができた"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "一つめ\nAI を使っていると言いにくい"
+        emphasis: ["言いにくい"]
+    notes: |
+      1 つめです。AI を使っていると、言いにくい。
+      【6秒】
+
+  - id: problem1-detail
+    role: content
+    chapter: "組織的生産性で起きていること"
+    idea: "影響力のある人の否定的な発言で、AI の話題を出しにくくなる"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "否定的な発言ひとつで\nAI の話題を出しにくくなる"
+      - kind: statement
+        slot: support
+        text: "発言の元にあるのは悪意ではなく、品質を守りたい気持ち"
+    notes: |
+      影響力のあるメンバーが AI に否定的な発言をすると、AI の話題そのものを出しにくくなります。
+      大事なのは、これが悪意ではないことです。品質を守りたい気持ちから出ています。
+      【25秒】
+
+  - id: problem1-cycle
+    role: content
+    chapter: "組織的生産性で起きていること"
+    idea: "隠して使うことで課題が共有されない循環が回る"
+    layout: diagram-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "隠して使うと、課題が共有されない"
+      - kind: diagram
+        slot: diagram
+        form: flow.cycle
+        nodes:
+          - { id: air,  label: "否定的な空気",     detail: "悪意はない" }
+          - { id: hide, label: "隠して使う",   detail: "やめはしない" }
+          - { id: dark, label: "課題が出ない", detail: "共有されない" }
+        edges:
+          - air -> hide
+          - hide -> dark
+          - { from: dark, to: air, label: "不信が強まる" }
+        emphasis: [hide]
+    notes: |
+      上から時計回りに見てください。
+      否定的な空気ができると、AI を使っていることを言わなくなります。使うのをやめるのではなく、
+      隠して使うんですよね。
+      隠されると、その人がどこで困っているかが見えなくなります。AI で何がうまくいかなかったのか、
+      という一番知りたい情報が出てきません。
+      課題が出てこないので改善も進まず、不信がまた強まります。
+      この循環には、悪意を持っている人が一人もいません。
+      【50秒】
+
+  - id: problem2
+    role: content
+    chapter: "組織的生産性で起きていること"
+    idea: "レビューで誰が何を見るのかが揃っていない"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "二つめ\nレビューの期待値が揃わない"
+        emphasis: ["期待値"]
+    notes: |
+      2 つめです。レビューの期待値が揃っていません。
+      【6秒】
+
+  - id: problem2-detail
+    role: content
+    chapter: "組織的生産性で起きていること"
+    idea: "同じ変更への反応が人によって違う"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "同じ変更への反応が\n人によって違う"
+      - kind: statement
+        slot: support
+        text: "一行の LGTM と長文の指摘が混在している"
+    notes: |
+      同じような変更に、一行の LGTM が返ることもあれば、長文の指摘が返ることもあります。
+      どちらが正しいかではなく、受け取る側にとって別の体験になっているのが問題です。
+      量が少なければ気になりませんでした。いまは毎日起きます。
+      【25秒】
+
+  - id: problem3
+    role: content
+    chapter: "組織的生産性で起きていること"
+    idea: "何を成果とするかが揃っていない"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "三つめ\n何を成果とするかが揃わない"
+        emphasis: ["何を成果とするか"]
+    notes: |
+      3 つめです。何を成果とするかが揃っていません。
+      【6秒】
+
+  - id: problem3-detail
+    role: content
+    chapter: "組織的生産性で起きていること"
+    idea: "マイルストーンは揃うがその目的は揃わない"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "マイルストーンは揃っても\n目的は揃わない"
+      - kind: statement
+        slot: support
+        text: "同じ仕事を成功と見る人も、まだ足りないと見る人もいる"
+    notes: |
+      MOSH ではプロダクトのイニシアチブを立てて、マイルストーンを明確にして進めます。
+      なので「いつ何を出すか」は揃いやすいです。
+      一方で、何のためにやるのか、何をもって成果とするのかは揃いません。ここは一人ひとりの
+      視座に依存してしまいます。
+      同じ仕事をしていても、もう成功だと思っている人と、まだ足りないと思っている人がいます。
+      【25秒】
+
+  - id: org-summary
+    role: content
+    chapter: "組織的生産性で起きていること"
+    idea: "三つともツールでは解決できない"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "どれもツールでは解決できません"
+        emphasis: ["ツールでは解決できません"]
+    notes: |
+      3 つとも、ツールでは解決できません。話して、決めて、言葉にするしかない課題です。
+      【8秒】
+
+  # ============================================== 06 組織としての取り組み
+  - id: ch6-open
+    role: transition
+    idea: "組織としての取り組みの章へ入る"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "組織としての取り組み"
+    notes: |
+      では、これらの課題にどう取り組んでいるか。まず組織としての取り組みです。
+      【5秒】
+
+  - id: excellence
+    role: content
+    chapter: "組織としての取り組み"
+    idea: "組織的生産性を推進する会議体として Engineer Excellence 会議がある"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "Engineer Excellence 会議"
+      - kind: statement
+        slot: support
+        text: "2025年11月に発足。組織的生産性を毎週話し合う会議体"
+    notes: |
+      組織的生産性を推進しているのが、Engineer Excellence 会議です。
+      2025 年の 11 月に、CTO と私を含む数名で始めました。毎週 30 分集まっています。
+      目的は、AI 活用と開発生産性を仕組みにして、MOSH の開発文化を強くすることです。
+      私はこの会議の進行役をしています。
+      【20秒】
+
+  - id: excellence-stages
+    role: content
+    chapter: "組織としての取り組み"
+    idea: "Excellence は十か月で四つの段階を踏んできた"
+    layout: diagram-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "10 か月で 4 つの段階を踏んできた"
+      - kind: diagram
+        slot: diagram
+        form: flow.timeline
+        nodes:
+          - { id: measure, label: "測る",             detail: "2025年11月〜" }
+          - { id: split,   label: "領域を分けて改善", detail: "2026年2月〜" }
+          - { id: tell,    label: "伝える",           detail: "2026年5月〜" }
+          - { id: people,  label: "人と文化に向き合う", detail: "2026年8月〜" }
+        edges:
+          - measure -> split
+          - split -> tell
+          - tell -> people
+        emphasis: [people]
+    notes: |
+      この 10 か月で、4 つの段階を踏んできました。
+      最初は測るところから。次に、測った結果をもとに領域を分けて改善に取りかかりました。
+      そのあと、組織全体に伝えることに力を入れました。
+      そしていま、AI とチームの間で起きている摩擦に、人と文化の側から向き合っています。
+      順番に話します。
+      【25秒】
+
+  - id: measure
+    role: content
+    chapter: "組織としての取り組み"
+    idea: "まず開発生産性の指標と月次サーベイで現在地を測った"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "まず測るところから始めた"
+      - kind: statement
+        slot: support
+        text: "開発生産性の指標と、月次のサーベイ。どちらも個人の評価には使わない"
+    notes: |
+      最初に、SPACE と DORA をもとにした開発生産性の測り方を決めました。
+      あわせて、月に一度の匿名サーベイを 2026 年 1 月から続けています。
+      このとき原則として書いたのが、個人の評価には使わない、犯人探しではなく仕組みの欠陥を探す、
+      の 2 つです。測ることが監視に見えると、正直な数字が出てこなくなるからです。
+      【30秒】
+
+  - id: ai-budget
+    role: content
+    chapter: "組織としての取り組み"
+    idea: "AI 予算を三倍に上げて、使う障壁を取り除いた"
+    layout: stat-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "AI を使う障壁を取り除いた"
+      - kind: stat
+        slot: stat
+        value: "6 万円"
+        label: "1 人あたりの月の AI 予算"
+        context: "2026年2月に 3 倍へ。Claude はチームプランに"
+    notes: |
+      測ってみると、AI の予算を気にして使い控えている人がいることが分かりました。
+      そこで、1 人あたりの AI 予算を月 6 万円、それまでの 3 倍に上げて、全体に周知しました。
+      同じ時期に、PR のサイズやレビューの滞留、AI 活用の仕組み化など、領域を分けて改善に
+      取りかかっています。
+      【25秒】
+
+  - id: review-survey
+    role: content
+    chapter: "組織としての取り組み"
+    idea: "レビューを十二か月分調べると、人の関わり方が大きく変わっていた"
+    layout: table-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "コードレビューを 12 か月分調べた"
+      - kind: table
+        slot: table
+        columns: ["指標", "2025年9月", "2026年8月"]
+        rows:
+          - ["1 人あたりの PR（月）", "9.2 件", "22.3 件"]
+          - ["AI が書いたレビューコメント", "3%", "44%"]
+          - ["人が書いたコメント（1 PR あたり）", "2.75 件", "1.61 件"]
+          - ["オーナー以外によるレビュー", "50%", "21%"]
+        emphasis: { rows: [3, 4] }
+    notes: |
+      ここが、組織として見えてきたことの中心です。
+      メインのリポジトリの PR 約 8,000 件と、サーベイ、Slack の 12 か月分を調べました。
+      1 行目。1 人が月に出す PR は 9.2 件から 22.3 件に増えました。AI の効果です。
+      2 行目。レビューコメントのうち AI が書いたものは、3% から 44% になりました。
+      見てほしいのは 3 行目と 4 行目です。人が書くコメントは 1 PR あたり 2.75 件から 1.61 件に減りました。
+      コードのオーナー以外がレビューする割合は、50% から 21% に下がっています。
+      PR は倍以上に増えたのに、人がほかの人のコードに関わる量は減っています。
+      【60秒】
+
+  - id: review-finding
+    role: content
+    chapter: "組織としての取り組み"
+    idea: "誰がその変更を引き受けたのかが見えなくなった"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "誰が引き受けたのかが\n見えなくなった"
+        emphasis: ["見えなくなった"]
+      - kind: statement
+        slot: support
+        text: "サーベイの声「本人の意思決定がどこにあるのか分かるようにして欲しい」"
+    notes: |
+      調べて分かったのは、レビューで消えたのは量ではない、ということでした。
+      その変更を誰が考えて、誰が引き受けたのかが見えなくなっていました。
+      サーベイの自由記述にも「AI を使うのはいいが、本人の意思決定がどこにあるのか分かるように
+      して欲しい」という声がありました。
+      誰が何に責任を持つか。最初に見た、前からあった課題そのものです。
+      【35秒】
+
+  - id: tell
+    role: content
+    chapter: "組織としての取り組み"
+    idea: "月次の Excellence 通信で組織の文脈を伝えている"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "月に一度、組織の文脈を届ける"
+      - kind: statement
+        slot: support
+        text: "Excellence 通信。今月の数字、チームの実践、CTO のメッセージ"
+    notes: |
+      測って分かったことは、伝えないと現場に届きません。
+      7 月から、Excellence 通信という月次の発信を始めました。今月の数字、各チームの実践、
+      CTO のメッセージを載せています。
+      個人がそれぞれ AI で工夫していても、組織として何を大事にしたいのかは、誰かが言葉にしないと
+      共有されないからです。
+      【25秒】
+
+  - id: cto-phases
+    role: content
+    chapter: "組織としての取り組み"
+    idea: "CTO 主導で、フェーズごとに誰がレビューするかを決めた"
+    layout: table-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "CTO 主導で、フェーズごとに見る人を決めた"
+      - kind: table
+        slot: table
+        columns: ["フェーズ", "誰に出すか", "誰が見るか"]
+        rows:
+          - ["Prototype", "社内デモ", "—"]
+          - ["α", "10 名", "AI だけ"]
+          - ["β", "招待制 30 名", "AI と人 1 名"]
+          - ["GA", "全ユーザー", "AI と人とデザイン"]
+        emphasis: { rows: [2, 3] }
+    notes: |
+      レビューについては、CTO 主導でルールも作っています。
+      機能をフェーズに分けて、フェーズごとにレビューの重さを変えました。
+      α はまだ一部の人しか使っていない段階なので、AI のレビューだけで出していい。
+      β から本番のデータに書き込むので、ここで初めて人が 1 名必ず入ります。
+      誰が何を見るのかに、組織として一つの答えを出した形です。
+      【35秒】
+
+  - id: cto-phases-limit
+    role: content
+    chapter: "組織としての取り組み"
+    idea: "ルールを決めても品質基準をめぐる価値観の対立は残る"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "ルールを決めても\n価値観の対立は残る"
+      - kind: statement
+        slot: support
+        text: "「α は雑でも出す」と「MOSH らしくないものは出せない」がぶつかった"
+    notes: |
+      ただ、ルールで揃うのは期待値までです。
+      α は雑でも出して試すべきだという人と、ユーザーに出す以上 MOSH らしくないものは出せない
+      という人がいて、正面からぶつかりました。
+      どちらも正しいんですよね。線を引いても、どちら側に立つかは、その人が何を大事にしてきたかで
+      決まります。ここは、いま Excellence で向き合っているところです。
+      【30秒】
+
+  # ============================================== 07 チームとしての取り組み
+  - id: ch7-open
+    role: transition
+    idea: "自分のチームの取り組みへ移る"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "チームとしての取り組み"
+    notes: |
+      次に、私のチームでやっていることです。
+      【5秒】
+
+  - id: team-context
+    role: content
+    chapter: "チームとしての取り組み"
+    idea: "メンバーが入れ替わる中で立ち上がったチームである"
+    layout: diagram-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "メンバーが入れ替わる中で立ち上がったチーム"
+      - kind: diagram
+        slot: diagram
+        form: flow.timeline
+        nodes:
+          - { id: jun, label: "メンバーが入れ替わる",   detail: "2026年6月" }
+          - { id: jul, label: "商品の開発を引き継ぐ",   detail: "2026年7月" }
+          - { id: aug, label: "新しい会員サイトを公開", detail: "2026年8月" }
+          - { id: sep, label: "仕組みを整える",         detail: "2026年9月" }
+        edges:
+          - jun -> jul
+          - jul -> aug
+          - aug -> sep
+    notes: |
+      私のチームは、クリエイターが販売する商品と会員サイトを担当しています。
+      6 月に、元々の開発メンバーが大きく入れ替わりました。7 月に、商品の開発を別のチームから
+      引き継ぎました。私がユニットリードになったのは、8 月の公開の直前です。
+      なので、きれいに立ち上がったチームではありません。この状況で強いチームを作るために
+      やっていることを話します。
+      【35秒】
+
+  - id: working-agreement
+    role: content
+    chapter: "チームとしての取り組み"
+    idea: "AI が書いたコードへの責任は以前からチームの約束にあった"
+    layout: quote-stage
+    elements:
+      - kind: quote
+        slot: quote
+        text: "AI が書いたコードだったら、\n説明できるように理解してレビューする。\n最終判断は人間。"
+        attribution: "チームの Working Agreement（2026年1月）"
+    notes: |
+      土台になっているのは、チームの前身の頃から持っている約束です。
+      AI が書いたコードだったら、説明できるように理解してレビューする。最終判断は人間。
+      今年の 1 月に書いたものです。メンバーが入れ替わっても、この約束は引き継いでいます。
+      【25秒】
+
+  - id: team-okr
+    role: content
+    chapter: "チームとしての取り組み"
+    idea: "チームの目標で、AI で量を出すこと自体は目指さないと書いた"
+    layout: quote-stage
+    elements:
+      - kind: quote
+        slot: quote
+        text: "脳死で AI に機能を生産させる開発は、\nここで目指す姿ではない。"
+        attribution: "チームの OKR（2026年6月）"
+    notes: |
+      6 月に、新しいメンバーとチームの目標を話し合いました。
+      目標は「AI 駆動開発を取り込んだ、持続可能なチーム」です。
+      その中に、あえてこう書きました。脳死で AI に機能を生産させる開発は、ここで目指す姿ではない。
+      AI の活用も、やれば達成できる件数の目標にはしていません。
+      【30秒】
+
+  - id: team-skills
+    role: content
+    chapter: "チームとしての取り組み"
+    idea: "個人の AI の工夫をチームの共有スキルにしている"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "個人の AI の工夫を\nチームの道具にする"
+      - kind: statement
+        slot: support
+        text: "AI 環境の見せ合い会から、共有スキルのリポジトリへ"
+    notes: |
+      6 月の最初に、1 人 5 分ずつ自分の AI 環境を見せ合う会をやりました。
+      分かったのは、ほとんどのメンバーがもう半年近く、手でコードを書いていないことでした。
+      それぞれの工夫を個人の手元に置いたままにしないように、9 月にはメンバーが共有スキルの
+      リポジトリを作りました。いまも、メンバー同士が互いのスキルを見つけて持ち寄っています。
+      【30秒】
+
+  - id: incident
+    role: content
+    chapter: "チームとしての取り組み"
+    idea: "公開直後の障害で、知識が一人に集中していることが表に出た"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "公開の直後に\n障害が起きた"
+      - kind: statement
+        slot: support
+        text: "移行の知識が一人に集中していた"
+    notes: |
+      8 月の公開の直後に、障害が起きました。
+      ふりかえると、移行作業の知識が一人に集中していて、ほかのメンバーが状況を判断できませんでした。
+      メンバーが入れ替わり、開発も速くなる中で、前から抱えていた属人化が表に出た形です。
+      【25秒】
+
+  - id: incident-flow
+    role: content
+    chapter: "チームとしての取り組み"
+    idea: "ふりかえりから一か月で、知識を全員に開く仕組みにした"
+    layout: diagram-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "ふりかえりから 1 か月で仕組みにした"
+      - kind: diagram
+        slot: diagram
+        form: flow.timeline
+        nodes:
+          - { id: retro,  label: "障害のふりかえり",       detail: "8月4日" }
+          - { id: try,    label: "全員が知ることを決める", detail: "8月19日" }
+          - { id: input,  label: "インプット会と ADR",     detail: "8月25日" }
+          - { id: detect, label: "毎日の自動検知",         detail: "9月2日" }
+          - { id: skill,  label: "調査を AI スキルに",     detail: "9月7日" }
+        edges:
+          - retro -> try
+          - try -> input
+          - input -> detect
+          - detect -> skill
+        emphasis: [try]
+    notes: |
+      左から順に見てください。
+      まず障害をふりかえりました。2 週間後には、メンバーが自分から公開全体のふりかえりの場を
+      設定して、全員が知っているべきことは何かを決めました。
+      その翌週に、知識を持っていたメンバーがインプット会を開いて、前例のない作業は ADR に残す
+      テンプレートも作りました。
+      9 月の頭には、同じ不整合を毎日自動で検知する仕組みを入れました。
+      その次の週には、アラートの調査手順を AI のスキルにしています。
+      ふりかえりから 1 か月で、一人の頭の中にあった知識が、チームの仕組みになりました。
+      【60秒】
+
+  - id: incident-meaning
+    role: content
+    chapter: "チームとしての取り組み"
+    idea: "目指すのは誰が何を知っているかを全員が知っている状態である"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "誰が何を知っているかを\n全員が知っている"
+        emphasis: ["全員が知っている"]
+      - kind: statement
+        slot: support
+        text: "属人化そのものは悪ではない、とチームで整理した"
+    notes: |
+      ふりかえりで、チームはこう整理しました。属人化そのものは悪ではない。
+      足りなかったのは、誰が何を知っているかを全員が知っている状態だった、と。
+      全員がすべてを知る必要はありません。困ったときに誰に聞けばいいかが分かっていればいい。
+      【25秒】
+
+  - id: thirty-minutes
+    role: content
+    chapter: "チームとしての取り組み"
+    idea: "AI について話す三十分は、スタンスを揃えるのではなく知るための場だった"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "AI について話す 30 分"
+      - kind: statement
+        slot: support
+        text: "揃えるためではなく、互いのスタンスを知るための場"
+    notes: |
+      9 月の頭に、社内のエンジニアのミーティングで「AI に任せすぎていませんか？」という問題提起が
+      ありました。メンバーの一人が「チームでも話してみてもいいかも」と言ってくれたので、
+      翌日に 30 分だけ時間を取りました。
+      冒頭で伝えたのは、認識を揃えるところまで行かなくていい、ということです。
+      お互いがどんなスタンスで AI を使っているかを知っているだけで、話はずいぶん変わるからです。
+      【35秒】
+
+  - id: thirty-minutes-result
+    role: content
+    chapter: "チームとしての取り組み"
+    idea: "AI が書き AI が読む前提で、出したものは説明できるようにすると確かめた"
+    layout: quote-stage
+    elements:
+      - kind: quote
+        slot: quote
+        text: "AI が書く、AI が読む前提で進める。\nただし、出したものは説明できるように\n把握しておく。"
+        attribution: "30 分の話し合いで確かめたこと（2026年9月）"
+    notes: |
+      話してみると、スタンスは人によって少しずつ違いました。
+      それでも最後に、これは確かめ合えました。AI が書く、AI が読む前提で進める。
+      ただし、出したものは説明できるように把握しておく。
+      メンバーからは「自分が出したコードの責任は、やっぱり自分にある」という言葉も出ました。
+      1 月の約束を、自分たちの言葉で言い直した形です。
+      【35秒】
+
+  - id: outside
+    role: content
+    chapter: "チームとしての取り組み"
+    idea: "チームの外とは、ルールを押し付ける前に相手の困りごとを聞く"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "チームの外とは\nまず困りごとを聞く"
+    notes: |
+      その後、ほかのチームから PR を小さく分けてほしいという提案がありました。
+      チームで話して、ルールにはせず、まず相手が何に困っているのかを直接聞くことにしました。
+      【15秒】
+
+  # ============================================== 08 現在地とこれから
+  - id: ch8-open
+    role: transition
+    idea: "ハードとソフトの現在地とこれからの話へ移る"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "現在地とこれから"
+    notes: |
+      ここまでが取り組みです。ハードとソフトのそれぞれが、いまどこにいるかを話します。
+      【5秒】
+
+  - id: hard-now
+    role: content
+    chapter: "現在地とこれから"
+    idea: "技術的生産性への投資は数字に出ている"
+    layout: table-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "ハードの改善は数字に出ています"
+      - kind: table
+        slot: table
+        columns: ["指標", "変化"]
+        rows:
+          - ["デプロイ数", "43 倍"]
+          - ["Revert 率", "0.83% → 0.078%"]
+          - ["週あたりの PR", "280 件超"]
+    notes: |
+      ハードのほうは、公開済みの数字で効果が出ています。
+      デプロイ数が 43 倍。Revert 率、つまり戻した割合は 0.83% から 0.078% まで下がりました。
+      週あたりの PR は 280 件を超えています。速くなって、しかも壊れにくくなっています。
+      【20秒】
+
+  - id: soft-now
+    role: content
+    chapter: "現在地とこれから"
+    idea: "個人の加速がまだ組織の成果に現れていない"
+    layout: quote-stage
+    elements:
+      - kind: quote
+        slot: quote
+        text: "個人単位では AI で劇的に伸びている人もいますが、\nそれが組織の中央値には\n現れていなかったりもします。"
+        attribution: "CTO／Excellence 通信 Vol.1（2026年7月）"
+    notes: |
+      ソフトのほうは、まだ途中です。CTO が 7 月の Excellence 通信にこう書いています。
+      個人単位では AI で劇的に伸びている人もいるが、それが組織の中央値には現れていない。
+      AI のコストもコミットも増えているのに、デリバリーの見積もりと実績は大きく変わっていない。
+      プロセスや制度が、まだ AI の時代に追いついていないということです。
+      【30秒】
+
+  - id: survey-now
+    role: content
+    chapter: "現在地とこれから"
+    idea: "心理的安全性は高いが、AI の話題に限ると下がる"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "心理的安全性は高い\nAI の話題になると下がる"
+      - kind: statement
+        slot: support
+        text: "月次サーベイの心理的安全性は、半年連続で上がっていた"
+    notes: |
+      月次のサーベイでは、心理的安全性のスコアが 1 月から 6 月まで 6 か月連続で上がりました。
+      チームの中では、何でも言える状態に近づいています。
+      それなのに、AI という話題に限ると、言いにくさが残っています。前半でお話しした 1 つめの課題です。
+      【25秒】
+
+  - id: anxious
+    role: content
+    chapter: "現在地とこれから"
+    idea: "放置した課題は増幅され続けるので焦っている"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "放置した課題は\n大きくなり続けます"
+      - kind: statement
+        slot: support
+        text: "DORA は実運用に移るまでの猶予を約 12 か月としている"
+    notes: |
+      それでも焦っています。AI が増幅器だからです。
+      放置できなくなった課題は、放っておいても小さくなりません。日に日に大きくなります。
+      DORA は、実験から実運用に移るまでの猶予をおよそ 12 か月と書いています。それを過ぎると、
+      増幅されるのは不利のほうだと。
+      【20秒】
+
+  - id: soft-next
+    role: content
+    chapter: "現在地とこれから"
+    idea: "方針を出す前に、一人ずつ話を聞くところから始めている"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "方針を出す前に\n一人ずつ話を聞く"
+      - kind: statement
+        slot: support
+        text: "Excellence として、エンジニアへのヒアリングを始めた"
+    notes: |
+      これからについてです。
+      AI のアウトプットへの不信や、品質の基準をめぐる対立は、ルールを上から出しても解けません。
+      なので Excellence では、リーダーが方針を出す前に、エンジニア一人ひとりに話を聞くところから
+      始めています。
+      チームでやった 30 分を、組織の単位でやり直しているとも言えます。
+      【25秒】
+
+  # ============================================== 09 まとめ
+  - id: ch9-open
+    role: transition
+    idea: "まとめの章に入る"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "まとめ"
+    notes: |
+      まとめます。
+      【5秒】
+
+  - id: summary
+    role: content
+    chapter: "まとめ"
+    idea: "今日話したことを五点に畳む"
+    layout: list-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "今日お話ししたこと"
+      - kind: bullets
+        slot: list
+        items:
+          - "課題の多くは AI の前からあった"
+          - "AI は放置できていた課題を放置できなくする"
+          - "技術的生産性は仕組みで改善できる"
+          - "組織的生産性は話し合わないと改善できない"
+          - "揃えずに、まず互いのスタンスを知る"
+    notes: |
+      5 点です。
+      1 つめ、今日語られている組織課題の多くは、AI の前からありました。
+      2 つめ、AI は増幅器です。放置できていた課題を、放置できなくします。
+      3 つめ、技術的生産性は仕組みで改善できます。MOSH でも数字に出ました。
+      4 つめ、組織的生産性は仕組みだけでは改善できません。話して、決めて、言葉にするしかありません。
+      5 つめ、話すときは揃えなくていい。まず互いのスタンスを知るところからです。
+      MOSH も、組織全体ではまだその途中にいます。
+      【45秒】
+
+  - id: answer-the-question
+    role: content
+    chapter: "まとめ"
+    idea: "冒頭の問いに答える。作り方そのものは変わっていない"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "強いチームの作り方は\n変わっていません"
+        emphasis: ["変わっていません"]
+      - kind: statement
+        slot: support
+        text: "変わったのは、放置できる課題の量"
+    notes: |
+      冒頭の問いに答えます。強いチームの作り方は、AI で変わっていません。
+      方向を揃えて、合意を作って、言葉にして残す。前からやるべきだったことと同じです。
+      変わったのは、放置できる課題の量でした。
+      【25秒】
+
+  - id: closer
+    role: closer
+    idea: "三十分取って話してみる、という行動を手渡す"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "チームで 30 分\nAI の話をしてみてください"
+    notes: |
+      最後にひとつだけ持ち帰ってください。
+      みなさんのチームでも、30 分取って AI の話をしてみてください。
+      どう使っているか。出したものに、どう責任を持つか。揃えなくて大丈夫です。
+      お互いのスタンスを知るだけで、話はずいぶん変わります。
+      AI が大きくするのは、放置した課題か、整えた強みのどちらかです。先に整えておけば、
+      大きくなるのは強みのほうです。
+      このあと交流会があるので、みなさんのチームの話も聞かせてください。ありがとうございました。
+      【25秒】

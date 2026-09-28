@@ -1,0 +1,289 @@
+# Gemini が書いた比較用の版 (2026-09-21)。採否の検討材料として置いてある。
+schema_version: "0.1.0"
+deck:
+  title: "強いチームの作り方は、AI で変わるのか"
+  audience:
+    who: "AI で開発速度は上がったが、チームの成果や組織の成長に繋がっている実感が持てないエンジニア・マネージャー"
+    action: "自チームで『見て見ぬふりをしてきた課題』に向き合う対話を始める"
+  theme: ../../tools/slides/themes/mosh.yaml
+
+slides:
+  - id: title
+    role: title
+    idea: "イベントのテーマを逆照射し、本質的な問いを立てる"
+    layout: title-stage
+    elements:
+      - kind: statement
+        slot: title
+        text: "強いチームの作り方は\nAI で変わるのか"
+      - kind: statement
+        slot: subtitle
+        text: "MOSH の現在地と、見えてきた本質"
+    notes: |
+      【20秒】
+
+  - id: profile
+    role: content
+    chapter: "自己紹介"
+    idea: "チームのEMであり、横断推進を担う立場であることを示す"
+    layout: profile-stage
+    elements:
+      - kind: image
+        slot: portrait
+        src: ./assets/profile.jpg
+        prompt: "登壇者のプロフィール写真"
+      - kind: statement
+        slot: name
+        text: "山本 一将｜焚き火を愛するエンジニア"
+      - kind: statement
+        slot: affiliation
+        text: "MOSH株式会社 Engineering Manager"
+      - kind: statement
+        slot: handle
+        text: "X: @kyamamoto9120"
+      - kind: bullets
+        slot: bio
+        items:
+          - "略歴 ── 鉄道運行管理、SNSマーケティング基盤を経て、2025年 MOSH 参画"
+          - "活動 ── LINE API Expert / コミュニティ主催 / コンピュータ将棋開発"
+          - "担当 ── 開発チームのEM 兼 組織横断の生産性向上イニシアチブ推進"
+    notes: |
+      【25秒】
+
+  - id: listed-problems
+    role: content
+    chapter: "問い"
+    idea: "イベント記載の課題を提示し、共感をつくる"
+    layout: list-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "AI 時代の組織課題として語られること"
+      - kind: bullets
+        slot: list
+        items:
+          - "加速に伴う技術的負債の蓄積"
+          - "AI 活用の方針と責任境界の曖昧さ"
+          - "短期のスピードと長期的な品質のトレードオフ"
+          - "属人化の解消、知識共有と人材育成"
+          - "評価基準の揺らぎと、現場と経営の期待値のズレ"
+    notes: |
+      【35秒】
+
+  - id: are-these-new
+    role: content
+    chapter: "問い"
+    idea: "課題の本質が AI 固有のものではないと気づかせる"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "これらは本当に、\n「AI が生んだ新しい課題」なのか"
+        emphasis: ["新しい課題"]
+    notes: |
+      【8秒】
+
+  - id: all-old
+    role: content
+    chapter: "問い"
+    idea: "従来からある「技術の負債」と「人のコミュニケーション不全」に過ぎない"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "すべて、以前から存在していた"
+      - kind: statement
+        slot: support
+        text: "「システムの設計不全」と「チームの合意不足」が姿を変えただけ"
+    notes: |
+      【20秒】
+
+  - id: dora-amplifier
+    role: content
+    chapter: "増幅"
+    idea: "AI の本質は「増幅器」であるという定義"
+    layout: quote-stage
+    elements:
+      - kind: quote
+        slot: quote
+        text: "AI は増幅器として働く。\n優れた組織では強みを、\n課題を抱える組織では機能不全を肥大化させる。"
+        attribution: "DORA『State of AI-assisted Software Development』2025"
+    notes: |
+      【25秒】
+
+  - id: cant-ignore-anymore
+    role: content
+    chapter: "増幅"
+    idea: "起きた変化は「問題の発生」ではなく「隠蔽の限界」"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "「放置できていた課題」が\n「放置できなくなった」"
+        emphasis: ["放置できなくなった"]
+      - kind: statement
+        slot: support
+        text: "速度が上がったことで、組織の歪みが一気に表面化した"
+    notes: |
+      【25秒】
+
+  - id: for-example-review
+    role: content
+    chapter: "増幅"
+    idea: "コードレビューの形骸化を象徴例として提示"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "たとえば\nコードレビューの形骸化"
+      - kind: statement
+        slot: support
+        text: "「本当に読んでいるか分からない」状態は、元々そこにあった"
+    notes: |
+      【30秒】
+
+  - id: three-domains
+    role: content
+    chapter: "MOSHの構造"
+    idea: "技術の土台と組織の土台を分けて捉える体制"
+    layout: table-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "課題を切り分ける：MOSH の責任構造"
+      - kind: table
+        slot: table
+        columns: ["領域", "担う役割", "オーナー"]
+        rows:
+          - ["事業成果", "プロダクト価値の最大化", "各フィーチャーチーム"]
+          - ["技術基盤", "AI が扱いやすいアーキテクチャ設計", "Productivity チーム"]
+          - ["組織・文化", "チーム内の合意形成と活用カルチャー", "Engineering Excellence"]
+        emphasis: { rows: [3] }
+    notes: |
+      【40秒】
+
+  - id: tech-side-published
+    role: content
+    chapter: "MOSHの構造"
+    idea: "技術基盤側の取り組みは公開済みである旨を案内し、組織の話へフォーカスする"
+    layout: link-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "技術基盤のアプローチ（公開資料）"
+      - kind: link
+        slot: link
+        url: "https://speakerdeck.com/soarteclab/ai-devex-conference-2026"
+        title: "AI時代における開発生産性と進化可能性を高める技術戦略"
+        description: "MOSH VP of Technology 鈴木翔大（AI DevEX Conference 2026 登壇資料）"
+    notes: |
+      【20秒】
+
+  - id: approaches
+    role: content
+    chapter: "アプローチ"
+    idea: "仕組みだけでなく、人の配置と現場の合意形成を走らせる"
+    layout: list-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "組織課題への 3 つのアプローチ"
+      - kind: bullets
+        slot: list
+        items:
+          - "ルールの明文化 ── 開発フェーズに応じた AI 利用ガイドラインと ADR 策定"
+          - "当事者への巻き込み ── 慎重派・懸念を持つメンバーを推進コミュニティへ誘致"
+          - "現場での小さな合意 ── マネージャー主導ではなく、1 チーム内での共通認識づくり"
+    notes: |
+      【35秒】
+
+  - id: thirty-minutes
+    role: content
+    chapter: "実践"
+    idea: "たった30分の対話で空気を変えた合意"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "「AI をフル活用していい」"
+      - kind: statement
+        slot: support
+        text: "チームで向き合った 30 分で、暗黙の遠慮を取り払った"
+    notes: |
+      【40秒】
+
+  - id: writing-and-owning
+    role: content
+    chapter: "実践"
+    idea: "手段と責任の分離が心理的安全性をつくる"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "「誰が書いたか」と\n「誰が責任を持つか」は別"
+        emphasis: ["別"]
+      - kind: statement
+        slot: support
+        text: "生成手段を問うのではなく、デリバリの責任をチームで引き受ける"
+    notes: |
+      【40秒】
+
+  - id: reality-check
+    role: content
+    chapter: "現在地"
+    idea: "うまくいっているのは一部で、全社展開には壁がある現実"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "全社への浸透は、道半ば"
+      - kind: statement
+        slot: support
+        text: "現場の自律的な善意に頼っており、再現性のある組織文化には至っていない"
+    notes: |
+      【30秒】
+
+  - id: urgency
+    role: content
+    chapter: "現在地"
+    idea: "増幅器である以上、放置のコストは複利で膨らむ"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "放置のツケは、\n複利で大きくなっていく"
+        emphasis: ["複利"]
+      - kind: statement
+        slot: support
+        text: "増幅器の上では、小さな不信や曖昧さが致命傷になる"
+    notes: |
+      【25秒】
+
+  - id: we-know-direction
+    role: content
+    chapter: "現在地"
+    idea: "解くべき問いは不変であり、泥臭い対話しかない"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "「強いチームの作り方」は\n昔も今も変わらない"
+      - kind: statement
+        slot: support
+        text: "技術で解決しようとせず、言葉を尽くして合意を積み上げる"
+    notes: |
+      【30秒】
+
+  - id: closer
+    role: closer
+    idea: "聴衆へ持ち帰るべき具体的な行動を提示して締めくくる"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "あなたのチームで、\n放置できなくなっている\n「言葉」は何ですか？"
+      - kind: statement
+        slot: support
+        text: "AI を疑う前に、チームの「当たり前」を 30 分話し合ってみる"
+    notes: |
+      【35秒】

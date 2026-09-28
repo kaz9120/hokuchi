@@ -1,0 +1,631 @@
+# 10 分版「強いチームの作り方は、AI で変わるのか」(Dev's Garden 2026-09-29)
+#
+# deck-full.yaml (完全版) から、本人の構成案 (2026-09-28) に沿って組み直したもの。
+# 伝えたいこと: Excellence は声を集めて共有する。改善の主体は各チーム。
+#               私のチームでは考え方を話し合う時間を取っている。この棲み分けと循環を理解してもらう。
+# 流れ: AI で何が変わったか → MOSH の生産性の分類 → 技術的生産性は Productivity (公開済み)
+#       → 組織的生産性とは → Excellence の役割 → サーベイで見えた課題 → Excellence の取り組み
+#       → チームリードとしての取り組み → 循環 → 現在地とこれから → まとめ
+# 用語は社内 Notion「スケールする組織に向けて」の定義に揃える。資料上は「ハード/ソフト」と書かない。
+schema_version: "0.1.0"
+deck:
+  title: "強いチームの作り方は、AI で変わるのか"
+  audience:
+    who: "AI で開発は速くなったのに、それがチームの成果につながっている実感を持てずにいるエンジニア"
+    action: "組織の役割とチームの役割を分けて、自分の組織の改善の回し方を考える"
+  theme: ../../tools/slides/themes/mosh.yaml
+
+slides:
+  # ============================================== 枠
+  - id: title
+    role: title
+    idea: "イベントのテーマの手前にある問いを掲げる"
+    layout: title-stage
+    elements:
+      - kind: statement
+        slot: title
+        text: "強いチームの作り方は\nAI で変わるのか"
+      - kind: statement
+        slot: subtitle
+        text: "AIで開発が加速する今、強いチームをどう作る？"
+    notes: |
+      MOSH の山本です。
+      今日のテーマは「AI で開発が加速する今、強いチームをどう作る？」ですが、その手前の問いから
+      始めます。強いチームの作り方は、AI で変わるのか。
+      【15秒】
+
+  - id: profile
+    role: content
+    chapter: "自己紹介"
+    idea: "チームを持ちながら組織的生産性の会議体を回している立場を示す"
+    layout: profile-stage
+    elements:
+      - kind: image
+        slot: portrait
+        src: ./assets/profile.jpg
+        prompt: "登壇者のプロフィール写真"
+      - kind: statement
+        slot: name
+        text: "山本 一将｜焚き火を愛するエンジニア"
+      - kind: statement
+        slot: affiliation
+        text: "MOSH株式会社 Engineering Manager"
+      - kind: statement
+        slot: handle
+        text: "X: @kyamamoto9120"
+      - kind: bullets
+        slot: bio
+        items:
+          - "略歴 ── 鉄道システム開発、SNS マーケティングツール開発を経て、2025年より MOSH に参画"
+          - "実績 ── 2015年 世界コンピュータ将棋選手権 9位\n2024年 LINE API Expert 認定"
+          - "趣味 ── ヤクルトスワローズ、将棋、キャンプ、DQウォーク\n毎週 note を書いています"
+    notes: |
+      サービスチームのユニットリードをしながら、組織的生産性を担う Engineer Excellence 会議の
+      進行役をしています。今日は、組織とチームの両方の立場からお話しします。
+      【25秒】
+
+  - id: agenda
+    role: content
+    chapter: "目次"
+    idea: "今日の道筋を先に渡す"
+    layout: agenda-stage
+    elements:
+      - kind: agenda
+        slot: agenda
+    notes: |
+      今日はこの順番で話します。
+      【10秒】
+
+  # ============================================== 01 AI で何が変わったのか
+  - id: ch1-open
+    role: transition
+    idea: "AI で何が変わったのかを問う章に入る"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "AI で何が変わったのか"
+    notes: |
+      まず、MOSH に限らない一般的な話からです。
+      【5秒】
+
+  - id: listed-problems
+    role: content
+    chapter: "AI で何が変わったのか"
+    idea: "イベントが挙げている組織課題をそのまま並べて見せる"
+    layout: list-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "このイベントが挙げている課題"
+      - kind: bullets
+        slot: list
+        items:
+          - "開発速度が上がるほど蓄積しやすくなる技術的負債"
+          - "AI 活用における方針や責任範囲の曖昧さ"
+          - "短期的なスピードと長期的な品質・保守性の両立"
+          - "知識共有や人材育成、成果の評価"
+          - "現場とマネジメント層の期待のずれ"
+    notes: |
+      このイベントの募集文に並んでいた課題です。
+      開発速度が上がるほど技術的負債が溜まる。AI 活用の方針と責任範囲が曖昧になる。
+      スピードと品質をどう両立するか。知識共有と人材育成。成果の評価と、現場とマネジメントの期待のずれ。
+      【25秒】
+
+  - id: are-these-new
+    role: content
+    chapter: "AI で何が変わったのか"
+    idea: "並んだ課題が AI 以後に生まれたものかを問い返す"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "これは AI が生んだ\n新しい課題でしょうか"
+        emphasis: ["新しい課題"]
+    notes: |
+      これは、AI が来たから新しく生まれた課題でしょうか。
+      【5秒】
+
+  - id: mostly-old
+    role: content
+    chapter: "AI で何が変わったのか"
+    idea: "並んだ課題はほとんどが AI 以前から存在していた"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "ほとんどが前からあった課題です"
+    notes: |
+      そのほとんどが、前からあった課題です。
+      技術的負債という言葉は、1992 年にウォード・カニンガムが使い始めたものです。
+      レビューで誰が何を見るのかを決めていたチームも、多くはありませんでした。
+      エンジニアの成果をどう評価するかにも、業界としての答えはまだありません。
+      【25秒】
+
+  - id: dora-amplifier
+    role: content
+    chapter: "AI で何が変わったのか"
+    idea: "DORA の調査は AI を増幅器として定義している"
+    layout: quote-stage
+    elements:
+      - kind: quote
+        slot: quote
+        text: "ソフトウェア開発において、AI は主に増幅器としての役割を果たしています。\nAI は、パフォーマンスの高い組織の強みと、\n苦戦している組織の機能不全を増幅させます。"
+        attribution: "DORA『AI 支援型ソフトウェア開発の現状 2025』エグゼクティブ サマリー"
+    notes: |
+      では、AI で何が変わったのか。DORA の 2025 年のレポートには、こう書かれています。
+      AI は主に増幅器としての役割を果たしている。パフォーマンスの高い組織では強みが、苦戦している組織では
+      機能不全が増幅される。
+      【25秒】
+
+  - id: cant-ignore-anymore
+    role: content
+    chapter: "AI で何が変わったのか"
+    idea: "放置できていた課題が放置できない大きさになった"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "放置できていた課題が\n放置できなくなった"
+        emphasis: ["放置できなくなった"]
+    notes: |
+      新しい課題が生まれたというより、これまで放置できていた課題が放置できなくなりました。
+      たとえばコードレビューです。本当に読んでいるかどうかは、前から分かりませんでした。
+      それでも、1 日に出る差分が数本なら回っていました。
+      いまは AI が書く量に、人が読む量が追いつきません。
+      【30秒】
+
+  # ============================================== 02 MOSH における生産性
+  - id: ch2-open
+    role: transition
+    idea: "MOSH が生産性をどう分類しているかの章に入る"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "MOSH における生産性"
+    notes: |
+      ここから MOSH の話です。
+      【5秒】
+
+  - id: mosh-goal
+    role: content
+    chapter: "MOSH における生産性"
+    idea: "MOSH の開発組織は目指す状態を言葉にしている"
+    layout: stat-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "MOSH の開発組織が目指す状態"
+      - kind: stat
+        slot: stat
+        value: "圧倒的なスピードと創造力で\n迫力ある開発組織をつくる"
+    notes: |
+      MOSH の開発組織は、目指す状態をこう定めています。
+      圧倒的なスピードと創造力で、迫力ある開発組織をつくる。
+      【15秒】
+
+  - id: two-productivities
+    role: content
+    chapter: "MOSH における生産性"
+    idea: "そのための取り組みを技術的生産性と組織的生産性に分けている"
+    layout: versus-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "生産性に関する取り組みの分類"
+      - kind: versus
+        slot: versus
+        sides:
+          - label: "技術的生産性"
+            description: "技術基盤を整えて開発を速くする"
+            items:
+              - "開発基盤の改善"
+              - "テスト自動化"
+              - "モニタリング整備"
+          - label: "組織的生産性"
+            description: "プロセスと連携を整えてチームを強くする"
+            items:
+              - "開発プロセスの見直し"
+              - "レビュー文化の形成"
+              - "ナレッジの循環"
+    notes: |
+      そのための取り組みを、技術的生産性と組織的生産性の 2 つに分けています。
+      技術的生産性は、技術基盤を整えて開発を速くする取り組みです。開発基盤の改善、テスト自動化、
+      モニタリングの整備などがあります。Productivity チームが推進しています。
+      組織的生産性は、開発プロセスやチームの連携を整える取り組みです。開発プロセスの見直し、
+      レビュー文化の形成、ナレッジの循環などがあります。Engineer Excellence 会議が推進しています。
+      【30秒】
+
+  - id: tech-link
+    role: content
+    chapter: "MOSH における生産性"
+    idea: "技術的生産性の取り組みは Productivity チームが社外にも発信している"
+    layout: link-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "技術的生産性に対する取り組み"
+      - kind: link
+        slot: link
+        url: "https://speakerdeck.com/soarteclab/ai-devex-conference-2026"
+        title: "AI時代における開発生産性と進化可能性を高める技術戦略"
+        description: "鈴木翔大 / AI DevEX Conference 2026"
+    notes: |
+      技術的生産性は、Productivity チームが中心になって進めていて、社外にも発信しています。
+      アーキテクチャや Linter で、AI が扱いやすい土台を作る話です。気になる方はこちらをご覧ください。
+      【15秒】
+
+  - id: today-is-org
+    role: content
+    chapter: "MOSH における生産性"
+    idea: "今日は組織的生産性の話をする"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "今日は組織的生産性の話をします"
+        emphasis: ["組織的生産性"]
+    notes: |
+      今日は、もう一方の組織的生産性の話をします。
+      【5秒】
+
+  # ============================================== 03 組織的生産性と Engineer Excellence 会議
+  - id: ch3-open
+    role: transition
+    idea: "組織的生産性と Excellence の取り組みの章に入る"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "組織的生産性と\nEngineer Excellence"
+    notes: |
+      【5秒】
+
+  - id: why-org
+    role: content
+    chapter: "組織的生産性と Engineer Excellence"
+    idea: "技術的生産性だけでは、個人の加速が組織の成果につながらない"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "個人の加速が\n組織の成果につながっていない"
+    notes: |
+      なぜ技術的生産性だけでは足りないのか。
+      CTO が社内向けにこう書いています。個人単位では AI で劇的に伸びている人もいるが、
+      それが組織の中央値には現れていない。プロセスや制度が AI の時代に追いついていない。
+      AI で一人ひとりは速くなっても、それを組織の成果につなげるには、人と人の間の仕組みを
+      変える必要があります。これが、技術的生産性と組織的生産性を分けて考えている理由です。
+      【30秒】
+
+  - id: what-is-org
+    role: content
+    chapter: "組織的生産性と Engineer Excellence"
+    idea: "組織的生産性は人と人の間で決める領域を扱う"
+    layout: list-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "組織的生産性で扱うこと"
+      - kind: bullets
+        slot: list
+        items:
+          - "開発プロセスの整備"
+          - "チームの連携"
+          - "目標の設計"
+          - "ナレッジの循環"
+    notes: |
+      組織的生産性で扱うのは、この 4 つです。
+      どれも Linter やテストのように機械で良し悪しを判定できません。人と人が話して決める必要があります。
+      最初に見たイベントの課題も、技術的負債を除けば、ほとんどがこちらに入ります。
+      【25秒】
+
+  - id: excellence-role
+    role: content
+    chapter: "組織的生産性と Engineer Excellence"
+    idea: "Excellence の役割は声を集めて共有することで、改善の主体は各チームにある"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "Excellence は声を集めて共有する\n改善するのは各チーム"
+        emphasis: ["改善するのは各チーム"]
+    notes: |
+      組織的生産性を推進しているのが、Engineer Excellence 会議です。2025 年 11 月から毎週 30 分開催しており、
+      私が進行役を務めています。
+      ここで大事にしているのが役割の分け方です。Excellence は、組織の状態を可視化して、声を集めて
+      共有します。実際に改善するのは、各チームです。
+      【25秒】
+
+  - id: cycle
+    role: content
+    chapter: "組織的生産性と Engineer Excellence"
+    idea: "チームの改善を Excellence が共有し、組織の仕組みにして広げる循環が Excellence の目的である"
+    layout: diagram-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "チームの改善を組織に広げる"
+      - kind: diagram
+        slot: diagram
+        form: flow.cycle
+        nodes:
+          - { id: team,   label: "チームが改善" }
+          - { id: share,  label: "Excellence が共有" }
+          - { id: system, label: "組織で仕組みにする" }
+        edges:
+          - team -> share
+          - share -> system
+          - system -> team
+        emphasis: [share]
+    notes: |
+      Excellence が目指しているのは、この循環です。
+      目標の達成に向けて、各チームが改善に取り組む。改善の主体はチームです。
+      チームで起きたことや声を、Excellence が集めて組織に共有する。
+      共有した取り組みのうち、仕組みで解決できるものは、組織のルールや道具にして各チームに還元する。
+      良い取り組みが一つのチームに閉じず、組織全体に広がっていく状態を目指しています。
+      【45秒】
+
+  - id: survey
+    role: content
+    chapter: "組織的生産性と Engineer Excellence"
+    idea: "定量的な生産性だけでなく、定性面も毎月のサーベイで測っている"
+    layout: versus-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "定量だけでなく定性も毎月測る"
+      - kind: versus
+        slot: versus
+        sides:
+          - label: "定量"
+            items:
+              - "デプロイ数"
+              - "PR のリードタイム"
+              - "レビューにかかる時間"
+          - label: "定性（毎月のサーベイ）"
+            items:
+              - "13 問を 7 段階で聞く"
+              - "匿名で回答"
+              - "毎月の変化を追う"
+            emphasis: true
+    notes: |
+      可視化の中心は、毎月のサーベイです。
+      デプロイ数やリードタイムのような定量データだけでは、開発者の体験までは分かりません。
+      リリースが速くなっていても、集中できていない、レビューがつらい、といった実態は数字には表れません。
+      そこで 2026 年 1 月から、定性的なサーベイを毎月実施しています。13 問・7 段階評価で回答してもらう形式です。
+      匿名で回答してもらい、毎月の変化を追っています。
+      【30秒】
+
+  - id: survey-items
+    role: content
+    chapter: "組織的生産性と Engineer Excellence"
+    idea: "SPACE フレームワークをベースに、MOSH 独自の項目を足している"
+    layout: versus-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "SPACE をベースに MOSH 独自の項目を足す"
+      - kind: versus
+        slot: versus
+        sides:
+          - label: "SPACE から（例）"
+            items:
+              - "チーム内の心理的安全性"
+              - "コードレビューの質・速度"
+              - "集中時間の確保"
+          - label: "MOSH 独自の項目"
+            items:
+              - "AI 活用への満足度"
+              - "技術負債への向き合い方"
+    notes: |
+      設問は、開発生産性の研究でよく使われる SPACE フレームワークをベースにしています。
+      満足度、協働、効率の観点から、MOSH で知りたいものを選びました。
+      ただ、SPACE にはないけれど知りたいこともあります。そこで、AI 活用への満足度と、
+      技術負債への向き合い方を、MOSH 独自の項目として足しています。
+      続けてみると、チーム内の心理的安全性は高い一方で、集中時間の確保やコードレビューの質と速度に
+      課題があることが見えてきました。
+      自由記述も 1 問だけ置いています。開発体験を改善するために、一つだけ変えられるとしたら何を変えたいか。
+      スコアが低かった項目や、ここに書かれた声には、必ず何かしらアクションを取ると決めています。
+      【45秒】
+
+  - id: tsushin
+    role: content
+    chapter: "組織的生産性と Engineer Excellence"
+    idea: "毎月の発信で、組織の考えと各チームの取り組みを届けている"
+    layout: list-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "毎月、組織の文脈を発信する"
+      - kind: bullets
+        slot: list
+        items:
+          - "CTO のメッセージ ── 組織として大事にしたいこと"
+          - "今月の数字 ── サーベイと開発のデータ"
+          - "各チームの実践 ── うまくいった工夫とその背景"
+    notes: |
+      せっかく集めた声も、共有しなければ現場には届きません。そこで 7 月から、毎月の発信を始めました。
+      狙いは、一人ひとりの体験だけでは見えない、組織全体の文脈を届けることです。
+      載せている内容は主に 3 つです。
+      まず CTO のメッセージで、組織として何を大事にしたいかを伝えます。
+      次に今月の数字で、サーベイと開発のデータから組織の状態を伝えます。
+      そして各チームの実践として、うまくいった工夫とその背景を紹介しています。
+      たとえば、あるチームが WIP を減らしてリードタイムを半分にした話を載せました。
+      ほかのチームが真似できる形で共有するのが目的です。
+      【45秒】
+
+  # ============================================== 04 チームリードとして
+  - id: ch4-open
+    role: transition
+    idea: "チームリードとしての取り組みの章に入る"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "チームリードとして"
+    notes: |
+      次に、チームリードとして私のチームでやっていることです。
+      【5秒】
+
+  - id: team-context
+    role: content
+    chapter: "チームリードとして"
+    idea: "メンバーが大きく入れ替わった新しいチームである"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "メンバーが大きく入れ替わった\n新しいチーム"
+    notes: |
+      私のチームは、クリエイターが販売する商品と会員サイトを担当しています。
+      6 月に開発メンバーが大きく入れ替わり、7 月に商品の開発を別のチームから引き継ぎました。
+      私がユニットリードになったのは、8 月の公開の直前です。
+      【20秒】
+
+  - id: team-talk
+    role: content
+    chapter: "チームリードとして"
+    idea: "チームで考え方を話し合う時間を取っている"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "考え方を話し合う時間を取る"
+      - kind: statement
+        slot: support
+        text: "例: AI の使い方について 30 分話し合った"
+    notes: |
+      チームでは、考え方を話し合う時間を意識して取っています。
+      たとえば 9 月の頭に、AI の使い方について 30 分話し合いました。
+      目的は意見を揃えることではなく、お互いのスタンスを知ることです。
+      最後に「AI が書く、AI が読む前提で進める。ただし、出したものは説明できるように把握しておく」
+      という点は、全員で確認しました。
+      【30秒】
+
+  - id: team-system
+    role: content
+    chapter: "チームリードとして"
+    idea: "仕組みで解決できることは仕組みにする"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "仕組みで解決できることは\n仕組みにする"
+      - kind: statement
+        slot: support
+        text: "例: 障害のふりかえりから、知識の共有と毎日の自動検知へ"
+    notes: |
+      もう一つは、仕組みで解決できることは仕組みにすることです。
+      8 月の公開の直後に障害が起きました。ふりかえると、移行作業の知識が一人に集中していました。
+      そこで、全員が知っておくべきことを決めて、インプット会を開き、同じ不整合を毎日自動で検知する
+      仕組みを入れました。1 か月ほどで、一人の頭の中にあった知識をチームの仕組みにできました。
+      【30秒】
+
+  # ============================================== 05 現在地とこれから
+  - id: ch5-open
+    role: transition
+    idea: "現在地とこれからの章に入る"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "現在地とこれから"
+    notes: |
+      【5秒】
+
+  - id: now
+    role: content
+    chapter: "現在地とこれから"
+    idea: "MOSH の生産性は数字で見て向上している"
+    layout: stat-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "デプロイ数の推移"
+      - kind: stat
+        slot: stat
+        value: "43 倍"
+    notes: |
+      ここから現在地についてです。Productivity チームの発表資料にある数字ですが、デプロイ数は 43 倍になりました。
+      その間にエンジニアは 10 人から 35 人に増えています。人数の増加だけでは説明できない伸びです。
+      技術的生産性と組織的生産性の両方の取り組みが、数字に表れてきていると考えています。
+      【25秒】
+
+  - id: challenge
+    role: content
+    chapter: "現在地とこれから"
+    idea: "AI で加速するほど、情報についていくのが難しくなり続けている"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "加速する開発が\n人の認知の限界を超えている"
+    notes: |
+      一方で、AI 時代においても、人にどう向き合うかが課題である点は変わりません。
+      AI であらゆるものが加速しているからこそ、情報のキャッチアップ自体がますます難しくなっています。
+      並行して進む開発が増え、一人が把握できる上限に達している。社内ではこれを「認知の限界を超えている」と表現しています。
+      【20秒】
+
+  - id: next
+    role: content
+    chapter: "現在地とこれから"
+    idea: "それを本人の努力に任せず、中立な組織が声を吸い上げて循環させたい"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "本人の努力に任せず\n中立な組織が支える"
+        emphasis: ["中立な組織が支える"]
+      - kind: statement
+        slot: support
+        text: "生の声を吸い上げて、良い取り組みが循環する組織にしたい"
+    notes: |
+      そこを解決するのは、本人の努力ではないと考えています。Excellence のように、中立な立場にいる組織の
+      活動で支えるべきです。
+      これからは、Excellence の立場から生の声をもっと吸い上げていきます。
+      まずは、普段なかなか声が表に出にくいメンバーに 1on1 で話を聞くところから始めます。
+      そして、良い取り組みが循環していく組織にしていきたいです。
+      【35秒】
+
+  # ============================================== まとめ
+  - id: summary
+    role: content
+    chapter: "まとめ"
+    idea: "今日話したことを四点に畳む"
+    layout: list-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "今日お話ししたこと"
+      - kind: bullets
+        slot: list
+        items:
+          - "AI で新しい課題が生まれたのではなく、前からある課題が放置できなくなった"
+          - "MOSH は生産性を技術的生産性と組織的生産性に分けている"
+          - "Excellence は声を集めて共有し、改善はチームが担う"
+          - "チームの取り組みを共有し、仕組みにする循環を回す"
+    notes: |
+      まとめます。
+      AI で新しい課題が生まれたのではなく、前からある課題が放置できなくなりました。
+      MOSH では、生産性を技術的生産性と組織的生産性に分けています。
+      組織的生産性では、Excellence が声を集めて共有し、改善は各チームが担います。
+      チームの取り組みを共有して、仕組みにできるものは仕組みにする。この循環を回しています。
+      【30秒】
+
+  - id: closer
+    role: closer
+    idea: "冒頭の問いに答える。強いチームの作り方は変わっていない"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: statement
+        text: "強いチームの作り方は\n変わっていません"
+        emphasis: ["変わっていません"]
+    notes: |
+      冒頭の問いに答えると、強いチームの作り方は、AI で変わっていないと考えています。
+      チームで話して決めて、うまくいったことを共有して、仕組みにする。前からやるべきだったことです。
+      変わったのは、それを後回しにできなくなったことです。
+      このあと交流会があるので、みなさんのチームの話も聞かせてください。ありがとうございました。
+      【25秒】

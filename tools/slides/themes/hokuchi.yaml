@@ -34,6 +34,8 @@ theme:
     # mono (任意、ADR-0016): コード引用の素材書体。未指定のためレンダラ既定の
     # mono スタックに落ちる。
     # タイプスケール: 役割ごとのフォントサイズ (px)。spike NOTES §1 の実測表 (ADR-0007)
+    # 本文系 (bullet / subtitle / attribution / node) は min_size_pt 24pt = 32px
+    # 以上に置く (1px = 0.75pt、ADR-0025)。axis と code は補助情報・素材として対象外。
     scale:
       hero: 80          # opener / closer の statement
       title: 74         # title-stage の主タイトル
@@ -41,9 +43,9 @@ theme:
       quote: 46         # 引用本文
       heading: 34       # diagram / chart / list の見出し
       bullet: 34        # 箇条書き項目
-      subtitle: 30      # title-stage の副題
-      attribution: 24   # 引用の出典
-      node: 24          # ダイアグラムのノードラベル
+      subtitle: 32      # title-stage の副題 (本文系)
+      attribution: 32   # 引用の出典 (本文系)
+      node: 32          # ダイアグラムのノードラベル・表のセル (本文系)
       axis: 20          # チャートの軸ラベル
       code: 22          # code 要素の本文 (ADR-0016)
       stat: 160         # stat 要素の数字 (ADR-0016)

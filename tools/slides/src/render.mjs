@@ -21,6 +21,7 @@ import { iconExists, iconInner, promoteWeight } from './icons.mjs';
 import { cpLen, esc, estW, estimateWrappedLines } from './text.mjs';
 import { CANVAS, MARGIN, boxStyle, round, stageRect } from './geometry.mjs';
 import { buildPlan, edgeKey, elementKey, inPushChain, itemKey, nodeKey, sharedKey } from './build.mjs';
+import { ptToPx, resolveScale } from './type-scale.mjs';
 import { InlineText } from './components/InlineText.jsx';
 import { GridDirect } from './components/GridDirect.jsx';
 import { ProfileStage } from './components/ProfileStage.jsx';
@@ -55,13 +56,7 @@ const CHART_PAD = { l: 84, r: 60, t: 26, b: 64 }; // 軸ラベルがプロット
 const DONUT_PAD = 110; // 扇形の外側に置くラベル (カテゴリ + %) 用の余白
 const HBAR_MAX_W = 1000; // 100% 横棒の帯の最大幅。舞台いっぱいに伸ばすと端の区画が視線から遠くなる
 
-// Type-scale defaults mirror theme.schema.json so a theme that omits a token
-// still renders. Present tokens in the theme win.
-const DEFAULT_SCALE = {
-  hero: 80, title: 74, big: 70, quote: 46, heading: 34,
-  bullet: 34, subtitle: 30, attribution: 24, node: 24, axis: 20,
-  code: 22, stat: 160,
-};
+// タイプスケールの既定値は type-scale.mjs が持つ (lint の min-type と共有)。
 
 // theme.type.mono is a material typeface, not a voice slot (ADR-0016, SPEC
 // §2.3) — an unset theme falls back to this renderer-owned mono stack.
@@ -69,7 +64,7 @@ const DEFAULT_MONO_STACK = '"SF Mono", "Consolas", "DejaVu Sans Mono", monospace
 
 // Named-pattern slot maps (SPEC §5.1). Elements enter a slot by `slot:`.
 const PATTERN_SLOTS = {
-  'statement-stage': ['statement', 'support'],
+  'statement-stage': ['headline', 'statement', 'support'],
   'title-stage': ['title', 'subtitle'],
   'diagram-stage': ['headline', 'diagram'],
   'chart-stage': ['headline', 'chart'],
@@ -108,11 +103,25 @@ function makeContext(deckRoot, themeRoot, opts = {}) {
     return rel;
   }
 
-  const ctx_ = {
+  // 本文の実効サイズの記録 (ADR-0025)。縮小を決めるのは measure なので、
+  // 実際に描いた大きさを知っているのはレンダラだけになる。lint の min-type は
+  // この記録を読む。base は縮小前の大きさ (縮小がなければ省略)。
+  const typeLog = [];
+  const ctx = {
+    typeLog,
+    bodyMinPx: ptToPx(T.type.body.min_size_pt),
+    /** 本文 1 箇所の実効サイズを記録し、そのまま返す。 */
+    body(what, px, base) {
+      typeLog.push({ slideId: ctx.slideKey, what, px, ...(base != null && base !== px ? { base } : {}) });
+      return px;
+    },
+  };
+
+  Object.assign(ctx, {
     deck: deckRoot.deck,
     slides: deckRoot.slides,
     grid: { rows: T.grid.rows ?? 6, pattern: T.grid.pattern },
-    scale: { ...DEFAULT_SCALE, ...(T.type.scale || {}) },
+    scale: resolveScale(themeRoot.theme),
     scales: deckRoot.deck.scales || {},
     fonts: {
       display: T.type.display.family,
@@ -134,11 +143,11 @@ function makeContext(deckRoot, themeRoot, opts = {}) {
     // renderSlide がスライドごとに差し替える。段階表示の無いスライドでは空で、
     // 出力は従来と 1 バイトも変わらない。
     b: {
-      el: (el) => bAttrs(ctx_, elementKey(ctx_.slide, el)),
-      item: (el, i) => bAttrs(ctx_, itemKey(elementKey(ctx_.slide, el), i)),
-      node: (el, id) => bAttrs(ctx_, nodeKey(elementKey(ctx_.slide, el), id)),
-      edge: (el, i) => bAttrs(ctx_, edgeKey(elementKey(ctx_.slide, el), i)),
-      shared: (el) => bAttrs(ctx_, sharedKey(elementKey(ctx_.slide, el))),
+      el: (el) => bAttrs(ctx, elementKey(ctx.slide, el)),
+      item: (el, i) => bAttrs(ctx, itemKey(elementKey(ctx.slide, el), i)),
+      node: (el, id) => bAttrs(ctx, nodeKey(elementKey(ctx.slide, el), id)),
+      edge: (el, i) => bAttrs(ctx, edgeKey(elementKey(ctx.slide, el), i)),
+      shared: (el) => bAttrs(ctx, sharedKey(elementKey(ctx.slide, el))),
     },
     C: {
       bg: P.neutral.bg,
@@ -150,8 +159,8 @@ function makeContext(deckRoot, themeRoot, opts = {}) {
       highlight: P.highlight,
       core: P.core,
     },
-  };
-  return ctx_;
+  });
+  return ctx;
 }
 
 /**
@@ -529,6 +538,7 @@ function measureTimeline(el, ctx, avail) {
   // 「常に上」であることが読み手の基準点になるため (SPEC は千鳥配置を label
   // に限って許可している。可読性を label 側の自由度だけで確保する)。
   const stagger = labelWidth(fsLabel) > spacing * TL_FIT;
+  ctx.body('タイムラインのラベル', fsLabel, scale.node);
 
   const labelRowH = Math.round(fsLabel * 1.4);
   const labelH = TL_GAP + labelRowH * (stagger ? 2 : 1);
@@ -904,8 +914,10 @@ function codeLines(el, { lines, lang }) {
  */
 function measurePost(el, ctx, avail) {
   const { scale } = ctx;
-  const fsBody = Math.round(scale.quote * 0.66);
-  const fsAuthor = 24, fsMeta = 18;
+  // 本文と著者名は聴衆が読む本文なので、本文の下限を割らない (ADR-0025)。
+  // メタ (日時など) は補助情報として小さいまま残す。
+  const fsBody = ctx.body('投稿の本文', Math.max(ctx.bodyMinPx, Math.round(scale.quote * 0.66)));
+  const fsAuthor = ctx.body('投稿の著者名', Math.max(ctx.bodyMinPx, scale.attribution)), fsMeta = 18;
   const padX = 44, padY = 38;
   const avatarSize = 72;
   const headGap = 20;
@@ -965,8 +977,11 @@ function measureLink(el, ctx, avail) {
   const qrBox = Math.min(190, Math.round(avail.h * 0.55));
   // タイトルは見出しではなく紹介なので bullet より一段落とす。URL は読めれば足りるので
   // いちばん小さい。浮いた高さは OGP 画像に回る (レビュー指摘 2026-09-21)。
-  let fsTitle = Math.round(scale.bullet * 0.88);
-  let fsDesc = Math.round(scale.attribution * 1.05);
+  // 題と説明は本文の下限を割らない (ADR-0025)。URL は補助情報なので対象外。
+  const fsTitle0 = Math.max(ctx.bodyMinPx, Math.round(scale.bullet * 0.88));
+  const fsDesc0 = Math.max(ctx.bodyMinPx, Math.round(scale.attribution * 1.05));
+  let fsTitle = fsTitle0;
+  let fsDesc = fsDesc0;
   let fsUrl = Math.round(scale.attribution * 0.8);
   const imgGap = 22, textGap = 14;
 
@@ -1006,6 +1021,9 @@ function measureLink(el, ctx, avail) {
     contentH = contentHeight();
   }
 
+  if (el.title) ctx.body('リンクの題', fsTitle, fsTitle0);
+  if (el.description) ctx.body('リンクの説明', fsDesc, fsDesc0);
+
   const w = Math.min(avail.w, padX * 2 + leftW + gap + qrBox);
   const h = Math.min(avail.h, Math.max(contentH, qrBox) + padY * 2);
   return {
@@ -1030,6 +1048,8 @@ function measureStat(el, ctx, avail) {
 
   const fsLabel = scale.subtitle;
   const fsContext = scale.attribution;
+  if (el.label) ctx.body('stat のラベル', fsLabel);
+  if (el.context) ctx.body('stat の文脈', fsContext);
   const valueH = Math.round(fs * 1.15);
   const labelH = el.label ? Math.round(fsLabel * 1.3) + 20 : 0;
   const contextH = el.context ? Math.round(fsContext * 1.5) + 16 : 0;
@@ -1082,6 +1102,8 @@ function measureTable(el, ctx, avail) {
     totalH = headHFor(fs) + el.rows.length * rowHFor(fs);
   }
 
+  ctx.body('表のセル', fs, scale.node);
+
   // セルの揃えは内容から導く。記号や短い語は中央、文章が入る列は左。
   // 長い文を中央揃えで並べると行ごとに左端がばらけ、表そのものが
   // 「揃っていない」ように見える (レビュー指摘 2026-09-21)。
@@ -1111,7 +1133,8 @@ function measureTable(el, ctx, avail) {
 function measureVersus(el, ctx, avail) {
   const { scale } = ctx;
   const fsLabel = scale.heading;
-  const fsItem = Math.round(scale.bullet * 0.8);
+  // 項目は本文なので下限を割らない (ADR-0025)。bullet の 0.8 倍だと 27px になる。
+  const fsItem = ctx.body('対比の項目', Math.max(ctx.bodyMinPx, Math.round(scale.bullet * 0.8)));
   const padX = 40, padY = 36, labelGap = 26, itemGap = Math.round(fsItem * 0.9);
   const descGap = 12; // 見出しと説明文の間
   const dividerW = 64;
@@ -1191,6 +1214,7 @@ function measureAgenda(el, ctx, avail) {
   const rowGap = (fs) => fs * 0.9;
   let fs = scale.bullet;
   while (fs > 22 && estH(fs) + (n - 1) * rowGap(fs) > avail.h) fs -= 2;
+  ctx.body('目次の章題', fs, scale.bullet);
   const gap = rowGap(fs);
   const h = Math.min(avail.h, estH(fs) + (n - 1) * gap);
 
@@ -1221,11 +1245,13 @@ function measureVideo(el, ctx, avail) {
  * never moves. `align` picks the horizontal placement of the lead box:
  * figures read as centred, text-shaped material lines up with the headline.
  */
-function leadStage(slide, ctx, slotName, measureFn, align = 'center') {
+function leadStage(slide, ctx, slotName, measureFn, align = 'center', { fallbackHead = null } = {}) {
   const stage = stageRect();
-  const head = slide.elements.find((e) => e.slot === 'headline');
+  const head = slide.elements.find((e) => e.slot === 'headline') ?? fallbackHead;
   const el = slide.elements.find((e) => e.slot === slotName);
-  const headH = head ? Math.round(ctx.scale.heading * 1.3) : 0;
+  // 見出しが折り返すと帯が伸びる。1 行ぶんで見積もると主役の箱が舞台からあふれる。
+  const headLines = head ? estimateWrappedLines(head.text, ctx.scale.heading, stage.w) : 0;
+  const headH = Math.round(ctx.scale.heading * 1.3 * headLines);
   const avail = { w: stage.w, h: stage.h - (head ? headH + HEAD_GAP : 0) };
   const m = measureFn(el, ctx, avail);
   // JSX を書けるのは .jsx だけなので、移行が render.mjs の分割に届くまでは
@@ -1246,8 +1272,15 @@ function diagramStage(slide, ctx) {
   return leadStage(slide, ctx, 'diagram', measureDiagram);
 }
 
+/**
+ * headline を省略した chart-stage は、chart の message を見出しとして描く
+ * (ADR-0025、本 p.92「データから得られる結論を記す」)。headline があれば
+ * そちらが勝ち、message は描かない (従来どおり)。
+ */
 function chartStage(slide, ctx) {
-  return leadStage(slide, ctx, 'chart', measureChart);
+  const chart = slide.elements.find((e) => e.slot === 'chart');
+  const fallbackHead = chart?.message ? { text: chart.message } : null;
+  return leadStage(slide, ctx, 'chart', measureChart, 'center', { fallbackHead });
 }
 
 /**
@@ -1267,6 +1300,7 @@ function measureList(el, ctx, avail) {
   const gapFor = (fs) => fs * 1.05;
   let fs = ctx.scale.bullet;
   while (fs > 24 && estH(fs) + (n - 1) * gapFor(fs) > avail.h) fs -= 2;
+  ctx.body('箇条書き', fs, ctx.scale.bullet);
   const gap = gapFor(fs);
   const h = Math.min(avail.h, estH(fs) + (n - 1) * gap);
   return {
@@ -1465,6 +1499,8 @@ svg.lead{display:block;max-width:100%;max-height:100%;overflow:visible}
 .statement{font-family:${fonts.display};font-weight:${fonts.wDisplay};line-height:1.25;
   color:${C.textStrong};max-width:100%}
 .support{color:${C.muted};margin-top:30px;line-height:1.5;letter-spacing:.02em}
+/* 見出しつき statement-stage (ADR-0025) の主張。舞台の幅で折り返して中央に置く */
+.statement-lead{width:100%;text-align:center}
 
 .chapter{position:absolute;top:22px;left:20px;z-index:2;font-size:15px;color:${C.muted};
   letter-spacing:.18em;font-family:${fonts.display};font-weight:${fonts.wDisplay};
@@ -1524,10 +1560,10 @@ svg.lead{display:block;max-width:100%;max-height:100%;overflow:visible}
   line-height:1.6;padding:28px;text-align:center;box-shadow:none}
 .profile-handle{color:${C.text}}
 .inline-icon{height:.95em;width:.95em;vertical-align:-.12em;margin-right:.4em}
-.profile-right{gap:30px}
+.profile-right{gap:26px}
 .profile-label{color:${C.highlight};font-family:${fonts.display};font-weight:${fonts.wDisplay};
-  font-size:22px;letter-spacing:.08em;margin-bottom:7px}
-.profile-body{font-size:21px;line-height:1.65;color:${C.text}}
+  letter-spacing:.08em}
+.profile-body{color:${C.text}}
 
 .photo{width:100%;height:100%;object-fit:cover;display:block}
 .stage-photo{width:100%;height:100%;object-fit:contain;display:block;border-radius:10px;
@@ -1862,7 +1898,8 @@ document.head.appendChild(s)})()</script>`;
  * Render a loaded deck into a single-file SPA (ADR-0012).
  * @param {object} opts { deckDir, themeDir } — bases for resolving relative asset paths.
  * @returns {{ pages: { 'index.html': string },
- *             assets: Map<string, string> }}  abs source path -> rel path in outdir
+ *             assets: Map<string, string>,   abs source path -> rel path in outdir
+ *             typeLog: Array<{ slideId, what, px, base? }> }}  本文の実効サイズ (lint min-type 用)
  */
 export function renderDeck(deckRoot, themeRoot, opts = {}) {
   const ctx = makeContext(deckRoot, themeRoot, opts);
@@ -1909,5 +1946,5 @@ ${fontLinks}
 <main>${sections}
 </main>${buildsJson(plans)}${navScript(total)}${hasPostEmbed ? postEmbedScript() : ''}</body></html>`;
 
-  return { pages: { 'index.html': doc }, assets: ctx.assets };
+  return { pages: { 'index.html': doc }, assets: ctx.assets, typeLog: ctx.typeLog };
 }

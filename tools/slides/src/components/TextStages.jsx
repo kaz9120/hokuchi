@@ -18,17 +18,36 @@ function opticalPane() {
 export function StatementStage({ slide, ctx }) {
   const el = slide.elements.find((e) => e.slot === 'statement');
   const support = slide.elements.find((e) => e.slot === 'support');
+  const headline = slide.elements.find((e) => e.slot === 'headline');
   const token = (slide.role === 'opener' || slide.role === 'closer') ? 'hero' : 'big';
-  return (
-    <div className="pane center" style={boxStyleObj(opticalPane())}>
+  const claim = (
+    <>
       <div className="statement jp" style={{ fontSize: ctx.scale[token] }}>
         <InlineText text={el.text} emphasis={el.emphasis} />
       </div>
       {support && (
-        <div className="support jp" style={{ fontSize: ctx.scale.subtitle }}>
+        <div className="support jp" style={{ fontSize: ctx.body('主張の補足', ctx.scale.subtitle) }}>
           <InlineText text={support.text} emphasis={support.emphasis} />
         </div>
       )}
+    </>
+  );
+
+  if (!headline) {
+    return <div className="pane center" style={boxStyleObj(opticalPane())}>{claim}</div>;
+  }
+  // 見出しつき (ADR-0025、本 p.118 の親子): 親 (前提・問い) を上、子 (主張) を
+  // 下に置く。見出しはほかの *-stage と同じ舞台の上端に固定し、スライドを
+  // またいで Y が跳ねないようにする (ADR-0018)。主張は残りの領域の光学中心に
+  // 置く (.stage-lead.center の spacer 比)。
+  return (
+    <div className="stage">
+      <div className="headline jp" style={{ fontSize: `${ctx.scale.heading}px` }}>
+        <InlineText text={headline.text} emphasis={headline.emphasis} />
+      </div>
+      <div className="stage-lead center">
+        <div className="lead-box statement-lead">{claim}</div>
+      </div>
     </div>
   );
 }
@@ -46,7 +65,7 @@ export function TitleStage({ slide, ctx }) {
         <InlineText text={title.text} emphasis={title.emphasis} />
       </div>
       {sub && (
-        <div className="title-sub jp" style={{ fontSize: ctx.scale.subtitle }}>
+        <div className="title-sub jp" style={{ fontSize: ctx.body('副題', ctx.scale.subtitle) }}>
           <InlineText text={sub.text} emphasis={sub.emphasis} />
         </div>
       )}
@@ -70,7 +89,7 @@ export function QuoteStage({ slide, ctx }) {
           <InlineText text={q.text} />
         </div>
         {q.attribution && (
-          <div className="quote-attr" style={{ fontSize: ctx.scale.attribution }}>
+          <div className="quote-attr" style={{ fontSize: ctx.body('引用の出典', ctx.scale.attribution) }}>
             — {q.attribution}
           </div>
         )}

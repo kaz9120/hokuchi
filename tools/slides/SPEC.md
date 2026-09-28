@@ -103,7 +103,7 @@ theme.yaml   # schema/theme.schema.json で検証する
 
 `type.webfonts` (任意) は `<link>` で読み込む Web フォント CSS の URL 配列です (ADR-0010)。オフライン描画時はフォールバックフォントに落ちます。
 
-タイプスケール (`scale`) は、役割ごとのフォントサイズ (px) を持つトークン群です。これはレンダラの暗黙テーブルからテーマへ昇格した一級の定義です (ADR-0007、NOTES §2.3)。既定値は spike NOTES §1 の実測表を採ります。
+タイプスケール (`scale`) は、役割ごとのフォントサイズ (px) を持つトークン群です。これはレンダラの暗黙テーブルからテーマへ昇格した一級の定義です (ADR-0007、NOTES §2.3)。既定値は spike NOTES §1 の実測表を採り、本文系だけを型の下限まで上げています (ADR-0025)。
 
 | トークン | 既定 (px) | 使う場所 |
 |---------|----------|---------|
@@ -113,12 +113,18 @@ theme.yaml   # schema/theme.schema.json で検証する
 | `quote` | 46 | 引用本文 |
 | `heading` | 34 | diagram / chart / list の見出し |
 | `bullet` | 34 | 箇条書き項目 |
-| `subtitle` | 30 | title-stage の副題 |
-| `attribution` | 24 | 引用の出典 |
-| `node` | 24 | ダイアグラムのノードラベル |
+| `subtitle` | 32 | title-stage の副題 |
+| `attribution` | 32 | 引用の出典 |
+| `node` | 32 | ダイアグラムのノードラベル |
 | `axis` | 20 | チャートの軸ラベル |
 | `code` | 22 | code 要素の本文 (ADR-0016) |
 | `stat` | 160 | stat 要素の数字 (ADR-0016) |
+
+トークンは 3 つの群に分かれます (ADR-0025)。
+
+- 本文系: `bullet`・`subtitle`・`attribution`・`node`。聴衆に読ませる本文を運ぶトークンで、`type.body.min_size_pt` 以上に置きます。換算は 1px = 0.75pt です (キャンバス 1280×720px を 16:9 の 960×540pt に対応させる)。`min_size_pt: 24` なら 32px 以上です。レンダラがこれらから導く大きさ (versus の項目、post の本文と著者名、link の題と説明、profile-stage の略歴) も下限を割りません
+- display 系: `hero`・`title`・`big`・`quote`・`heading`・`stat`。下限より十分大きいので下限の検査から外します
+- 補助: `axis` と `code`。軸の目盛・系列ラベル・ノードの `detail`・エッジのラベル・タイムラインの日付は `axis` で描く補助情報です。`code` は一次資料として見せる素材です (§6.7)。chapter・フッタ・URL・post のメタ (日時)・profile-stage の略歴ラベル・番号バッジも、トークンを持たない補助情報として下限の外に置きます
 
 ### 2.4 iconography と space
 
@@ -174,9 +180,9 @@ theme:
       quote: 46
       heading: 34
       bullet: 34
-      subtitle: 30
-      attribution: 24
-      node: 24
+      subtitle: 32
+      attribution: 32
+      node: 32
       axis: 20
   iconography: flat
   space: 2d
@@ -294,7 +300,8 @@ opener / closer はレターボックスを外し、ロゴを許可します。�
 
 | パターン | スロット | 受け入れる kind | タイプスケール | 必須 |
 |---------|---------|----------------|--------------|:---:|
-| `statement-stage` | `statement` | statement | `big` (content) / `hero` (opener・closer) | 必須 |
+| `statement-stage` | `headline` | statement | `heading` | 任意。主張より上に置く前提や問い (親が上、子が下、p.118)。ほかの *-stage と同じ位置に描かれ、主張は残りの領域の中央に置かれる (ADR-0025) |
+| | `statement` | statement | `big` (content) / `hero` (opener・closer) | 必須 |
 | | `support` | statement | `subtitle` | 任意。主張の下に置く 1 行の文脈。muted 色で描画され、one-idea の主役級に数えない |
 | `title-stage` | `title` | statement | `title` | 必須 |
 | | `subtitle` | statement | `subtitle` | 任意 |
@@ -332,6 +339,8 @@ opener / closer はレターボックスを外し、ロゴを許可します。�
 `profile-stage` は自己紹介の定型です (毎回の登壇の 2 枚目に置く運用)。`bio` の各項目は `ラベル ── 本文` の形で書くと、ラベルが highlight 色の見出しとして描画されます。自己紹介は聴衆が流し読みする参照情報であり読み上げ原稿ではないため、slideument lint の対象外とします (§9)。`name` / `affiliation` / `handle` の statement は従属スロットで、one-idea の主役級に数えません。
 
 `image-stage` はスクリーンショットや図版を見出し付きで見せる定型です (ADR-0015)。画像の箱は実画像の縦横比から導出され、フルブリードにしたい場合 (情景写真など) は grid-direct を使います。
+
+chart-stage で `headline` を省略すると、chart の `message` が見出しとして描かれます (ADR-0025、p.92「データから得られる結論を記す」)。`headline` を書いた場合は、従来どおり `message` は描かれません。
 
 `code-stage` 以下の 8 パターンは ADR-0016 の追加です。いずれも headline (任意) + 主役 (必須) の形で、主役の measure が申告した箱を compose が他パターンと同じ余白・光学中心に置きます (ADR-0014)。
 
@@ -806,6 +815,8 @@ build:
 
 各スロットの要素サイズは、role × layout × slot の組から `theme.type.scale` のトークンを選んで導出します (第 5 章の表、ADR-0007)。同じ `kind: statement` が opener では `hero` (80px)、diagram-stage の見出しでは `heading` (34px) になります。
 
+本文 (§2.3 の本文系トークンと、そこから導く大きさ) は、縮小前の大きさで `type.body.min_size_pt` を割ってはなりません (ADR-0025、p.172)。下限を割ってよいのは §8.3 の縮小だけで、その場合は min-type lint が報告します。レンダラは本文を描くたびに実効サイズを記録し、`renderDeck` の戻り値 `typeLog` として返します。
+
 ### 8.3 主役のスケール
 
 主役スロットの要素は舞台に収まらなければ縮小し、はみ出しやエラーにはしません。縮小が起きうることを shrink-report lint が情報として報告します (ADR-0008-2)。
@@ -854,9 +865,12 @@ linter はエラーで止めず警告を中心とします。ただし逸脱は�
 | `edge-ref` | error | diagram の edge が存在しないノード id を参照 | ADR-0008-7 |
 | `icon-exists` | error | `icon` の名前がテーマの icon_set のカタログに存在しない | ADR-0013 |
 | `shrink-report` | info | 主役要素が舞台に収まらず縮小された | ADR-0008-2 |
+| `min-type` | warn | 本文の実効サイズ (主役の縮小込み) が `type.body.min_size_pt` を下回る。本文の範囲は §2.3。同じスライド・同じ種類の本文は最小の 1 件だけ報告する。profile-stage は slideument と同じ理由で対象外 (§5.1) | p.172, ADR-0025 |
 | `code-budget` | warn | code が 17 行以上、または 81 桁以上の行を含む | ADR-0016 |
 | `table-size` | warn | table のデータ行が 8 行以上 (列上限 6 はスキーマが保証) | ADR-0016 |
 | `agenda-source` | error | `role: transition` が 1 枚も無いデッキに agenda 要素がある | ADR-0016 |
+
+min-type の判定は、レンダラの記録 (`typeLog`、§8.2) の有無で 2 通りになります。`hokuchi lint` は内部で描画を 1 回走らせて記録を取り、縮小込みの実効サイズで判定します。記録なしで `lint()` を呼んだ場合は、テーマの本文系トークンの値そのものしか見ません。この経路では縮小による下回りを検出できません。記録ありの経路にも限界があります。link の OGP は描画前に解決しないため (§6.9)、OGP で補われる題・説明の長さは判定に入りません。実効サイズはレンダラの字幅見積もり (estW) に基づき、ブラウザの実測ではありません。
 
 lint レポートは捨てられる副産物ではなく、逸脱の履歴を残す一級の成果物とします (ADR-0002)。
 

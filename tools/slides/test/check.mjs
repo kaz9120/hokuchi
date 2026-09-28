@@ -762,5 +762,109 @@ const closeSlide = chartDoc.slice(chartDoc.indexOf('s-chart-close'));
 assert.ok(!/<path d="M [^"]* A /.test(closeSlide), 'close shares do not derive to a donut');
 for (const pct of ['20%', '18%', '14%']) assert.ok(closeSlide.includes(`>${pct}</text>`), `100% bar labels ${pct}`);
 ok('renderDeck draws direct series labels, grays out non-emphasized series and derives close shares to a 100% bar');
+// (11) ADR-0025 — statement-stage の headline、chart の message の見出し化、
+// 本文系トークンの下限、lint min-type。
+// ---------------------------------------------------------------------------
+const sectionOf = (html, slideId) => {
+  const start = html.indexOf(`data-slide-id="${slideId}"`);
+  assert.ok(start >= 0, `section for ${slideId} exists`);
+  const end = html.indexOf('<section', start);
+  // InlineText は文節の境に <wbr/> を挟む (SPEC §8.6)。文言の照合では外す
+  return html.slice(start, end < 0 ? undefined : end).replace(/<wbr\/?>/g, '');
+};
+const adr25Deck = {
+  schema_version: '0.3.0',
+  deck: { title: 'ADR-0025 検証', audience: { who: 'テスト', action: 'テスト' }, theme: './theme.yaml' },
+  slides: [
+    baseSlide('s-stmt-head', 'statement-stage', [
+      { kind: 'statement', slot: 'headline', text: '前提の見出し' },
+      { kind: 'statement', slot: 'statement', text: '中央の主張' },
+      { kind: 'statement', slot: 'support', text: '主張の補足' },
+    ]),
+    baseSlide('s-chart-nohead', 'chart-stage', [
+      { kind: 'chart', slot: 'chart', intent: 'comparison', message: 'メッセージが見出しになる',
+        data: { x: ['a', 'b'], series: [{ label: '値', values: [1, 2] }] } },
+    ]),
+    baseSlide('s-chart-head', 'chart-stage', [
+      { kind: 'statement', slot: 'headline', text: '書き手の見出し' },
+      { kind: 'chart', slot: 'chart', intent: 'comparison', message: '描かれないメッセージ',
+        data: { x: ['a', 'b'], series: [{ label: '値', values: [1, 2] }] } },
+    ]),
+  ],
+};
+assert.equal(validateDeckSchema(adr25Deck), true, JSON.stringify(validateDeckSchema.errors));
+const { pages: adr25Pages, typeLog: adr25Log } = renderDeck(adr25Deck, theme, {
+  deckDir: path.dirname(deckPath), themeDir: path.dirname(themePath),
+});
+const adr25Html = adr25Pages['index.html'];
+
+{
+  const sec = sectionOf(adr25Html, 's-stmt-head');
+  const head = sec.indexOf('class="headline jp"');
+  const claim = sec.indexOf('class="statement jp"');
+  assert.ok(head >= 0 && claim >= 0, 'headline and statement are both drawn');
+  assert.ok(head < claim, 'headline sits above the statement (parent on top, p.118)');
+  assert.ok(sec.includes('class="stage"'), 'headline uses the shared stage frame (same Y as other *-stage)');
+  assert.ok(sec.includes('前提の見出し') && sec.includes('中央の主張'));
+  ok('statement-stage draws an optional headline above the claim (ADR-0025)');
+}
+
+{
+  const noHead = sectionOf(adr25Html, 's-chart-nohead');
+  assert.match(noHead, /class="headline jp"[^>]*>メッセージが見出しになる/, 'message becomes the headline');
+  const withHead = sectionOf(adr25Html, 's-chart-head');
+  assert.ok(withHead.includes('書き手の見出し'));
+  assert.ok(!withHead.includes('描かれないメッセージ'), 'with a headline, message is not drawn');
+  ok('chart-stage draws message as the headline only when headline is omitted (ADR-0025)');
+}
+
+// 本文系トークンは min_size_pt 以上 (1px = 0.75pt)。mosh はトークンを省くと
+// レンダラ既定に落ちるので、既定値も同じ条件を満たすこと。
+{
+  const { BODY_TOKENS, DEFAULT_SCALE, resolveScale, pxToPt } = await import('../src/type-scale.mjs');
+  for (const p of ['themes/hokuchi.yaml', 'themes/mosh.yaml']) {
+    const t = loadTheme(path.join(root, p)).theme;
+    const s = resolveScale(t);
+    for (const tok of BODY_TOKENS) {
+      assert.ok(pxToPt(s[tok]) >= t.type.body.min_size_pt, `${p} ${tok}=${s[tok]}px is below min_size_pt`);
+    }
+  }
+  for (const tok of BODY_TOKENS) assert.ok(pxToPt(DEFAULT_SCALE[tok]) >= 24, `default ${tok} below 24pt`);
+  ok('body-text tokens (bullet / subtitle / attribution / node) are at or above min_size_pt in both themes');
+}
+
+// min-type: 描画の記録があれば縮小込みで判定する。
+{
+  assert.ok(Array.isArray(adr25Log), 'renderDeck returns the body-type log');
+  assert.ok(adr25Log.some((t) => t.slideId === 's-stmt-head' && t.px === theme.theme.type.scale.subtitle),
+    'support text is logged at the subtitle size');
+  assert.equal(lint(adr25Deck, theme, { typeLog: adr25Log }).filter((f) => f.id === 'min-type').length, 0,
+    'nothing shrinks in the small fixture');
+
+  const crowded = structuredClone(adr25Deck);
+  crowded.slides.push(baseSlide('s-table-crowded', 'table-stage', [{
+    kind: 'table', slot: 'table',
+    columns: ['観点', 'とても長い列見出しその一', 'とても長い列見出しその二', 'とても長い列見出しその三'],
+    rows: Array.from({ length: 7 }, (_, i) => [`行${i} の長い説明文`, '説明文がとても長いセル', '説明文がとても長いセル', '説明文がとても長いセル']),
+  }]));
+  const { typeLog: crowdedLog } = renderDeck(crowded, theme, {
+    deckDir: path.dirname(deckPath), themeDir: path.dirname(themePath),
+  });
+  const mt = lint(crowded, theme, { typeLog: crowdedLog }).filter((f) => f.id === 'min-type');
+  assert.equal(mt.length, 1, JSON.stringify(mt));
+  assert.equal(mt[0].severity, 'warn');
+  assert.equal(mt[0].slideId, 's-table-crowded');
+  assert.match(mt[0].message, /縮小/);
+  ok('min-type warns when the renderer shrinks body text below min_size_pt (typeLog path)');
+
+  // 記録なし: テーマのトークン値だけで判定する
+  const smallTheme = structuredClone(theme);
+  smallTheme.theme.type.scale = { ...smallTheme.theme.type.scale, node: 24 };
+  const staticMt = lint(adr25Deck, smallTheme).filter((f) => f.id === 'min-type');
+  assert.equal(staticMt.length, 1);
+  assert.match(staticMt[0].message, /node/);
+  assert.equal(lint(adr25Deck, theme).filter((f) => f.id === 'min-type').length, 0);
+  ok('min-type falls back to the theme token values when no render log is given');
+}
 
 console.log(`\n${passed} checks passed.`);

@@ -31,8 +31,12 @@ theme:
       weight: 400
       min_size_pt: 24
     # mono (任意、ADR-0016) は未指定。他のトークンはレンダラ既定に委ねたまま、
-    # code / stat のみ ADR-0016 の既定値を明示する。
+    # code / stat と本文系 (ADR-0025) のみ明示する。本文系は min_size_pt
+    # 24pt = 32px 以上に置く (1px = 0.75pt)。
     scale:
+      subtitle: 32
+      attribution: 32
+      node: 32
       code: 22
       stat: 160
   brand:

@@ -15,6 +15,7 @@
 import { iconExists } from './icons.mjs';
 import { CANVAS, MARGIN } from './geometry.mjs';
 import { DEEMPH_FLOOR_CONTRAST, compositionForm, flatPalette, seriesColors } from './chart-policy.mjs';
+import { BODY_TOKENS, pxToPt, resolveScale } from './type-scale.mjs';
 
 const cpLen = (s) => [...String(s)].length;
 
@@ -203,7 +204,13 @@ const DEDICATED_FORMS = new Set([
 // ---------------------------------------------------------------------------
 // Rules
 // ---------------------------------------------------------------------------
-export function lint(deckRoot, themeRoot) {
+/**
+ * @param {object} [opts]
+ * @param {Array<{slideId, what, px, base?}>} [opts.typeLog] renderDeck が返す
+ *   本文の実効サイズ。渡されれば min-type は縮小込みで判定し、無ければテーマの
+ *   トークン値だけで判定する (SPEC §9)。
+ */
+export function lint(deckRoot, themeRoot, opts = {}) {
   const findings = [];
   const add = (id, severity, slideId, message) => findings.push({ id, severity, slideId, message });
   const slides = deckRoot.slides;
@@ -491,6 +498,41 @@ export function lint(deckRoot, themeRoot) {
     const estimate = b.items.length * bulletPx * 2.5; // line + gap per item
     if (estimate > stageH * 0.85) {
       add('shrink-report', 'info', s.id, `箇条書き ${b.items.length} 項目が舞台高さに収まらず縮小される可能性`);
+    }
+  }
+
+  // min-type — 本文の実効サイズが theme.type.body.min_size_pt を下回る
+  // (ADR-0025、本 p.172)。縮小を決めるのはレンダラの measure なので、実効
+  // サイズはレンダラの記録 (typeLog) から読む。記録が無い呼び出し (render を
+  // 経ない lint) では、テーマの本文系トークンの値そのものだけを見る。
+  {
+    const minPt = theme.type.body.min_size_pt;
+    if (opts.typeLog) {
+      // profile-stage は slideument と同じく対象外 (SPEC §5.1)。自己紹介は
+      // 聴衆が流し読みする参照情報で、略歴は右列に収まるまで縮めて描く。
+      const exempt = new Set(slides.filter((s) => s.layout === 'profile-stage').map((s) => s.id));
+      // 同じスライド・同じ種類の本文は、いちばん小さいものを 1 件だけ報告する
+      const worst = new Map();
+      for (const t of opts.typeLog) {
+        if (exempt.has(t.slideId) || pxToPt(t.px) >= minPt) continue;
+        const key = `${t.slideId}\u0000${t.what}`;
+        const prev = worst.get(key);
+        if (!prev || t.px < prev.px) worst.set(key, t);
+      }
+      for (const t of worst.values()) {
+        const shrunk = t.base != null && t.base > t.px
+          ? ` (${t.base}px から縮小。入り切らない量を載せている)` : '';
+        add('min-type', 'warn', t.slideId,
+          `${t.what}が ${pxToPt(t.px)}pt (${t.px}px) で下限 ${minPt}pt を下回る${shrunk}`);
+      }
+    } else {
+      const scale = resolveScale(theme);
+      for (const token of BODY_TOKENS) {
+        if (pxToPt(scale[token]) < minPt) {
+          add('min-type', 'warn', slides[0].id,
+            `テーマの本文系トークン ${token} が ${pxToPt(scale[token])}pt (${scale[token]}px) で下限 ${minPt}pt を下回る`);
+        }
+      }
     }
   }
 

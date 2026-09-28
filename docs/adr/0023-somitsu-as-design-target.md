@@ -1,6 +1,6 @@
 # ADR-0023: 粗密を構成の設計対象にし、スキルで山を先に決める
 
-- ステータス: 承認
+- ステータス: 承認 (crafting-presentation の部分は ADR-0024 で置き換え)
 - 日付: 2026-09-19
 - スコープ: リポジトリ全体 (.claude/skills/writing-note / crafting-presentation)
 

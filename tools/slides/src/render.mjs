@@ -1553,7 +1553,7 @@ svg.lead{display:block;max-width:100%;max-height:100%;overflow:visible}
 /* stat (SPEC §6.10, ADR-0016) — bare on the slide background, like
    statement: needs the same .inv treatment. */
 .stat-block{display:flex;flex-direction:column;align-items:center;text-align:center}
-.stat-value{font-family:${fonts.display};font-weight:${fonts.wDisplay};color:${C.textStrong};line-height:1}
+.stat-value{font-family:${fonts.display};font-weight:${fonts.wDisplay};color:${C.textStrong};line-height:1;white-space:pre-line}
 .stat-label{color:${C.text};margin-top:20px}
 .stat-context{color:${C.muted};margin-top:16px}
 

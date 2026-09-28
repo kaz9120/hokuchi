@@ -68,7 +68,7 @@ export function Post({ el, ctx, fsBody, fsAuthor, fsMeta, avatarSize, headGap })
 }
 
 /** link — OGP カード + QR (SPEC §6.9)。QR は常に url から導出する。 */
-export function Link({ el, ctx, leftW, qrBox, hasImage, abs, imgH, fsTitle, fsDesc, fsUrl, gap, qrSvg }) {
+export function Link({ el, ctx, leftW, qrBox, hasImage, abs, imgW, imgH, fsTitle, fsDesc, fsUrl, gap, qrSvg }) {
   const showImage = hasImage && abs && fs.existsSync(abs);
   return (
     <div className="link-card" style={{ gap }}>
@@ -78,7 +78,7 @@ export function Link({ el, ctx, leftW, qrBox, hasImage, abs, imgH, fsTitle, fsDe
             className="link-img"
             src={ctx.useAsset(abs, 'assets')}
             alt=""
-            style={{ width: leftW, height: imgH }}
+            style={{ width: imgW, height: imgH, alignSelf: 'center' }}
           />
         )}
         {el.title && (

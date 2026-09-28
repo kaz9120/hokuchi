@@ -899,38 +899,55 @@ function measureLink(el, ctx, avail) {
   const { scale } = ctx;
   const padX = 40, padY = 36, gap = 32;
   const qrBox = Math.min(190, Math.round(avail.h * 0.55));
-  const fsTitle = scale.bullet;
-  const fsDesc = Math.round(scale.attribution * 1.15);
-  const fsUrl = scale.attribution;
+  // タイトルは見出しではなく紹介なので bullet より一段落とす。URL は読めれば足りるので
+  // いちばん小さい。浮いた高さは OGP 画像に回る (レビュー指摘 2026-09-21)。
+  let fsTitle = Math.round(scale.bullet * 0.88);
+  let fsDesc = Math.round(scale.attribution * 1.05);
+  let fsUrl = Math.round(scale.attribution * 0.8);
   const imgGap = 22, textGap = 14;
 
-  const maxLeftW = Math.max(280, avail.w - qrBox - gap - padX * 2);
-  let leftW = Math.min(560, maxLeftW);
-  const titleChars = el.title ? cpLen(el.title) : 0;
-  if (titleChars) leftW = Math.min(leftW, Math.max(320, Math.round(Math.sqrt(titleChars) * fsTitle * 2.4)));
-  leftW = Math.min(leftW, maxLeftW);
+  // 本文列は舞台の幅いっぱいを使う。QR とカード余白を引いた残りが全部ここに入る。
+  // かつては 560px と題字数で絞っていたが、右側が大きく空いて痩せて見えた
+  // (レビュー指摘 2026-09-21)。
+  const leftW = Math.max(280, avail.w - qrBox - gap - padX * 2);
 
   const hasImage = !!el.image;
   const abs = hasImage ? path.resolve(ctx.deckDir, el.image) : null;
   const dims = abs && fs.existsSync(abs) ? imageDims(abs) : null;
   const imgAspect = dims && dims.w > 0 && dims.h > 0 ? dims.w / dims.h : 1.91; // OGP 標準比
-  const imgH = hasImage ? Math.round(leftW / imgAspect) : 0;
+  let imgW = hasImage ? leftW : 0;
+  let imgH = hasImage ? Math.round(imgW / imgAspect) : 0;
 
-  const titleLines = el.title ? estimateWrappedLines(el.title, fsTitle, leftW) : 0;
-  const descLines = el.description ? estimateWrappedLines(el.description, fsDesc, leftW) : 0;
-  const urlLines = estimateWrappedLines(el.url, fsUrl, leftW);
+  const contentHeight = () => (hasImage ? imgH + imgGap : 0)
+    + (el.title ? estimateWrappedLines(el.title, fsTitle, leftW) * Math.round(fsTitle * 1.3) + textGap : 0)
+    + (el.description ? estimateWrappedLines(el.description, fsDesc, leftW) * Math.round(fsDesc * 1.5) + textGap : 0)
+    + estimateWrappedLines(el.url, fsUrl, leftW) * Math.round(fsUrl * 1.4);
 
-  const contentH = (hasImage ? imgH + imgGap : 0)
-    + (el.title ? titleLines * Math.round(fsTitle * 1.3) + textGap : 0)
-    + (el.description ? descLines * Math.round(fsDesc * 1.5) + textGap : 0)
-    + urlLines * Math.round(fsUrl * 1.4);
+  // 舞台に収まらなければ縮小する (ADR-0008-2)。高さを Math.min で頭打ちにするだけだと、
+  // measure が申告した箱より中身が高いまま描かれ、見出しに重なって画面外へ落ちる
+  // (2026-09-21、description が 3 行に折り返して発生)。図版は縦横を一緒に詰める —
+  // 高さだけ詰めると OGP 画像が潰れる。それでも余るなら文字を落とす。
+  const availContentH = Math.max(140, avail.h - padY * 2);
+  const minImgW = Math.round(leftW * 0.58);
+  let contentH = contentHeight();
+  while (contentH > availContentH && imgW > minImgW) {
+    imgW = Math.max(minImgW, Math.round(imgW * 0.94));
+    imgH = Math.round(imgW / imgAspect);
+    contentH = contentHeight();
+  }
+  while (contentH > availContentH && fsTitle > 18) {
+    fsTitle -= 2;
+    fsDesc = Math.max(15, fsDesc - 2);
+    fsUrl = Math.max(14, fsUrl - 1);
+    contentH = contentHeight();
+  }
 
   const w = Math.min(avail.w, padX * 2 + leftW + gap + qrBox);
   const h = Math.min(avail.h, Math.max(contentH, qrBox) + padY * 2);
   return {
     w: round(w), h: round(h),
     render: () => createElement(Link, {
-      el, ctx, leftW, qrBox, hasImage, abs, imgH, fsTitle, fsDesc, fsUrl, gap,
+      el, ctx, leftW, qrBox, hasImage, abs, imgW, imgH, fsTitle, fsDesc, fsUrl, gap,
       qrSvg: renderQr(el.url),
     }),
   };
@@ -1001,10 +1018,19 @@ function measureTable(el, ctx, avail) {
     totalH = headHFor(fs) + el.rows.length * rowHFor(fs);
   }
 
+  // セルの揃えは内容から導く。記号や短い語は中央、文章が入る列は左。
+  // 長い文を中央揃えで並べると行ごとに左端がばらけ、表そのものが
+  // 「揃っていない」ように見える (レビュー指摘 2026-09-21)。
+  const colAlign = el.columns.map((c, ci) => {
+    if (ci === 0) return 'left';
+    const longest = Math.max(cpLen(c), ...el.rows.map((r) => cpLen(r[ci] ?? '')));
+    return longest > 8 ? 'left' : 'center';
+  });
+
   return {
     w: round(Math.min(avail.w, totalW)), h: round(Math.min(avail.h, totalH)),
     render: () => createElement(Table, {
-      el, fs, colWidths: cw, rowH: rowHFor(fs), headH: headHFor(fs), colGap,
+      el, fs, colWidths: cw, rowH: rowHFor(fs), headH: headHFor(fs), colGap, colAlign,
     }),
   };
 }
@@ -1247,7 +1273,9 @@ function statStage(slide, ctx) {
 }
 
 function tableStage(slide, ctx) {
-  return leadStage(slide, ctx, 'table', measureTable, 'start');
+  // 表は舞台の中央に置く。'start' だと横に広い表の右側だけが大きく空いて、
+  // 重心が左に寄って見える (レビュー指摘 2026-09-21)。
+  return leadStage(slide, ctx, 'table', measureTable, 'center');
 }
 
 function versusStage(slide, ctx) {
@@ -1345,7 +1373,9 @@ function css(ctx) {
 .stage-lead::before,.stage-lead::after{content:'';flex-basis:0;flex-shrink:1}
 .stage-lead::before{flex-grow:1}
 .stage-lead.center{align-items:center;text-align:center}
-.stage-lead.center::after{flex-grow:1}
+/* 幾何中心ではなく光学中心に置く。上下を等分すると、見出しの下の空きが
+   広く見える (レビュー指摘 2026-09-21)。下をわずかに厚くして持ち上げる。 */
+.stage-lead.center::after{flex-grow:1.25}
 .stage-lead.start{align-items:flex-start}
 .stage-lead.start::after{flex-grow:2}
 .lead-box{flex:0 0 auto;display:flex;flex-direction:column;justify-content:center}

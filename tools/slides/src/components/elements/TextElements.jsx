@@ -73,7 +73,7 @@ export function Agenda({ chapters, currentIdx, fs, numW, gapNum, gap }) {
  * セルごとに塗ると列間のギャップで帯が途切れて見える (レビュー指摘
  * 2026-07-09)。ヘッダ下の罫線も同じ理由で、表の実幅ぴったりの 1 本にする。
  */
-export function Table({ el, fs, colWidths, rowH, headH, colGap }) {
+export function Table({ el, fs, colWidths, rowH, headH, colGap, colAlign }) {
   const emphRows = new Set(el.emphasis?.rows || []);
   const emphCols = new Set(el.emphasis?.cols || []);
   const totalW = colWidths.reduce((a, b) => a + b, 0) + colGap * (colWidths.length - 1);
@@ -84,9 +84,11 @@ export function Table({ el, fs, colWidths, rowH, headH, colGap }) {
   let acc = 0;
   for (const w of colWidths) { colX.push(acc); acc += w + colGap; }
 
-  // 1 列目 (行ラベル) は左揃え、データ列はヘッダ・セルとも中央揃え
+  // 揃えは measure が内容から導く (render.mjs の colAlign)。1 列目は常に左、
+  // データ列は短ければ中央、文章が入るなら左。未指定のときは従来どおり。
+  const alignOf = (ci) => colAlign?.[ci] ?? (ci === 0 ? 'left' : 'center');
   const cellClass = (ci, extra = '') =>
-    `table-cell${ci === 0 ? '' : ' table-col-data'}${extra}`;
+    `table-cell${alignOf(ci) === 'center' ? ' table-col-data' : ''}${extra}`;
   const markClass = (cell) =>
     cell === '✓' ? ' table-mark-yes' : cell === '—' ? ' table-mark-no' : '';
 

@@ -867,4 +867,33 @@ const adr25Html = adr25Pages['index.html'];
   ok('min-type falls back to the theme token values when no render log is given');
 }
 
+// build-ref と、見出しとして描かれる chart の message の字数 (ADR-0025)。
+{
+  const d = structuredClone(deck);
+  d.slides = [
+    {
+      ...baseSlide('s-build', 'list-stage', [
+        { kind: 'bullets', slot: 'list', items: ['一', '二'] },
+      ]),
+      build: [{ show: ['list'] }, { emphasize: ['list.items.5', 'nope'] }],
+    },
+    baseSlide('s-chart-msg', 'chart-stage', [{
+      kind: 'chart', slot: 'chart', intent: 'trend', message: 'あ'.repeat(101),
+      data: { x: ['a', 'b'], series: [{ label: 'x', values: [1, 2] }] },
+    }]),
+    baseSlide('s-chart-head', 'chart-stage', [
+      { kind: 'statement', slot: 'headline', text: '見出し' },
+      { kind: 'chart', slot: 'chart', intent: 'trend', message: 'あ'.repeat(101),
+        data: { x: ['a', 'b'], series: [{ label: 'x', values: [1, 2] }] } },
+    ]),
+  ];
+  const f = lint(d, theme);
+  const refs = f.filter((x) => x.id === 'build-ref');
+  assert.equal(refs.length, 2, JSON.stringify(refs));
+  assert.ok(refs.every((x) => x.severity === 'error' && x.slideId === 's-build'));
+  assert.ok(f.some((x) => x.id === 'slideument' && x.slideId === 's-chart-msg'), 'headline の無い chart は message を字数に数える');
+  assert.ok(!f.some((x) => x.id === 'slideument' && x.slideId === 's-chart-head'), 'headline があれば message は描かれないので数えない');
+  ok('lint: build-ref が未解決の参照を error にし、見出しになる chart の message を slideument に数える');
+}
+
 console.log(`\n${passed} checks passed.`);

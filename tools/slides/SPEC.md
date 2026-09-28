@@ -863,6 +863,7 @@ linter はエラーで止めず警告を中心とします。ただし逸脱は�
 | `annotation-anchor` | error | chart の `at` が x 配列の値と一致しない | ADR-0008-4 |
 | `chart-emphasis-ref` | error | chart の `emphasis` が `data.series` のラベルと一致しない | ADR-0025 |
 | `edge-ref` | error | diagram の edge が存在しないノード id を参照 | ADR-0008-7 |
+| `build-ref` | error | `build` の参照が要素 (slot 名、grid-direct では id)・ノード・items の添字に解決できない。レンダラは解決できない参照を黙って無視するため、エラーとして報告する | ADR-0025 |
 | `icon-exists` | error | `icon` の名前がテーマの icon_set のカタログに存在しない | ADR-0013 |
 | `shrink-report` | info | 主役要素が舞台に収まらず縮小された | ADR-0008-2 |
 | `min-type` | warn | 本文の実効サイズ (主役の縮小込み) が `type.body.min_size_pt` を下回る。本文の範囲は §2.3。同じスライド・同じ種類の本文は最小の 1 件だけ報告する。profile-stage は slideument と同じ理由で対象外 (§5.1) | p.172, ADR-0025 |

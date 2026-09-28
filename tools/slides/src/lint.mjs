@@ -13,6 +13,7 @@
 // composition (ADR-0016) and no longer needs this caveat.
 
 import { iconExists } from './icons.mjs';
+import { buildPlan } from './build.mjs';
 import { CANVAS, MARGIN } from './geometry.mjs';
 import { DEEMPH_FLOOR_CONTRAST, compositionForm, flatPalette, seriesColors } from './chart-policy.mjs';
 import { BODY_TOKENS, pxToPt, resolveScale } from './type-scale.mjs';
@@ -66,6 +67,8 @@ function visibleTextCount(slide) {
     if (Array.isArray(el.edges)) for (const ed of el.edges) if (ed.label) n += cpLen(ed.label);
     if (el.shared && el.shared.label) n += cpLen(el.shared.label);
     if (el.data && Array.isArray(el.data.series)) for (const s of el.data.series) n += cpLen(s.label);
+    // chart-stage に headline が無いと、message が見出しとして描かれる (ADR-0025)。
+    if (el.kind === 'chart' && el.message && !slide.elements.some((e) => e.slot === 'headline')) n += cpLen(el.message);
     if (Array.isArray(el.annotations)) for (const a of el.annotations) n += cpLen(a.annotate);
     if (el.kind === 'post' && el.author) n += cpLen(el.author);
     if (el.kind === 'link') {
@@ -84,6 +87,7 @@ function visibleTextCount(slide) {
     if (el.kind === 'versus') {
       for (const side of el.sides || []) {
         n += cpLen(side.label);
+        if (side.description) n += cpLen(side.description);
         for (const it of side.items || []) n += cpLen(it);
       }
     }
@@ -224,6 +228,15 @@ export function lint(deckRoot, themeRoot, opts = {}) {
     const n = visibleTextCount(s);
     if (n > 150) add('slideument', 'error', s.id, `可視テキスト ${n} 字が上限 150 字を超えている`);
     else if (n > 100) add('slideument', 'warn', s.id, `可視テキスト ${n} 字が目安 100 字を超えている`);
+  }
+
+  // build-ref — build の参照が要素・ノード・項目に解決できない。描画は黙って
+  // 無視するので、edge-ref と同じく error にする (SPEC §7.1, ADR-0025)。
+  for (const s of slides) {
+    const plan = buildPlan(s);
+    for (const ref of plan?.unresolved ?? []) {
+      add('build-ref', 'error', s.id, `build の参照 "${ref}" が解決できない。slot 名 (grid-direct では id) と、ノード id・items の添字を確かめる`);
+    }
   }
 
   // one-idea — 2+ lead-level elements (diagram / chart / code / post / link /

@@ -14,12 +14,21 @@
       "required": ["title", "audience", "theme"],
       "properties": {
         "title": { "type": "string" },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "description": "中核メッセージ。聴衆に理解してほしいことを話者の言葉で 1 文にしたもの (SPEC §3、ADR-0024)"
+        },
         "audience": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["who", "action"],
+          "required": ["who"],
           "properties": {
             "who": { "type": "string" },
+            "why": { "type": "string" },
+            "pains": { "$ref": "#/$defs/audienceNotes" },
+            "gains": { "$ref": "#/$defs/audienceNotes" },
+            "objections": { "$ref": "#/$defs/audienceNotes" },
             "action": { "type": "string" }
           }
         },
@@ -41,6 +50,13 @@
     "semver": {
       "type": "string",
       "pattern": "^\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z.-]+)?$"
+    },
+    "audienceNotes": {
+      "description": "聴衆プロフィールの回答。1 文なら文字列、複数なら文字列の配列 (SPEC §3)",
+      "oneOf": [
+        { "type": "string" },
+        { "type": "array", "minItems": 1, "items": { "type": "string" } }
+      ]
     },
     "scale": {
       "type": "object",

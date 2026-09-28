@@ -1,4 +1,4 @@
-// lint.mjs — SPEC §9 linter. 18 rules, severity error / warn / info.
+// lint.mjs — SPEC §9 linter. Severity error / warn / info.
 //
 // The linter never mutates; it returns a flat list of findings
 // { id, severity, slideId, message }. Errors are reserved for references that
@@ -13,6 +13,7 @@
 // composition (ADR-0016) and no longer needs this caveat.
 
 import { iconExists } from './icons.mjs';
+import { CANVAS, MARGIN } from './geometry.mjs';
 
 const cpLen = (s) => [...String(s)].length;
 
@@ -89,6 +90,116 @@ function visibleTextCount(slide) {
 }
 
 // ---------------------------------------------------------------------------
+// bullet-parallel helpers (ADR-0025, p.171)
+// ---------------------------------------------------------------------------
+const PERIOD_RE = /[。．.]$/;
+const TRAILING_RE = /[\s。．.、,!！?？』）)]+$/u;
+const QUOTED_RE = /^「[^」]*」$/u;
+const HIRAGANA_RE = /\p{Script=Hiragana}$/u;
+const JAPANESE_RE = /[\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Han}ー々]$/u;
+// Kana that close a predicate: dictionary-form verbs (う-row: する・溜まる・
+// 語ろう), past and copula (た・だ), adjectives and negation (い・ない),
+// polite negation (ません), and sentence-final particles (か・ね・よ・な).
+// Nouns derived from verbs end in the い/え-row instead (ずれ・づくり・強み・
+// 曖昧さ), so they fall through to 'noun'.
+const PREDICATE_KANA = new Set([...'うくぐすずつぬぶむるただいんかねよなぞわ']);
+// A trailing case particle means a fragment, neither a noun nor a sentence.
+const PARTICLE_KANA = new Set([...'にでをへがはもとや']);
+// Hiragana nouns whose last kana would otherwise read as a predicate or
+// particle.
+const HIRAGANA_NOUNS = ['こと', 'もの', 'ところ', '違い', '問い', '扱い', '思い', '狙い', '迷い', '争い', '願い'];
+
+/** 'noun' (体言止め) | 'predicate' (用言・助動詞で終わる文) | null (判定しない).
+ * A heuristic on the last kana. Items that do not end in Japanese (English,
+ * numbers, symbols) and items quoted verbatim in 「」 (another person's words,
+ * which the author cannot rephrase) are left out of the comparison. */
+function endingKind(item) {
+  const raw = String(item).trim();
+  if (QUOTED_RE.test(raw)) return null;
+  const core = raw.replace(TRAILING_RE, '');
+  if (!core || !JAPANESE_RE.test(core)) return null;
+  if (PERIOD_RE.test(raw)) return 'predicate';
+  if (!HIRAGANA_RE.test(core)) return 'noun';
+  if (HIRAGANA_NOUNS.some((w) => core.endsWith(w))) return 'noun';
+  const last = [...core].pop();
+  if (PARTICLE_KANA.has(last)) return null;
+  return PREDICATE_KANA.has(last) ? 'predicate' : 'noun';
+}
+
+/** Returns a short description of the mismatch, or null when items agree. */
+function bulletParallelProblem(items) {
+  if (!Array.isArray(items) || items.length < 2) return null;
+  const problems = [];
+  const withPeriod = items.filter((it) => PERIOD_RE.test(String(it).trim())).length;
+  if (withPeriod > 0 && withPeriod < items.length) {
+    problems.push(`句点あり ${withPeriod} / なし ${items.length - withPeriod}`);
+  }
+  const ends = items.map(endingKind).filter(Boolean);
+  const nouns = ends.filter((k) => k === 'noun').length;
+  const preds = ends.length - nouns;
+  if (nouns > 0 && preds > 0) problems.push(`体言止め ${nouns} / 文 ${preds}`);
+  return problems.length ? problems.join('、') : null;
+}
+
+// ---------------------------------------------------------------------------
+// layers / glance / form-fallback helpers (ADR-0025)
+// ---------------------------------------------------------------------------
+
+/** Information layers present on a slide (p.117). headline, the lead, each
+ * kind of secondary text inside the lead, and support are separate layers.
+ * Each kind of secondary text counts on its own because each is read as a
+ * separate pass (node labels, then their details, then the edge labels).
+ * chapter is the deck's constant frame and is not counted. */
+function slideLayers(slide) {
+  const layers = [];
+  const els = slide.elements;
+  if (els.some((e) => e.slot === 'headline')) layers.push('headline');
+  if (els.some((e) => isLeadSlot(e))) layers.push('主役');
+  const sub = new Set();
+  for (const e of els) {
+    if (e.kind === 'diagram') {
+      if ((e.nodes || []).some((n) => n.detail)) sub.add('ノードの detail');
+      if ((e.edges || []).some((ed) => ed.label)) sub.add('edge の label');
+    }
+    if (e.kind === 'chart' && (e.annotations || []).length > 0) sub.add('chart の annotation');
+    if (e.kind === 'versus' && (e.sides || []).some((sd) => sd.description)) sub.add('versus の description');
+    if (e.kind === 'stat' && e.context) sub.add('stat の context');
+  }
+  layers.push(...sub);
+  if (els.some((e) => e.slot === 'support' || e.slot === 'subtitle')) layers.push('support');
+  return layers;
+}
+
+/** Rendered width in em: full-width glyphs are 1em, ASCII about 0.6em. */
+function emWidth(s) {
+  let w = 0;
+  for (const ch of String(s)) {
+    const c = ch.codePointAt(0);
+    if (ch === ' ') w += 0.3;
+    else if (c <= 0x7e) w += 0.6;
+    else if (c >= 0xff61 && c <= 0xff9f) w += 0.5; // half-width katakana
+    else w += 1;
+  }
+  return w;
+}
+
+/** Characters a reader has to take in (whitespace and line breaks excluded). */
+const readableLen = (s) => cpLen(String(s).replace(/\s+/g, ''));
+
+// 3 秒で読める statement の字数の目安 (SPEC §11: 実測で調整が要る)。
+const GLANCE_STATEMENT_MAX = 30;
+
+// Forms with a dedicated renderer (render.mjs measureDiagram). flow.linear
+// is drawn as the step row by design, so it is not a fallback. Keep this in
+// step with measureDiagram's switch when a form gains its own drawing.
+const DEDICATED_FORMS = new Set([
+  'flow.linear', 'flow.cycle', 'flow.branch', 'flow.converge', 'flow.timeline',
+  'structure.matrix', 'structure.tree', 'structure.layer',
+  'cluster.overlap', 'cluster.closure', 'cluster.enclosed', 'cluster.linked',
+  'radial.core',
+]);
+
+// ---------------------------------------------------------------------------
 // Rules
 // ---------------------------------------------------------------------------
 export function lint(deckRoot, themeRoot) {
@@ -118,11 +229,64 @@ export function lint(deckRoot, themeRoot) {
     if (lead >= 2) add('one-idea', 'warn', s.id, `主役級要素が ${lead} 個ある。1 枚 1 アイデアに分割を検討`);
   }
 
-  // bullet-count — more than 5 bullet items.
+  // bullet-parallel — items whose endings do not agree (ADR-0025, p.171).
+  // Replaces bullet-count: the book tells readers to ignore item-count rules
+  // (p.170) and asks instead for one consistent phrasing across items.
+  // profile-stage bio is exempt (reference labels, same as slideument).
   for (const s of slides) {
+    if (s.layout === 'profile-stage') continue;
     for (const b of kinds(s, 'bullets')) {
-      if (b.items.length > 5) add('bullet-count', 'warn', s.id, `箇条書きが ${b.items.length} 項目。5 項目以内を推奨`);
+      const problem = bulletParallelProblem(b.items);
+      if (problem) add('bullet-parallel', 'warn', s.id, `箇条書きの言い回しが揃っていない (${problem})`);
     }
+  }
+
+  // layers — 4+ information layers on one slide (ADR-0025, p.117 TIP).
+  for (const s of slides) {
+    if (s.layout === 'profile-stage') continue;
+    const layers = slideLayers(s);
+    if (layers.length >= 4) {
+      add('layers', 'info', s.id, `情報のレイヤーが ${layers.length} つある (${layers.join('・')})。メイン 1 + サブ 2 までを目安に`);
+    }
+  }
+
+  // glance — a headline that will not fit on one line, or a content statement
+  // too long to read in 3 seconds (ADR-0025, p.160, p.164). Both thresholds
+  // are rough character budgets pending real measurement (SPEC §11).
+  {
+    const headingPx = theme.type.scale?.heading ?? 34;
+    const headlineEm = (CANVAS.w - MARGIN.x * 2) / headingPx;
+    for (const s of slides) {
+      for (const el of s.elements) {
+        if (el.kind !== 'statement' || !el.text) continue;
+        if (el.slot === 'headline') {
+          const lines = String(el.text).split('\n');
+          const widest = Math.max(...lines.map(emWidth));
+          if (lines.length > 1 || widest > headlineEm) {
+            add('glance', 'info', s.id, `headline が 1 行に収まらない (${lines.length > 1 ? `${lines.length} 行` : `約 ${Math.ceil(widest)} 字幅 / 1 行 ${Math.floor(headlineEm)} 字幅`})`);
+          }
+        } else if (s.role === 'content' && isLeadSlot(el)) {
+          const n = readableLen(el.text);
+          if (n > GLANCE_STATEMENT_MAX) {
+            add('glance', 'info', s.id, `statement が ${n} 字。3 秒で読める目安 ${GLANCE_STATEMENT_MAX} 字を超えている`);
+          }
+        }
+      }
+    }
+  }
+
+  // form-fallback — diagram form without a dedicated renderer (ADR-0025).
+  for (const s of slides) {
+    for (const d of kinds(s, 'diagram')) {
+      if (!DEDICATED_FORMS.has(d.form)) {
+        add('form-fallback', 'info', s.id, `diagram form "${d.form}" は専用の描画を持たず、横並びのステップ (flow.linear と同じ形) で描かれる`);
+      }
+    }
+  }
+
+  // message-missing — no deck.message (ADR-0024).
+  if (!deckRoot.deck?.message) {
+    add('message-missing', 'info', slides[0].id, 'deck.message (中核メッセージ) が無い。聴衆に理解してほしいことを 1 文で書く');
   }
 
   // code-budget — code text 17+ lines, or any line 81+ columns wide (ADR-0016).

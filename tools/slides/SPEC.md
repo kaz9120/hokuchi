@@ -21,9 +21,9 @@
 
 | 用語 | 定義 |
 |------|------|
-| deck | 1 つのプレゼンテーション全体。`title`・`audience`・`scales`・`theme` 参照・`slides` を持つ (第 3 章) |
+| deck | 1 つのプレゼンテーション全体。`title`・`message`・`audience`・`scales`・`theme` 参照・`slides` を持つ (第 3 章) |
 | theme | デッキが参照する共有基盤。色・書体・グリッド・タイプスケールを名前付きスロットに固定する (第 2 章、ADR-0003) |
-| slide | 1 枚のスライド。1 枚 = 1 アイデア (`idea`) を守る (第 4 章、p.109) |
+| slide | 1 枚のスライド。1 枚 = 1 アイデア (`idea`) を守る (第 4 章、p.256) |
 | element | スライドを構成する要素。15 種 (statement / bullets / image / diagram / chart / quote / code / post / link / stat / table / versus / agenda / video / raw、第 6 章) |
 | slot | 名前付きレイアウトパターンが宣言する配置口。要素は `slot` でスロットに入る (ADR-0007、第 5 章) |
 | stage (舞台) | role が定めるレターボックス帯の内側。レイアウトが配置してよい領域 (ADR-0008-6、第 8 章) |
@@ -48,7 +48,7 @@ theme.yaml   # schema/theme.schema.json で検証する
 - MINOR — 後方互換の追加 (任意フィールドの追加、enum への値追加)
 - PATCH — 仕様の明確化。スキーマの受理集合は変えない
 
-スキーマを進化させるときは、本書末尾の「付録 A: マイグレーションノート」に変更点を追記します。現行版は deck スキーマが `0.2.0` (image-stage と overlap の shared、ADR-0015)、theme スキーマが `0.3.0` (stage_margin 撤去、ADR-0014) です。1.0.0 未満のため、破壊的変更が MINOR で起こりうる不安定版として扱います。
+スキーマを進化させるときは、本書末尾の「付録 A: マイグレーションノート」に変更点を追記します。現行版は deck スキーマが `0.5.0` (中核メッセージと聴衆プロフィール、statement-stage の headline、chart の emphasis。ADR-0024・ADR-0025)、theme スキーマが `0.5.0` (本文系タイプスケールの下限。ADR-0025) です。どちらも後方互換の追加なので、古い `schema_version` を書いたファイルはそのまま妥当です。スキーマは `schema_version` の形 (semver) だけを検査し、値による分岐はしません。1.0.0 未満のため、破壊的変更が MINOR で起こりうる不安定版として扱います。
 
 ---
 
@@ -191,21 +191,39 @@ theme:
 | フィールド | 型 | 必須 | 意味 |
 |-----------|----|----|------|
 | `deck.title` | 文字列 | 必須 | デッキのタイトル |
-| `deck.audience` | `{ who, action }` | 必須 | 聴衆プロファイル。レンダリングされない設計メタデータ (p.34-37) |
+| `deck.message` | 文字列 | 任意 | 中核メッセージ。聴衆に理解してほしいことを話者の言葉で 1 文にしたもの (p.39、ADR-0024)。書かなければ message-missing lint が info を出す |
+| `deck.audience` | `{ who, why?, pains?, gains?, objections?, action? }` | 必須 | 聴衆プロフィール。レンダリングされない設計メタデータ (p.34-37) |
 | `deck.scales` | 名前付きスケールのマップ | 任意 | 軸レンジの共有定義 (ADR-0008-5) |
 | `deck.theme` | 文字列 (パス) | 必須 | テーマファイルへの相対パス |
 | `slides` | slide の配列 | 必須 | 1 枚以上 |
 
-`audience.who` は聴衆、`audience.action` はプレゼン後に取ってほしい行動です (p.37 の第 5 質問)。
+`message` はデッキの芯です。各スライドの `idea` は、この 1 文を聴衆に理解してもらうための部品として書きます。本は「伝えるべきメッセージ」と「行動への呼びかけ」を別の問いとして扱います (p.39)。そのため行動は `message` に混ぜず、`audience.action` に分けます。
+
+`audience` の各欄は、本の聴衆プロフィールの 7 つの質問 (p.35-36) のうち、スライドの論点を導くものを写しています。
+
+| フィールド | 型 | 必須 | 意味 (本の質問) |
+|-----------|----|----|------|
+| `who` | 文字列 | 必須 | 聴衆はどんな人か (第 1 問)。集団の 1 行より、名前のつく 1〜2 人で書くべきである |
+| `why` | 文字列 | 任意 | 何を得に来たか (第 2 問) |
+| `pains` | 文字列 または 文字列の配列 | 任意 | 聴衆を悩ませていること (第 3 問) |
+| `gains` | 文字列 または 文字列の配列 | 任意 | 聴衆の問題をどう解決するか。聴衆にとってのメリット (第 4 問) |
+| `objections` | 文字列 または 文字列の配列 | 任意 | どんな反発を受けるか (第 6 問) |
+| `action` | 文字列 | 任意 | プレゼン後に取ってほしい行動 (第 5 問)。0.4.0 までは必須だった |
 
 `scales` は、連続する chart スライドが軸を揃えるための名前付きスケールです (ADR-0008-5、NOTES §2.6)。各スケールは `x` / `y` の軸レンジ (`min`, `max`) を持ち、chart 要素が `scale:` で名前参照します。
 
 ```yaml
-schema_version: "0.1.0"
+schema_version: "0.5.0"
 deck:
   title: "スライドは、意図で書く"
+  message: "スライドの見た目は、書き手が意図を宣言すればレンダラが導出できる"
   audience:
     who: "Code to Slide ツールに表現力の限界を感じているエンジニア"
+    why: "図とレイアウトで Markdown が行き詰まる理由と、その抜け道を知りたい"
+    pains:
+      - "図は画像を貼るか Mermaid に任せるしかない"
+    objections:
+      - "YAML を手で書くのは Markdown より面倒ではないか"
     action: "次の登壇資料を、ピクセルではなく意図で書いてみる"
   scales:
     revenue:
@@ -224,7 +242,7 @@ slides:
 |-----------|----|----|------|
 | `id` | 文字列 | 必須 | 安定キー。再生成・差分レビューをまたいでスライドを同定する (ADR-0004) |
 | `role` | 下表の enum | 必須 | 舞台の枠を支配する (ADR-0008-6) |
-| `idea` | 文字列 | 必須 | このスライドが伝える 1 文。1 枚 1 アイデアの検証基準 (p.109) |
+| `idea` | 文字列 | 必須 | このスライドが伝える 1 文。1 枚 1 アイデアの検証基準 (p.256) |
 | `chapter` | 文字列 | 任意 | 章ラベル。左上に常時表示するテロップ。話者なしで読まれる公開資料の文脈維持用。opener / closer では表示されない |
 | `notes` | 文字列 | 任意 | 話者ノート。スライドから削ったテキストの行き先 (p.240-243) |
 | `layout` | 文字列 or オブジェクト | 必須 | 舞台内の配置 (第 5 章) |
@@ -244,7 +262,9 @@ role は舞台の枠 (レターボックス・バンパー・ロゴ許可・ヘ�
 | `title` | 適用 | 不可 | タイトルスライド |
 | `transition` | 適用 | 不可 | 場面のつなぎ (p.232) |
 | `content` | 適用 | 不可 | 本編 |
-| `closer` | 外す | 許可 | 行動喚起で閉じるバンパー (p.37, p.137) |
+| `closer` | 外す | 許可 | 締めのバンパー。まとめ・中心テーマへの帰着・行動への誘いのいずれかで閉じる (p.41, p.137, p.245, p.269) |
+
+closer は話全体を総括する位置です。本の締めの実例は「最後にまとめのスライド」(p.41) で、話の終わりに聴衆を中心テーマへ連れ戻します (p.245)。本はプレゼンの成功を「見識・行動・態度のどれかが変わること」とします (p.269)。行動への誘いは締め方の 1 つであり、既定ではありません。0.4.0 までは closer を「行動喚起で閉じるバンパー」と定めていました。
 
 opener / closer はレターボックスを外し、ロゴを許可します。それ以外のスライドにロゴ要素があると logo-bumper lint が警告します (第 9 章、p.137)。
 
@@ -427,12 +447,12 @@ opener / closer はレターボックスを外し、ロゴを許可します。�
 | `subject` | `third-left` \| `third-right` | 任意 | 被写体を三分割交点に置く。空いた側がテキスト領域 (p.181) |
 | `gaze` | `toward-content` \| `away-from-content` | 任意 | 人物の視線の向き。コンテンツと逆向きなら gaze lint が警告 (p.117) |
 
-`src` と `prompt` は少なくとも一方を持つ (両方欠けた image は描画できないため、スキーマ違反とする)。prompt を仕様として残すことで、実画像が無い段階でもスライドの意図が失われません (ADR-0006)。
+`src` と `prompt` は少なくとも一方を持つ (両方欠けた image は描画できないため、スキーマ違反とする)。prompt を仕様として残すことで、実画像が無い段階でもスライドの意図が失われません (ADR-0006)。prompt には、現実に存在する場面や実物を書くべきである。本は「地球の前で握手」のような、現実には存在しない演出写真を退けます (p.180)。
 
 ```yaml
 - kind: image
   id: hero
-  prompt: "夕方の教室で、窓からの自然光の中で笑う小学生。望遠、浅い被写界深度"
+  prompt: "登壇者のチームが実際に使っている朝会のホワイトボード。付箋が貼られた実物を、自然光で正面から撮る"
   treatment: full-bleed
   subject: third-right
   gaze: toward-content
@@ -440,11 +460,11 @@ opener / closer はレターボックスを外し、ロゴを許可します。�
 
 ### 6.4 diagram — ダイアグラム 6 類型 (第 3 章)
 
-図を「絵」ではなく関係の型として宣言します (p.64-77)。
+図を「絵」ではなく関係の型として宣言します (p.64-75)。
 
 | フィールド | 型 | 必須 | 意味 |
 |-----------|----|----|------|
-| `form` | `<family>.<subtype>` | 必須 | レイアウト戦略の指定。描画テンプレートの ID ではない (p.156) |
+| `form` | `<family>.<subtype>` | 必須 | レイアウト戦略の指定。描画テンプレートの ID ではない (p.73) |
 | `nodes` | `{ id, label, detail?, icon? }` の配列 | 必須 | ノード。`detail` は補足 1 行で、カード型描画 (linear の横並び・cycle の環状とも) で label の下に muted で表示される。`icon` はアイコン名 (ADR-0013) で、label の上に表示される |
 | `edges` | 構造化形または文字列糖衣の配列 | 任意 | ノード間の関係 |
 | `emphasis` | ノード id の配列 | 任意 | 強調ノード。サイズ・色は階層原則から導出 (p.119)。アイコンのウェイトも 1 段階昇格する |
@@ -456,10 +476,10 @@ opener / closer はレターボックスを外し、ロゴを許可します。�
 | family | subtype カタログ | 表すもの |
 |--------|-----------------|---------|
 | `flow` | linear / cycle / branch / converge / network / timeline | プロセス・手順 (p.66-67)。timeline は日付つきの経緯 (ADR-0016) |
-| `structure` | matrix / tree / layer | 階層・並置 (p.68-69) |
+| `structure` | matrix / tree / layer | 行と列の関係 (matrix)・階層 (tree)・積み重ね (layer) (p.68-69) |
 | `cluster` | overlap / closure / enclosed / linked | まとまり・共有 (p.70-71) |
 | `radial` | semi / core / coreless | 中心と広がり (p.72-73) |
-| `pictogram` | process / cutaway / route / location / influence | 具体物の図解 (p.74-76) |
+| `pictogram` | process / cutaway / route / location / influence | 具体物の図解 (p.74-75) |
 
 `flow.timeline` は日付を持つ経緯・ロードマップの型です (ADR-0016)。node の `label` に出来事、`detail` に日付を書きます。ノードは等間隔に置き、日付には比例させません (スライドは年表ではなく、読める間隔が優先)。
 
@@ -629,7 +649,7 @@ Zenn や note の記事、公開資料を「OGP カード + QR」の定型で紹
 
 ### 6.11 table — 非数値の比較表 (ADR-0016)
 
-セルに言葉が入る表です。数値の意味を言うなら chart、2 軸の分類なら `structure.matrix`、それ以外の一覧比較 (機能 × 製品の ✓ 表など) が table に残ります。
+セルに言葉が入る表です。本は表やチェックリストも、行と列に要素を当てはめて関係を示す「マトリックス型」の 1 つとして扱います (p.68)。hokuchi はこの型を、描き方の違いで 2 つの語彙に分けています。2 軸の分類 (2×2 の象限など) を、2 列のカード格子の配置で見せるなら `structure.matrix` です。行と列の見出しを持ち、セルの言葉を読み比べさせるなら table を使います (機能 × 製品の ✓ 表など)。数値の意味を言うなら chart を使います。
 
 | フィールド | 型 | 必須 | 意味 |
 |-----------|----|----|------|
@@ -717,15 +737,15 @@ side は `{ label (必須), description? (説明の地の文 1〜2 行), items (
 
 ## 7. Build と Connect — 時間軸 (第 9 章)
 
-アニメーションは自由なエフェクト指定ではなく、デュアルテの 5 つの役割 (p.204) から導いた意味語彙だけを許します。バウンス・スピンインのような「機能があるから使う」動き (p.220) は語彙に存在しません。
+アニメーションは自由なエフェクト指定ではなく、デュアルテの 5 つの役割 (p.205) から導いた意味語彙だけを許します。テキストが落ちてきてバウンドする動き (p.208) のような、「機能があるから使う」動き (p.220) は語彙に存在しません。
 
 ### 7.1 build — 段階的開示
 
 `build` はステップの配列です。各ステップは 1 つ以上の操作を持ちます。
 
-| 操作 | 型 | 意味 (p.204 の役割) |
+| 操作 | 型 | 意味 (p.205 の役割) |
 |------|----|--------------------|
-| `show` | 参照の配列 | 要素を表示する (連続性) |
+| `show` | 参照の配列 | 要素を表示する (画面の演出: 登場・隠す／暴く) |
 | `dim` | 参照の配列 | 済んだ要素をグレーにする (p.165) |
 | `emphasize` | 参照の配列 | 強調する (役割 5) |
 | `transform` | `{ target, to }` | 要素を変化させる (役割 3) |
@@ -787,9 +807,13 @@ linter はエラーで止めず警告を中心とします。ただし逸脱は�
 
 | id | 重大度 | 検出条件 | 出典 |
 |----|-------|---------|------|
-| `slideument` | warn (100字) / error (150字) | 可視テキスト合計が閾値超過 (英語 50/75 語相当。換算は要検証)。profile-stage と code のテキストは参照素材のため対象外 (§5.1、§6.7)。post / link / stat / table / versus のテキストは数える | p.26, p.164 |
-| `one-idea` | warn | 主役級要素 (statement のほか diagram / chart / code / post / link / stat / table / versus / agenda / video) が 1 枚に 2 つ以上。従属スロット (headline / subtitle / attribution) に入った statement は主役級に数えない | p.109, p.256 |
-| `bullet-count` | warn | `bullets.items` が 5 項目超 | p.171 |
+| `slideument` | warn (100字) / error (150字) | 可視テキスト合計が閾値超過。閾値は本の数値ではなく hokuchi の独自値で、本のスペクトラム (50 語程度でテロップ、75 語以上でドキュメント) を日本語に粗く換算したもの (換算は要検証)。本自身は「文字数に公式なルールはない」とする (p.164)。profile-stage と code のテキストは参照素材のため対象外 (§5.1、§6.7)。post / link / stat / table / versus のテキストは数える | p.26-27 (考え方) |
+| `one-idea` | warn | 主役級要素 (statement のほか diagram / chart / code / post / link / stat / table / versus / agenda / video) が 1 枚に 2 つ以上。従属スロット (headline / subtitle / attribution) に入った statement は主役級に数えない | p.256 |
+| `bullet-parallel` | warn | 1 つの bullets の項目間で、句点の有無、または体言止めと文 (用言・助動詞で終わる) の混在が揃っていない。判定は末尾の仮名による近似で、「」で囲んだ引用と日本語で終わらない項目は比べない。profile-stage は対象外。項目数は数えない (本は項目数のルールを退けている。p.170) | p.171 |
+| `layers` | info | 1 枚の情報レイヤーが 4 つ以上。数えるのは headline・主役・主役内の副テキスト・support (title-stage の subtitle を含む) で、副テキストは種類ごとに 1 つと数える (diagram のノードの detail、diagram の edge label、chart の annotation、versus の description、stat の context)。chapter は常時の枠なので数えない。profile-stage は対象外 | p.117 |
+| `glance` | info | headline が 1 行に収まらない (明示の改行がある、または字幅が舞台幅 ÷ `heading` を超える。全角 1、半角 0.6 で数える)。または content の主役の statement が 30 字 (空白を除く) を超え、3 秒で読めない。閾値は目安 (§11) | p.160, p.164 |
+| `form-fallback` | info | diagram の form が専用の描画を持たず、横並びのステップ (flow.linear と同じ形) で描かれる。現状は flow.network・radial.semi・radial.coreless・pictogram.* と、カタログ外の subtype | ADR-0025 |
+| `message-missing` | info | `deck.message` (中核メッセージ) が無い | ADR-0024, p.39 |
 | `pie-rules` | warn | 円グラフが 9 項目以上、または合計が 100% でない | p.91 |
 | `axis-lock` | warn | 連続する chart 間で軸位置が揃わない (共有 `scale` 未指定)。軸を持たない composition が絡むペアは対象外 (ADR-0016) | p.90 |
 | `contrast` | warn | 背景とのコントラスト不足、グレースケール変換で判別不能な系列 | p.152, p.156 |
@@ -836,6 +860,11 @@ design.md §8 から次を引き継ぎます。
 6. video の実再生 (SPA プレゼンテーションモード) は ADR-0012 の進化と同時に設計する。それまで video はプレースホルダ描画のみ (ADR-0016)
 7. code の段階的ハイライト (emphasis を build で進める walk-through) は、実デッキで必要になった時点で reveal 語彙を設計する (ADR-0016)
 
+0.5.0 の lint (ADR-0025) から次を引き継ぎます。
+
+8. glance の閾値は字数の目安で、実測での調整が要る。statement の 30 字は、黙読を 1 秒あたり 10 字前後と見て 3 秒に掛けた値。導入時点で既存の 9 デッキの content statement (約 90 個) のうち、超えたのは 1 個だった。headline の 1 行の判定は字幅の近似で、実際の折り返しはレンダラが決める
+9. layers の副テキストの種類 (§9) と、bullet-parallel の体言止め・文の判定 (末尾の仮名による近似) は、実デッキで誤検出が見つかり次第直す。どちらも info・warn の出方が実感と合うと分かったら、昇格や閾値を見直す (ADR-0025 見直しの条件)
+
 なお初版の未決事項 4 (円グラフの宣言経路) は、chart intent `composition` の追加で解消した (ADR-0016)。
 
 再生成と手編集のマージ戦略は運用後に設計します。安定キーとしてスライド `id` を先行して必須化済みです (ADR-0004)。
@@ -852,3 +881,10 @@ design.md §8 から次を引き継ぎます。
 - `0.2.0` (deck のみ) — ADR-0015。`layout` に `image-stage` (headline 任意 + image 必須) を追加。`diagram` に `shared: { label?, emphasis? }` (cluster.overlap の交差領域) を追加。後方互換 (0.1.0 のデッキはそのまま妥当)
 - `0.3.0` (deck) — ADR-0016。要素 8 種 (code / post / link / stat / table / versus / agenda / video) と対応する 8 つの `*-stage`、chart intent `composition` を追加。lint に code-budget / table-size / agenda-source を追加し pie-rules が実働化。後方互換 (0.2.0 のデッキはそのまま妥当)
 - `0.4.0` (theme) — ADR-0016。`type.mono` (任意) と scale トークン `code` / `stat` を追加。後方互換 (0.3.0 のテーマはそのまま妥当)
+- `0.5.0` (deck・theme) — ADR-0024・ADR-0025。slide:ology の読み直しに合わせた版。後方互換で、0.4.0 以前のデッキとテーマはそのまま妥当 (deck 0.4.0 は欠番。0.3.0 から直接上がった)
+  - deck の設計メタデータ: `deck.message` (中核メッセージ、任意) を追加。`deck.audience` に `why`・`pains`・`gains`・`objections` (任意) を追加し、`action` を任意に下げた (`who` は必須のまま)。`role: closer` の意味を「行動喚起で閉じる」から「締め (まとめ・中心テーマへの帰着・行動への誘いのいずれか)」に改めた (§3、§4.1)
+  - 語彙: statement-stage に任意スロット `headline` を追加。chart-stage で headline を省略したとき、chart の `message` を見出しとして描く。chart に `emphasis` (強調する系列ラベルの配列) を追加し、指定外の系列を neutral 系の色に落とす。複数系列は凡例ではなく直接ラベルで描く。composition の単一系列は、構成比の差が小さいとき円ではなく 100% 基準の横棒に導出する
+  - 描画の実装: SPA のプレゼンテーションで `bullets.reveal`・`diagram.reveal`・`build` (show / dim / emphasize) を実装した。静的出力は全ステップ表示後の姿を描く。`transform` は未実装のまま残す。`connect: push-*` を画面遷移として実装し、push で連なるスライド列では chapter・フッタ・ロゴを外す
+  - 型の下限 (theme): 本文系のタイプスケール (node・attribution など) を `type.body.min_size_pt` 以上に上げた。1px = 0.75pt で換算する
+  - lint: `bullet-count` を廃止し `bullet-parallel` (warn) に置き換えた。`min-type` (warn)、`layers`・`glance`・`form-fallback`・`message-missing` (いずれも info) を追加した (§9)
+  - 出典: `slideument`・`one-idea`・closer・§7 のアニメーションの役割などの出典ページを原文に合わせて直した。`slideument` の閾値は本の数値ではなく hokuchi の独自値だと明記した

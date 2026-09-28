@@ -1,13 +1,23 @@
-# サンプルデッキ「スライドは、意図で書く」(schema_version 0.1.0)
+# サンプルデッキ「スライドは、意図で書く」(schema_version 0.5.0)
 # 中心仮説「意図を書けば配置を導出できる」の検証用。
 # 要素 6 種 (statement/bullets/image/diagram/chart/quote) と、
 # 名前付きパターン + グリッド直接指定の両方を含む。
 # spike/deck.yaml を新スキーマ (slot 制・構造化 edges・annotations・scales) へ移行した。
-schema_version: "0.1.0"
+# 0.5.0 で中核メッセージ (deck.message) と聴衆プロフィールの欄を足した (ADR-0024)。
+schema_version: "0.5.0"
 deck:
   title: "スライドは、意図で書く"
+  message: "スライドの見た目は、書き手が意図を宣言すればレンダラが導出できる"
   audience:
     who: "Code to Slide ツールに表現力の限界を感じているエンジニア"
+    why: "図とレイアウトで Markdown が行き詰まる理由と、その抜け道を知りたい"
+    pains:
+      - "図は画像を貼るか Mermaid に任せるしかない"
+      - "レイアウトを変えるたびに CSS を書き足している"
+    gains:
+      - "図とデータを、関係と意味で書ける"
+    objections:
+      - "YAML を手で書くのは Markdown より面倒ではないか"
     action: "次の登壇資料を、ピクセルではなく意図で書いてみる"
   scales:
     revenue:

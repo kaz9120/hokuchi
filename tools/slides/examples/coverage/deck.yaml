@@ -96,6 +96,25 @@ slides:
     notes: |
       検証点: big サイズ、ハイライト色、BudouX 文節折り返し。
 
+  - id: statement-headline
+    role: content
+    idea: "statement + headline: 前提を上、主張を中央に大きく置く (親子、p.118)"
+    layout: statement-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "スライドの字が小さいと言われたら"
+      - kind: statement
+        slot: statement
+        text: "削るか、分けるか"
+        emphasis: ["分ける"]
+      - kind: statement
+        slot: support
+        text: "小さくして詰めるのは、配布資料の仕事"
+    notes: |
+      検証点: 見出しが他の *-stage と同じ上端・左端に来ること、主張が残りの
+      領域の光学中心に来ること、support が主張の下に muted で付くこと。
+
   - id: quote
     role: content
     idea: "quote: 引用符・本文・出典の 3 点構成"
@@ -452,12 +471,9 @@ slides:
   # chart-comparison と隣接させない (軸域が違うので axis-lock の共有対象ではない)
   - id: chart-distribution
     role: content
-    idea: "chart distribution: 階級が接するヒストグラム"
+    idea: "chart distribution: 階級が接するヒストグラム + headline 省略時は message が見出しになる"
     layout: chart-stage
     elements:
-      - kind: statement
-        slot: headline
-        text: "分布 (distribution) の検証"
       - kind: chart
         intent: distribution
         slot: chart
@@ -468,6 +484,7 @@ slides:
             - { label: "デッキ数", values: [4, 17, 11, 5, 2] }
     notes: |
       検証点: 隣接階級がほぼ接する棒 (comparison の離れた棒との差)。
+      headline を書いていないので、chart の message が見出しの位置に描かれる (ADR-0025)。
 
   - id: image-src
     role: content

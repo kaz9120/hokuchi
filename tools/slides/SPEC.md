@@ -274,7 +274,8 @@ opener / closer はレターボックスを外し、ロゴを許可します。�
 
 | パターン | スロット | 受け入れる kind | タイプスケール | 必須 |
 |---------|---------|----------------|--------------|:---:|
-| `statement-stage` | `statement` | statement | `big` (content) / `hero` (opener・closer) | 必須 |
+| `statement-stage` | `headline` | statement | `heading` | 任意。主張より上に置く前提や問い (親が上、子が下、p.118)。ほかの *-stage と同じ位置に描かれ、主張は残りの領域の中央に置かれる (ADR-0025) |
+| | `statement` | statement | `big` (content) / `hero` (opener・closer) | 必須 |
 | | `support` | statement | `subtitle` | 任意。主張の下に置く 1 行の文脈。muted 色で描画され、one-idea の主役級に数えない |
 | `title-stage` | `title` | statement | `title` | 必須 |
 | | `subtitle` | statement | `subtitle` | 任意 |
@@ -312,6 +313,8 @@ opener / closer はレターボックスを外し、ロゴを許可します。�
 `profile-stage` は自己紹介の定型です (毎回の登壇の 2 枚目に置く運用)。`bio` の各項目は `ラベル ── 本文` の形で書くと、ラベルが highlight 色の見出しとして描画されます。自己紹介は聴衆が流し読みする参照情報であり読み上げ原稿ではないため、slideument lint の対象外とします (§9)。`name` / `affiliation` / `handle` の statement は従属スロットで、one-idea の主役級に数えません。
 
 `image-stage` はスクリーンショットや図版を見出し付きで見せる定型です (ADR-0015)。画像の箱は実画像の縦横比から導出され、フルブリードにしたい場合 (情景写真など) は grid-direct を使います。
+
+chart-stage で `headline` を省略すると、chart の `message` が見出しとして描かれます (ADR-0025、p.92「データから得られる結論を記す」)。`headline` を書いた場合は、従来どおり `message` は描かれません。
 
 `code-stage` 以下の 8 パターンは ADR-0016 の追加です。いずれも headline (任意) + 主役 (必須) の形で、主役の measure が申告した箱を compose が他パターンと同じ余白・光学中心に置きます (ADR-0014)。
 

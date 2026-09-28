@@ -63,7 +63,7 @@ const DEFAULT_MONO_STACK = '"SF Mono", "Consolas", "DejaVu Sans Mono", monospace
 
 // Named-pattern slot maps (SPEC §5.1). Elements enter a slot by `slot:`.
 const PATTERN_SLOTS = {
-  'statement-stage': ['statement', 'support'],
+  'statement-stage': ['headline', 'statement', 'support'],
   'title-stage': ['title', 'subtitle'],
   'diagram-stage': ['headline', 'diagram'],
   'chart-stage': ['headline', 'chart'],
@@ -1165,11 +1165,13 @@ function measureVideo(el, ctx, avail) {
  * never moves. `align` picks the horizontal placement of the lead box:
  * figures read as centred, text-shaped material lines up with the headline.
  */
-function leadStage(slide, ctx, slotName, measureFn, align = 'center') {
+function leadStage(slide, ctx, slotName, measureFn, align = 'center', { fallbackHead = null } = {}) {
   const stage = stageRect();
-  const head = slide.elements.find((e) => e.slot === 'headline');
+  const head = slide.elements.find((e) => e.slot === 'headline') ?? fallbackHead;
   const el = slide.elements.find((e) => e.slot === slotName);
-  const headH = head ? Math.round(ctx.scale.heading * 1.3) : 0;
+  // 見出しが折り返すと帯が伸びる。1 行ぶんで見積もると主役の箱が舞台からあふれる。
+  const headLines = head ? estimateWrappedLines(head.text, ctx.scale.heading, stage.w) : 0;
+  const headH = Math.round(ctx.scale.heading * 1.3 * headLines);
   const avail = { w: stage.w, h: stage.h - (head ? headH + HEAD_GAP : 0) };
   const m = measureFn(el, ctx, avail);
   // JSX を書けるのは .jsx だけなので、移行が render.mjs の分割に届くまでは
@@ -1188,8 +1190,15 @@ function diagramStage(slide, ctx) {
   return leadStage(slide, ctx, 'diagram', measureDiagram);
 }
 
+/**
+ * headline を省略した chart-stage は、chart の message を見出しとして描く
+ * (ADR-0025、本 p.92「データから得られる結論を記す」)。headline があれば
+ * そちらが勝ち、message は描かない (従来どおり)。
+ */
 function chartStage(slide, ctx) {
-  return leadStage(slide, ctx, 'chart', measureChart);
+  const chart = slide.elements.find((e) => e.slot === 'chart');
+  const fallbackHead = chart?.message ? { text: chart.message } : null;
+  return leadStage(slide, ctx, 'chart', measureChart, 'center', { fallbackHead });
 }
 
 /**
@@ -1403,6 +1412,8 @@ svg.lead{display:block;max-width:100%;max-height:100%;overflow:visible}
 .statement{font-family:${fonts.display};font-weight:${fonts.wDisplay};line-height:1.25;
   color:${C.textStrong};max-width:100%}
 .support{color:${C.muted};margin-top:30px;line-height:1.5;letter-spacing:.02em}
+/* 見出しつき statement-stage (ADR-0025) の主張。舞台の幅で折り返して中央に置く */
+.statement-lead{width:100%;text-align:center}
 
 .chapter{position:absolute;top:22px;left:20px;z-index:2;font-size:15px;color:${C.muted};
   letter-spacing:.18em;font-family:${fonts.display};font-weight:${fonts.wDisplay};

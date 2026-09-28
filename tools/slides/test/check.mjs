@@ -432,4 +432,60 @@ assert.ok(!noEmbedPages['index.html'].includes('twitter-tweet'),
   'deck with no source post gets no blockquote.twitter-tweet at all');
 ok('renderDeck adds no embed-related output when the deck has no source post (ADR-0017 決定 4)');
 
+// ---------------------------------------------------------------------------
+// (11) ADR-0025 — statement-stage の headline、chart の message の見出し化。
+// ---------------------------------------------------------------------------
+const sectionOf = (html, slideId) => {
+  const start = html.indexOf(`data-slide-id="${slideId}"`);
+  assert.ok(start >= 0, `section for ${slideId} exists`);
+  const end = html.indexOf('<section', start);
+  // InlineText は文節の境に <wbr/> を挟む (SPEC §8.6)。文言の照合では外す
+  return html.slice(start, end < 0 ? undefined : end).replace(/<wbr\/?>/g, '');
+};
+const adr25Deck = {
+  schema_version: '0.3.0',
+  deck: { title: 'ADR-0025 検証', audience: { who: 'テスト', action: 'テスト' }, theme: './theme.yaml' },
+  slides: [
+    baseSlide('s-stmt-head', 'statement-stage', [
+      { kind: 'statement', slot: 'headline', text: '前提の見出し' },
+      { kind: 'statement', slot: 'statement', text: '中央の主張' },
+      { kind: 'statement', slot: 'support', text: '主張の補足' },
+    ]),
+    baseSlide('s-chart-nohead', 'chart-stage', [
+      { kind: 'chart', slot: 'chart', intent: 'comparison', message: 'メッセージが見出しになる',
+        data: { x: ['a', 'b'], series: [{ label: '値', values: [1, 2] }] } },
+    ]),
+    baseSlide('s-chart-head', 'chart-stage', [
+      { kind: 'statement', slot: 'headline', text: '書き手の見出し' },
+      { kind: 'chart', slot: 'chart', intent: 'comparison', message: '描かれないメッセージ',
+        data: { x: ['a', 'b'], series: [{ label: '値', values: [1, 2] }] } },
+    ]),
+  ],
+};
+assert.equal(validateDeckSchema(adr25Deck), true, JSON.stringify(validateDeckSchema.errors));
+const { pages: adr25Pages } = renderDeck(adr25Deck, theme, {
+  deckDir: path.dirname(deckPath), themeDir: path.dirname(themePath),
+});
+const adr25Html = adr25Pages['index.html'];
+
+{
+  const sec = sectionOf(adr25Html, 's-stmt-head');
+  const head = sec.indexOf('class="headline jp"');
+  const claim = sec.indexOf('class="statement jp"');
+  assert.ok(head >= 0 && claim >= 0, 'headline and statement are both drawn');
+  assert.ok(head < claim, 'headline sits above the statement (parent on top, p.118)');
+  assert.ok(sec.includes('class="stage"'), 'headline uses the shared stage frame (same Y as other *-stage)');
+  assert.ok(sec.includes('前提の見出し') && sec.includes('中央の主張'));
+  ok('statement-stage draws an optional headline above the claim (ADR-0025)');
+}
+
+{
+  const noHead = sectionOf(adr25Html, 's-chart-nohead');
+  assert.match(noHead, /class="headline jp"[^>]*>メッセージが見出しになる/, 'message becomes the headline');
+  const withHead = sectionOf(adr25Html, 's-chart-head');
+  assert.ok(withHead.includes('書き手の見出し'));
+  assert.ok(!withHead.includes('描かれないメッセージ'), 'with a headline, message is not drawn');
+  ok('chart-stage draws message as the headline only when headline is omitted (ADR-0025)');
+}
+
 console.log(`\n${passed} checks passed.`);

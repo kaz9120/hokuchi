@@ -2,7 +2,8 @@
 # 全 role (opener/title/transition/content/closer)、全レイアウトパターン、
 # 要素 15 種 (statement/bullets/image/diagram/chart/quote/raw/code/post/link/
 # stat/table/versus/agenda/video)、chart intent の composition (単一系列
-# ドーナツ・複数系列 100% 積み上げ)、diagram flow.timeline、ブランド枠
+# ドーナツ・差の小さい単一系列の 100% 横棒・複数系列 100% 積み上げ)、chart の
+# emphasis と直接ラベル (ADR-0025)、diagram flow.timeline、ブランド枠
 # (ロゴ・フッタ・背景・反転前景) を 1 デッキで踏む (ADR-0016)。
 # レンダラを変えたら、まずこのデッキを render / shot して全種の見た目を確認する。
 schema_version: "0.3.0"
@@ -428,7 +429,8 @@ slides:
             - { label: "手作業", values: [90, 70, 60] }
             - { label: "ツール", values: [35, 12, 20] }
     notes: |
-      検証点: グループ棒の間隔、core 配色の系列差、軸ラベル。
+      検証点: グループ棒の間隔、core 配色の系列差、軸ラベル、
+      凡例の代わりに棒の上へ置いた系列名の直接ラベル (ADR-0025, p.94)。
 
   - id: bullets
     role: content
@@ -667,12 +669,86 @@ slides:
         data:
           x: ["diagram", "chart", "素材要素", "その他"]
           series:
-            - { label: "改修時間の割合", values: [50, 20, 20, 10] }
+            - { label: "改修時間の割合", values: [55, 25, 15, 5] }
         annotations:
           - { at: "diagram", annotate: "最多", style: highlight }
     notes: |
       検証点: 12 時起点・時計回りの扇形、各扇形の外側ラベル (カテゴリ + %)、
       annotations の style: highlight が指す項目が highlight 色になること。
+      構成比の差が大きい (隣り合う比が 0.8 以下) ので円に導出される (ADR-0025)。
+
+  - id: chart-trend-emphasis
+    role: content
+    idea: "chart trend (複数系列 + emphasis): 終端の直接ラベルと無彩色の系列 (ADR-0025)"
+    layout: chart-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "強調する系列だけに色を付ける"
+      - kind: chart
+        slot: chart
+        intent: trend
+        message: "導入チームだけがレビュー待ち時間を半分にした"
+        emphasis: ["導入チーム"]
+        data:
+          x: ["1月", "2月", "3月", "4月", "5月", "6月"]
+          series:
+            - { label: "導入チーム", values: [30, 28, 22, 18, 15, 14] }
+            - { label: "チーム B", values: [31, 30, 32, 29, 30, 28] }
+            - { label: "チーム C", values: [26, 27, 25, 27, 28, 29] }
+            - { label: "チーム D", values: [22, 23, 21, 24, 23, 24] }
+        annotations:
+          - { at: "3月", annotate: "AI レビュー導入", style: highlight }
+    notes: |
+      検証点: 強調しない 3 系列が無彩色で細く、強調系列が highlight で上に
+      重なること。凡例が無く、線の右端に系列名があること。終端の近い
+      チーム B / C のラベルが重ならないこと。注釈が強調系列の点に付くこと。
+
+  - id: chart-composition-close
+    role: content
+    idea: "chart composition (単一系列・差が小さい): 100% 横棒への導出 (ADR-0025, p.91)"
+    layout: chart-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "構成比の差が小さいときは横棒になる"
+      - kind: chart
+        slot: chart
+        intent: composition
+        message: "中型株と小型株の比率はほぼ同じ"
+        data:
+          x: ["大型株", "中型株", "小型株", "現金"]
+          series:
+            - { label: "資産配分", values: [44, 25, 23, 8] }
+        annotations:
+          - { at: "中型株", annotate: "僅差", style: highlight }
+    notes: |
+      検証点: 中型株 25% と小型株 23% の差は円の角度では読めないため、
+      円ではなく 100% 横棒に導出されること。各区画の下に % とカテゴリ、
+      pie-rules が出ないこと。
+
+  - id: chart-comparison-emphasis
+    role: content
+    idea: "chart comparison (3 系列 + emphasis): 棒の上の直接ラベル (ADR-0025)"
+    layout: chart-stage
+    elements:
+      - kind: statement
+        slot: headline
+        text: "棒グラフでも強調する系列だけに色を付ける"
+      - kind: chart
+        slot: chart
+        intent: comparison
+        message: "今期だけ検証の工程が短い"
+        emphasis: ["今期"]
+        data:
+          x: ["構成", "描画", "検証"]
+          series:
+            - { label: "前々期", values: [80, 60, 70] }
+            - { label: "前期", values: [75, 58, 66] }
+            - { label: "今期", values: [72, 55, 30] }
+    notes: |
+      検証点: 棒の上の系列名が重ならないこと (重なれば持ち上がる)、
+      強調しない 2 系列が同じ無彩色で、隣り合っても境界が読めること。
 
   - id: chart-composition-multi
     role: content
@@ -694,7 +770,8 @@ slides:
             - { label: "その他", values: [1, 1, 2] }
     notes: |
       検証点: 棒ごとに 100% へ正規化された積み上げ、層の色が core の宣言順に
-      揃うこと (系列間の絶対量ではなく割合が主題)。
+      揃うこと (系列間の絶対量ではなく割合が主題)。凡例の代わりに右端の棒の
+      横へ置いた系列名 (ADR-0025, p.94)。
 
   - id: agenda-check
     role: content

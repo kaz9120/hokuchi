@@ -23,7 +23,7 @@
 |------|------|
 | deck | 1 つのプレゼンテーション全体。`title`・`message`・`audience`・`scales`・`theme` 参照・`slides` を持つ (第 3 章) |
 | theme | デッキが参照する共有基盤。色・書体・グリッド・タイプスケールを名前付きスロットに固定する (第 2 章、ADR-0003) |
-| slide | 1 枚のスライド。1 枚 = 1 アイデア (`idea`) を守る (第 4 章、p.109) |
+| slide | 1 枚のスライド。1 枚 = 1 アイデア (`idea`) を守る (第 4 章、p.256) |
 | element | スライドを構成する要素。15 種 (statement / bullets / image / diagram / chart / quote / code / post / link / stat / table / versus / agenda / video / raw、第 6 章) |
 | slot | 名前付きレイアウトパターンが宣言する配置口。要素は `slot` でスロットに入る (ADR-0007、第 5 章) |
 | stage (舞台) | role が定めるレターボックス帯の内側。レイアウトが配置してよい領域 (ADR-0008-6、第 8 章) |
@@ -242,7 +242,7 @@ slides:
 |-----------|----|----|------|
 | `id` | 文字列 | 必須 | 安定キー。再生成・差分レビューをまたいでスライドを同定する (ADR-0004) |
 | `role` | 下表の enum | 必須 | 舞台の枠を支配する (ADR-0008-6) |
-| `idea` | 文字列 | 必須 | このスライドが伝える 1 文。1 枚 1 アイデアの検証基準 (p.109) |
+| `idea` | 文字列 | 必須 | このスライドが伝える 1 文。1 枚 1 アイデアの検証基準 (p.256) |
 | `chapter` | 文字列 | 任意 | 章ラベル。左上に常時表示するテロップ。話者なしで読まれる公開資料の文脈維持用。opener / closer では表示されない |
 | `notes` | 文字列 | 任意 | 話者ノート。スライドから削ったテキストの行き先 (p.240-243) |
 | `layout` | 文字列 or オブジェクト | 必須 | 舞台内の配置 (第 5 章) |
@@ -447,12 +447,12 @@ opener / closer はレターボックスを外し、ロゴを許可します。�
 | `subject` | `third-left` \| `third-right` | 任意 | 被写体を三分割交点に置く。空いた側がテキスト領域 (p.181) |
 | `gaze` | `toward-content` \| `away-from-content` | 任意 | 人物の視線の向き。コンテンツと逆向きなら gaze lint が警告 (p.117) |
 
-`src` と `prompt` は少なくとも一方を持つ (両方欠けた image は描画できないため、スキーマ違反とする)。prompt を仕様として残すことで、実画像が無い段階でもスライドの意図が失われません (ADR-0006)。
+`src` と `prompt` は少なくとも一方を持つ (両方欠けた image は描画できないため、スキーマ違反とする)。prompt を仕様として残すことで、実画像が無い段階でもスライドの意図が失われません (ADR-0006)。prompt には、現実に存在する場面や実物を書くべきである。本は「地球の前で握手」のような、現実には存在しない演出写真を退けます (p.180)。
 
 ```yaml
 - kind: image
   id: hero
-  prompt: "夕方の教室で、窓からの自然光の中で笑う小学生。望遠、浅い被写界深度"
+  prompt: "登壇者のチームが実際に使っている朝会のホワイトボード。付箋が貼られた実物を、自然光で正面から撮る"
   treatment: full-bleed
   subject: third-right
   gaze: toward-content
@@ -460,11 +460,11 @@ opener / closer はレターボックスを外し、ロゴを許可します。�
 
 ### 6.4 diagram — ダイアグラム 6 類型 (第 3 章)
 
-図を「絵」ではなく関係の型として宣言します (p.64-77)。
+図を「絵」ではなく関係の型として宣言します (p.64-75)。
 
 | フィールド | 型 | 必須 | 意味 |
 |-----------|----|----|------|
-| `form` | `<family>.<subtype>` | 必須 | レイアウト戦略の指定。描画テンプレートの ID ではない (p.156) |
+| `form` | `<family>.<subtype>` | 必須 | レイアウト戦略の指定。描画テンプレートの ID ではない (p.73) |
 | `nodes` | `{ id, label, detail?, icon? }` の配列 | 必須 | ノード。`detail` は補足 1 行で、カード型描画 (linear の横並び・cycle の環状とも) で label の下に muted で表示される。`icon` はアイコン名 (ADR-0013) で、label の上に表示される |
 | `edges` | 構造化形または文字列糖衣の配列 | 任意 | ノード間の関係 |
 | `emphasis` | ノード id の配列 | 任意 | 強調ノード。サイズ・色は階層原則から導出 (p.119)。アイコンのウェイトも 1 段階昇格する |
@@ -476,10 +476,10 @@ opener / closer はレターボックスを外し、ロゴを許可します。�
 | family | subtype カタログ | 表すもの |
 |--------|-----------------|---------|
 | `flow` | linear / cycle / branch / converge / network / timeline | プロセス・手順 (p.66-67)。timeline は日付つきの経緯 (ADR-0016) |
-| `structure` | matrix / tree / layer | 階層・並置 (p.68-69) |
+| `structure` | matrix / tree / layer | 行と列の関係 (matrix)・階層 (tree)・積み重ね (layer) (p.68-69) |
 | `cluster` | overlap / closure / enclosed / linked | まとまり・共有 (p.70-71) |
 | `radial` | semi / core / coreless | 中心と広がり (p.72-73) |
-| `pictogram` | process / cutaway / route / location / influence | 具体物の図解 (p.74-76) |
+| `pictogram` | process / cutaway / route / location / influence | 具体物の図解 (p.74-75) |
 
 `flow.timeline` は日付を持つ経緯・ロードマップの型です (ADR-0016)。node の `label` に出来事、`detail` に日付を書きます。ノードは等間隔に置き、日付には比例させません (スライドは年表ではなく、読める間隔が優先)。
 
@@ -649,7 +649,7 @@ Zenn や note の記事、公開資料を「OGP カード + QR」の定型で紹
 
 ### 6.11 table — 非数値の比較表 (ADR-0016)
 
-セルに言葉が入る表です。数値の意味を言うなら chart、2 軸の分類なら `structure.matrix`、それ以外の一覧比較 (機能 × 製品の ✓ 表など) が table に残ります。
+セルに言葉が入る表です。本は表やチェックリストも、行と列に要素を当てはめて関係を示す「マトリックス型」の 1 つとして扱います (p.68)。hokuchi はこの型を、描き方の違いで 2 つの語彙に分けています。2 軸の分類 (2×2 の象限など) を、2 列のカード格子の配置で見せるなら `structure.matrix` です。行と列の見出しを持ち、セルの言葉を読み比べさせるなら table を使います (機能 × 製品の ✓ 表など)。数値の意味を言うなら chart を使います。
 
 | フィールド | 型 | 必須 | 意味 |
 |-----------|----|----|------|
@@ -737,15 +737,15 @@ side は `{ label (必須), description? (説明の地の文 1〜2 行), items (
 
 ## 7. Build と Connect — 時間軸 (第 9 章)
 
-アニメーションは自由なエフェクト指定ではなく、デュアルテの 5 つの役割 (p.204) から導いた意味語彙だけを許します。バウンス・スピンインのような「機能があるから使う」動き (p.220) は語彙に存在しません。
+アニメーションは自由なエフェクト指定ではなく、デュアルテの 5 つの役割 (p.205) から導いた意味語彙だけを許します。テキストが落ちてきてバウンドする動き (p.208) のような、「機能があるから使う」動き (p.220) は語彙に存在しません。
 
 ### 7.1 build — 段階的開示
 
 `build` はステップの配列です。各ステップは 1 つ以上の操作を持ちます。
 
-| 操作 | 型 | 意味 (p.204 の役割) |
+| 操作 | 型 | 意味 (p.205 の役割) |
 |------|----|--------------------|
-| `show` | 参照の配列 | 要素を表示する (連続性) |
+| `show` | 参照の配列 | 要素を表示する (画面の演出: 登場・隠す／暴く) |
 | `dim` | 参照の配列 | 済んだ要素をグレーにする (p.165) |
 | `emphasize` | 参照の配列 | 強調する (役割 5) |
 | `transform` | `{ target, to }` | 要素を変化させる (役割 3) |
@@ -807,8 +807,8 @@ linter はエラーで止めず警告を中心とします。ただし逸脱は�
 
 | id | 重大度 | 検出条件 | 出典 |
 |----|-------|---------|------|
-| `slideument` | warn (100字) / error (150字) | 可視テキスト合計が閾値超過 (英語 50/75 語相当。換算は要検証)。profile-stage と code のテキストは参照素材のため対象外 (§5.1、§6.7)。post / link / stat / table / versus のテキストは数える | p.26, p.164 |
-| `one-idea` | warn | 主役級要素 (statement のほか diagram / chart / code / post / link / stat / table / versus / agenda / video) が 1 枚に 2 つ以上。従属スロット (headline / subtitle / attribution) に入った statement は主役級に数えない | p.109, p.256 |
+| `slideument` | warn (100字) / error (150字) | 可視テキスト合計が閾値超過。閾値は本の数値ではなく hokuchi の独自値で、本のスペクトラム (50 語程度でテロップ、75 語以上でドキュメント) を日本語に粗く換算したもの (換算は要検証)。本自身は「文字数に公式なルールはない」とする (p.164)。profile-stage と code のテキストは参照素材のため対象外 (§5.1、§6.7)。post / link / stat / table / versus のテキストは数える | p.26-27 (考え方) |
+| `one-idea` | warn | 主役級要素 (statement のほか diagram / chart / code / post / link / stat / table / versus / agenda / video) が 1 枚に 2 つ以上。従属スロット (headline / subtitle / attribution) に入った statement は主役級に数えない | p.256 |
 | `bullet-parallel` | warn | 1 つの bullets の項目間で、句点の有無、または体言止めと文 (用言・助動詞で終わる) の混在が揃っていない。判定は末尾の仮名による近似で、「」で囲んだ引用と日本語で終わらない項目は比べない。profile-stage は対象外。項目数は数えない (本は項目数のルールを退けている。p.170) | p.171 |
 | `layers` | info | 1 枚の情報レイヤーが 4 つ以上。数えるのは headline・主役・主役内の副テキスト・support (title-stage の subtitle を含む) で、副テキストは種類ごとに 1 つと数える (diagram のノードの detail、diagram の edge label、chart の annotation、versus の description、stat の context)。chapter は常時の枠なので数えない。profile-stage は対象外 | p.117 |
 | `glance` | info | headline が 1 行に収まらない (明示の改行がある、または字幅が舞台幅 ÷ `heading` を超える。全角 1、半角 0.6 で数える)。または content の主役の statement が 30 字 (空白を除く) を超え、3 秒で読めない。閾値は目安 (§11) | p.160, p.164 |

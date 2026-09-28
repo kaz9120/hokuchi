@@ -44,7 +44,7 @@
       "service": "external-article",
       "identifier": null,
       "caption": null,
-      "html_for_embed": "<span><div class=\"external-article-widget\">\n<a href=\"https://mosh.connpass.com/event/400858/\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong class=\"external-article-widget-title\">\n[発表枠増枠]MOSH Tech Meetup #5 あなたが「好きなこと」× エンジニアリング (2026/09/09 19:30〜)\n</strong>\n<em class=\"external-article-widget-description\">\n## MOSH Tech Meetup #5 あなたが「好きなこと」× エンジニアリング  MOSH Tech Meetu\n</em>\n<em class=\"external-article-widget-url\">\nmosh.connpass.com\n</em>\n</a><a class=\"external-article-widget-image\" href=\"https://mosh.connpass.com/event/400858/\" rel=\"nofollow noopener\" style=\"background-image: url('https://assets.st-note.com/production/uploads/ext/7744616e37c34294d7b0d510d5d38ea4a08fbf1e1b1fd3fd590c005eae81.png?x-type=ogp');\" target=\"_blank\"></a>\n\n</div>\n</span>",
+      "html_for_embed": "<span><div class=\"external-article-widget\">\n<a href=\"https://mosh.connpass.com/event/400858/\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong class=\"external-article-widget-title\">\n[発表枠増枠]MOSH Tech Meetup #5 あなたが「好きなこと」× エンジニアリング (2026/09/09 19:30〜)\n</strong>\n<em class=\"external-article-widget-description\">\n## MOSH Tech Meetup #5 あなたが「好きなこと」× エンジニアリング  MOSH Tech Meetu\n</em>\n<em class=\"external-article-widget-url\">\nmosh.connpass.com\n</em>\n</a><a class=\"external-article-widget-image\" href=\"https://mosh.connpass.com/event/400858/\" rel=\"nofollow noopener\" style=\"background-image: url('https://assets.st-note.com/production/uploads/ext/2490f9ce9b7d0f5a56337a370fcdeb3b61dae604ab32147bec7b52b506b2.png?x-type=ogp');\" target=\"_blank\"></a>\n\n</div>\n</span>",
       "html_for_display": null
     },
     {
@@ -115,5 +115,5 @@
     "urlname": "kyamamoto9120",
     "nickname": "山本一将｜焚き火を愛するエンジニア"
   },
-  "_fetched_at": "2026-09-20T02:33:34.117Z"
+  "_fetched_at": "2026-09-27T03:54:48.039Z"
 }

@@ -102,7 +102,7 @@ export function Overlap({ el, box, ctx, r, dist }) {
               <text
                 x={round(lx)} y={round(ly)} textAnchor="middle"
                 fill={hot ? C.textStrong : C.text}
-                fontSize={fitFs(hot ? scale.node + 2 : scale.node, nd.label)}
+                fontSize={ctx.body('ノードのラベル', fitFs(hot ? scale.node + 2 : scale.node, nd.label), hot ? scale.node + 2 : scale.node)}
                 fontWeight={fonts.wDisplay} fontFamily={fonts.display}
               >
                 {nd.label}
@@ -142,7 +142,7 @@ export function Enclosed({ el, box, ctx, members, cardW, cardH, gap, headH }) {
       <text
         x={round(cx)} y={round(headH - (group.detail ? scale.axis * 1.9 : 0) - 24)}
         textAnchor="middle" fill={hotGroup ? C.textStrong : C.text}
-        fontSize={scale.node + 2} fontWeight={fonts.wDisplay} fontFamily={fonts.display}
+        fontSize={ctx.body('ノードのラベル', scale.node + 2)} fontWeight={fonts.wDisplay} fontFamily={fonts.display}
       >
         {group.label}
       </text>

@@ -72,7 +72,7 @@ export function Donut({ el, box, ctx, pad }) {
               key={i}
               x={round(lp.x)} y={round(lp.y)} textAnchor={anchor}
               fill={hot.has(i) ? C.textStrong : C.text}
-              fontSize={scale.node} fontFamily={fonts.body}
+              fontSize={ctx.body('円グラフのラベル', scale.node)} fontFamily={fonts.body}
             >
               {cats[i]}
               <tspan fill={C.muted} dx="6">{Math.round(frac * 100)}%</tspan>
@@ -301,7 +301,7 @@ export function AxisChart({ el, box, ctx, pad, yMin, yMax }) {
               />
               <text
                 x={round(ax)} y={round(ay)} textAnchor={anchor}
-                fill={C.highlight} fontSize={scale.node}
+                fill={C.highlight} fontSize={ctx.body('チャートの注釈', scale.node)}
                 fontWeight={fonts.wDisplay} fontFamily={fonts.display}
               >
                 {ann.annotate}

@@ -99,9 +99,9 @@
                 "quote": { "type": "integer", "minimum": 1, "default": 46 },
                 "heading": { "type": "integer", "minimum": 1, "default": 34 },
                 "bullet": { "type": "integer", "minimum": 1, "default": 34 },
-                "subtitle": { "type": "integer", "minimum": 1, "default": 30 },
-                "attribution": { "type": "integer", "minimum": 1, "default": 24 },
-                "node": { "type": "integer", "minimum": 1, "default": 24 },
+                "subtitle": { "type": "integer", "minimum": 1, "default": 32 },
+                "attribution": { "type": "integer", "minimum": 1, "default": 32 },
+                "node": { "type": "integer", "minimum": 1, "default": 32 },
                 "axis": { "type": "integer", "minimum": 1, "default": 20 },
                 "code": { "type": "integer", "minimum": 1, "default": 22 },
                 "stat": { "type": "integer", "minimum": 1, "default": 160 }

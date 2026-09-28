@@ -40,8 +40,20 @@ usage:
 // lint
 // ---------------------------------------------------------------------------
 function cmdLint(deckPath) {
-  const { deck, theme } = loadDeck(deckPath);
-  const findings = lint(deck, theme).sort(
+  const { deck, theme, deckPath: absDeck, themePath } = loadDeck(deckPath);
+  // min-type は縮小込みの実効サイズを要するので、出力は捨てて描画だけ回す
+  // (ADR-0025)。OGP の解決はしない (ネットワークに出ない)。描画が落ちたら
+  // テーマのトークン値だけで判定する経路に退く。
+  let typeLog;
+  try {
+    ({ typeLog } = renderDeck(structuredClone(deck), theme, {
+      deckDir: path.dirname(absDeck),
+      themeDir: path.dirname(themePath),
+    }));
+  } catch (err) {
+    process.stderr.write(`warning: min-type 用の描画に失敗したため、トークン値だけで判定します (${err.message})\n`);
+  }
+  const findings = lint(deck, theme, { typeLog }).sort(
     (a, b) => SEV_ORDER[a.severity] - SEV_ORDER[b.severity] || a.id.localeCompare(b.id)
   );
 

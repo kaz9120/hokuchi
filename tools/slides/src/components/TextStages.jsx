@@ -26,7 +26,7 @@ export function StatementStage({ slide, ctx }) {
         <InlineText text={el.text} emphasis={el.emphasis} />
       </div>
       {support && (
-        <div className="support jp" style={{ fontSize: ctx.scale.subtitle }}>
+        <div className="support jp" style={{ fontSize: ctx.body('主張の補足', ctx.scale.subtitle) }}>
           <InlineText text={support.text} emphasis={support.emphasis} />
         </div>
       )}
@@ -65,7 +65,7 @@ export function TitleStage({ slide, ctx }) {
         <InlineText text={title.text} emphasis={title.emphasis} />
       </div>
       {sub && (
-        <div className="title-sub jp" style={{ fontSize: ctx.scale.subtitle }}>
+        <div className="title-sub jp" style={{ fontSize: ctx.body('副題', ctx.scale.subtitle) }}>
           <InlineText text={sub.text} emphasis={sub.emphasis} />
         </div>
       )}
@@ -89,7 +89,7 @@ export function QuoteStage({ slide, ctx }) {
           <InlineText text={q.text} />
         </div>
         {q.attribution && (
-          <div className="quote-attr" style={{ fontSize: ctx.scale.attribution }}>
+          <div className="quote-attr" style={{ fontSize: ctx.body('引用の出典', ctx.scale.attribution) }}>
             — {q.attribution}
           </div>
         )}

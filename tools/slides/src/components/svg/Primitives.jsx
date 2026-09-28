@@ -57,7 +57,8 @@ const fitFs = (base, text, avail) => {
  */
 export function NodeCard({ ctx, x, y, w, h, hot, label, detail, icon, badge }) {
   const { C, fonts, scale } = ctx;
-  const fsL = fitFs(hot ? scale.node + 2 : scale.node, label, w - 30);
+  const fsL0 = hot ? scale.node + 2 : scale.node;
+  const fsL = ctx.body('ノードのラベル', fitFs(fsL0, label, w - 30), fsL0);
   const fsD = detail ? fitFs(scale.axis, detail, w - 26) : scale.axis;
   const cx = x + w / 2;
   const iconSize = 34, iconGap = 14;

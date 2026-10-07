@@ -1,0 +1,15 @@
+/* hokuchi の夜明け (ライト版)。hidoko tokens.css の .light から導く。純白は使わない (BRAND.md 6.1) */
+.theme-hokuchi-light {
+  --stage-bg: radial-gradient(110% 80% at 90% 115%, rgb(244 125 58 / 0.14), transparent 60%), #fbf8f0;
+  --fg: #2a241b;
+  --fg-sub: #6a6051;
+  --muted: #8c8273;
+  --accent: #e85d20;
+  --accent-strong: #c64414;
+  --accent-bg: rgb(232 93 32 / 0.13);
+  --accent-faint: rgb(232 93 32 / 0.06);
+  --surface: #fffdf8;
+  --line: #d9d1bf;
+  --label-bg: #fbf8f0;
+  --font: 'LINE Seed JP', 'Inter', sans-serif;
+}

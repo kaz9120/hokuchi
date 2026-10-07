@@ -127,7 +127,7 @@ export function Flow({ d, at, delay = 0, color = 'var(--accent)' }: { d: string;
           initial={{ offsetDistance: '0%', opacity: 0 }}
           animate={{ offsetDistance: '100%', opacity: [0, 1, 1, 0] }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 1.0, delay, ease: 'easeInOut' }}
+          transition={t({ duration: 1.0, delay, ease: 'easeInOut' })}
         />
       )}
     </AnimatePresence>

@@ -1,38 +1,52 @@
 // ライブ再生・発表者ビュー・一覧・ノートを読むモード
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { AnimatePresence, MotionConfig, motion } from 'motion/react'
-import { H, W, t } from './config'
+import { MotionConfig, motion } from 'motion/react'
+import { H, W, panT } from './config'
 import { nextPos, progress, useFit, useKeys, useNav, type Pos } from './nav'
 import { SceneView, Stage, StaticFrame } from './scene'
 import type { TalkDef } from './types'
 
-const pan = {
-  enter: (d: number) => ({ x: d * W }),
-  center: { x: 0 },
-  exit: (d: number) => ({ x: -d * W }),
-}
-
-/** 動くステージ。シーンが変わると横にパンし、ブランド枠はパンの外に留まる */
+/**
+ * 動くステージ。前後のシーンも画面の外に組み立てておく「フィルムの帯」で、シーンが変わるとカメラだけが横にパンする。
+ * 切り替わる瞬間にシーンを組み立てないので、画像のデコードや Web フォントの読み込みが動きに重ならない。
+ * 前のシーンは最後の状態、次のシーンは最初の状態で待たせる (順に送れば、そのまま続きになる)。
+ * ブランド枠はパンの外に留まる。
+ */
 function LiveStage({ talk, pos }: { talk: TalkDef; pos: Pos }) {
-  const scene = talk.scenes[pos.scene]
+  const i = pos.scene
+  const scene = talk.scenes[i]
   const { Frame } = talk.theme
+  // パンの最中は、出ていくシーンと入ってくるシーンだけを置く。隣のシーンの組み立ては、パンが終わってから行う
+  const [settled, setSettled] = useState(true)
+  const from = useRef(i)
+  const first = useRef(true)
+  useEffect(() => {
+    first.current = false
+    if (from.current === i) return
+    setSettled(false)
+    const ms = ((panT() as { duration?: number }).duration ?? 0) * 1000 + 80
+    const id = setTimeout(() => {
+      from.current = i
+      setSettled(true)
+    }, ms)
+    return () => clearTimeout(id)
+  }, [i])
+  const near = settled ? [i - 1, i, i + 1] : [Math.min(from.current, i), Math.max(from.current, i)]
+  const strip = [...new Set(near)].filter((k) => k >= 0 && k < talk.scenes.length)
   return (
     <Stage talk={talk}>
-      <AnimatePresence initial={false} custom={pos.dir}>
-        <motion.div
-          key={scene.id}
-          className="pan"
-          custom={pos.dir}
-          variants={pan}
-          initial="enter"
-          animate="center"
-          exit="exit"
-          transition={t({ duration: 0.9 })}
-        >
-          <SceneView scene={scene} step={pos.step} />
-        </motion.div>
-      </AnimatePresence>
-      <Frame talk={talk} scene={scene} index={pos.scene} />
+      {strip.map((k) => {
+        const s = talk.scenes[k]
+        const step = k === i ? pos.step : k < i ? s.steps - 1 : 0
+        // 先に組み立てていなかったシーン (一覧から飛んだ・速く送った) は、進む向きから入ってくる
+        const initial = first.current ? false : { x: k === i ? pos.dir * W : (k - i) * W }
+        return (
+          <motion.div key={s.id} className="pan" initial={initial} animate={{ x: (k - i) * W }} transition={panT()} aria-hidden={k !== i}>
+            <SceneView scene={s} step={step} />
+          </motion.div>
+        )
+      })}
+      <Frame talk={talk} scene={scene} index={i} />
     </Stage>
   )
 }
@@ -178,7 +192,14 @@ export function Presenter({ talk }: { talk: TalkDef }) {
 
   const scale = useFit(() => ({ w: innerWidth * 0.6 - 32, h: innerHeight - 120 }), W, H)
   const small = useFit(() => ({ w: innerWidth * 0.4 - 48, h: innerHeight * 0.4 }), W, H)
-  const nx = nextPos(talk, pos)
+  // 次の状態のプレビューは、本番の動きが落ち着いてから作り直す (同じスレッドで描画が競合しないように)
+  const target = nextPos(talk, pos)
+  const [nx, setNx] = useState(target)
+  const key = target ? `${target.scene}/${target.step}` : 'end'
+  useEffect(() => {
+    const id = setTimeout(() => setNx(target), 1100)
+    return () => clearTimeout(id)
+  }, [key])
   const scene = talk.scenes[pos.scene]
   const sec = start ? Math.floor((now - start) / 1000) : 0
   const { done, total } = progress(talk, pos)

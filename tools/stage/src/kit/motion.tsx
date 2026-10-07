@@ -133,8 +133,7 @@ export function CountUp({ values, decimals = 0 }: { values: readonly number[]; d
   useEffect(() => {
     if (STATIC) return setV(target)
     const c = animate(cur.current, target, {
-      duration: 1.2,
-      ease: EASE,
+      ...t({ duration: 1.2, ease: EASE }),
       onUpdate: (x) => {
         cur.current = x
         setV(x)

@@ -45,6 +45,9 @@ body {
   position: absolute;
   inset: 0;
 }
+.pan {
+  will-change: transform;
+}
 
 /* ---- シーンでよく使う型。使わずに素で書いてもよい ---- */
 .headline {

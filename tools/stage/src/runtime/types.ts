@@ -22,6 +22,8 @@ export type Theme = {
   Frame: ComponentType<FrameProps>
   /** OGP 画像 (1200×630) のカード */
   OgCard: ComponentType<{ talk: TalkDef }>
+  /** 動きの性格。scale は時間の倍率 (1 が標準、大きいほどゆっくり) */
+  motion?: { scale?: number }
 }
 
 export type TalkDef = {
@@ -32,6 +34,8 @@ export type TalkDef = {
   date: string
   event?: { name: string; url?: string }
   speaker: string
+  /** 動きの時間の倍率。テーマの倍率に掛かる。リハーサルで速い・遅いと感じたら調整する (既定 1) */
+  tempo?: number
   /** slides.y-kaz.com に載せるか。社内向けの発表は false にする (既定は false) */
   public?: boolean
   theme: Theme

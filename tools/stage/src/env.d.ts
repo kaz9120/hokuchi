@@ -19,3 +19,6 @@ declare module 'virtual:talk' {
   const talk: import('./runtime/types').TalkDef
   export default talk
 }
+interface ImportMeta {
+  readonly env: { readonly DEV: boolean }
+}

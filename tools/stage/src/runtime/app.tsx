@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
-import { MODE, OG_H, OG_W, SHOT } from './config'
+import { MODE, OG_H, OG_W, SHOT, setMotionScale } from './config'
+import { themes } from '../themes'
 import { Player, Presenter } from './player'
 import { StaticFrame } from './scene'
 import type { TalkDef } from './types'
@@ -44,7 +45,11 @@ function Og({ talk }: { talk: TalkDef }) {
   )
 }
 
-export function mount(talk: TalkDef) {
+export async function mount(original: TalkDef) {
+  // 開発中は ?theme=<名前> でテーマを差し替えて見比べられる
+  const override = import.meta.env.DEV ? new URLSearchParams(location.search).get('theme') : null
+  const talk = override && themes[override] ? { ...original, theme: await themes[override]() } : original
+  setMotionScale((talk.theme.motion?.scale ?? 1) * (talk.tempo ?? 1))
   document.title = talk.title
   document.body.dataset.mode = MODE
   const el = document.getElementById('root')!

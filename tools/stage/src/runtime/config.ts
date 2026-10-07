@@ -21,7 +21,23 @@ export const SHOT = q.get('shot') ?? ''
 // 静止画を撮るモードでは、すべての動きを 0 秒にして最終状態だけを描く
 export const STATIC = MODE === 'shot' || MODE === 'og'
 
-export const EASE = [0.22, 1, 0.36, 1] as const
+/** 要素の動きの緩急。立ち上がりを鋭くしすぎない (鋭いと「速い」と感じる) */
+export const EASE = [0.25, 0.8, 0.35, 1] as const
+/** カメラのパン。物理的なカメラのように、加速してから減速する */
+export const PAN_EASE = [0.65, 0, 0.35, 1] as const
 
-// シーンの中で動きの既定値を作る。静止画モードでは 0 秒になる
-export const t = (base: Transition = {}): Transition => (STATIC ? { duration: 0 } : { duration: 0.6, ease: EASE, ...base })
+// 動きの時間の倍率。テーマの motion.scale とトークの tempo を掛け合わせる (mount が設定する)
+let scale = 1
+export function setMotionScale(s: number) {
+  scale = s
+}
+
+// シーンの中で動きの既定値を作る。時間と遅れには倍率がかかる。静止画モードでは 0 秒になる
+export const t = (base: Transition = {}): Transition => {
+  if (STATIC) return { duration: 0 }
+  const b = base as { duration?: number; delay?: number }
+  return { ease: EASE, ...base, duration: (b.duration ?? 0.75) * scale, delay: (b.delay ?? 0) * scale }
+}
+
+/** シーン間のパン */
+export const panT = (): Transition => (STATIC ? { duration: 0 } : { duration: 1.0 * scale, ease: PAN_EASE })

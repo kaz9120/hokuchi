@@ -5,6 +5,12 @@
     "": {
       "name": "hokuchi",
     },
+    "apps/slides": {
+      "name": "@hokuchi/slides",
+    },
+    "apps/studio": {
+      "name": "@hokuchi/studio",
+    },
     "packages/stage": {
       "name": "@hokuchi/stage",
       "bin": {
@@ -28,7 +34,11 @@
     },
   },
   "packages": {
+    "@hokuchi/slides": ["@hokuchi/slides@workspace:apps/slides"],
+
     "@hokuchi/stage": ["@hokuchi/stage@workspace:packages/stage"],
+
+    "@hokuchi/studio": ["@hokuchi/studio@workspace:apps/studio"],
 
     "@oxc-project/types": ["@oxc-project/types@0.152.0", "", {}, "sha512-oM/5rLBm2tPkg0iBgkH/FOeR3PCDpY19GTgAZjMFM8h9WI9VW7cLgzp6nwtarYKmovavIQZ+Fe/RKX/8C8O/Rw=="],
 

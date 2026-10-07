@@ -55,7 +55,7 @@ async function main() {
   console.log(`\n${dist} に ${entries.length} 本のトークを組み立てました`)
 
   if (changed.length) {
-    console.log(`\n前回から見た目が変わった状態が ${changed.length} つあります。前後の画像は ${join(snaps, '_diff')} にあります。`)
+    console.log(`\n前回から見た目が変わった状態が ${changed.length} 件あります。前後の画像は ${join(snaps, '_diff')} にあります。`)
     for (const c of changed) console.log(`  ${c}`)
     if (!accept) {
       console.log('\n意図した変化なら --accept を付けて、もう一度組み立ててください。')

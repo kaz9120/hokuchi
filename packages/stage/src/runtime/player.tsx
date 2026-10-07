@@ -85,6 +85,23 @@ export function Player({ talk }: { talk: TalkDef }) {
     },
   })
 
+  // 制作アプリ (apps/studio) のプレビューから、状態を移す。play なら 1 つ前の状態から遷移を再生する
+  useEffect(() => {
+    const onMessage = (e: MessageEvent) => {
+      const m = e.data as { type?: string; scene?: string; step?: number; play?: boolean }
+      if (m?.type !== 'stage:goto') return
+      const i = talk.scenes.findIndex((s) => s.id === m.scene)
+      if (i < 0) return
+      const step = m.step ?? 0
+      if (!m.play) return jump(i, step)
+      if (step > 0) jump(i, step - 1)
+      else if (i > 0) jump(i - 1, talk.scenes[i - 1].steps - 1)
+      setTimeout(() => (step > 0 || i > 0 ? next() : jump(i, 0)), 700)
+    }
+    addEventListener('message', onMessage)
+    return () => removeEventListener('message', onMessage)
+  }, [talk, jump, next])
+
   // 画面の左 1/4 をタップすると戻り、それ以外は進む。横スワイプでも送る
   const touch = useRef<number | null>(null)
   const onPointer = (e: React.MouseEvent) => {

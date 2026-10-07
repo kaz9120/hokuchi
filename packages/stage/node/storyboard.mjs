@@ -21,8 +21,9 @@ export function parseStoryboard(md) {
   let chapter = null
   let scene = null
   let state = null
-  for (const raw of md.split('\n')) {
-    const line = raw.replace(/\s+$/, '')
+  const lines = md.split('\n')
+  for (let n = 0; n < lines.length; n++) {
+    const line = lines[n].replace(/\s+$/, '')
     let m
     if ((m = line.match(/^#\s+(.+)$/))) {
       board.title = m[1]
@@ -31,15 +32,17 @@ export function parseStoryboard(md) {
       board.chapters.push(chapter)
       scene = state = null
     } else if ((m = line.match(SCENE))) {
-      scene = { id: m[1], title: m[2].trim(), chapter: chapter?.name ?? null, meta: {}, states: [] }
+      scene = { id: m[1], title: m[2].trim(), chapter: chapter?.name ?? null, meta: {}, states: [], line: n }
       board.scenes.push(scene)
       state = null
     } else if (scene && (m = line.match(STATE))) {
       const text = m[2]
-      state = { screen: text.replace(ROLE, '').trim(), roles: [...text.matchAll(ROLE)].map((r) => r[1]), notes: [] }
+      // line と noteLines は、制作アプリ (apps/studio) が絵コンテをその場で書き換えるときに使う
+      state = { screen: text.replace(ROLE, '').trim(), roles: [...text.matchAll(ROLE)].map((r) => r[1]), notes: [], line: n, noteLines: [] }
       scene.states.push(state)
     } else if (state && (m = line.match(NOTE))) {
       state.notes.push(m[1])
+      state.noteLines.push(n)
     } else if ((m = line.match(FIELD))) {
       const target = scene && !state ? scene.meta : !scene && chapter ? chapter.meta : !scene ? board.meta : null
       if (target) target[m[1].trim()] = m[2].trim()
@@ -56,4 +59,22 @@ export function seconds(text) {
   const sec = text.match(/(\d+)\s*秒/)
   if (!min && !sec) return null
   return Math.round((min ? Number(min[1]) * 60 : 0) + (sec ? Number(sec[1]) : 0))
+}
+
+/** 状態の「話すこと」を書き換えた絵コンテを返す。scene は id、state は 0 始まりの番号 */
+export function replaceNotes(md, sceneId, stateIndex, text) {
+  const board = parseStoryboard(md)
+  const st = board.scenes.find((s) => s.id === sceneId)?.states[stateIndex]
+  if (!st) throw new Error(`${sceneId} の状態 ${stateIndex + 1} が絵コンテにありません`)
+  const lines = md.split('\n')
+  const indent = (st.noteLines.length ? lines[st.noteLines[0]].match(/^\s*/)[0] : '   ')
+  const next = text
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .map((l) => `${indent}> ${l}`)
+  const at = st.noteLines.length ? st.noteLines[0] : st.line + 1
+  const count = st.noteLines.length ? st.noteLines.at(-1) - st.noteLines[0] + 1 : 0
+  lines.splice(at, count, ...next)
+  return lines.join('\n')
 }

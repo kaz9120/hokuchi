@@ -32,6 +32,6 @@
     "../../talks/*/talk.tsx",
     "../../talks/*/scenes",
     "../../parts",
-    "../../apps/studio/src"
+    "../../apps/studio/ui"
   ]
 }

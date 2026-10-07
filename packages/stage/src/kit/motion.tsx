@@ -101,6 +101,9 @@ export function Morph({ box, tone, look, refit, node, className = 'card', style,
   return (
     <motion.div
       layout
+      // 位置と大きさを測り直すのは、状態が変わったときだけ。ほかの理由で描き直されたとき (発表者ビューの時計など) に、
+      // 測った位置のわずかなずれで補間が始まり直してチラつくのを防ぐ
+      layoutDependency={step}
       data-node={node}
       className={`${className} ${tone && pick(step, tone) ? `tone-${pick(step, tone)}` : ''}`}
       style={{ ...style, position: 'absolute', ...b }}
@@ -112,6 +115,7 @@ export function Morph({ box, tone, look, refit, node, className = 'card', style,
         <motion.div
           key={refit ? width : 'content'}
           layout="position"
+          layoutDependency={step}
           className="morph-inner"
           style={inner}
           initial={refit ? { opacity: 0 } : false}

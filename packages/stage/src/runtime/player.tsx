@@ -196,14 +196,24 @@ function Overview({ talk, current, onPick, onClose }: { talk: TalkDef; current: 
   )
 }
 
-export function Presenter({ talk }: { talk: TalkDef }) {
-  const { pos, next, prev } = useNav(talk)
-  const [start, setStart] = useState<number | null>(null)
+/** 経過時間。0.5 秒ごとに描き直すのはこの部品だけにし、スライドまで描き直さない */
+function Timer({ start }: { start: number | null }) {
   const [now, setNow] = useState(Date.now())
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 500)
     return () => clearInterval(id)
   }, [])
+  const sec = start ? Math.floor((now - start) / 1000) : 0
+  return (
+    <span className="presenter-timer">
+      {String(Math.floor(sec / 60)).padStart(2, '0')}:{String(sec % 60).padStart(2, '0')}
+    </span>
+  )
+}
+
+export function Presenter({ talk }: { talk: TalkDef }) {
+  const { pos, next, prev } = useNav(talk)
+  const [start, setStart] = useState<number | null>(null)
   const go = (f: () => void) => () => {
     setStart((s) => s ?? Date.now())
     f()
@@ -221,16 +231,13 @@ export function Presenter({ talk }: { talk: TalkDef }) {
     return () => clearTimeout(id)
   }, [key])
   const scene = talk.scenes[pos.scene]
-  const sec = start ? Math.floor((now - start) / 1000) : 0
   const { done, total } = progress(talk, pos)
 
   return (
     <MotionConfig reducedMotion="user">
       <div className="presenter">
         <header>
-          <span className="presenter-timer">
-            {String(Math.floor(sec / 60)).padStart(2, '0')}:{String(sec % 60).padStart(2, '0')}
-          </span>
+          <Timer start={start} />
           <span>
             {done} / {total} ・ {scene.title ?? scene.id}
           </span>

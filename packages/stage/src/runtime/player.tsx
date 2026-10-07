@@ -42,7 +42,7 @@ function LiveStage({ talk, pos }: { talk: TalkDef; pos: Pos }) {
         const initial = first.current ? false : { x: k === i ? pos.dir * W : (k - i) * W }
         return (
           <motion.div key={s.id} className="pan" initial={initial} animate={{ x: (k - i) * W }} transition={panT()} aria-hidden={k !== i}>
-            <SceneView scene={s} step={step} />
+            <SceneView scene={s} step={step} active={k === i} />
           </motion.div>
         )
       })}

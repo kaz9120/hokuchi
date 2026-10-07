@@ -30,6 +30,13 @@ function inspect() {
         if (!inside) continue
         if (g.left < stage.left - 1 || g.right > stage.right + 1 || g.top < stage.top - 1 || g.bottom > stage.bottom + 1)
           out.push({ frame, kind: 'はみ出し', text })
+        // カード (.card) の中の文字が、カードの外にはみ出していないか。外に置くことが前提のチップは除く
+        const card = el.closest('.card')
+        if (card && !el.closest('.chip')) {
+          const c = card.getBoundingClientRect()
+          if (g.left < c.left - 1 || g.right > c.right + 1 || g.top < c.top - 1 || g.bottom > c.bottom + 1)
+            out.push({ frame, kind: 'カードからはみ出し', text })
+        }
         // 文字の箱はフォントの上下の余白を含むので、上下 15% ずつ削って字面に近づける
         const pad = g.height * 0.15
         boxes.push({ r: { left: g.left, right: g.right, top: g.top + pad, bottom: g.bottom - pad }, text, n })

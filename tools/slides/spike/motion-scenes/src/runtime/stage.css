@@ -1,0 +1,150 @@
+/* MOSH のトークン。値は tools/slides/themes/mosh.yaml と mosh-slide-design に揃える */
+:root {
+  --coral: #fa6e78;
+  --coral-deep: #e0525d;
+  --coral-bg: #fde3e5;
+  --coral-faint: #fff4f4;
+  --ink: #111827;
+  --sub: #4b5563;
+  --muted: #9ca3af;
+  --line: #ebe3e1;
+  --card: #ffffff;
+  --sans: 'Nunito', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+  background: #1c1b1f;
+}
+
+.viewport {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.stage {
+  position: relative;
+  width: 1280px;
+  height: 720px;
+  flex: none;
+  overflow: hidden;
+  font-family: var(--sans);
+  color: var(--ink);
+  font-feature-settings: 'palt';
+  -webkit-font-smoothing: antialiased;
+}
+
+.bg {
+  position: absolute;
+  inset: 0;
+  background: url(/brand/bg-default.svg) center / cover;
+}
+
+.scene {
+  position: absolute;
+  inset: 0;
+}
+
+/* ---- 共通の型 ---- */
+.headline {
+  position: absolute;
+  left: 96px;
+  top: 60px;
+  right: 200px;
+  font-size: 44px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+}
+
+.swap {
+  display: grid;
+}
+.swap > * {
+  grid-area: 1 / 1;
+}
+
+.card {
+  position: absolute;
+  box-sizing: border-box;
+  background: var(--card);
+  border: 2px solid var(--line);
+  border-radius: 16px;
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.label {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--sub);
+  letter-spacing: 0.04em;
+}
+
+.source {
+  position: absolute;
+  left: 96px;
+  bottom: 40px;
+  font-size: 18px;
+  color: var(--sub);
+}
+
+.token {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  offset-anchor: 50% 50%;
+  offset-rotate: 0deg;
+  box-shadow: 0 0 0 6px rgb(250 110 120 / 0.25);
+}
+
+svg.wires {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* ---- ブランドの枠 ---- */
+.brand-logo {
+  position: absolute;
+  right: 28px;
+  top: 24px;
+  height: 24px;
+}
+.footer {
+  position: absolute;
+  right: 28px;
+  bottom: 18px;
+  font-size: 14px;
+  color: var(--sub);
+}
+.cover-frame .footer {
+  color: #fff;
+}
+
+/* ---- 印刷 ---- */
+@page {
+  size: 1280px 720px;
+  margin: 0;
+}
+.print {
+  background: #fff;
+}
+.print .page {
+  break-after: page;
+}

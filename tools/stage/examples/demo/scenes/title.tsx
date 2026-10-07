@@ -19,8 +19,6 @@ function Title() {
 
 export default defineScene({
   id: 'title',
-  title: '表紙',
   steps: 1,
   Component: Title,
-  notes: ['MOSH の山本です。今日のテーマは「AI で開発が加速する今、強いチームをどう作る？」ですが、その手前の問いから始めます。強いチームの作り方は、AI で変わるのか。'],
 })

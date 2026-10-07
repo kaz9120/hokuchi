@@ -14,6 +14,7 @@ import { basename, join, resolve } from 'node:path'
 import { build as viteBuild, createServer } from 'vite'
 import { chromium } from 'playwright'
 import { repoRoot, stageConfig, stageDir } from './vite.mjs'
+import { parseStoryboard } from './storyboard.mjs'
 
 export const SITE = 'https://slides.y-kaz.com'
 
@@ -125,6 +126,8 @@ async function check(talkDir, motion) {
     frames.push(name)
   }
   const issues = await page.evaluate(inspect)
+  const talk = (await server.ssrLoadModule('virtual:talk')).default
+  const boardIssues = compareBoard(talkDir, talk)
 
   if (motion) await motionSheets(browser, url, join(outDir, 'motion'))
   await browser.close()
@@ -132,12 +135,38 @@ async function check(talkDir, motion) {
 
   const lines = [`# check: ${basename(talkDir)}`, '', `状態 ${frames.length} 枚を out/states/ に出しました。`, '']
   if (errors.length) lines.push('## 実行時のエラー', '', ...errors.map((e) => `- ${e}`), '')
+  if (boardIssues) lines.push('## 絵コンテとの照合', '', ...(boardIssues.length ? boardIssues.map((x) => `- ${x}`) : ['食い違いはありません。']), '')
   lines.push('## 検査', '')
   if (!issues.length) lines.push('指摘はありません。')
   for (const x of issues) lines.push(`- ${x.frame} ${x.kind}: ${x.text}`)
   writeFileSync(join(outDir, 'check.md'), lines.join('\n') + '\n')
   console.log(lines.join('\n'))
   if (errors.length) process.exitCode = 1
+}
+
+// 絵コンテとシーンの食い違い。絵コンテが無ければ null
+function compareBoard(talkDir, talk) {
+  const file = join(talkDir, 'storyboard.md')
+  if (!existsSync(file)) return null
+  const board = parseStoryboard(readFileSync(file, 'utf8'))
+  const out = []
+  const ids = talk.scenes.map((s) => s.id)
+  const boardIds = board.scenes.map((s) => s.id)
+  for (const id of boardIds) if (!ids.includes(id)) out.push(`${id}: 絵コンテにあるが、シーンが無い`)
+  for (const s of talk.scenes) {
+    const b = board.scenes.find((x) => x.id === s.id)
+    if (!b) {
+      out.push(`${s.id}: シーンはあるが、絵コンテに無い`)
+      continue
+    }
+    if (b.states.length !== s.steps) out.push(`${s.id}: 状態の数が違う (絵コンテ ${b.states.length}、シーン ${s.steps})`)
+    const empty = (s.notes ?? []).map((n, i) => (n ? null : i + 1)).filter(Boolean)
+    if (empty.length) out.push(`${s.id}: 話すことが空の状態がある (${empty.join(', ')})`)
+  }
+  const order = ids.filter((id) => boardIds.includes(id))
+  const boardOrder = boardIds.filter((id) => ids.includes(id))
+  if (order.join() !== boardOrder.join()) out.push(`シーンの順序が絵コンテと違う (シーン: ${order.join(' → ')})`)
+  return out
 }
 
 // 遷移ごとに 0〜1400ms を 6 コマで切り、1 枚の一覧にする

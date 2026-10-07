@@ -45,12 +45,6 @@ function Deploys() {
 
 export default defineScene({
   id: 'deploys',
-  title: 'デプロイ数の推移',
   steps: 3,
   Component: Deploys,
-  notes: [
-    'ここから現在地についてです。Productivity チームの発表資料にある数字です。',
-    'エンジニアは 10 人から 35 人に増えました。3.5 倍です。',
-    'その間に、デプロイ数は 43 倍になりました。人数の増加だけでは説明できない伸びです。',
-  ],
 })

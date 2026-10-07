@@ -67,6 +67,7 @@ bun run dev <talk>             # 作業用サーバ。長く動くので、話�
 bun run check <talk> --motion  # 全状態の静止画・検査・絵コンテとの照合・遷移のコマ撮り
 bun run typecheck
 bun run site                   # slides.y-kaz.com を apps/slides/dist に組み立てる
+bun run deploy                 # 組み立てて公開する（話者の確認を取ってから。手順は apps/slides/README.md）
 ```
 
 発表資料は `https://slides.y-kaz.com/<日付-タグ>/` で公開します（ADR-0027）。PDF と docswell は使いません。凍結はしません。公開のたびに全トークを最新のフレームワークでビルドし、前回と見た目が変わった状態があれば止まります（ADR-0029）。サイトに載るのは `public: true` のトークだけです。このリポジトリは GitHub で公開されているので、社内向けの発表はリポジトリの外に置きます。デプロイは話者の確認を取ってから行います。

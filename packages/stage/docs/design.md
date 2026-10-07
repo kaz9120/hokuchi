@@ -134,7 +134,7 @@ bun run site                   # サイト全体の組み立て (apps/slides)
 - 凍結はしません (ADR-0029)。サイトは `apps/slides/build.mjs` が、公開のたびに `talks/` の全トークを最新のフレームワークでビルドして組み立てます。`public: true` のトークだけを載せ、旧方式の資料は載せません
 - 組み立てのたびに全トークの全状態を撮り、前回の静止画と比べます。見た目が変わった状態があれば、前後の画像を `apps/slides/.snapshots/_diff/` に並べて止めます。意図した変化なら `bun run site --accept` で受け入れます
 - 社内向けの発表は、このリポジトリ (GitHub で公開) の外に置きます。CLI はリポジトリ外のトークも扱えます
-- 配信は Cloudflare Workers の静的アセット (`apps/slides/wrangler.jsonc`)。デプロイは話者の確認を取ってから行います
+- 配信は Cloudflare Workers の静的アセット (`apps/slides/wrangler.jsonc`)。デプロイは話者の確認を取ってから `bun run deploy` で行います。手順は `apps/slides/README.md` にあります
 
 ## 8. まだ無いもの
 

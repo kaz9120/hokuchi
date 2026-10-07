@@ -1,131 +1,72 @@
 #!/usr/bin/env node
-// wave.mjs — デッキの粗密の波を 1 枚 1 行で並べる (references/reduce.md 手順 4)。
+// wave.mjs — 絵コンテの粗密の波を、1 シーン 1 行で並べる (references/reduce.md 手順 4)。
 //
-//   node .claude/skills/crafting-presentation/scripts/wave.mjs <deck.yaml>
+//   node .claude/skills/crafting-presentation/scripts/wave.mjs talks/<slug>/storyboard.md
 //
-// 見るのは lint が見ないもの。1 枚ごとの合否ではなく、並びが平らかどうか。
-// 秒数は notes の【N秒】から読む。可視文字数は概算で、slideument lint の
-// 厳密な数え方とは一致しない (波の形が分かれば足りる)。
+// 見るのは、1 シーンごとの合否ではなく、並びが平らかどうか。
+// 秒数は各シーンの「粗密: 中（1 分 20 秒）」から読む。
 
-import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 
-const here = path.dirname(fileURLToPath(import.meta.url));
-const loadPath = path.resolve(here, '../../../../tools/slides/src/load.mjs');
-const { loadDeck } = await import(pathToFileURL(loadPath).href);
+const here = path.dirname(fileURLToPath(import.meta.url))
+const { parseStoryboard, seconds } = await import(pathToFileURL(path.resolve(here, '../../../../tools/stage/storyboard.mjs')).href)
 
-const deckPath = process.argv[2];
-if (!deckPath) {
-  process.stderr.write('usage: wave.mjs <deck.yaml>\n');
-  process.exit(1);
+const file = process.argv[2]
+if (!file) {
+  process.stderr.write('usage: wave.mjs <storyboard.md>\n')
+  process.exit(1)
 }
 
-const len = (s) => (typeof s === 'string' ? [...s.replace(/\s/g, '')].length : 0);
+const len = (s) => [...(s ?? '').replace(/\s/g, '')].length
+const board = parseStoryboard(readFileSync(file, 'utf8'))
 
-function visible(slide) {
-  if (slide.layout === 'profile-stage') return 0; // 参照情報。波には数えない
-  let n = 0;
-  for (const el of slide.elements ?? []) {
-    if (el.kind === 'code') continue;
-    n += len(el.text) + len(el.value) + len(el.label) + len(el.title);
-    for (const it of el.items ?? []) n += len(it);
-    for (const nd of el.nodes ?? []) n += len(nd.label) + len(nd.detail);
-    for (const a of el.annotations ?? []) n += len(a.annotate);
-    for (const side of el.sides ?? []) {
-      n += len(side.label);
-      for (const it of side.items ?? []) n += len(it);
-    }
-    for (const row of el.rows ?? []) for (const c of row) n += len(c);
-  }
-  return n;
-}
-
-// 実物 = 聴衆が「見る」もの。密の山の核になりうる要素。
-const ARTIFACT = new Set(['image', 'code', 'post', 'chart', 'diagram', 'quote', 'table', 'video', 'link']);
-
-const { deck } = loadDeck(deckPath);
-const rows = deck.slides.map((s, i) => {
-  const notes = s.notes ?? '';
-  const m = notes.match(/【\s*(\d+)\s*秒】/);
-  const kinds = (s.elements ?? []).map((e) => e.kind);
-  const lead = kinds.filter((k) => k !== 'statement' && k !== 'bullets');
+const rows = board.scenes.map((s, i) => {
+  const grain = s.meta['粗密'] ?? ''
   return {
     n: i + 1,
     id: s.id,
-    role: s.role,
-    sec: m ? Number(m[1]) : null,
-    vis: visible(s),
-    notes: len(notes.replace(/【[^】]*】/g, '')),
-    artifact: lead.some((k) => ARTIFACT.has(k)) && s.layout !== 'profile-stage',
-    hasSupport: (s.elements ?? []).some((e) => e.slot === 'support'),
-    kinds: [...new Set(kinds)].join('+'),
-  };
-});
+    chapter: s.chapter ?? '',
+    grain: grain.match(/^(粗|中|密)/)?.[1] ?? '-',
+    sec: seconds(grain),
+    states: s.states.length,
+    notes: s.notes.reduce((a, n) => a + len(n), 0),
+    roles: s.states.flatMap((st) => st.roles).length,
+  }
+})
 
-const hasSec = rows.some((r) => r.sec != null);
-const bar = (r) => '█'.repeat(Math.max(1, Math.round((hasSec ? r.sec ?? 0 : r.notes / 6) / 5)));
+const hasSec = rows.some((r) => r.sec != null)
+const bar = (r) => '█'.repeat(Math.max(1, Math.round((hasSec ? (r.sec ?? 0) : r.notes / 6) / 5)))
 
-process.stdout.write(`wave ${deckPath}\n\n`);
-process.stdout.write('  #  sec  vis notes  実物 support  id\n');
+process.stdout.write(`wave ${file}\n\n`)
+process.stdout.write('  #  粗密  sec 状態 動き  話す字数  id\n')
 for (const r of rows) {
   process.stdout.write(
-    `${String(r.n).padStart(3)} ${String(r.sec ?? '-').padStart(4)} ${String(r.vis).padStart(4)} ${String(r.notes).padStart(5)}   ${r.artifact ? '●' : ' '}     ${r.hasSupport ? '+' : ' '}     ${r.id.padEnd(24)} ${bar(r)}\n`
-  );
+    `${String(r.n).padStart(3)}   ${r.grain}  ${String(r.sec ?? '-').padStart(4)} ${String(r.states).padStart(4)} ${String(r.roles).padStart(4)} ${String(r.notes).padStart(9)}  ${r.id.padEnd(24)} ${bar(r)}\n`,
+  )
 }
 
-const body = rows.filter((r) => r.role === 'content');
-process.stdout.write('\n');
-if (hasSec) {
-  const secs = body.map((r) => r.sec).filter((x) => x != null);
-  const total = rows.reduce((a, r) => a + (r.sec ?? 0), 0);
-  const so = secs.filter((x) => x <= 10).length;
-  const mid = secs.filter((x) => x >= 20 && x <= 40).length;
-  // 山 = 1 枚で 60 秒以上、または実物スライドが連続して合計 45 秒以上
-  // (同じ実物を 2〜3 枚かけて見せる形。見せる → 見る場所を指す → 意味を言う)。
-  // 連なりの途中に挟まる 10 秒以下の粗 (「ここを見てください」の 1 語) は山を切らない。
-  const peaks = [];
-  let run = [];
-  let bridge = [];
-  const flush = () => {
-    const sum = run.reduce((a, r) => a + (r.sec ?? 0), 0);
-    if (run.filter((r) => r.artifact).length >= 2 && sum >= 45) peaks.push({ ids: run.map((r) => r.id), sec: sum, artifact: true });
-    run = [];
-    bridge = [];
-  };
-  for (const r of rows) {
-    if (r.artifact) {
-      run.push(...bridge, r);
-      bridge = [];
-    } else if (run.length && r.role === 'content' && (r.sec ?? 99) <= 10) bridge.push(r); // transition は章の切れ目なので山も切る
-    else flush();
-  }
-  flush();
-  const inRun = new Set(peaks.flatMap((p) => p.ids));
-  for (const r of body) if ((r.sec ?? 0) >= 60 && !inRun.has(r.id)) peaks.push({ ids: [r.id], sec: r.sec, artifact: r.artifact });
+process.stdout.write('\n')
+if (!hasSec) {
+  process.stdout.write('  粗密に時間がない。各シーンの「粗密:」に時間を書いてから見直す (reduce.md 手順 4)\n')
+  process.exit(0)
+}
 
-  process.stdout.write(`  合計 ${total} 秒 (${(total / 60).toFixed(1)} 分) / content ${body.length} 枚\n`);
-  process.stdout.write(`  粗 (10 秒以下) ${so} 枚 · 中間 (20〜40 秒) ${mid} 枚 · 山 ${peaks.length} つ\n`);
-  for (const p of peaks) process.stdout.write(`  山: ${p.ids.join(' → ')} (${p.sec} 秒)\n`);
-  if (peaks.length === 0) process.stdout.write('  → 山がない。どこにも留まっていない\n');
-  if (secs.length && mid / secs.length > 0.6) process.stdout.write(`  → content の 6 割超が中間帯。平らである${peaks.length ? ' (山はあっても谷がないので、山に見えない)' : ''}\n`);
-  for (const p of peaks) if (!p.artifact) process.stdout.write(`  → ${p.ids[0]}: 60 秒以上話すのに実物がない。聴衆の目が行く先を置く\n`);
-} else {
-  process.stdout.write('  notes に【N秒】がない。秒数を振ってから見直す (reduce.md 手順 4)\n');
-}
-// 章ごとの合計。メッセージマップで決めた厚みと、実際の時間配分を突き合わせる (reduce.md 手順 1)。
-if (hasSec) {
-  const byChapter = new Map();
-  deck.slides.forEach((s, i) => {
-    const key = s.chapter ?? `(${s.role})`;
-    byChapter.set(key, (byChapter.get(key) ?? 0) + (rows[i].sec ?? 0));
-  });
-  const total = [...byChapter.values()].reduce((a, b) => a + b, 0) || 1;
-  process.stdout.write('\n  章ごとの時間\n');
-  for (const [ch, sec] of byChapter) {
-    process.stdout.write(`  ${String(sec).padStart(5)} 秒 ${String(Math.round((sec / total) * 100)).padStart(3)}%  ${ch}\n`);
-  }
-}
-const withSupport = body.filter((r) => r.hasSupport).length;
-if (body.length && withSupport / body.length > 0.5) {
-  process.stdout.write(`  → support つきが ${withSupport}/${body.length} 枚。粗の 1 語スライドに support を付けていないか\n`);
-}
+const total = rows.reduce((a, r) => a + (r.sec ?? 0), 0)
+const limit = seconds(board.meta['持ち時間'])
+process.stdout.write(`  合計 ${total} 秒 (${(total / 60).toFixed(1)} 分)${limit ? ` / 持ち時間 ${limit / 60} 分` : ''} / ${rows.length} シーン\n`)
+if (limit && Math.abs(total - limit) / limit > 0.15) process.stdout.write(`  → 持ち時間との差が 15% を超えている\n`)
+
+const count = (g) => rows.filter((r) => r.grain === g).length
+process.stdout.write(`  粗 ${count('粗')} · 中 ${count('中')} · 密 ${count('密')}\n`)
+if (count('密') === 0) process.stdout.write('  → 密がない。どこにも留まっていない\n')
+if (rows.length && count('中') / rows.length > 0.6) process.stdout.write('  → 6 割超が中。平らである (山はあっても谷がないので、山に見えない)\n')
+for (const r of rows) if (r.grain === '粗' && (r.sec ?? 0) > 20) process.stdout.write(`  → ${r.id}: 粗なのに ${r.sec} 秒ある。論点を落としているか\n`)
+for (const r of rows) if (r.sec && r.states && r.sec / r.states > 90) process.stdout.write(`  → ${r.id}: 1 状態あたり ${Math.round(r.sec / r.states)} 秒。画面が止まりすぎていないか\n`)
+
+// 章ごとの合計。メッセージマップで決めた厚みと、実際の時間配分を突き合わせる (reduce.md 手順 1)
+const byChapter = new Map()
+for (const r of rows) byChapter.set(r.chapter, (byChapter.get(r.chapter) ?? 0) + (r.sec ?? 0))
+process.stdout.write('\n  章ごとの時間\n')
+for (const [ch, sec] of byChapter) process.stdout.write(`  ${String(sec).padStart(5)} 秒 ${String(Math.round((sec / (total || 1)) * 100)).padStart(3)}%  ${ch}\n`)

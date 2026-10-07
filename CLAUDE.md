@@ -14,10 +14,13 @@
 docs/adr/          意思決定の記録（リポジトリ全体で単一系列）
 talks/             発表資料（主役。時系列に蓄積）
   <YYYY-MM-slug>/
-    deck.yaml      意図宣言型のソース
+    storyboard.md  絵コンテ。話者と合意する設計図で、話すこと（ノート）の正本（ADR-0028）
+    talk.tsx       トークの定義（テーマ・公開の可否・シーンの並び）
+    scenes/        シーン（1 ファイル 1 シーン。React + Motion）
     assets/        実画像など
-    out/           作業レンダリング（git 管理外）
-    final/         発表済みの凍結出力（コミットする）
+    out/           作業出力（git 管理外）
+    final/         発表済みの凍結出力。ビルドした静的ファイル一式（コミットする）
+                   ※ 2026-09 以前のトークは旧方式の deck.yaml と、その描画結果を持つ
 articles/
   note/            note.com の記事アーカイブ（原本 + Markdown の 2 層。ADR-0019）
     drafts/        執筆中の原稿（<slug>/index.md。公開したら sync が凍結する）
@@ -29,16 +32,16 @@ articles/
 tools/
   notes/           note の CLI（sync / build / verify / lint / index）
     docs/design.md 生きた設計書
-  slides/          スライドスキーマとレンダラ
-    SPEC.md        スキーマの規範仕様（唯一の真実）
-    schema/        JSON Schema（deck / theme）
-    src/ + cli.mjs lint / render / shot / serve の CLI（npm link で hokuchi コマンドに。npm test で検証）
-    themes/        テーマ（個人 hokuchi.yaml / MOSH mosh.yaml）
-    examples/      テスト用フィクスチャ
+  stage/           発表のフレームワーク（ADR-0026）。再生機・部品・テーマ・CLI
+    cli.mjs        dev / check / build / freeze / site
+    src/kit/       状態遷移の部品（Headline / Reveal / Morph / Connect / CountUp）
+    src/themes/    テーマ（個人 hokuchi / MOSH mosh）
+    examples/demo/ 動作確認用のトーク
     docs/design.md 生きた設計書
+  slides/          旧方式（意図宣言型 YAML とレンダラ）。新規には使わない（ADR-0026）
     spike/         捨て前提の試作（検証記録として保持）
 .claude/skills/
-  crafting-presentation/  対話からスライドを作る skill（Phase 0〜8。ADR-0024）
+  crafting-presentation/  対話から発表資料を作る skill（Phase 0〜8。ADR-0024・ADR-0028）
   writing-note/           note の記事を書く skill（Phase 0〜7。ADR-0020）
 ```
 
@@ -52,11 +55,11 @@ tools/
 
 ## スライド
 
-スライドを作る依頼は、crafting-presentation skill に従ってください。デッキは `talks/<YYYY-MM-slug>/deck.yaml` に置きます。
+発表資料を作る依頼は、crafting-presentation skill に従ってください。絵コンテ `talks/<YYYY-MM-slug>/storyboard.md` で話者と合意してから、シーンを `tools/stage` の React コードで実装します（ADR-0026・ADR-0028）。フレームワークの仕様は `tools/stage/docs/design.md` にあります。
 
-テーマは登壇の立場で選び、相対パスで参照します。個人としては `tools/slides/themes/hokuchi.yaml`、MOSH としては `tools/slides/themes/mosh.yaml` です。コピーはしません（ADR-0010）。
+テーマは登壇の立場で選びます。個人としては `hokuchi`、MOSH としては `mosh` です。
 
-発表が終わったら、最終レンダリングを `final/` にコミットして凍結します。レンダラは進化していくので、deck.yaml だけでは当時の見た目を再現できないためです。人間の細かいレビューは、`hokuchi serve` のアノテーションで受けます（ADR-0011）。
+発表資料は `https://slides.y-kaz.com/<slug>/` で公開します（ADR-0027）。PDF と docswell は使いません。発表が終わったら、`node tools/stage/cli.mjs freeze talks/<slug>` でビルドを `final/` に凍結してコミットします。フレームワークは進化していくので、ソースだけでは当時の見た目を再現できないためです。サイトに載るのは `public: true` のトークだけです。社内向けの発表は公開しません。デプロイは話者の確認を取ってから行います。
 
 ## コミット
 

@@ -1,6 +1,6 @@
 # ADR-0024: crafting-presentation を slide:ology の読み直しに合わせて作り直す
 
-- ステータス: 承認
+- ステータス: 承認 (Phase 4・7・8 の部分は → ADR-0028 で置き換え)
 - 日付: 2026-09-28
 - スコープ: リポジトリ全体 (.claude/skills/crafting-presentation) / tools/slides (deck スキーマ)
 

@@ -71,7 +71,8 @@ hokuchi における意思決定の記録。決定に至る過程（選択肢・
 | [0021](0021-note-markdown-paste-ready.md) | note アーカイブの index.md は note のエディタにそのまま貼れる Markdown にする | 承認 | リポジトリ全体 / tools/notes |
 | [0022](0022-note-serve-feedback-loop.md) | note の原稿レビューは serve のフィードバックループで回す | 承認 | tools/notes |
 | [0023](0023-somitsu-as-design-target.md) | 粗密を構成の設計対象にし、スキルで山を先に決める | 承認 (crafting-presentation 部分は → ADR-0024) | リポジトリ全体 (skills) |
-| [0024](0024-crafting-presentation-reread-slideology.md) | crafting-presentation を slide:ology の読み直しに合わせて作り直す | 承認 | リポジトリ全体 (skills) / tools/slides |
+| [0024](0024-crafting-presentation-reread-slideology.md) | crafting-presentation を slide:ology の読み直しに合わせて作り直す | 承認 (Phase 4・7・8 は → ADR-0028) | リポジトリ全体 (skills) / tools/slides |
 | [0025](0025-renderer-lint-reread-slideology.md) | deck スキーマ 0.5.0 — レンダラと lint を slide:ology の読み直しに合わせる | 廃止 (→ ADR-0026) | tools/slides |
 | [0026](0026-scene-state-presentation-framework.md) | 発表資料はシーン×状態の React コードで書き、再生と部品のフレームワーク tools/stage を自作する | 承認 | リポジトリ全体 / tools/stage |
 | [0027](0027-self-hosted-slides-site.md) | 発表資料は slides.y-kaz.com に自前でホスティングし、PDF と docswell をやめる | 承認 | リポジトリ全体 / tools/stage |
+| [0028](0028-storyboard-before-scenes.md) | 登壇資料は絵コンテ (storyboard.md) で合意してからシーンを実装し、ノートの正本を絵コンテに置く | 承認 | リポジトリ全体 (skills) / tools/stage |

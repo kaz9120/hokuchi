@@ -11,7 +11,7 @@ import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const here = path.dirname(fileURLToPath(import.meta.url))
-const { parseStoryboard, seconds } = await import(pathToFileURL(path.resolve(here, '../../../../tools/stage/storyboard.mjs')).href)
+const { parseStoryboard, seconds } = await import(pathToFileURL(path.resolve(here, '../../../../packages/stage/node/storyboard.mjs')).href)
 
 const file = process.argv[2]
 if (!file) {

@@ -56,7 +56,7 @@ hokuchi における意思決定の記録。決定に至る過程（選択肢・
 | [0006](0006-image-prompt-as-spec.md) | image 要素は生成プロンプトを画像仕様として保持する | 廃止 (→ ADR-0026) | presentation |
 | [0007](0007-slot-based-elements.md) | 要素はスロット制にし、emphasis を要素別語彙に分け、タイプスケールをテーマに昇格する | 廃止 (→ ADR-0026) | presentation |
 | [0008](0008-spec-remaining-decisions.md) | spike が残した痛点に SPEC 確定へ向けて回答する | 廃止 (→ ADR-0026) | presentation |
-| [0009](0009-content-first-layout.md) | リポジトリはコンテンツを主役に置き、発表済み資料は凍結する | 承認 | リポジトリ全体 |
+| [0009](0009-content-first-layout.md) | リポジトリはコンテンツを主役に置き、発表済み資料は凍結する | 承認 (凍結は → ADR-0029 で廃止) | リポジトリ全体 |
 | [0010](0010-theme-brand-frame.md) | テーマにブランド枠 (brand) を追加し、組織テーマの運用を始める | 廃止 (→ ADR-0026) | tools/slides |
 | [0011](0011-serve-annotation-loop.md) | serve モードと agentation でアノテーション・フィードバックループを作る | 承認 | tools/slides |
 | [0012](0012-single-file-spa-output.md) | render の出力を単一ファイル SPA (index.html) に統合する | 廃止 (→ ADR-0026) | tools/slides |
@@ -74,5 +74,6 @@ hokuchi における意思決定の記録。決定に至る過程（選択肢・
 | [0024](0024-crafting-presentation-reread-slideology.md) | crafting-presentation を slide:ology の読み直しに合わせて作り直す | 承認 (Phase 4・7・8 は → ADR-0028) | リポジトリ全体 (skills) / tools/slides |
 | [0025](0025-renderer-lint-reread-slideology.md) | deck スキーマ 0.5.0 — レンダラと lint を slide:ology の読み直しに合わせる | 廃止 (→ ADR-0026) | tools/slides |
 | [0026](0026-scene-state-presentation-framework.md) | 発表資料はシーン×状態の React コードで書き、再生と部品のフレームワーク tools/stage を自作する | 承認 | リポジトリ全体 / tools/stage |
-| [0027](0027-self-hosted-slides-site.md) | 発表資料は slides.y-kaz.com に自前でホスティングし、PDF と docswell をやめる | 承認 | リポジトリ全体 / tools/stage |
+| [0027](0027-self-hosted-slides-site.md) | 発表資料は slides.y-kaz.com に自前でホスティングし、PDF と docswell をやめる | 承認 (凍結は → ADR-0029 で廃止) | リポジトリ全体 / tools/stage |
 | [0028](0028-storyboard-before-scenes.md) | 登壇資料は絵コンテ (storyboard.md) で合意してからシーンを実装し、ノートの正本を絵コンテに置く | 承認 | リポジトリ全体 (skills) / tools/stage |
+| [0029](0029-monorepo-layout-and-live-builds.md) | 発表資料の構造を packages / apps / parts に組み直し、凍結をやめて公開のたびに全トークをビルドする | 承認 | リポジトリ全体 |

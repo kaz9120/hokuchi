@@ -1,13 +1,13 @@
 # シーンを実装する
 
-Phase 7 で開きます。合意した絵コンテを、`tools/stage` のシーンとして実装します。フレームワークの仕様は `tools/stage/docs/design.md` にあります。着手前に開いてください。
+Phase 7 で開きます。合意した絵コンテを、`packages/stage` のシーンとして実装します。フレームワークの仕様は `packages/stage/docs/design.md` にあります。着手前に開いてください。
 
 ## 1. ファイルを用意する
 
 ```
-talks/<YYYY-MM-slug>/
+talks/<YYYY_MM_DD_タグ_演題>/
   storyboard.md   絵コンテ (Phase 4〜6 の成果物。ノートの正本)
-  talk.tsx        defineTalk。title / description / date / event / speaker / theme / public / scenes
+  talk.tsx        defineTalk。title / description / event / speaker / theme / public / scenes (date と URL はディレクトリ名から読む)
   scenes/<id>.tsx 1 ファイル 1 シーン。defineScene({ id, steps, Component })
   assets/         写真など
 ```
@@ -52,8 +52,8 @@ talks/<YYYY-MM-slug>/
 実装したら、話者に見せる前に、次を自分で回します。
 
 ```sh
-cd tools/stage && ./node_modules/.bin/tsc -p tsconfig.json   # 型
-node tools/stage/cli.mjs check talks/<slug> --motion          # 静止画・検査・照合・コマ撮り
+bun run typecheck                      # 型
+bun run check <名前の先頭> --motion     # 静止画・検査・照合・コマ撮り
 ```
 
 1. `out/check.md` を読みます。実行時のエラー、絵コンテとの食い違い、重なり・はみ出し・小さい文字は、すべて直します
@@ -64,5 +64,5 @@ node tools/stage/cli.mjs check talks/<slug> --motion          # 静止画・検�
 話者には、作業用サーバで見てもらいます。サーバは長く動くので、話者に別ターミナルで立ててもらいます。
 
 ```sh
-node tools/stage/cli.mjs dev talks/<slug>
+bun run dev <名前の先頭>
 ```

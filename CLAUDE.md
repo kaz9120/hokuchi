@@ -12,15 +12,14 @@
 
 ```
 docs/adr/          意思決定の記録（リポジトリ全体で単一系列）
-talks/             発表資料（主役。時系列に蓄積）
-  <YYYY-MM-slug>/
+talks/             発表資料（主役。公開する発表だけを置く）
+  <YYYY_MM_DD_タグ_演題>/   命名は過去資料と同じ。URL は日付とタグから作る（/2026-09-29-devsgarden/）
     storyboard.md  絵コンテ。話者と合意する設計図で、話すこと（ノート）の正本（ADR-0028）
     talk.tsx       トークの定義（テーマ・公開の可否・シーンの並び）
     scenes/        シーン（1 ファイル 1 シーン。React + Motion）
     assets/        実画像など
     out/           作業出力（git 管理外）
-    final/         発表済みの凍結出力。ビルドした静的ファイル一式（コミットする）
-                   ※ 2026-09 以前のトークは旧方式の deck.yaml と、その描画結果を持つ
+parts/             トークをまたいで使い回す中身（自己紹介・会社紹介・写真）
 articles/
   note/            note.com の記事アーカイブ（原本 + Markdown の 2 層。ADR-0019）
     drafts/        執筆中の原稿（<slug>/index.md。公開したら sync が凍結する）
@@ -29,21 +28,21 @@ articles/
       source.json  原本。note API の不変フィールドを凍結したもの
       index.md     読む用。source.json から生成（手で直さない）
       assets/      見出し画像と本文画像の実体
+packages/
+  stage/           発表のフレームワーク（ADR-0026）。再生機・部品・テーマ・トーク単位の CLI
+    docs/design.md 生きた設計書
+apps/
+  slides/          slides.y-kaz.com。全トークを最新のフレームワークでビルドして組み立てる（ADR-0029）
+archive/talks/     旧方式（意図宣言型 YAML）の deck.yaml と写真。作り直すときの素材で、ビルドしない
 tools/
   notes/           note の CLI（sync / build / verify / lint / index）
     docs/design.md 生きた設計書
-  stage/           発表のフレームワーク（ADR-0026）。再生機・部品・テーマ・CLI
-    cli.mjs        dev / check / build / freeze / site
-    src/kit/       状態遷移の部品（Headline / Reveal / Morph / Connect / CountUp）
-    src/themes/    テーマ（個人 hokuchi / MOSH mosh）
-    examples/demo/ 動作確認用のトーク
-    docs/design.md 生きた設計書
-  slides/          旧方式（意図宣言型 YAML とレンダラ）。新規には使わない（ADR-0026）
-    spike/         捨て前提の試作（検証記録として保持）
 .claude/skills/
   crafting-presentation/  対話から発表資料を作る skill（Phase 0〜8。ADR-0024・ADR-0028）
   writing-note/           note の記事を書く skill（Phase 0〜7。ADR-0020）
 ```
+
+依存はルートの bun ワークスペース（`packages/*`・`apps/*`、hoisted）で管理します。`bun install` はルートで実行します。`tools/notes` は対象外です。
 
 ## note の記事
 
@@ -55,11 +54,20 @@ tools/
 
 ## スライド
 
-発表資料を作る依頼は、crafting-presentation skill に従ってください。絵コンテ `talks/<YYYY-MM-slug>/storyboard.md` で話者と合意してから、シーンを `tools/stage` の React コードで実装します（ADR-0026・ADR-0028）。フレームワークの仕様は `tools/stage/docs/design.md` にあります。
+発表資料を作る依頼は、crafting-presentation skill に従ってください。絵コンテ `storyboard.md` で話者と合意してから、シーンを `packages/stage` の React コードで実装します（ADR-0026・ADR-0028）。フレームワークの仕様は `packages/stage/docs/design.md` にあります。
 
-テーマは登壇の立場で選びます。個人としては `hokuchi`、MOSH としては `mosh` です。
+テーマは登壇の立場で選びます。個人としては `hokuchi`（明るい会場なら `hokuchi-light`）、MOSH としては `mosh` です。
 
-発表資料は `https://slides.y-kaz.com/<slug>/` で公開します（ADR-0027）。PDF と docswell は使いません。発表が終わったら、`node tools/stage/cli.mjs freeze talks/<slug>` でビルドを `final/` に凍結してコミットします。フレームワークは進化していくので、ソースだけでは当時の見た目を再現できないためです。サイトに載るのは `public: true` のトークだけです。社内向けの発表は公開しません。デプロイは話者の確認を取ってから行います。
+よく使うコマンドは次のとおりです。`<talk>` は `talks/` の中の名前の先頭だけでも指定できます（例: `2026_09_29`）。
+
+```sh
+bun run dev <talk>             # 作業用サーバ。長く動くので、話者に別ターミナルで立ててもらう
+bun run check <talk> --motion  # 全状態の静止画・検査・絵コンテとの照合・遷移のコマ撮り
+bun run typecheck
+bun run site                   # slides.y-kaz.com を apps/slides/dist に組み立てる
+```
+
+発表資料は `https://slides.y-kaz.com/<日付-タグ>/` で公開します（ADR-0027）。PDF と docswell は使いません。凍結はしません。公開のたびに全トークを最新のフレームワークでビルドし、前回と見た目が変わった状態があれば止まります（ADR-0029）。サイトに載るのは `public: true` のトークだけです。このリポジトリは GitHub で公開されているので、社内向けの発表はリポジトリの外に置きます。デプロイは話者の確認を取ってから行います。
 
 ## コミット
 

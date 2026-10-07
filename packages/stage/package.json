@@ -1,0 +1,32 @@
+{
+  "name": "@hokuchi/stage",
+  "private": true,
+  "type": "module",
+  "description": "シーン×状態で動く発表資料のフレームワーク (ADR-0026)",
+  "bin": {
+    "stage": "./cli.mjs"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "motion": "^14.0.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "playwright": "^1.63.0",
+    "subset-font": "^2.9.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.3"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./themes/*": "./src/themes/*/index.tsx",
+    "./*": "./src/*"
+  }
+}

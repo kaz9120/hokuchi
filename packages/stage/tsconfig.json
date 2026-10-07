@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "types": [],
+    "paths": {
+      "@hokuchi/stage": [
+        "./src/index.ts"
+      ],
+      "@hokuchi/stage/themes/*": [
+        "./src/themes/*/index.tsx"
+      ],
+      "@hokuchi/stage/*": [
+        "./src/*"
+      ]
+    }
+  },
+  "include": [
+    "src",
+    "app",
+    "examples",
+    "../../talks/*/talk.tsx",
+    "../../talks/*/scenes",
+    "../../parts",
+    "../../apps/studio/src"
+  ]
+}

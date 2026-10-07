@@ -1,0 +1,15 @@
+{
+  "name": "hokuchi",
+  "private": true,
+  "type": "module",
+  "workspaces": ["packages/*", "apps/*"],
+  "scripts": {
+    "dev": "node packages/stage/cli.mjs dev",
+    "check": "node packages/stage/cli.mjs check",
+    "build": "node packages/stage/cli.mjs build",
+    "studio": "node apps/studio/server.mjs",
+    "site": "node apps/slides/build.mjs",
+    "deploy": "node apps/slides/build.mjs && cd apps/slides && bunx wrangler deploy",
+    "typecheck": "tsc -p packages/stage/tsconfig.json"
+  }
+}

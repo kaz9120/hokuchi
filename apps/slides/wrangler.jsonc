@@ -1,0 +1,10 @@
+// slides.y-kaz.com の配信設定 (ADR-0027, ADR-0029)。`node build.mjs` で dist を組み立ててから deploy する
+{
+    "name": "hokuchi-slides",
+  "compatibility_date": "2026-10-07",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page"
+  },
+  "routes": [{ "pattern": "slides.y-kaz.com", "custom_domain": true }]
+}

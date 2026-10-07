@@ -1,6 +1,6 @@
 # ADR-0015: deck スキーマ 0.2.0 — image-stage パターンと overlap の交差語彙 (shared) を追加する
 
-- ステータス: 承認
+- ステータス: 廃止 (→ ADR-0026)
 - 日付: 2026-07-08
 - スコープ: tools/slides
 

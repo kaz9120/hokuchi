@@ -92,12 +92,12 @@ button.pill {
   color: var(--accent);
 }
 
-/* ---- 2 カラム: 左が絵コンテ、右がプレビューと詳細とチャット ---- */
+/* ---- 2 カラム: 左が絵コンテ、右がプレビューとチャット ---- */
 main {
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(420px, 42%) 1fr;
+  grid-template-columns: minmax(520px, 1fr) minmax(480px, 44%);
 }
 
 /* ---- 絵コンテのボード ---- */
@@ -159,24 +159,26 @@ main {
   color: var(--sub);
   line-height: 1.5;
 }
-.strip {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.frame-btn {
-  position: relative;
-  padding: 0;
-  border: 2px solid transparent;
-  border-radius: 6px;
-  background: none;
+.state {
+  display: grid;
+  grid-template-columns: 176px 1fr;
+  gap: 12px;
+  padding: 8px;
+  margin: 0 -8px;
+  border-radius: 8px;
   cursor: pointer;
-  width: 168px;
-  line-height: 0;
+  border: 2px solid transparent;
 }
-.frame-btn img,
+.state:hover {
+  background: #faf9f7;
+}
+.state.active {
+  border-color: var(--accent);
+  background: #fffaf7;
+}
+.thumb img,
 .nothumb {
-  width: 100%;
+  width: 176px;
   aspect-ratio: 16 / 9;
   border-radius: 4px;
   border: 1px solid var(--line);
@@ -187,43 +189,51 @@ main {
   display: grid;
   place-items: center;
   font-size: 12px;
-  line-height: 1;
   color: var(--sub);
   background: #faf9f7;
 }
-.frame-btn:focus {
-  outline: none;
+.screen {
+  font-size: 13.5px;
+  line-height: 1.6;
 }
-.frame-btn:hover {
-  border-color: #f2b896;
-}
-.frame-btn.active {
-  border-color: var(--accent);
-}
-.badge {
-  position: absolute;
-  left: 4px;
-  top: 4px;
-  font-size: 11px;
-  line-height: 1;
+.num {
+  display: inline-block;
+  min-width: 18px;
   font-weight: 700;
-  color: #fff;
-  background: rgb(0 0 0 / 0.55);
-  border-radius: 4px;
-  padding: 3px 5px;
+  color: var(--accent);
 }
-.role-dot {
-  position: absolute;
-  right: 6px;
-  top: 6px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 0 2px #fff;
+.role {
+  white-space: nowrap;
+  margin-left: 6px;
+  font-size: 11.5px;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  padding: 0 7px;
+}
+.notes {
+  width: 100%;
+  margin-top: 4px;
+  font: 13px/1.65 system-ui, sans-serif;
+  color: #4a4744;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 4px 6px;
+  background: transparent;
+  resize: vertical;
+}
+.notes:hover,
+.notes:focus {
+  border-color: var(--line);
+  background: var(--panel);
+  color: var(--ink);
+}
+.unsaved {
+  font-size: 11.5px;
+  color: var(--accent);
 }
 
-/* ---- 右: プレビュー・詳細・チャット ---- */
+/* ---- 右: プレビューとチャット ---- */
 .side {
   display: flex;
   flex-direction: column;
@@ -236,7 +246,7 @@ main {
 }
 .frame {
   aspect-ratio: 16 / 9;
-  max-height: 58vh;
+  max-height: 40vh;
   margin: 0 auto;
   border-radius: 6px;
   overflow: hidden;
@@ -270,51 +280,6 @@ main {
   margin-left: auto;
   font-size: 12px;
   color: var(--sub);
-}
-.detail {
-  margin: 0 16px;
-  padding: 8px 0 10px;
-  border-top: 1px solid var(--line);
-}
-.detail summary {
-  cursor: pointer;
-  font-size: 14px;
-}
-.role {
-  margin-left: 8px;
-  font-size: 12px;
-  color: var(--accent);
-  border: 1px solid var(--accent);
-  border-radius: 999px;
-  padding: 0 8px;
-  white-space: nowrap;
-}
-.screen {
-  margin: 6px 0 8px;
-  font-size: 13.5px;
-  line-height: 1.6;
-  color: var(--sub);
-}
-.notes-label {
-  display: block;
-  font-size: 12px;
-  color: var(--sub);
-}
-.notes-label em {
-  font-style: normal;
-  color: var(--accent);
-  margin-left: 8px;
-}
-.notes-label textarea {
-  display: block;
-  width: 100%;
-  margin-top: 4px;
-  font: 14px/1.7 system-ui, sans-serif;
-  color: var(--ink);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 8px 10px;
-  resize: vertical;
 }
 .chat {
   flex: 1;

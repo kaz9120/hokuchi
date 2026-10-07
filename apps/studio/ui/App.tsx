@@ -1,4 +1,4 @@
-// hokuchi studio の画面。左に絵コンテのボード (縮小画像の帯)、右にプレビューと、選んだ状態の詳細とチャット
+// hokuchi studio の画面。左に絵コンテのボード (状態ごとに描画・画面の説明・話すこと)、右にプレビューとチャット
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 type State = { screen: string; roles: string[]; notes: string[] }
@@ -131,7 +131,6 @@ export function App() {
         <BoardView data={data} thumbs={thumbs.version} pick={pick} setPick={setPick} errors={errors} report={issues ? check.report : undefined} />
         <section className="side">
           <Preview stageUrl={data.stageUrl} theme={theme} pick={pick} position={position} total={order.length} move={move} />
-          {scene && pick && <Detail scene={scene} index={pick.state} />}
           <ChatPanel chat={chat} busy={busy} send={send} context={scene && pick ? `${scene.title} ・ 状態 ${pick.state + 1}` : null} />
         </section>
       </main>
@@ -139,10 +138,10 @@ export function App() {
   )
 }
 
-/** 絵コンテのボード。シーンごとに、状態の縮小画像を横に並べた帯を出す。文字は名前と伝えることだけ */
+/** 絵コンテのボード。シーンごとに、状態の行 (描画の縮小画像・画面の説明・動きの役割・話すこと) を並べる */
 function BoardView({ data, thumbs, pick, setPick, errors, report }: { data: Studio; thumbs: number; pick: Pick | null; setPick: (p: Pick) => void; errors: string[]; report?: string }) {
   const chapters = [...new Set(data.board.scenes.map((s) => s.chapter ?? ''))]
-  const active = useRef<HTMLButtonElement>(null)
+  const active = useRef<HTMLDivElement>(null)
   useEffect(() => {
     active.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
   }, [pick?.scene, pick?.state])
@@ -178,18 +177,20 @@ function BoardView({ data, thumbs, pick, setPick, errors, report }: { data: Stud
                     {status && <span className="pill warn">{status}</span>}
                   </div>
                   {s.meta['伝えること'] && <p className="tell">{s.meta['伝えること']}</p>}
-                  <div className="strip">
-                    {s.states.map((st, i) => {
-                      const on = pick?.scene === s.id && pick.state === i
-                      return (
-                        <button key={i} ref={on ? active : undefined} className={`frame-btn ${on ? 'active' : ''}`} title={st.screen} onClick={() => setPick({ scene: s.id, state: i })}>
-                          {impl ? <img src={`/api/thumb/${s.id}-${i}?v=${thumbs}`} alt="" loading="lazy" /> : <span className="nothumb">未実装</span>}
-                          <span className="badge">{i + 1}</span>
-                          {st.roles.length > 0 && <span className="role-dot" title={st.roles.join('・')} />}
-                        </button>
-                      )
-                    })}
-                  </div>
+                  {s.states.map((_, i) => {
+                    const on = pick?.scene === s.id && pick.state === i
+                    return (
+                      <StateRow
+                        key={i}
+                        rowRef={on ? active : undefined}
+                        scene={s}
+                        index={i}
+                        thumb={impl ? `/api/thumb/${s.id}-${i}?v=${thumbs}` : null}
+                        active={on}
+                        onPick={() => setPick({ scene: s.id, state: i })}
+                      />
+                    )
+                  })}
                 </div>
               )
             })}
@@ -232,37 +233,37 @@ function Preview({ stageUrl, theme, pick, position, total, move }: { stageUrl: s
   )
 }
 
-/** 選んだ状態の詳細。画面の説明・動きの役割・話すこと (その場で直せる) */
-function Detail({ scene, index }: { scene: Scene; index: number }) {
+/** 状態の行。描画の縮小画像・画面の説明・動きの役割・話すこと (その場で直せる) */
+function StateRow({ scene, index, thumb, active, onPick, rowRef }: { scene: Scene; index: number; thumb: string | null; active: boolean; onPick: () => void; rowRef?: React.Ref<HTMLDivElement> }) {
   const state = scene.states[index]
   const [notes, setNotes] = useState(scene.notes[index] ?? '')
   const [saved, setSaved] = useState(scene.notes[index] ?? '')
   useEffect(() => {
     setNotes(scene.notes[index] ?? '')
     setSaved(scene.notes[index] ?? '')
-  }, [scene.id, index, scene.notes[index]])
-  if (!state) return null
+  }, [scene.notes[index]])
   const save = () => {
     if (notes === saved) return
     fetch('/api/note', { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ scene: scene.id, state: index, text: notes }) })
     setSaved(notes)
   }
   return (
-    <details className="detail" open>
-      <summary>
-        <strong>{scene.title}</strong> ・ 状態 {index + 1}
-        {state.roles.map((r) => (
-          <span key={r} className="role">
-            {r}
-          </span>
-        ))}
-      </summary>
-      <p className="screen">{state.screen}</p>
-      <label className="notes-label">
-        話すこと {notes !== saved && <em>未保存 (欄の外をクリックで保存)</em>}
-        <textarea value={notes} rows={3} onChange={(e) => setNotes(e.target.value)} onBlur={save} />
-      </label>
-    </details>
+    <div ref={rowRef} className={`state ${active ? 'active' : ''}`} onClick={onPick}>
+      <div className="thumb">{thumb ? <img src={thumb} alt="" loading="lazy" /> : <div className="nothumb">未実装</div>}</div>
+      <div className="state-body">
+        <div className="screen">
+          <span className="num">{index + 1}</span>
+          {state.screen}
+          {state.roles.map((r) => (
+            <span key={r} className="role">
+              {r}
+            </span>
+          ))}
+        </div>
+        <textarea className="notes" value={notes} rows={2} placeholder="話すこと" onChange={(e) => setNotes(e.target.value)} onFocus={onPick} onBlur={save} />
+        {notes !== saved && <div className="unsaved">未保存 (欄の外をクリックで保存)</div>}
+      </div>
+    </div>
   )
 }
 

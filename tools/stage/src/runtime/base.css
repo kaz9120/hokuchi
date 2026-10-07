@@ -178,7 +178,8 @@ body[data-mode='og'] * {
   align-items: center;
   padding: 24px 24px 64px;
   box-sizing: border-box;
-  font-family: 'Noto Sans JP', system-ui, sans-serif;
+  /* ステージの外の UI は OS のフォントで描く (同梱するのはステージの書体だけ) */
+  font-family: system-ui, -apple-system, 'Hiragino Sans', sans-serif;
 }
 .player.reader .player-stage {
   box-shadow: 0 8px 30px rgb(0 0 0 / 0.12);
@@ -295,7 +296,7 @@ body[data-mode='og'] * {
   inset: 0;
   background: #111;
   color: #eee;
-  font-family: 'Noto Sans JP', system-ui, sans-serif;
+  font-family: system-ui, -apple-system, 'Hiragino Sans', sans-serif;
   display: flex;
   flex-direction: column;
 }

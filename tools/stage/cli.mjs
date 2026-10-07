@@ -15,6 +15,7 @@ import { build as viteBuild, createServer } from 'vite'
 import { chromium } from 'playwright'
 import { repoRoot, stageConfig, stageDir } from './vite.mjs'
 import { parseStoryboard } from './storyboard.mjs'
+import { bundleFonts, familiesIn } from './fonts.mjs'
 
 export const SITE = 'https://slides.y-kaz.com'
 
@@ -235,10 +236,23 @@ async function build(talkDir, outDir) {
   await page.goto(`${url}?og`)
   await waitReady(page)
   const og = await page.screenshot({ type: 'png', clip: { x: 0, y: 0, width: 1200, height: 630 } })
+  // 同梱するフォントのために、全状態に出てくる文字と、テーマの書体を集める
+  await page.goto(`${url}?shot=all`)
+  await waitReady(page)
+  const { text, fontFamily } = await page.evaluate(() => ({
+    text: document.body.innerText,
+    fontFamily: getComputedStyle(document.querySelector('.stage')).fontFamily,
+  }))
   await browser.close()
   await server.close()
 
-  await viteBuild(stageConfig(talkDir, { outDir, meta: metaTags(talk, slug) }))
+  const families = familiesIn(fontFamily)
+  const fontLink = '<!--stage:bundled-fonts-->'
+  await viteBuild(stageConfig(talkDir, { outDir, meta: metaTags(talk, slug), fonts: fontLink }))
+  const bundled = await bundleFonts(families, text + talk.title, outDir)
+  const html = join(outDir, 'index.html')
+  writeFileSync(html, readFileSync(html, 'utf8').replace(fontLink, bundled.link))
+  console.log(`フォント: ${families.join(', ')} を ${bundled.chars} 字に切り出して同梱 (${Math.round(bundled.bytes / 1024)} KB)`)
   writeFileSync(join(outDir, 'og.png'), og)
   const info = {
     slug,
@@ -257,12 +271,6 @@ async function build(talkDir, outDir) {
 }
 
 // ---------------------------------------------------------------- site
-function legacyInfo(dir, slug) {
-  const yaml = existsSync(join(dir, 'deck.yaml')) ? readFileSync(join(dir, 'deck.yaml'), 'utf8') : ''
-  const title = yaml.match(/^deck:\s*\n(?:.*\n)*?\s+title:\s*"?(.+?)"?\s*$/m)?.[1] ?? slug
-  return { slug, title: title.replace(/\\n/g, ' '), date: slug.slice(0, 7), description: '', legacy: true }
-}
-
 function site() {
   const out = join(stageDir, 'out', 'site')
   mkdirSync(out, { recursive: true })
@@ -271,22 +279,15 @@ function site() {
   for (const slug of readdirSync(talksDir).sort().reverse()) {
     const final = join(talksDir, slug, 'final')
     if (!existsSync(final)) continue
-    const files = readdirSync(final)
-    let info
-    if (files.includes('stage.json')) {
-      const j = JSON.parse(readFileSync(join(final, 'stage.json'), 'utf8'))
-      // 社内向けの発表は、凍結はしても公開サイトには載せない
-      if (!j.public) {
-        console.log(`  ${slug}: public でないので載せません`)
-        continue
-      }
-      info = { ...j, href: `${slug}/`, image: `${slug}/og.png` }
-    } else if (files.includes('index.html')) {
-      info = { ...legacyInfo(join(talksDir, slug), slug), href: `${slug}/`, image: files.includes('slide-01.png') ? `${slug}/slide-01.png` : null }
-    } else if (files.some((f) => f.endsWith('.pdf'))) {
-      const pdf = files.find((f) => f.endsWith('.pdf'))
-      info = { ...legacyInfo(join(talksDir, slug), slug), href: `${slug}/${pdf}`, image: files.includes('slide-01.png') ? `${slug}/slide-01.png` : null }
-    } else continue
+    // 旧方式 (tools/slides) の資料は stage.json を持たないので載せない
+    if (!existsSync(join(final, 'stage.json'))) continue
+    const j = JSON.parse(readFileSync(join(final, 'stage.json'), 'utf8'))
+    // 社内向けの発表は、凍結はしても公開サイトには載せない
+    if (!j.public) {
+      console.log(`  ${slug}: public でないので載せません`)
+      continue
+    }
+    const info = { ...j, href: `${slug}/`, image: `${slug}/og.png` }
     cpSync(final, join(out, slug), { recursive: true })
     entries.push(info)
   }

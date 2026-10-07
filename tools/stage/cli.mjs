@@ -248,6 +248,7 @@ async function build(talkDir, outDir) {
     event: talk.event ?? null,
     speaker: talk.speaker,
     theme: talk.theme.name,
+    public: talk.public === true,
     scenes: talk.scenes.length,
     builtAt: new Date().toISOString(),
   }
@@ -274,6 +275,11 @@ function site() {
     let info
     if (files.includes('stage.json')) {
       const j = JSON.parse(readFileSync(join(final, 'stage.json'), 'utf8'))
+      // 社内向けの発表は、凍結はしても公開サイトには載せない
+      if (!j.public) {
+        console.log(`  ${slug}: public でないので載せません`)
+        continue
+      }
       info = { ...j, href: `${slug}/`, image: `${slug}/og.png` }
     } else if (files.includes('index.html')) {
       info = { ...legacyInfo(join(talksDir, slug), slug), href: `${slug}/`, image: files.includes('slide-01.png') ? `${slug}/slide-01.png` : null }

@@ -32,6 +32,8 @@ export type TalkDef = {
   date: string
   event?: { name: string; url?: string }
   speaker: string
+  /** slides.y-kaz.com に載せるか。社内向けの発表は false にする (既定は false) */
+  public?: boolean
   theme: Theme
   scenes: SceneDef[]
 }

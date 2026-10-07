@@ -13,6 +13,7 @@ export default defineTalk({
   date: '2026-09-29',
   event: { name: "Dev's Garden" },
   speaker: '山本 一将',
+  public: false,
   theme: mosh,
   scenes: [title, oldProblems, productivity, cycle, deploys],
 })

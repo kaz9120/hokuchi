@@ -16,6 +16,7 @@
 
 ```
 talks/<YYYY-MM-slug>/
+  storyboard.md   絵コンテ。話者と合意する設計図で、話すこと (ノート) の正本
   talk.tsx        トークの定義 (defineTalk)。メタ情報・テーマ・シーンの並び
   scenes/*.tsx    シーン (defineScene)。1 ファイル 1 シーン
   assets/         画像など。シーンから import する
@@ -32,16 +33,18 @@ import cycle from './scenes/cycle'
 
 export default defineTalk({
   title: '…', description: '…（OGP と一覧に出る 1〜2 文）', date: '2026-09-29',
-  event: { name: "Dev's Garden" }, speaker: '山本 一将', theme: mosh,
+  event: { name: "Dev's Garden" }, speaker: '山本 一将', public: true, theme: mosh,
   scenes: [cycle],
 })
 ```
 
-シーンは `steps` (状態の数) と、状態ごとの `notes` (話す内容) を持ちます。`notes` は発表者ビューと、ノートを読むモードに出ます。
+シーンは `id` と `steps` (状態の数) を持ちます。
 
 ```tsx
-export default defineScene({ id: 'cycle', title: '改善が広がる流れ', steps: 4, Component: Cycle, notes: ['…', '…', '…', '…'] })
+export default defineScene({ id: 'cycle', steps: 4, Component: Cycle })
 ```
+
+シーンの名前と、状態ごとの話すこと (`notes`) は、絵コンテから流し込みます (`vite.mjs` の `virtual:talk`)。発表者ビューと、ノートを読むモードに出ます。シーンの側に `title` や `notes` を書けば、そちらが優先されます。絵コンテの形式は `.claude/skills/crafting-presentation/references/storyboard.md` にあり、`storyboard.mjs` が読みます。`check` は、シーンの抜け・状態の数・順序・空のノートを絵コンテと照合します。
 
 シーンの中では `useStep()` でいまの状態の番号を取り、`pick(step, [...])` で状態ごとの値を選びます。
 
@@ -115,12 +118,11 @@ cd tools/stage && ./node_modules/.bin/tsc -p tsconfig.json  # 型検査
 
 - 各トークは `https://slides.y-kaz.com/<slug>/` に置きます。`build` が、タイトル・説明・OGP 画像 (1200×630)・Twitter カードのメタタグを HTML に入れます
 - 発表後は `freeze` で `final/` に凍結してコミットします。フレームワークを変えても、凍結済みのトークは変わりません
-- `site` は `final/` を集めて一覧ページを作ります。旧方式の `final/` (index.html か PDF) もそのまま載せます
+- `site` は `final/` を集めて一覧ページを作ります。`public: true` のトークだけを載せます。社内向けの発表は、凍結はしても載せません。旧方式の `final/` (index.html か PDF) もそのまま載せます
 - 配信は Cloudflare Workers の静的アセット (`wrangler.jsonc`)。デプロイは話者の確認を取ってから行います
 
 ## 8. まだ無いもの
 
-- 絵コンテの形式と、crafting-presentation の書き換え
 - アノテーションでのレビュー (ADR-0011 の移植)
 - Web フォントの同梱。いまは Google Fonts を読むので、会場がオフラインだと字形が変わる。使った文字だけをサブセット化してビルドに含める予定
 - グラフの部品。数件のトークで書いてから、部品に昇格させる

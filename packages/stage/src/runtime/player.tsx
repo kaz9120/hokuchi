@@ -40,9 +40,12 @@ function LiveStage({ talk, pos }: { talk: TalkDef; pos: Pos }) {
         const step = k === i ? pos.step : k < i ? s.steps - 1 : 0
         // 先に組み立てていなかったシーン (一覧から飛んだ・速く送った) は、進む向きから入ってくる
         const initial = first.current ? false : { x: k === i ? pos.dir * W : (k - i) * W }
+        // 登場の動きは、パンが終わってから始める。出ていくシーンと通り過ぎたシーンは、表示中の姿のまま保つ。
+        // 戻るときに入ってくるシーンは、もう登場を済ませているので、パンの最中も表示中の姿のままにする
+        const active = !settled && k === from.current ? true : k === i ? settled || pos.dir < 0 : k < i
         return (
           <motion.div key={s.id} className="pan" initial={initial} animate={{ x: (k - i) * W }} transition={panT()} aria-hidden={k !== i}>
-            <SceneView scene={s} step={step} active={k === i} />
+            <SceneView scene={s} step={step} active={active} />
           </motion.div>
         )
       })}

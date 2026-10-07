@@ -34,8 +34,11 @@ export type TalkDef = {
   date?: string
   /** URL の slug。省略するとディレクトリ名の日付とタグから作る (例: 2026-09-29-devsgarden) */
   slug?: string
-  event?: { name: string; url?: string }
+  /** name はイベントか主催のコミュニティの名前、title はその回のイベントタイトル (例: name "Dev's Garden"、title "AI で開発が加速する今、…") */
+  event?: { name: string; title?: string; url?: string }
   speaker: string
+  /** 登壇者の所属 (正式名称)。表紙に出す */
+  affiliation?: string
   /** 動きの時間の倍率。テーマの倍率に掛かる。リハーサルで速い・遅いと感じたら調整する (既定 1) */
   tempo?: number
   /** slides.y-kaz.com に載せるか。社内向けの発表は false にする (既定は false) */

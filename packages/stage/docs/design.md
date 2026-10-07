@@ -27,7 +27,7 @@ parts/            トークをまたいで使い回す中身 (自己紹介・会
 
 ディレクトリ名は過去資料と同じ `YYYY_MM_DD_<タグ>_<演題>` にします。タグはイベントやコミュニティの名前 (社内勉強会なら MOSH など) です。発表日はディレクトリ名から読み、URL の slug は日付とタグから作ります (`/2026-09-29-devsgarden/`)。タグに英数字が無いときや、同じ日に同じタグが重なるときは、`talk.tsx` の `slug` で指定します。
 
-中身を持たない汎用の部品 (線・カード・数の変化) はフレームワークの kit に、中身を持つもの (自己紹介・会社紹介) は `parts/` に置きます。凍結しないので、時期によって変わる中身は日付つきの履歴で持ち、トークの日付の時点の内容を出します。
+中身を持たない汎用の部品 (線・カード・数の変化) はフレームワークの kit に、中身を持つもの (表紙・自己紹介・会社紹介) は `parts/` に置きます。表紙 (`parts/cover`) は、演題以外の中身 (登壇者・所属・イベント・日付) を `talk.tsx` から読みます。凍結しないので、時期によって変わる中身は日付つきの履歴で持ち、トークの日付の時点の内容を出します。
 
 `talk.tsx` の例は次のとおりです。
 
@@ -38,7 +38,8 @@ import cycle from './scenes/cycle'
 
 export default defineTalk({
   title: '…', description: '…（OGP と一覧に出る 1〜2 文）',
-  event: { name: "Dev's Garden" }, speaker: '山本 一将', public: true, theme: mosh,  // date は省略するとディレクトリ名から読む
+  event: { name: "Dev's Garden", title: 'AI で開発が加速する今、強いチームをどう作る？' },  // name は主催のコミュニティ名、title はその回のイベントタイトル
+  speaker: '山本 一将', affiliation: 'MOSH株式会社', public: true, theme: mosh,  // date は省略するとディレクトリ名から読む
   scenes: [cycle],
 })
 ```
@@ -52,6 +53,8 @@ export default defineScene({ id: 'cycle', steps: 4, Component: Cycle })
 シーンの名前と、状態ごとの話すこと (`notes`) は、絵コンテから流し込みます (`vite.mjs` の `virtual:talk`)。発表者ビューと、ノートを読むモードに出ます。シーンの側に `title` や `notes` を書けば、そちらが優先されます。絵コンテの形式は `.claude/skills/crafting-presentation/references/storyboard.md` にあり、`storyboard.mjs` が読みます。`check` は、シーンの抜け・状態の数・順序・空のノートを絵コンテと照合します。
 
 シーンの中では `useStep()` でいまの状態の番号を取り、`pick(step, [...])` で状態ごとの値を選びます。
+
+前後のシーンは画面の外に先に組み立てておくので、シーンに入ったときの登場の動きは `useActive()` が true になってから始めます。入ってくるシーンでは、カメラのパンが終わって画面に収まってから true になります。パンと中の動きが重なると、どちらを見ればよいか分からなくなるためです。出ていくシーンと通り過ぎたシーンは true のままにして、出ていく途中で登場前の姿に戻さないようにしています。静止画では常に true です。
 
 ## 3. 部品
 

@@ -10,8 +10,10 @@ const TalkCtx = createContext<TalkDef | null>(null)
 export const useStep = () => useContext(StepCtx)
 
 /**
- * シーンがいま画面に出ているか。前後のシーンは画面の外で先に組み立てておくので (フィルムの帯)、
- * シーンに入ったときの登場の動きは、これが true になってから始める。静止画では常に true
+ * シーンの登場の動きを始めてよいか。前後のシーンは画面の外で先に組み立てておくので (フィルムの帯)、
+ * 登場の動きは、これが true になってから始める。
+ * 入ってくるシーンは、カメラのパンが終わって画面に収まってから true になる (パンと中の動きを重ねない)。
+ * 出ていくシーンと、もう通り過ぎたシーンは true のまま (出ていく途中で登場前の姿に戻さない)。静止画では常に true
  */
 export const useActive = () => useContext(ActiveCtx)
 

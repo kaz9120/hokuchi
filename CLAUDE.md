@@ -33,6 +33,7 @@ packages/
     docs/design.md 生きた設計書
 apps/
   slides/          slides.y-kaz.com。全トークを最新のフレームワークでビルドして組み立てる（ADR-0029）
+  studio/          ローカルの制作アプリ。絵コンテのボードを見ながら Claude とチャットして作る（ADR-0030）
 archive/talks/     旧方式（意図宣言型 YAML）の deck.yaml と写真。作り直すときの素材で、ビルドしない
 tools/
   notes/           note の CLI（sync / build / verify / lint / index）
@@ -61,6 +62,7 @@ tools/
 よく使うコマンドは次のとおりです。`<talk>` は `talks/` の中の名前の先頭だけでも指定できます（例: `2026_09_29`）。
 
 ```sh
+bun run studio <talk>          # 制作アプリ（http://localhost:5300）。話者に別ターミナルで立ててもらう
 bun run dev <talk>             # 作業用サーバ。長く動くので、話者に別ターミナルで立ててもらう
 bun run check <talk> --motion  # 全状態の静止画・検査・絵コンテとの照合・遷移のコマ撮り
 bun run typecheck

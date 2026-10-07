@@ -77,3 +77,4 @@ hokuchi における意思決定の記録。決定に至る過程（選択肢・
 | [0027](0027-self-hosted-slides-site.md) | 発表資料は slides.y-kaz.com に自前でホスティングし、PDF と docswell をやめる | 承認 (凍結は → ADR-0029 で廃止) | リポジトリ全体 / tools/stage |
 | [0028](0028-storyboard-before-scenes.md) | 登壇資料は絵コンテ (storyboard.md) で合意してからシーンを実装し、ノートの正本を絵コンテに置く | 承認 | リポジトリ全体 (skills) / tools/stage |
 | [0029](0029-monorepo-layout-and-live-builds.md) | 発表資料の構造を packages / apps / parts に組み直し、凍結をやめて公開のたびに全トークをビルドする | 承認 | リポジトリ全体 |
+| [0030](0030-studio-chat-and-storyboard-board.md) | 発表資料は制作アプリ studio で、絵コンテのボードを見ながら Claude とチャットして作る | 承認 | リポジトリ全体 / apps/studio |

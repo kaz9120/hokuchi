@@ -1,0 +1,386 @@
+/* テーマが定義するトークン
+   --stage-bg  ステージの背景 (background の値)
+   --fg / --fg-sub / --muted        文字
+   --accent / --accent-strong       強調・線・塗り
+   --accent-bg / --accent-faint     強調の面
+   --surface / --line               カードの面と罫
+   --font                           本文と見出しの書体 */
+
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+}
+body {
+  background: #141316;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* ---- 舞台 ---- */
+.stage {
+  position: relative;
+  overflow: hidden;
+  font-family: var(--font);
+  color: var(--fg);
+  font-feature-settings: 'palt';
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.4;
+  /* 和文を文節で折り返す (Chrome の BudouX 相当)。単語の途中で行が割れないようにする */
+  word-break: auto-phrase;
+}
+.og {
+  position: relative;
+  overflow: hidden;
+  word-break: auto-phrase;
+  text-wrap: balance;
+}
+.stage-bg {
+  position: absolute;
+  inset: 0;
+  background: var(--stage-bg);
+}
+.pan,
+.scene {
+  position: absolute;
+  inset: 0;
+}
+
+/* ---- シーンでよく使う型。使わずに素で書いてもよい ---- */
+.headline {
+  position: absolute;
+  left: 96px;
+  top: 60px;
+  right: 200px;
+  font-size: 44px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+  text-wrap: balance;
+}
+.card {
+  box-sizing: border-box;
+  background: var(--surface);
+  border: 2px solid var(--line);
+  border-radius: 16px;
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  font-size: 28px;
+  font-weight: 600;
+}
+/* 状態ごとのトーン (Morph の tone)。色はテーマのトークンから取り、CSS の transition で移す */
+.card {
+  transition: background-color 0.5s, border-color 0.5s, color 0.5s, opacity 0.5s;
+}
+.tone-accent {
+  border-color: var(--accent);
+}
+.tone-hot {
+  background: var(--accent-bg);
+  border-color: var(--accent);
+}
+.tone-quiet {
+  opacity: 0.55;
+}
+.tone-dim {
+  opacity: 0.3;
+}
+body[data-mode='shot'] *,
+body[data-mode='og'] * {
+  transition: none !important;
+}
+.morph-inner {
+  position: relative;
+  width: 100%;
+}
+.label {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--fg-sub);
+  letter-spacing: 0.04em;
+}
+.source {
+  position: absolute;
+  left: 96px;
+  bottom: 40px;
+  font-size: 18px;
+  color: var(--fg-sub);
+}
+.wires {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+.wire-label {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--accent-strong);
+  background: var(--label-bg, var(--surface));
+  padding: 2px 12px;
+  border-radius: 999px;
+}
+.flow-token {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  offset-anchor: 50% 50%;
+  offset-rotate: 0deg;
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+/* ---- ライブ ---- */
+.player.live {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #000;
+  overflow: hidden;
+}
+.player-stage {
+  cursor: pointer;
+  user-select: none;
+  touch-action: pan-y;
+}
+.live-hint {
+  position: fixed;
+  left: 50%;
+  bottom: 8px;
+  transform: translateX(-50%);
+  font: 12px system-ui, sans-serif;
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.player.live:hover .live-hint {
+  opacity: 0.45;
+}
+
+/* ---- ノートを読むモード (話者なしで読む人向け。スマホの縦画面では既定) ---- */
+.player.reader {
+  min-height: 100%;
+  background: #f4f3f1;
+  color: #1d1c1f;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 24px 64px;
+  box-sizing: border-box;
+  font-family: 'Noto Sans JP', system-ui, sans-serif;
+}
+.player.reader .player-stage {
+  box-shadow: 0 8px 30px rgb(0 0 0 / 0.12);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.reader-panel {
+  width: 100%;
+  max-width: 1072px;
+}
+.reader-progress {
+  height: 3px;
+  background: #e2dfdb;
+  margin-top: 16px;
+}
+.reader-progress > div {
+  height: 100%;
+  background: #1d1c1f;
+  transition: width 0.4s;
+}
+.reader-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  font-size: 14px;
+  color: #6b6863;
+}
+.reader-nav button {
+  font: inherit;
+  border: 1px solid #d6d2cc;
+  background: #fff;
+  border-radius: 8px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+.reader-nav button:first-child,
+.reader-nav button:nth-child(3) {
+  font-size: 20px;
+  line-height: 1;
+  padding: 6px 16px 8px;
+}
+.reader-title {
+  flex: 1;
+  text-align: right;
+}
+.reader-notes {
+  font-size: 17px;
+  line-height: 1.9;
+  white-space: pre-wrap;
+  min-height: 5.7em;
+  margin: 20px 0 32px;
+}
+.reader-talk {
+  font-size: 15px;
+  font-weight: 700;
+  border-top: 1px solid #e2dfdb;
+  padding-top: 16px;
+  margin: 0;
+}
+.reader-talk small {
+  display: block;
+  font-weight: 400;
+  color: #6b6863;
+  margin-top: 4px;
+}
+@media (orientation: portrait) {
+  .player.reader {
+    padding: 0 0 48px;
+  }
+  .player.reader .player-stage {
+    border-radius: 0;
+  }
+  .reader-panel {
+    padding: 0 16px;
+    box-sizing: border-box;
+  }
+}
+
+/* ---- 一覧 ---- */
+.overview {
+  position: fixed;
+  inset: 0;
+  background: #0c0c0e;
+  overflow: auto;
+  padding: 24px;
+  z-index: 10;
+}
+.overview-grid {
+  display: grid;
+  gap: 16px;
+  justify-content: center;
+}
+.overview-item {
+  all: unset;
+  cursor: pointer;
+  color: #ddd;
+  font: 13px system-ui, sans-serif;
+  display: grid;
+  gap: 6px;
+}
+.overview-item > div:first-child {
+  border-radius: 6px;
+  overflow: hidden;
+  outline: 2px solid transparent;
+}
+.overview-item.current > div:first-child {
+  outline-color: #f47d3a;
+}
+
+/* ---- 発表者ビュー ---- */
+.presenter {
+  position: fixed;
+  inset: 0;
+  background: #111;
+  color: #eee;
+  font-family: 'Noto Sans JP', system-ui, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+.presenter header {
+  display: flex;
+  gap: 24px;
+  align-items: baseline;
+  padding: 16px 24px;
+  font-size: 18px;
+}
+.presenter-timer {
+  font: 700 36px ui-monospace, monospace;
+}
+.presenter-help {
+  margin-left: auto;
+  font-size: 13px;
+  opacity: 0.5;
+}
+.presenter main {
+  flex: 1;
+  display: flex;
+  gap: 24px;
+  padding: 0 24px 24px;
+  min-height: 0;
+}
+.presenter aside {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.presenter-label {
+  font-size: 13px;
+  opacity: 0.55;
+}
+.presenter-end {
+  padding: 40px;
+  opacity: 0.5;
+}
+.presenter-notes {
+  font-size: 24px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow: auto;
+  margin: 0;
+}
+
+/* ---- 静止画と OGP ---- */
+body[data-mode='shot'],
+body[data-mode='og'] {
+  background: #fff;
+}
+.shots {
+  display: grid;
+  gap: 0;
+}
+
+/* ---- 小さな型 ---- */
+.chip {
+  background: var(--fg);
+  color: var(--surface);
+  font-size: 20px;
+  font-weight: 700;
+  padding: 2px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.bullet {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 28px;
+  font-weight: 600;
+}
+.bullet::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex: none;
+}
+.tile {
+  background: var(--accent-faint);
+  border: 2px solid var(--accent-bg);
+  border-radius: 14px;
+  padding: 16px 28px;
+  font-size: 30px;
+  font-weight: 700;
+}

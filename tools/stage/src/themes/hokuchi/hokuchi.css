@@ -1,0 +1,15 @@
+/* hidoko tokens.css: ink-50 #13110e / ink-100 #1a1814 / ink-300 #3a342b / ink-600 #a8a094 / ink-800 #ebe5d8 / ember-400 #f47d3a */
+.theme-hokuchi {
+  --stage-bg: radial-gradient(120% 90% at 85% 110%, rgb(244 125 58 / 0.16), transparent 60%), #13110e;
+  --fg: #ebe5d8;
+  --fg-sub: #a8a094;
+  --muted: #7d7468;
+  --accent: #f47d3a;
+  --accent-strong: #f8a05c;
+  --accent-bg: rgb(244 125 58 / 0.18);
+  --accent-faint: rgb(244 125 58 / 0.08);
+  --surface: #1a1814;
+  --line: #3a342b;
+  --label-bg: #1a1814;
+  --font: 'LINE Seed JP', 'Inter', sans-serif;
+}

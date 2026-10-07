@@ -1,0 +1,15 @@
+.theme-mosh {
+  --stage-bg: url(./assets/bg-default.svg) center / cover;
+  --fg: #111827;
+  --fg-sub: #4b5563;
+  --muted: #9ca3af;
+  --accent: #fa6e78;
+  --accent-strong: #e0525d;
+  --accent-bg: #fde3e5;
+  --accent-faint: #fff4f4;
+  --surface: #ffffff;
+  --line: #ebe3e1;
+  --label-bg: #fff7f6;
+  /* 和文は Noto Sans JP の Web フォントに固定する。閲覧環境で字幅が変わると、手で置いた構図が崩れるため */
+  --font: 'Nunito', 'Noto Sans JP', sans-serif;
+}

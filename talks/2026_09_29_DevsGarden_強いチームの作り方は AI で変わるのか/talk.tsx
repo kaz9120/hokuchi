@@ -20,13 +20,17 @@ export default defineTalk({
   title: '強いチームの作り方は AI で変わるのか',
   description:
     'AI で新しい課題が生まれたのではなく、前からある課題が放置できなくなった。MOSH が組織的生産性をどう回しているかを、組織とチームの両方の立場から話しました。',
-  event: { name: "Dev's Garden" },
+  event: { name: "Dev's Garden", title: 'AI で開発が加速する今、強いチームをどう作る？' },
   speaker: '山本 一将',
+  affiliation: 'MOSH株式会社',
   public: true,
   theme: mosh,
   scenes: [
     title,
-    profileScene({ hobbies: 'ヤクルトスワローズ、将棋、キャンプ、DQウォーク\n毎週 note を書いています' }),
+    profileScene({
+      roles: ['サービスチームのユニットリード', 'Engineer Excellence 会議の進行役'],
+      hobbies: 'ヤクルトスワローズ、将棋、キャンプ、DQウォーク\n毎週 note を書いています',
+    }),
     agenda,
     ch1,
     oldProblems,

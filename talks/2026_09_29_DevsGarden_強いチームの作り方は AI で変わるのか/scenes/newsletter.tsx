@@ -5,9 +5,9 @@ import { Headline, Reveal, defineScene } from '@hokuchi/stage'
 const paper = {
   position: 'absolute',
   left: 300,
-  top: 160,
+  top: 155,
   width: 680,
-  height: 490,
+  height: 500,
   boxSizing: 'border-box',
   background: 'var(--surface)',
   border: '2px solid var(--line)',
@@ -15,7 +15,7 @@ const paper = {
   padding: '28px 36px',
   boxShadow: '0 16px 40px rgb(0 0 0 / 0.06)',
 } as const
-const section = { borderTop: '2px solid var(--line)', paddingTop: 16, marginTop: 18 }
+const section = { borderTop: '2px solid var(--line)', paddingTop: 14, marginTop: 14 }
 const heading = { fontSize: 24, fontWeight: 800, color: 'var(--accent-strong)' }
 const body = { fontSize: 20, color: 'var(--fg-sub)', marginTop: 6, fontWeight: 600 }
 

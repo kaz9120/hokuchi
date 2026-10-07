@@ -8,8 +8,8 @@ const ROW = 88
 const TOP = 190
 
 function ChapterMap({ current }: { current: number | null }) {
+  // 画面に収まるまでは、前の章に光を置いておく (出ていくときは active のままなので、今の章に残る)
   const active = useActive()
-  // 画面に出る前は、前の章に光を置いておく
   const lit = current === null ? null : active ? current : Math.max(0, current - 1)
   return (
     <>

@@ -8,8 +8,10 @@ const title = { fontSize: 34, fontWeight: 800, lineHeight: 1.4 }
 const example = { fontSize: 22, fontWeight: 700, color: 'var(--fg-sub)', marginTop: 16 }
 
 // 知識を持つ一人 (左) から、チーム全員 (右下) と毎日の自動検知 (右上) へ
-const HOLDER = { x: 610, y: 500 }
-const MEMBERS = [870, 980, 1090]
+// 図はカードの余白 (右 40px・下 36px) の内側に収める
+const HOLDER = { x: 610, y: 470 }
+const MEMBERS = [860, 970, 1080]
+const DIAGRAM = { left: 800, width: 340 }
 
 function TeamPractice() {
   const step = useStep()
@@ -56,13 +58,13 @@ function TeamPractice() {
         at={1}
         delay={0.7}
         node="team"
-        style={{ position: 'absolute', left: 810, top: 540, width: 360, height: 92, borderRadius: 16, border: '2px dashed var(--line)', boxSizing: 'border-box' }}
+        style={{ position: 'absolute', left: DIAGRAM.left, top: 512, width: DIAGRAM.width, height: 92, borderRadius: 16, border: '2px dashed var(--line)', boxSizing: 'border-box' }}
       >
         {MEMBERS.map((x) => (
-          <Person key={x} x={x - 810 + 10} y={46} size={68} tone={step >= 2 ? 'accent' : 'muted'} />
+          <Person key={x} x={x - DIAGRAM.left - 2} y={46} size={68} tone={step >= 2 ? 'accent' : 'muted'} />
         ))}
       </Reveal>
-      <Reveal at={1} delay={0.7} node="auto" className="card" style={{ position: 'absolute', left: 810, top: 400, width: 360, height: 76, justifyContent: 'center', fontSize: 22 }}>
+      <Reveal at={1} delay={0.7} node="auto" className="card" style={{ position: 'absolute', left: DIAGRAM.left, top: 372, width: DIAGRAM.width, height: 76, justifyContent: 'center', fontSize: 22 }}>
         毎日の自動検知
       </Reveal>
       <Connect from="holder" to="team" at={2} flow fromSide="right" toSide="left" curve={0.35} label="インプット会" labelOffset={[-4, 30]} />

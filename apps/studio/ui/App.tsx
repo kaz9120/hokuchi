@@ -1,11 +1,11 @@
-// hokuchi studio の画面。左に絵コンテのボード (状態ごとに描画・画面の説明・話すこと)、右にプレビューとチャット
+// 発表資料の編集画面。左に絵コンテのボード (状態ごとに描画・画面の説明・話すこと)、右にプレビューとチャット
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 type State = { screen: string; roles: string[]; notes: string[] }
 type Scene = { id: string; title: string; chapter: string | null; meta: Record<string, string>; states: State[]; notes: string[] }
 type Board = { title: string; meta: Record<string, string>; chapters: { name: string; meta: Record<string, string> }[]; scenes: Scene[] }
 type Studio = {
-  talk: { name: string; date: string | null; tag: string | null; title: string }
+  talk: { slug: string; name: string; date: string | null; tag: string | null; title: string }
   board: Board
   scenes: { id: string; steps: number }[]
   loadError: string | null
@@ -17,7 +17,8 @@ type Pick = { scene: string; state: number }
 
 const THEMES = ['', 'mosh', 'hokuchi', 'hokuchi-light']
 
-export function App() {
+export function TalkEditor({ slug }: { slug: string }) {
+  const api = `/api/talks/${encodeURIComponent(slug)}`
   const [data, setData] = useState<Studio | null>(null)
   const [thumbs, setThumbs] = useState({ version: 0, errors: [] as string[] })
   const [chat, setChat] = useState<Chat[]>([])
@@ -27,14 +28,14 @@ export function App() {
   const [check, setCheck] = useState<{ running: boolean; report?: string }>({ running: false })
 
   useEffect(() => {
-    fetch('/api/state')
+    fetch(`${api}/state`)
       .then((r) => r.json())
       .then((d: Studio) => {
         setData(d)
         setThumbs((t) => ({ ...t, version: d.thumbsVersion }))
         if (d.board.scenes[0]) setPick({ scene: d.board.scenes[0].id, state: 0 })
       })
-    const es = new EventSource('/api/events')
+    const es = new EventSource(`/api/events?talk=${encodeURIComponent(slug)}`)
     es.addEventListener('board', (e) => setData(JSON.parse((e as MessageEvent).data)))
     es.addEventListener('thumbs', (e) => setThumbs(JSON.parse((e as MessageEvent).data)))
     es.addEventListener('check', (e) => setCheck(JSON.parse((e as MessageEvent).data)))
@@ -51,7 +52,7 @@ export function App() {
       })
     })
     return () => es.close()
-  }, [])
+  }, [api, slug])
 
   // 発表の順に並べた全状態。← → で順に送る
   const order = useMemo(() => (data ? data.board.scenes.flatMap((s) => s.states.map((_, i) => ({ scene: s.id, state: i }))) : []), [data])
@@ -84,7 +85,7 @@ export function App() {
     const sc = data?.board.scenes.find((s) => s.id === pick?.scene)
     const st = sc?.states[pick?.state ?? 0]
     const prefix = withContext && pick && st ? `[選択: ${pick.scene} の状態 ${pick.state + 1}「${st.screen}」] ` : ''
-    fetch('/api/chat', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ text: prefix + text }) })
+    fetch(`${api}/chat`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ text: prefix + text }) })
     setBusy(true)
   }
 
@@ -98,6 +99,9 @@ export function App() {
   return (
     <div className="studio">
       <header>
+        <a className="back" href="/" title="ホームに戻る">
+          ← 一覧
+        </a>
         <div className="title">
           <strong>{data.board.title || data.talk.title}</strong>
           <span>
@@ -107,7 +111,7 @@ export function App() {
         <span className={`pill ${implemented === data.board.scenes.length ? 'ok' : ''}`}>
           {data.board.scenes.length} シーン・{order.length} 状態・実装 {implemented}/{data.board.scenes.length}
         </span>
-        <button className="pill" onClick={() => fetch('/api/check', { method: 'POST' })} disabled={check.running}>
+        <button className="pill" onClick={() => fetch(`${api}/check`, { method: 'POST' })} disabled={check.running}>
           {check.running ? '検査中…' : issues === null ? '検査する' : issues === 0 ? '検査 指摘なし' : `検査 ${issues} 件`}
         </button>
         <div className="actions">
@@ -128,7 +132,7 @@ export function App() {
       </header>
 
       <main>
-        <BoardView data={data} thumbs={thumbs.version} pick={pick} setPick={setPick} errors={errors} report={issues ? check.report : undefined} />
+        <BoardView api={api} data={data} thumbs={thumbs.version} pick={pick} setPick={setPick} errors={errors} report={issues ? check.report : undefined} />
         <section className="side">
           <Preview stageUrl={data.stageUrl} theme={theme} pick={pick} position={position} total={order.length} move={move} />
           <ChatPanel chat={chat} busy={busy} send={send} context={scene && pick ? `${scene.title} ・ 状態 ${pick.state + 1}` : null} />
@@ -139,7 +143,7 @@ export function App() {
 }
 
 /** 絵コンテのボード。シーンごとに、状態の行 (描画の縮小画像・画面の説明・動きの役割・話すこと) を並べる */
-function BoardView({ data, thumbs, pick, setPick, errors, report }: { data: Studio; thumbs: number; pick: Pick | null; setPick: (p: Pick) => void; errors: string[]; report?: string }) {
+function BoardView({ api, data, thumbs, pick, setPick, errors, report }: { api: string; data: Studio; thumbs: number; pick: Pick | null; setPick: (p: Pick) => void; errors: string[]; report?: string }) {
   const chapters = [...new Set(data.board.scenes.map((s) => s.chapter ?? ''))]
   const active = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -185,7 +189,8 @@ function BoardView({ data, thumbs, pick, setPick, errors, report }: { data: Stud
                         rowRef={on ? active : undefined}
                         scene={s}
                         index={i}
-                        thumb={impl ? `/api/thumb/${s.id}-${i}?v=${thumbs}` : null}
+                        api={api}
+                        thumb={!impl ? null : thumbs > 0 ? `${api}/thumb/${s.id}-${i}?v=${thumbs}` : 'pending'}
                         active={on}
                         onPick={() => setPick({ scene: s.id, state: i })}
                       />
@@ -234,7 +239,7 @@ function Preview({ stageUrl, theme, pick, position, total, move }: { stageUrl: s
 }
 
 /** 状態の行。描画の縮小画像・画面の説明・動きの役割・話すこと (その場で直せる) */
-function StateRow({ scene, index, thumb, active, onPick, rowRef }: { scene: Scene; index: number; thumb: string | null; active: boolean; onPick: () => void; rowRef?: React.Ref<HTMLDivElement> }) {
+function StateRow({ api, scene, index, thumb, active, onPick, rowRef }: { api: string; scene: Scene; index: number; thumb: string | null; active: boolean; onPick: () => void; rowRef?: React.Ref<HTMLDivElement> }) {
   const state = scene.states[index]
   const [notes, setNotes] = useState(scene.notes[index] ?? '')
   const [saved, setSaved] = useState(scene.notes[index] ?? '')
@@ -244,12 +249,12 @@ function StateRow({ scene, index, thumb, active, onPick, rowRef }: { scene: Scen
   }, [scene.notes[index]])
   const save = () => {
     if (notes === saved) return
-    fetch('/api/note', { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ scene: scene.id, state: index, text: notes }) })
+    fetch(`${api}/note`, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ scene: scene.id, state: index, text: notes }) })
     setSaved(notes)
   }
   return (
     <div ref={rowRef} className={`state ${active ? 'active' : ''}`} onClick={onPick}>
-      <div className="thumb">{thumb ? <img src={thumb} alt="" loading="lazy" /> : <div className="nothumb">未実装</div>}</div>
+      <div className="thumb">{thumb === 'pending' ? <div className="nothumb">撮影中…</div> : thumb ? <img src={thumb} alt="" loading="lazy" /> : <div className="nothumb">未実装</div>}</div>
       <div className="state-body">
         <div className="screen">
           <span className="num">{index + 1}</span>

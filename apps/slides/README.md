@@ -8,6 +8,8 @@
 bun run dev             # http://localhost:5280/ にサイト全体を立てる (dev.mjs)
 ```
 
+studio (`bun run studio`) を立てているときは、studio が同じサーバを中で立てているので、`bun run dev` は要りません (同じポートを使うので、両方は立てられません)。
+
 トップページと全トークを、本番と同じ URL (`/<slug>/`) で開けます。保存すると即座に反映され、トップページでもトークでも agentation でメモを付けられます (ADR-0034)。一覧のサムネイルは、表紙をその場で撮ります。非公開のトークも、印を付けて一覧に出します (本番には載りません)。
 
 公開する直前に、組み立てたもの (`dist/`) を本番の配信と同じ形で確かめたいときだけ、`bun run site` のあとに `cd apps/slides && bunx wrangler dev` を使います。
@@ -37,6 +39,7 @@ bun run deploy          # 組み立てて、そのまま公開する (cd apps/sl
 
 - `build.mjs`: 全トークのビルド、見た目の差分検査
 - `pages.mjs`: トップページ・404 ページ・sitemap.xml。組み立てと開発サーバで共有する
-- `dev.mjs`: サイト全体の開発サーバ。引数でトークを指定すると、トーク 1 本の作業用サーバに渡す
+- `site-server.mjs`: サイト全体の開発サーバの本体。`dev.mjs` と studio が使う
+- `dev.mjs`: `bun run dev` の入口。引数でトークを指定すると、トーク 1 本の作業用サーバに渡す
 - `wrangler.jsonc`: Workers の設定 (`dist/` を静的アセットとして配信、`slides.y-kaz.com` に割り当て)
 - `dist/`・`.snapshots/`・`.wrangler/`: 生成物 (Git の管理外)

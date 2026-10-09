@@ -77,8 +77,9 @@ hokuchi における意思決定の記録。決定に至る過程（選択肢・
 | [0027](0027-self-hosted-slides-site.md) | 発表資料は slides.y-kaz.com に自前でホスティングし、PDF と docswell をやめる | 承認 (凍結は → ADR-0029、OGP カードは → ADR-0031 で廃止) | リポジトリ全体 / tools/stage |
 | [0028](0028-storyboard-before-scenes.md) | 登壇資料は絵コンテ (storyboard.md) で合意してからシーンを実装し、ノートの正本を絵コンテに置く | 承認 | リポジトリ全体 (skills) / tools/stage |
 | [0029](0029-monorepo-layout-and-live-builds.md) | 発表資料の構造を packages / apps / parts に組み直し、凍結をやめて公開のたびに全トークをビルドする | 承認 | リポジトリ全体 |
-| [0030](0030-studio-chat-and-storyboard-board.md) | 発表資料は制作アプリ studio で、絵コンテのボードを見ながら Claude とチャットして作る | 承認 | リポジトリ全体 / apps/studio |
+| [0030](0030-studio-chat-and-storyboard-board.md) | 発表資料は制作アプリ studio で、絵コンテのボードを見ながら Claude とチャットして作る | 承認 (起動時にトークを固定するのは → ADR-0035 で廃止) | リポジトリ全体 / apps/studio |
 | [0031](0031-og-image-is-the-cover.md) | OGP 画像は表紙の静止画そのものにし、テーマの OGP カードをやめる | 承認 | リポジトリ全体 / packages/stage / apps/slides |
 | [0032](0032-agentation-on-dev-server.md) | 作業用サーバに agentation を差し込み、画面の要素に付けたメモで細かいフィードバックを返す | 承認 | packages/stage / .claude/skills/crafting-presentation |
 | [0033](0033-notes-are-published.md) | 公開するトークのノートは、公開の前に公開物として仕上げる | 承認 | リポジトリ全体 (skills) |
 | [0034](0034-site-dev-server.md) | slides.y-kaz.com 全体を開発サーバで見られるようにし、`bun run dev` の既定にする | 承認 | apps/slides / packages/stage |
+| [0035](0035-studio-as-publishing-hub.md) | studio を発信準備の入口にし、ホームの一覧から発表資料と note の原稿の編集画面に移る | 承認 (第 1 段) | リポジトリ全体 / apps/studio / apps/slides |

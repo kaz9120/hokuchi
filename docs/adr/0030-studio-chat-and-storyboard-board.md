@@ -1,6 +1,6 @@
 # ADR-0030: 発表資料は制作アプリ studio で、絵コンテのボードを見ながら Claude とチャットして作る
 
-- ステータス: 承認
+- ステータス: 承認 (起動時にトークを固定するのは → ADR-0035 で廃止)
 - 日付: 2026-10-07
 - スコープ: リポジトリ全体 / apps/studio / .claude/skills/crafting-presentation
 

@@ -62,9 +62,9 @@ tools/
 よく使うコマンドは次のとおりです。`<talk>` は `talks/` の中の名前の先頭だけでも指定できます（例: `2026_09_29`）。
 
 ```sh
-bun run studio <talk>          # 制作アプリ（http://localhost:5300）。話者に別ターミナルで立ててもらう
-bun run dev                    # サイト全体の開発サーバ（http://localhost:5280/。本番と同じ URL で全トークを見られる）
-bun run dev <talk>             # トーク 1 本の作業用サーバ。どちらも長く動くので、話者に別ターミナルで立ててもらう
+bun run studio                 # 制作アプリ（http://localhost:5300/）。ホームの一覧から編集画面に移る。中でサイト全体（5280）も立てる
+bun run dev                    # サイト全体の開発サーバだけ（http://localhost:5280/）。studio を使わずに見るとき
+bun run dev <talk>             # トーク 1 本の作業用サーバ。いずれも長く動くので、話者に別ターミナルで立ててもらう
 bun run check <talk> --motion  # 全状態の静止画・検査・絵コンテとの照合・遷移のコマ撮り
 bun run typecheck
 bun run site                   # slides.y-kaz.com を apps/slides/dist に組み立てる

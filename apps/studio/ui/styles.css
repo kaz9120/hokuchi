@@ -368,3 +368,81 @@ main {
   border-radius: 8px;
   padding: 8px 10px;
 }
+
+/* ---- ホーム ---- */
+.home {
+  min-height: 100%;
+}
+.home-main {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 8px 24px 48px;
+  display: block;
+}
+.home-main h2 {
+  font-size: 14px;
+  color: var(--sub);
+  letter-spacing: 0.06em;
+  margin: 32px 0 12px;
+}
+.items {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+.item {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.item:hover {
+  border-color: var(--accent);
+}
+.item img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 6px;
+  background: var(--bg);
+}
+.item-meta {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 13px;
+  color: var(--sub);
+}
+.item-sub {
+  font-size: 13px;
+  color: var(--sub);
+}
+.drafts {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+.drafts li {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  padding: 10px 12px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+header .back {
+  font-size: 14px;
+  color: var(--sub);
+  text-decoration: none;
+  white-space: nowrap;
+}
+header .back:hover {
+  color: var(--accent);
+}

@@ -49,9 +49,9 @@ export function Home() {
 
       <main className="mx-auto grid max-w-6xl gap-10 px-6 py-8">
         <section>
-          <SectionTitle>進行中</SectionTitle>
+          <SectionTitle>準備中の発表と記事</SectionTitle>
           {data.works.length === 0 ? (
-            <p className="text-sm text-muted-foreground">まだありません。右上の「新しい発表」「新しい記事」か、ネタ帳から始めます。</p>
+            <p className="text-sm text-muted-foreground">まだありません。右上の「新しい発表」「新しい記事」か、下のネタ帳から始められます。</p>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {data.works.map((w) => (
@@ -86,17 +86,17 @@ function WorkCard({ work }: { work: Brief }) {
             <Badge variant="secondary">{KIND_LABEL[work.kind]}</Badge>
             <span className="text-xs text-muted-foreground">{work.updatedAt.slice(0, 10)} 更新</span>
           </div>
-          <CardTitle className="text-base">{work.title || '(無題)'}</CardTitle>
-          <CardDescription className="line-clamp-2">{work.fields.oneLiner || '一言はまだ決まっていません'}</CardDescription>
+          <CardTitle className="text-base">{work.title || 'タイトル未定'}</CardTitle>
+          <CardDescription className="line-clamp-2">{work.fields.oneLiner || '伝えたいことは、まだ決めていません'}</CardDescription>
         </CardHeader>
         <CardContent className="px-4">
           <div className="flex gap-1">
             {STAGES.map((s) => {
               const st = stageStatus(s, work)
-              return <span key={s.key} title={`${s.n}. ${s.title}`} className={`h-1.5 flex-1 rounded-full ${st === 'done' ? 'bg-foreground' : st === 'doing' ? 'bg-foreground/40' : 'bg-foreground/10'}`} />
+              return <span key={s.key} title={`${s.n}. ${s.title[work.kind]}`} className={`h-1.5 flex-1 rounded-full ${st === 'done' ? 'bg-foreground' : st === 'doing' ? 'bg-foreground/40' : 'bg-foreground/10'}`} />
             })}
           </div>
-          <div className="mt-2 text-xs text-muted-foreground">{next ? `次は ${next.n}. ${next.title}` : '準備済みの段階は通過しました'}</div>
+          <div className="mt-2 text-xs text-muted-foreground">{next ? `次は「${next.title[work.kind]}」` : 'いま作ってある段階は、すべて終わりました'}</div>
         </CardContent>
       </Card>
     </a>
@@ -123,10 +123,10 @@ function Seeds({ data, onSaved, onStart }: { data: HomeData; onSaved: () => void
             <CardTitle className="flex items-center gap-2 text-sm">
               <Lightbulb className="size-4" /> ネタを書き留める
             </CardTitle>
-            <CardDescription>気づいたらすぐ。なぜそう感じたかまで書くと、あとで企画にしやすくなります。</CardDescription>
+            <CardDescription>思いついたらすぐ書き留めます。なぜそう感じたかまで書いておくと、あとで発表や記事にしやすくなります。</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-2 px-4">
-            <Textarea value={happening} onChange={(e) => setHappening(e.target.value)} placeholder="出来事・引っかかったこと" rows={3} />
+            <Textarea value={happening} onChange={(e) => setHappening(e.target.value)} placeholder="あったこと・引っかかったこと" rows={3} />
             <Input value={why} onChange={(e) => setWhy(e.target.value)} placeholder="なぜそう感じたか (任意)" />
             <Button size="sm" onClick={add} disabled={!happening.trim()} className="justify-self-start">
               <Plus /> 書き留める

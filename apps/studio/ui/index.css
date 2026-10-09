@@ -53,6 +53,10 @@
 }
 
 @layer base {
+  /* 全体を少し大きく読む。Tailwind の大きさは rem なので、根の大きさを変えるとまとめて大きくなる */
+  html {
+    font-size: 112.5%;
+  }
   * {
     @apply border-border outline-ring/50;
   }

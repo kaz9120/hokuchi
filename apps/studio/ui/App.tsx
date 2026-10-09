@@ -66,8 +66,9 @@ export function TalkEditor({ slug }: { slug: string }) {
   )
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      const t = e.target as HTMLElement
-      if (t.tagName === 'TEXTAREA' || t.tagName === 'INPUT' || t.tagName === 'SELECT') return
+      // agentation のメモ欄は Shadow DOM の中にあるので、composedPath で元の要素を見る
+      const t = e.composedPath()[0] as HTMLElement
+      if (t.tagName === 'TEXTAREA' || t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.isContentEditable) return
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
         e.preventDefault()
         move(1)

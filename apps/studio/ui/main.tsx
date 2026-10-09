@@ -7,6 +7,12 @@ const talk = path.match(/^\/talks\/([^/]+)/)?.[1]
 const work = path.match(/^\/works\/([^/]+)/)?.[1]
 const note = path.match(/^\/notes\/([^/]+)/)?.[1]
 
+// フィードバック用に、どの画面にも agentation を置く。コピーした見出しに、画面の URL (作品の段階はハッシュ) が載る
+async function feedback() {
+  const { Agentation } = await import('agentation')
+  createRoot(document.body.appendChild(document.createElement('div'))).render(<Agentation useHashLocation appName="hokuchi studio" />)
+}
+
 async function render() {
   const root = createRoot(document.getElementById('root')!)
   if (talk) {
@@ -27,3 +33,4 @@ async function render() {
   root.render(<Home />)
 }
 render()
+feedback()

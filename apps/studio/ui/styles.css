@@ -7,7 +7,7 @@
   --accent: #e85d20;
   --accent-bg: #fdeee6;
   font-family: system-ui, -apple-system, 'Hiragino Sans', sans-serif;
-  font-size: 15px;
+  font-size: 16px;
   color: var(--ink);
 }
 * {
@@ -52,7 +52,7 @@ header .title strong {
   font-size: 16px;
 }
 header .title span {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--sub);
 }
 .actions {
@@ -60,7 +60,7 @@ header .title span {
   display: flex;
   gap: 16px;
   align-items: center;
-  font-size: 14px;
+  font-size: 15px;
 }
 .actions a {
   color: var(--ink);
@@ -73,7 +73,7 @@ header .title span {
   background: var(--panel);
 }
 .pill {
-  font-size: 13px;
+  font-size: 14px;
   border: 1px solid var(--line);
   border-radius: 999px;
   padding: 3px 12px;
@@ -111,7 +111,7 @@ main {
   border-radius: 8px;
   background: var(--panel);
   border: 1px solid var(--line);
-  font-size: 13px;
+  font-size: 14px;
 }
 .banner.error {
   border-color: var(--accent);
@@ -123,10 +123,10 @@ main {
 }
 .banner pre {
   white-space: pre-wrap;
-  font-size: 12px;
+  font-size: 13px;
 }
 .chapter h2 {
-  font-size: 14px;
+  font-size: 15px;
   color: var(--sub);
   margin: 22px 0 8px;
   letter-spacing: 0.02em;
@@ -150,12 +150,12 @@ main {
   font-size: 16px;
 }
 .grain {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--sub);
 }
 .tell {
   margin: 2px 0 10px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--sub);
   line-height: 1.5;
 }
@@ -188,7 +188,7 @@ main {
 .nothumb {
   display: grid;
   place-items: center;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--sub);
   background: #faf9f7;
 }
@@ -274,11 +274,11 @@ main {
 .position {
   font-variant-numeric: tabular-nums;
   color: var(--sub);
-  font-size: 13px;
+  font-size: 14px;
 }
 .preview-bar .hint {
   margin-left: auto;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--sub);
 }
 .chat {
@@ -298,10 +298,10 @@ main {
 }
 .hint {
   color: var(--sub);
-  font-size: 13px;
+  font-size: 14px;
 }
 .msg {
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.7;
   white-space: pre-wrap;
   word-break: break-word;
@@ -314,22 +314,22 @@ main {
   max-width: 85%;
 }
 .msg-context {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--accent);
   margin-bottom: 2px;
 }
 .msg.tool {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--sub);
   font-family: ui-monospace, monospace;
 }
 .msg.error,
 .msg.closed {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--accent);
 }
 .msg.working {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--sub);
   animation: blink 1.4s infinite;
 }
@@ -347,7 +347,7 @@ main {
 }
 .context {
   align-self: flex-start;
-  font-size: 12px;
+  font-size: 13px;
   background: var(--accent-bg);
   color: var(--accent);
   border: none;
@@ -380,7 +380,7 @@ main {
   display: block;
 }
 .home-main h2 {
-  font-size: 14px;
+  font-size: 15px;
   color: var(--sub);
   letter-spacing: 0.06em;
   margin: 32px 0 12px;
@@ -414,11 +414,11 @@ main {
   display: flex;
   gap: 6px;
   align-items: center;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--sub);
 }
 .item-sub {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--sub);
 }
 .drafts {
@@ -438,7 +438,7 @@ main {
   border-radius: 8px;
 }
 header .back {
-  font-size: 14px;
+  font-size: 15px;
   color: var(--sub);
   text-decoration: none;
   white-space: nowrap;

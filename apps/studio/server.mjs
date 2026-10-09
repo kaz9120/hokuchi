@@ -12,20 +12,26 @@ import { join, resolve } from 'node:path'
 import { spawn } from 'node:child_process'
 import { createServer as createViteServer } from 'vite'
 import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 import { chromium } from 'playwright'
 import { parseStoryboard, replaceNotes } from '../../packages/stage/node/storyboard.mjs'
 import { loadTalk, waitReady } from '../../packages/stage/node/talk.mjs'
 import { startSite } from '../slides/site-server.mjs'
 import { ClaudeSession } from './claude.mjs'
+import { PRIVATE, createWork, listSeeds, listWorks, readWork, saveSeed, saveWork } from './store.mjs'
+import { listNotes, noteAsset, readNote } from './notes.mjs'
+import { TASKS, ask } from './ai.mjs'
 
 const here = import.meta.dirname
 const repoRoot = resolve(here, '../..')
-const PORT = 5300
+// ポートは環境変数で変えられる。別の studio が動いているときに、試しに立てるため
+const PORT = Number(process.env.HOKUCHI_STUDIO_PORT ?? 5300)
+const SITE_PORT = Number(process.env.HOKUCHI_SITE_PORT ?? 5280)
 
 const browser = await chromium.launch({ channel: 'chrome' })
 let site
 try {
-  site = await startSite({ browser, quiet: true })
+  site = await startSite({ port: SITE_PORT, browser, quiet: true })
 } catch (e) {
   console.error(e.message)
   await browser.close()
@@ -165,18 +171,8 @@ function home() {
       }
     })
     .sort((a, b) => (a.date < b.date ? 1 : -1))
-  // note の原稿。編集画面は次の段で作る (ADR-0035)。いまは一覧に並べるだけ
-  const draftsDir = join(repoRoot, 'articles/note/drafts')
-  const drafts = existsSync(draftsDir)
-    ? readdirSync(draftsDir, { withFileTypes: true })
-        .filter((d) => d.isDirectory() && existsSync(join(draftsDir, d.name, 'index.md')))
-        .map((d) => {
-          const md = readFileSync(join(draftsDir, d.name, 'index.md'), 'utf8')
-          const title = md.match(/^title:\s*(.+)$/m)?.[1]?.replace(/^["']|["']$/g, '') ?? md.match(/^#\s+(.+)$/m)?.[1] ?? d.name
-          return { slug: d.name, title, chars: md.replace(/^---[\s\S]*?---/, '').replace(/\s/g, '').length }
-        })
-    : []
-  return { talks, drafts, siteUrl: `${site.url}/` }
+  const tasks = Object.fromEntries(Object.entries(TASKS).map(([k, t]) => [k, t.label]))
+  return { talks, notes: listNotes(repoRoot), works: listWorks(), seeds: listSeeds(), tasks, siteUrl: `${site.url}/`, privateDir: PRIVATE }
 }
 
 // ---------------------------------------------------------------- UI と API
@@ -185,7 +181,8 @@ const server = createHttpServer()
 const ui = await createViteServer({
   configFile: false,
   root: join(here, 'ui'),
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
+  resolve: { alias: { '@': join(here, 'ui') } },
   logLevel: 'warn',
   server: { middlewareMode: true, hmr: { server } },
   appType: 'spa',
@@ -215,6 +212,42 @@ server.on('request', async (req, res) => {
       clients.add(c)
       req.on('close', () => clients.delete(c))
       return
+    }
+    // 作品 (企画シート) とネタ。置き場はリポジトリの外 (store.mjs)
+    if (url.pathname === '/api/works' && req.method === 'POST') {
+      const { kind, seedId } = await body(req)
+      return json(res, createWork(kind === 'talk' ? 'talk' : 'note', seedId))
+    }
+    const w = url.pathname.match(/^\/api\/works\/([^/]+)(?:\/(ask))?$/)
+    if (w) {
+      const id = decodeURIComponent(w[1])
+      const brief = readWork(id)
+      if (!brief) return json(res, { error: `作品 ${id} がありません` }, 404)
+      if (!w[2] && req.method === 'GET') return json(res, brief)
+      if (!w[2] && req.method === 'PUT') return json(res, saveWork(id, await body(req)))
+      if (w[2] === 'ask' && req.method === 'POST') {
+        const { task } = await body(req)
+        const items = await ask(brief, task, { cwd: repoRoot })
+        // 出した候補は企画シートに残す。あとで見返せるように
+        const latest = readWork(id)
+        saveWork(id, { candidates: { ...(latest.candidates ?? {}), [task]: { at: new Date().toISOString(), items } } })
+        return json(res, { items })
+      }
+    }
+    if (url.pathname === '/api/seeds' && req.method === 'POST') return json(res, saveSeed(await body(req)))
+    // 公開済みの note の記事。/api/notes/<dir> が本文、/api/notes/<dir>/assets/… が画像
+    const n = url.pathname.match(/^\/api\/notes\/([^/]+)(?:\/(.+))?$/)
+    if (n) {
+      const dir = decodeURIComponent(n[1])
+      if (!n[2]) {
+        const note = readNote(repoRoot, dir)
+        return note ? json(res, note) : json(res, { error: 'not found' }, 404)
+      }
+      const file = noteAsset(repoRoot, dir, decodeURIComponent(n[2]))
+      if (!file) return json(res, { error: 'not found' }, 404)
+      const ext = n[2].split('.').pop().toLowerCase()
+      res.writeHead(200, { 'content-type': { png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif', webp: 'image/webp', svg: 'image/svg+xml' }[ext] ?? 'application/octet-stream' })
+      return res.end(file)
     }
     // /api/talks/<slug>/<操作>
     const m = url.pathname.match(/^\/api\/talks\/([^/]+)\/(.+)$/)

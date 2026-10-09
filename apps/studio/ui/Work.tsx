@@ -1,0 +1,336 @@
+// 作品の画面。左に段階、中央にその段階の欄、右に AI に頼めること。一言と相手は上に出し続ける (docs/design.md の 4)
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { AlertTriangle, ArrowLeft, Check, Circle, CircleDot, Loader2, Lock, Plus, Sparkles, Trash2 } from 'lucide-react'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { api, type Candidate } from '@/lib/api'
+import { cn } from '@/lib/utils'
+import { KIND_LABEL, PERSONA_FIELDS, STAGES, audienceSummary, emptyPersona, stageStatus, type Brief, type Field, type Persona, type Stage } from '@/lib/stages'
+
+/** 企画シートを読み、直すたびに少し待ってから保存する */
+function useBrief(id: string) {
+  const [brief, setBrief] = useState<Brief | null>(null)
+  const [saving, setSaving] = useState<'idle' | 'pending' | 'saved'>('idle')
+  const timer = useRef<number | undefined>(undefined)
+  useEffect(() => {
+    api.work(id).then(setBrief)
+  }, [id])
+  const update = useCallback(
+    (fn: (b: Brief) => Brief) => {
+      setBrief((b) => {
+        if (!b) return b
+        const next = fn(b)
+        setSaving('pending')
+        clearTimeout(timer.current)
+        timer.current = window.setTimeout(async () => {
+          await api.saveWork(id, { title: next.title, fields: next.fields, gates: next.gates })
+          setSaving('saved')
+        }, 600)
+        return next
+      })
+    },
+    [id],
+  )
+  return { brief, setBrief, update, saving }
+}
+
+export function Work({ id }: { id: string }) {
+  const { brief, setBrief, update, saving } = useBrief(id)
+  const [stageKey, setStageKey] = useState(() => new URLSearchParams(location.search).get('stage') ?? 'seed')
+  useEffect(() => {
+    history.replaceState(null, '', `${location.pathname}?stage=${stageKey}`)
+  }, [stageKey])
+
+  if (!brief) return <div className="p-10 text-muted-foreground">読み込み中…</div>
+  const stage = STAGES.find((s) => s.key === stageKey) ?? STAGES[0]
+  const setField = (key: string, value: unknown) => update((b) => ({ ...b, fields: { ...b.fields, [key]: value } }))
+
+  return (
+    <div className="flex h-screen flex-col bg-muted/40">
+      <header className="flex items-center gap-3 border-b bg-background px-4 py-2">
+        <Button variant="ghost" size="sm" asChild>
+          <a href="/">
+            <ArrowLeft /> 一覧
+          </a>
+        </Button>
+        <Badge variant="secondary">{KIND_LABEL[brief.kind]}</Badge>
+        <Input
+          value={brief.title}
+          onChange={(e) => update((b) => ({ ...b, title: e.target.value }))}
+          placeholder="仮タイトル (あとで何度でも変えてよい)"
+          className="h-8 max-w-md border-transparent shadow-none hover:border-input focus-visible:border-input"
+        />
+        <span className="ml-auto text-xs text-muted-foreground">{saving === 'pending' ? '保存中…' : saving === 'saved' ? '保存しました' : ''}</span>
+      </header>
+
+      <Compass brief={brief} onJump={setStageKey} />
+
+      <div className="grid min-h-0 flex-1 grid-cols-[220px_minmax(0,1fr)_340px]">
+        <StageNav brief={brief} current={stage.key} onPick={setStageKey} />
+        <main className="min-h-0 overflow-y-auto px-8 py-6">
+          <StagePanel brief={brief} stage={stage} setField={setField} update={update} />
+        </main>
+        <AiPanel brief={brief} stage={stage} setBrief={setBrief} setField={setField} update={update} />
+      </div>
+    </div>
+  )
+}
+
+/** 一言と相手。決めたあとは、どの段階にいても見えるようにする (slide:ology p.39 のメッセージマップと同じ考え) */
+function Compass({ brief, onJump }: { brief: Brief; onJump: (k: string) => void }) {
+  const one = brief.fields.oneLiner as string | undefined
+  const who = audienceSummary(brief)
+  const decided = stageStatus(STAGES.find((s) => s.key === 'oneLiner')!, brief) === 'done'
+  return (
+    <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-6 border-b bg-background px-6 py-2 text-sm">
+      <button className="flex min-w-0 items-baseline gap-2 text-left" onClick={() => onJump('oneLiner')}>
+        <span className="shrink-0 text-xs text-muted-foreground">一言</span>
+        <span className={cn('truncate', !one && 'text-muted-foreground')}>{one || 'まだ決まっていません'}</span>
+        {one && !decided && <Badge variant="outline">未決定</Badge>}
+      </button>
+      <button className="flex min-w-0 items-baseline gap-2 text-left" onClick={() => onJump('audience')}>
+        <span className="shrink-0 text-xs text-muted-foreground">相手</span>
+        <span className={cn('truncate', !who && 'text-muted-foreground')}>{who || 'まだ描いていません'}</span>
+      </button>
+    </div>
+  )
+}
+
+function StageNav({ brief, current, onPick }: { brief: Brief; current: string; onPick: (k: string) => void }) {
+  return (
+    <nav className="min-h-0 overflow-y-auto border-r bg-background px-2 py-4">
+      {STAGES.map((s) => {
+        const st = stageStatus(s, brief)
+        const Icon = s.later ? Lock : st === 'done' ? Check : st === 'doing' ? CircleDot : Circle
+        return (
+          <button
+            key={s.key}
+            onClick={() => onPick(s.key)}
+            className={cn('flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-accent', current === s.key && 'bg-accent font-medium', s.later && 'text-muted-foreground')}
+          >
+            <Icon className={cn('size-4 shrink-0', st === 'done' && 'text-emerald-600')} />
+            <span>
+              {s.n}. {s.title}
+            </span>
+            {s.gate && <span className="ml-auto text-xs text-muted-foreground">関門</span>}
+          </button>
+        )
+      })}
+    </nav>
+  )
+}
+
+function StagePanel({ brief, stage, setField, update }: { brief: Brief; stage: Stage; setField: (k: string, v: unknown) => void; update: (fn: (b: Brief) => Brief) => void }) {
+  const oneLinerDone = stageStatus(STAGES.find((s) => s.key === 'oneLiner')!, brief) === 'done'
+  return (
+    <div className="mx-auto grid max-w-3xl gap-6">
+      <div>
+        <h1 className="text-xl font-semibold">
+          {stage.n}. {stage.title}
+          {stage.gate && (
+            <Badge variant="outline" className="ml-2 align-middle">
+              関門
+            </Badge>
+          )}
+        </h1>
+        <p className="mt-1 text-muted-foreground">{stage.purpose[brief.kind]}</p>
+        {stage.source && <p className="mt-1 text-xs text-muted-foreground">根拠: {stage.source}</p>}
+      </div>
+
+      {stage.n > 4 && !oneLinerDone && (
+        <Alert>
+          <AlertTriangle />
+          <AlertTitle>一言がまだ決まっていません</AlertTitle>
+          <AlertDescription>先に進んでもかまいません。ただ、一言が決まらないまま構成や本文に入ると、何を捨てるかの基準がありません。</AlertDescription>
+        </Alert>
+      )}
+
+      {stage.later ? (
+        <Card>
+          <CardContent className="text-sm text-muted-foreground">この段階は、まだ作っていません。試作の次の段で作ります。</CardContent>
+        </Card>
+      ) : stage.key === 'audience' && brief.kind === 'talk' ? (
+        <Personas personas={brief.fields.personas ?? []} onChange={(p) => setField('personas', p)} />
+      ) : (
+        <div className="grid gap-5">
+          {(stage.fields?.[brief.kind] ?? []).map((f) => (
+            <FieldInput key={f.key} field={f} value={brief.fields[f.key] ?? ''} onChange={(v) => setField(f.key, v)} />
+          ))}
+        </div>
+      )}
+
+      {stage.gate && !stage.later && <Gate brief={brief} stage={stage} update={update} />}
+    </div>
+  )
+}
+
+function FieldInput({ field, value, onChange }: { field: Field; value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="grid gap-1.5">
+      <Label>{field.label}</Label>
+      {field.type === 'choice' ? (
+        <div className="flex flex-wrap gap-2">
+          {field.options!.map((o) => (
+            <Button key={o} size="sm" variant={value === o ? 'default' : 'outline'} onClick={() => onChange(value === o ? '' : o)}>
+              {o}
+            </Button>
+          ))}
+        </div>
+      ) : field.type === 'textarea' ? (
+        <Textarea value={value} onChange={(e) => onChange(e.target.value)} placeholder={field.placeholder} rows={3} className="bg-background" />
+      ) : (
+        <Input value={value} onChange={(e) => onChange(e.target.value)} placeholder={field.placeholder} className="bg-background" />
+      )}
+      {field.help && <p className="text-xs text-muted-foreground">{field.help}</p>}
+    </div>
+  )
+}
+
+/** 聴衆のプロフィールシート。名前のある人として、7 つの問いに答える (slide:ology p.35-37)。聴衆が多様なら複数 */
+function Personas({ personas, onChange }: { personas: Persona[]; onChange: (p: Persona[]) => void }) {
+  const list = personas.length ? personas : [emptyPersona()]
+  const set = (i: number, key: keyof Persona, v: string) => onChange(list.map((p, j) => (j === i ? { ...p, [key]: v } : p)))
+  return (
+    <div className="grid gap-4">
+      <p className="text-sm text-muted-foreground">典型的な聴衆に名前を付けて、7 つの問いに答えます。聴衆が何層かに分かれるなら、1 層に 1 人ずつ描きます。</p>
+      {list.map((p, i) => (
+        <Card key={i} className="gap-4">
+          <CardHeader className="flex flex-row items-center gap-2">
+            <Input value={p.name} onChange={(e) => set(i, 'name', e.target.value)} placeholder="名前 (例: 佐藤さん)" className="h-8 max-w-60 bg-background" />
+            {list.length > 1 && (
+              <Button variant="ghost" size="icon-sm" className="ml-auto" onClick={() => onChange(list.filter((_, j) => j !== i))} aria-label="この人を消す">
+                <Trash2 />
+              </Button>
+            )}
+          </CardHeader>
+          <CardContent className="grid gap-4">
+            {PERSONA_FIELDS.map((f, n) => (
+              <div key={f.key} className="grid gap-1.5">
+                <Label>
+                  {n + 1}. {f.label}
+                </Label>
+                <Textarea value={p[f.key]} onChange={(e) => set(i, f.key, e.target.value)} rows={2} className="bg-background" />
+                {f.help && <p className="text-xs text-muted-foreground">{f.help}</p>}
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      ))}
+      <Button variant="outline" size="sm" className="justify-self-start" onClick={() => onChange([...list, emptyPersona()])}>
+        <Plus /> もう 1 人描く
+      </Button>
+    </div>
+  )
+}
+
+/** 関門。人が「これで決める」を押して通る。通したあとに中身を変えると、未決定に戻る */
+function Gate({ brief, stage, update }: { brief: Brief; stage: Stage; update: (fn: (b: Brief) => Brief) => void }) {
+  const value = (brief.fields[stage.key] as string | undefined) ?? ''
+  const st = stageStatus(stage, brief)
+  const g = brief.gates[stage.key]
+  if (st === 'done')
+    return (
+      <div className="flex items-center gap-2 text-sm text-emerald-700">
+        <Check className="size-4" /> {g.passedAt.slice(0, 10)} に決めました。直すと未決定に戻ります。
+      </div>
+    )
+  return (
+    <div className="flex items-center gap-3">
+      <Button disabled={!value.trim()} onClick={() => update((b) => ({ ...b, gates: { ...b.gates, [stage.key]: { passedAt: new Date().toISOString(), value } } }))}>
+        <Check /> これで決める
+      </Button>
+      {g && <span className="text-xs text-muted-foreground">前に決めたものから変わっています</span>}
+    </div>
+  )
+}
+
+/** 候補を欄に入れる先。入れ先の無い依頼 (指摘・講評) は、読むだけにする */
+function applyTarget(task: string, brief: Brief): ((b: Brief, c: Candidate) => Brief) | null {
+  const put = (key: string) => (b: Brief, c: Candidate) => ({ ...b, fields: { ...b.fields, [key]: c.text } })
+  if (task === 'oneLiner.candidates') return put('oneLiner')
+  if (task === 'goal.candidates') return put(brief.kind === 'talk' ? 'callToAction' : 'afterFeeling')
+  if (task === 'audience.pushback' && brief.kind === 'talk')
+    return (b, c) => {
+      const list = b.fields.personas?.length ? b.fields.personas : [emptyPersona()]
+      const first = list[0]
+      return { ...b, fields: { ...b.fields, personas: [{ ...first, pushback: [first.pushback, c.text].filter(Boolean).join('\n') }, ...list.slice(1)] } }
+    }
+  return null
+}
+
+/** AI に頼めること。候補は欄の横に並べ、選んだものだけを人が欄に入れる */
+function AiPanel({ brief, stage, setBrief, update }: { brief: Brief; stage: Stage; setBrief: (b: Brief) => void; setField: (k: string, v: unknown) => void; update: (fn: (b: Brief) => Brief) => void }) {
+  const [running, setRunning] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [labels, setLabels] = useState<Record<string, string>>({})
+  useEffect(() => {
+    api.home().then((h) => setLabels(h.tasks))
+  }, [])
+  const tasks = stage.tasks?.[brief.kind] ?? []
+  const run = async (task: string) => {
+    setRunning(task)
+    setError(null)
+    try {
+      await api.ask(brief.id, task)
+      // 候補は企画シートに残る。読み直して、手元の未保存の欄はそのまま残す
+      const fresh = await api.work(brief.id)
+      setBrief({ ...brief, candidates: fresh.candidates })
+    } catch (e) {
+      setError(String((e as Error).message))
+    } finally {
+      setRunning(null)
+    }
+  }
+  return (
+    <aside className="min-h-0 overflow-y-auto border-l bg-background px-4 py-5">
+      <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
+        <Sparkles className="size-4" /> AI に頼めること
+      </div>
+      {tasks.length === 0 && <p className="text-sm text-muted-foreground">{stage.later ? 'この段階は、まだ作っていません。' : 'この段階では、自分の言葉で書くことに集中します。'}</p>}
+      <div className="grid gap-2">
+        {tasks.map((t) => (
+          <Button key={t} variant="outline" size="sm" className="justify-start" disabled={!!running} onClick={() => run(t)}>
+            {running === t ? <Loader2 className="animate-spin" /> : <Sparkles />} {labels[t] ?? t}
+          </Button>
+        ))}
+      </div>
+      {running && <p className="mt-2 text-xs text-muted-foreground">Claude に聞いています。20〜40 秒ほどかかります。</p>}
+      {error && <p className="mt-2 text-xs text-destructive">{error}</p>}
+
+      {tasks.map((t) => {
+        const c = brief.candidates?.[t]
+        if (!c) return null
+        const apply = applyTarget(t, brief)
+        return (
+          <div key={t} className="mt-5">
+            <div className="mb-2 flex items-baseline gap-2">
+              <div className="text-xs font-medium">{labels[t] ?? t}</div>
+              <div className="text-xs text-muted-foreground">{c.at.slice(5, 16).replace('T', ' ')}</div>
+            </div>
+            <div className="grid gap-2">
+              {c.items.map((item, i) => (
+                <Card key={i} className="gap-2 py-3">
+                  <CardContent className="grid gap-1.5 px-3">
+                    <div className="text-sm">{item.text}</div>
+                    {item.note && <div className="text-xs text-muted-foreground">{item.note}</div>}
+                    {apply && (
+                      <Button size="xs" variant="secondary" className="justify-self-start" onClick={() => update((b) => apply(b, item))}>
+                        欄に入れる
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )
+      })}
+    </aside>
+  )
+}
+

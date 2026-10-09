@@ -33,7 +33,8 @@ packages/
     docs/design.md 生きた設計書
 apps/
   slides/          slides.y-kaz.com。全トークを最新のフレームワークでビルドして組み立てる（ADR-0029）
-  studio/          ローカルの制作アプリ。絵コンテのボードを見ながら Claude とチャットして作る（ADR-0030）
+  studio/          ローカルの制作アプリ。発表と note の記事を、段階の画面で企画から作る（ADR-0030・ADR-0035・ADR-0036）
+    docs/design.md 生きた設計書。根拠の調査は docs/research/
 archive/talks/     旧方式（意図宣言型 YAML）の deck.yaml と写真。作り直すときの素材で、ビルドしない
 tools/
   notes/           note の CLI（sync / build / verify / lint / index）
@@ -42,6 +43,8 @@ tools/
   crafting-presentation/  対話から発表資料を作る skill（Phase 0〜8。ADR-0024・ADR-0028）
   writing-note/           note の記事を書く skill（Phase 0〜7。ADR-0020）
 ```
+
+作品の企画シートとネタ帳は、公開リポジトリの外の `~/Hobby/hokuchi-private` に置きます（ADR-0036）。
 
 依存はルートの bun ワークスペース（`packages/*`・`apps/*`、hoisted）で管理します。`bun install` はルートで実行します。`tools/notes` は対象外です。
 

@@ -39,7 +39,7 @@ function Deploys() {
       <Reveal at={2} delay={1.2} style={{ position: 'absolute', left: 96, top: 520, fontSize: 32, fontWeight: 700 }}>
         人数の増加だけでは説明できない伸び
       </Reveal>
-      <div className="source">出典: Productivity チームの発表資料（AI DevEX Conference 2026）</div>
+      <div className="source">出典: 鈴木翔大「AI時代における開発生産性と進化可能性を高める技術戦略」（AI DevEX Conference 2026）</div>
     </>
   )
 }

@@ -74,7 +74,8 @@ hokuchi における意思決定の記録。決定に至る過程（選択肢・
 | [0024](0024-crafting-presentation-reread-slideology.md) | crafting-presentation を slide:ology の読み直しに合わせて作り直す | 承認 (Phase 4・7・8 は → ADR-0028) | リポジトリ全体 (skills) / tools/slides |
 | [0025](0025-renderer-lint-reread-slideology.md) | deck スキーマ 0.5.0 — レンダラと lint を slide:ology の読み直しに合わせる | 廃止 (→ ADR-0026) | tools/slides |
 | [0026](0026-scene-state-presentation-framework.md) | 発表資料はシーン×状態の React コードで書き、再生と部品のフレームワーク tools/stage を自作する | 承認 | リポジトリ全体 / tools/stage |
-| [0027](0027-self-hosted-slides-site.md) | 発表資料は slides.y-kaz.com に自前でホスティングし、PDF と docswell をやめる | 承認 (凍結は → ADR-0029 で廃止) | リポジトリ全体 / tools/stage |
+| [0027](0027-self-hosted-slides-site.md) | 発表資料は slides.y-kaz.com に自前でホスティングし、PDF と docswell をやめる | 承認 (凍結は → ADR-0029、OGP カードは → ADR-0031 で廃止) | リポジトリ全体 / tools/stage |
 | [0028](0028-storyboard-before-scenes.md) | 登壇資料は絵コンテ (storyboard.md) で合意してからシーンを実装し、ノートの正本を絵コンテに置く | 承認 | リポジトリ全体 (skills) / tools/stage |
 | [0029](0029-monorepo-layout-and-live-builds.md) | 発表資料の構造を packages / apps / parts に組み直し、凍結をやめて公開のたびに全トークをビルドする | 承認 | リポジトリ全体 |
 | [0030](0030-studio-chat-and-storyboard-board.md) | 発表資料は制作アプリ studio で、絵コンテのボードを見ながら Claude とチャットして作る | 承認 | リポジトリ全体 / apps/studio |
+| [0031](0031-og-image-is-the-cover.md) | OGP 画像は表紙の静止画そのものにし、テーマの OGP カードをやめる | 承認 | リポジトリ全体 / packages/stage / apps/slides |

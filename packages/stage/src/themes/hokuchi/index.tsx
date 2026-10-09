@@ -12,13 +12,4 @@ export const hokuchi: Theme = {
       <div style={{ position: 'absolute', right: 28, bottom: 16, fontSize: 14, color: 'var(--muted)', letterSpacing: '0.04em' }}>{talk.speaker}</div>
     </div>
   ),
-  OgCard: ({ talk }) => (
-    <div style={{ position: 'absolute', inset: 0, background: 'var(--stage-bg)', fontFamily: 'var(--font)', color: 'var(--fg)' }}>
-      <div style={{ position: 'absolute', left: 80, top: 72, fontSize: 24, fontWeight: 700, color: 'var(--accent)', letterSpacing: '0.08em' }}>
-        {talk.event?.name ?? 'Talk'}
-      </div>
-      <div style={{ position: 'absolute', left: 80, right: 80, top: 170, fontSize: 68, fontWeight: 700, lineHeight: 1.3, fontFeatureSettings: "'palt'" }}>{talk.title}</div>
-      <div style={{ position: 'absolute', left: 80, bottom: 64, fontSize: 26, color: 'var(--fg-sub)' }}>焚き火を愛するエンジニア ・ {talk.speaker}</div>
-    </div>
-  ),
 }

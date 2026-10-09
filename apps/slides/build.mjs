@@ -120,7 +120,7 @@ const PAGE_STYLE = `
   h2 { font-size: 15px; color: #a8a094; margin: 40px 0 16px; font-weight: 700; letter-spacing: 0.08em; }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 28px; }
   .talk { text-decoration: none; display: grid; gap: 8px; }
-  .talk img { width: 100%; aspect-ratio: 1200 / 630; object-fit: cover; border-radius: 10px; background: #1a1814; border: 1px solid #26221c; transition: border-color .3s; }
+  .talk img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 10px; background: #1a1814; border: 1px solid #26221c; transition: border-color .3s; }
   .talk:hover img { border-color: #f47d3a; }
   .meta { font-size: 13px; color: #a8a094; display: flex; gap: 8px; align-items: center; }
   .tag { border: 1px solid #3a342b; border-radius: 999px; padding: 1px 8px; font-size: 12px; }

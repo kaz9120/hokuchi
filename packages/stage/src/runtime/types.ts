@@ -20,8 +20,6 @@ export type Theme = {
   className: string
   /** ロゴやフッターなどのブランド枠。シーンのパンの外に置かれ、画面に留まる */
   Frame: ComponentType<FrameProps>
-  /** OGP 画像 (1200×630) のカード */
-  OgCard: ComponentType<{ talk: TalkDef }>
   /** 動きの性格。scale は時間の倍率 (1 が標準、大きいほどゆっくり) */
   motion?: { scale?: number }
 }

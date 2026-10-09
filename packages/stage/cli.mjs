@@ -42,7 +42,6 @@ switch (cmd) {
     console.log(`  ライブ         ${url}`)
     console.log(`  発表者ビュー   ${url}?presenter  (ライブで p キーでも開く)`)
     console.log(`  全状態の静止画 ${url}?shot=all`)
-    console.log(`  OGP カード     ${url}?og`)
     console.log(`  テーマの比較   ${url}?theme=hokuchi-light\n`)
     break
   }

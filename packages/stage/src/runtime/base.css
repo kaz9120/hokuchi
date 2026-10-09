@@ -89,8 +89,7 @@ body {
 .tone-dim {
   opacity: 0.3;
 }
-body[data-mode='shot'] *,
-body[data-mode='og'] * {
+body[data-mode='shot'] * {
   transition: none !important;
 }
 .morph-inner {
@@ -345,9 +344,8 @@ body[data-mode='og'] * {
   margin: 0;
 }
 
-/* ---- 静止画と OGP ---- */
-body[data-mode='shot'],
-body[data-mode='og'] {
+/* ---- 静止画 ---- */
+body[data-mode='shot'] {
   background: #fff;
 }
 .shots {

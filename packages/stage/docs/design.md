@@ -87,7 +87,7 @@ export default defineScene({ id: 'cycle', steps: 4, Component: Cycle })
 | `hokuchi` | 個人として | 夜の焚き火 (hidoko の tokens.css)、ember #F47D3A、LINE Seed JP。動きは 1 割ゆっくり |
 | `hokuchi-light` | 個人として (明るい会場向け) | 夜明け (hidoko の .light)。純白は使わない |
 
-テーマはトークン (CSS 変数)・ブランド枠 (`Frame`)・OGP カード (`OgCard`)・動きの性格 (`motion.scale`) を持ちます。シーンはトークンだけで色を書くので、テーマを差し替えても構図は崩れません。開発サーバで `?theme=<名前>` を付けると、トークのテーマを差し替えて見比べられます (`src/themes/index.ts` に登録したもの)。和文は Web フォントに固定します。閲覧環境で字幅が変わると、手で置いた構図が崩れるためです。和文の折り返しは `word-break: auto-phrase` で文節単位にしています。
+テーマはトークン (CSS 変数)・ブランド枠 (`Frame`)・動きの性格 (`motion.scale`) を持ちます。シーンはトークンだけで色を書くので、テーマを差し替えても構図は崩れません。開発サーバで `?theme=<名前>` を付けると、トークのテーマを差し替えて見比べられます (`src/themes/index.ts` に登録したもの)。和文は Web フォントに固定します。閲覧環境で字幅が変わると、手で置いた構図が崩れるためです。和文の折り返しは `word-break: auto-phrase` で文節単位にしています。
 
 開発中は Google Fonts を読みます。公開用のビルド (`build` と、サイトの組み立て) では、全状態に出てくる文字だけを切り出したフォントを同梱します (`node/fonts.mjs`)。会場がオフラインでも字形が変わりません。原本は Google Fonts のリポジトリから取り、`~/.cache/hokuchi-stage/fonts` に置いて使い回します。デモ 1 本で 335 字・157KB です。ステージの外の UI (ノートを読むモード・発表者ビュー) は OS のフォントで描きます。
 
@@ -130,7 +130,7 @@ bun run site                   # サイト全体の組み立て (apps/slides)
 
 ## 7. 配信
 
-- 各トークは `https://slides.y-kaz.com/<slug>/` に置きます。`build` が、タイトル・説明・OGP 画像 (1200×630)・Twitter カードのメタタグを HTML に入れます
+- 各トークは `https://slides.y-kaz.com/<slug>/` に置きます。`build` が、タイトル・説明・OGP 画像・Twitter カードのメタタグを HTML に入れます。OGP 画像は表紙 (最初のシーンの最初の状態) の静止画そのもので、1280×720 です。表紙と OGP で構図を 2 つ持たないためです (ADR-0031)
 - 凍結はしません (ADR-0029)。サイトは `apps/slides/build.mjs` が、公開のたびに `talks/` の全トークを最新のフレームワークでビルドして組み立てます。`public: true` のトークだけを載せ、旧方式の資料は載せません
 - 組み立てのたびに全トークの全状態を撮り、前回の静止画と比べます。見た目が変わった状態があれば、前後の画像を `apps/slides/.snapshots/_diff/` に並べて止めます。意図した変化なら `bun run site --accept` で受け入れます
 - 社内向けの発表は、このリポジトリ (GitHub で公開) の外に置きます。CLI はリポジトリ外のトークも扱えます

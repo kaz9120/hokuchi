@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
-import { MODE, OG_H, OG_W, SHOT, setMotionScale } from './config'
+import { MODE, SHOT, setMotionScale } from './config'
 import { Player, Presenter } from './player'
 import { StaticFrame } from './scene'
 import type { TalkDef } from './types'
@@ -34,16 +34,6 @@ function Shots({ talk }: { talk: TalkDef }) {
   )
 }
 
-function Og({ talk }: { talk: TalkDef }) {
-  useReady()
-  const { OgCard } = talk.theme
-  return (
-    <div className={`og ${talk.theme.className}`} style={{ width: OG_W, height: OG_H }}>
-      <OgCard talk={talk} />
-    </div>
-  )
-}
-
 export async function mount(original: TalkDef) {
   // 開発中は ?theme=<名前> でテーマを差し替えて見比べられる
   let talk = original
@@ -56,7 +46,6 @@ export async function mount(original: TalkDef) {
   document.title = talk.title
   document.body.dataset.mode = MODE
   const el = document.getElementById('root')!
-  const view =
-    MODE === 'presenter' ? <Presenter talk={talk} /> : MODE === 'shot' ? <Shots talk={talk} /> : MODE === 'og' ? <Og talk={talk} /> : <Player talk={talk} />
+  const view = MODE === 'presenter' ? <Presenter talk={talk} /> : MODE === 'shot' ? <Shots talk={talk} /> : <Player talk={talk} />
   createRoot(el).render(view)
 }

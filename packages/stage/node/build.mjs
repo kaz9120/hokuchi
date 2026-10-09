@@ -1,10 +1,10 @@
-// 公開用のビルド。OGP 画像・メタタグ・同梱フォントつきの静的ファイル一式を出す
+// 公開用のビルド。OGP 画像 (表紙の静止画)・メタタグ・同梱フォントつきの静的ファイル一式を出す
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { build as viteBuild } from 'vite'
 import { stageConfig } from './vite.mjs'
 import { bundleFonts, familiesIn } from './fonts.mjs'
-import { SITE, launch, loadTalk, shootStates, startServer, talkInfo, waitReady } from './talk.mjs'
+import { SITE, launch, loadTalk, shootStates, startServer, talkInfo } from './talk.mjs'
 
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c])
 
@@ -22,8 +22,8 @@ function metaTags(talk, slug) {
     `<meta property="og:description" content="${desc}" />`,
     `<meta property="og:url" content="${url}" />`,
     `<meta property="og:image" content="${url}og.png" />`,
-    `<meta property="og:image:width" content="1200" />`,
-    `<meta property="og:image:height" content="630" />`,
+    `<meta property="og:image:width" content="1280" />`,
+    `<meta property="og:image:height" content="720" />`,
     `<meta property="og:locale" content="ja_JP" />`,
     `<meta name="twitter:card" content="summary_large_image" />`,
     `<meta name="twitter:title" content="${title}" />`,
@@ -62,13 +62,10 @@ export async function buildTalk(talkDir, outDir, { states = false } = {}) {
   const info = publicInfo(talkDir, talk)
   const browser = await launch()
   const page = await browser.newPage({ viewport: { width: 1280, height: 720 } })
-  await page.setViewportSize({ width: 1200, height: 630 })
-  await page.goto(`${url}?og`)
-  await waitReady(page)
-  const og = await page.screenshot({ type: 'png', clip: { x: 0, y: 0, width: 1200, height: 630 } })
+  // 全状態を撮る。OGP 画像は最初の状態 (表紙) そのもので、別のカードは描かない (ADR-0031)
+  const shots = await shootStates(page, url)
+  const og = shots[0].png
   // 同梱するフォントのために、全状態に出てくる文字と、テーマの書体を集める
-  await page.setViewportSize({ width: 1280, height: 720 })
-  const shots = states ? await shootStates(page, url) : (await page.goto(`${url}?shot=all`), await waitReady(page), [])
   const { text, fontFamily } = await page.evaluate(() => ({
     text: document.body.innerText,
     fontFamily: getComputedStyle(document.querySelector('.stage')).fontFamily,
@@ -85,5 +82,5 @@ export async function buildTalk(talkDir, outDir, { states = false } = {}) {
   writeFileSync(join(outDir, 'og.png'), og)
   writeFileSync(join(outDir, 'stage.json'), JSON.stringify(info, null, 2) + '\n')
   console.log(`  ${info.name} → /${info.slug}/ (フォント ${families.join(', ')} を ${bundled.chars} 字・${Math.round(bundled.bytes / 1024)} KB で同梱)`)
-  return { info, states: shots }
+  return { info, states: states ? shots : [] }
 }

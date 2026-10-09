@@ -63,7 +63,8 @@ tools/
 
 ```sh
 bun run studio <talk>          # 制作アプリ（http://localhost:5300）。話者に別ターミナルで立ててもらう
-bun run dev <talk>             # 作業用サーバ。長く動くので、話者に別ターミナルで立ててもらう
+bun run dev                    # サイト全体の開発サーバ（http://localhost:5280/。本番と同じ URL で全トークを見られる）
+bun run dev <talk>             # トーク 1 本の作業用サーバ。どちらも長く動くので、話者に別ターミナルで立ててもらう
 bun run check <talk> --motion  # 全状態の静止画・検査・絵コンテとの照合・遷移のコマ撮り
 bun run typecheck
 bun run site                   # slides.y-kaz.com を apps/slides/dist に組み立てる

@@ -81,3 +81,4 @@ hokuchi における意思決定の記録。決定に至る過程（選択肢・
 | [0031](0031-og-image-is-the-cover.md) | OGP 画像は表紙の静止画そのものにし、テーマの OGP カードをやめる | 承認 | リポジトリ全体 / packages/stage / apps/slides |
 | [0032](0032-agentation-on-dev-server.md) | 作業用サーバに agentation を差し込み、画面の要素に付けたメモで細かいフィードバックを返す | 承認 | packages/stage / .claude/skills/crafting-presentation |
 | [0033](0033-notes-are-published.md) | 公開するトークのノートは、公開の前に公開物として仕上げる | 承認 | リポジトリ全体 (skills) |
+| [0034](0034-site-dev-server.md) | slides.y-kaz.com 全体を開発サーバで見られるようにし、`bun run dev` の既定にする | 承認 | apps/slides / packages/stage |

@@ -109,12 +109,13 @@ export default defineScene({ id: 'cycle', steps: 4, Component: Cycle })
 
 URL のハッシュ `#/<scene-id>/<step>` で状態を直接開けます。
 
-作業用サーバのライブ再生では、右下に agentation のツールバーが出ます (ADR-0032)。画面の要素をクリックしてメモを付け、Markdown でコピーして Claude に貼ります。メモは状態ごとに分かれ、コピーした見出しにハッシュが載ります。開発サーバのプラグインが差し込むので、公開用のビルドには入りません。静止画の撮影・発表者ビュー・studio のプレビューにも出ません。
+作業用サーバとサイト全体の開発サーバのライブ再生では、右下に agentation のツールバーが出ます (ADR-0032, ADR-0034)。画面の要素をクリックしてメモを付け、Markdown でコピーして Claude に貼ります。メモは状態ごとに分かれ、コピーした見出しにハッシュが載ります。開発サーバのプラグインが差し込むので、公開用のビルドには入りません。静止画の撮影・発表者ビュー・studio のプレビューにも出ません。
 
 ## 6. CLI と検証のループ
 
 ```sh
-bun run dev <talk>             # 作業用サーバ (別ターミナルで立てる)。<talk> は talks/ の中の名前の先頭だけでもよい (例: 2026_09_29)
+bun run dev                    # サイト全体の開発サーバ (apps/slides/dev.mjs)。トップページと全トークを /<slug>/ で開ける
+bun run dev <talk>             # トーク 1 本の作業用サーバ (別ターミナルで立てる)。<talk> は talks/ の中の名前の先頭だけでもよい (例: 2026_09_29)
 bun run check <talk>           # 全状態の静止画と検査 → out/check.md
 bun run check <talk> --motion  # 遷移のコマ撮りも出す → out/motion/
 bun run build <talk>           # 公開用 → out/build/ (OGP 画像・同梱フォントつき)

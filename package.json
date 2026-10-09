@@ -4,7 +4,7 @@
   "type": "module",
   "workspaces": ["packages/*", "apps/*"],
   "scripts": {
-    "dev": "node packages/stage/cli.mjs dev",
+    "dev": "node apps/slides/dev.mjs",
     "check": "node packages/stage/cli.mjs check",
     "build": "node packages/stage/cli.mjs build",
     "studio": "node apps/studio/server.mjs",

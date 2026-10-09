@@ -2,6 +2,16 @@
 
 `talks/` の公開トーク (`talk.tsx` が `public: true`) を、最新のフレームワークでビルドして組み立て、Cloudflare Workers で配信します (ADR-0027, ADR-0029)。
 
+## ローカルで見る
+
+```sh
+bun run dev             # http://localhost:5280/ にサイト全体を立てる (dev.mjs)
+```
+
+トップページと全トークを、本番と同じ URL (`/<slug>/`) で開けます。保存すると即座に反映され、agentation でメモも付けられます (ADR-0034)。一覧のサムネイルは、表紙をその場で撮ります。非公開のトークも、印を付けて一覧に出します (本番には載りません)。
+
+公開する直前に、組み立てたもの (`dist/`) を本番の配信と同じ形で確かめたいときだけ、`bun run site` のあとに `cd apps/slides && bunx wrangler dev` を使います。
+
 ## 公開の手順
 
 デプロイは、話者の確認を取ってから行います。
@@ -25,6 +35,8 @@ bun run deploy          # 組み立てて、そのまま公開する (cd apps/sl
 
 ## 中身
 
-- `build.mjs`: 全トークのビルド、トップページ・404 ページ・sitemap.xml の生成、見た目の差分検査
+- `build.mjs`: 全トークのビルド、見た目の差分検査
+- `pages.mjs`: トップページ・404 ページ・sitemap.xml。組み立てと開発サーバで共有する
+- `dev.mjs`: サイト全体の開発サーバ。引数でトークを指定すると、トーク 1 本の作業用サーバに渡す
 - `wrangler.jsonc`: Workers の設定 (`dist/` を静的アセットとして配信、`slides.y-kaz.com` に割り当て)
 - `dist/`・`.snapshots/`・`.wrangler/`: 生成物 (Git の管理外)

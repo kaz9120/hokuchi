@@ -50,6 +50,8 @@ export function useNav(talk: TalkDef) {
 
   useEffect(() => {
     history.replaceState(null, '', `${location.search}#/${talk.scenes[pos.scene].id}/${pos.step}`)
+    // replaceState はイベントを出さないので、位置を見たい側 (開発中の agentation) に知らせる
+    dispatchEvent(new Event('stage:moved'))
     const key = `${pos.scene}/${pos.step}`
     if (remote.current !== key) chan.current?.postMessage({ scene: pos.scene, step: pos.step })
     remote.current = ''
@@ -64,11 +66,18 @@ export function useNav(talk: TalkDef) {
   return { pos, next, prev, jump }
 }
 
+/** 入力欄で打った文字か。agentation のメモ欄は Shadow DOM の中にあるので、composedPath で元の要素を見る */
+function typing(e: KeyboardEvent) {
+  const el = e.composedPath()[0]
+  return el instanceof HTMLElement && (el.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName))
+}
+
 /** 共通のキー操作。追加の操作は extra に渡す */
 export function useKeys(handlers: { next: () => void; prev: () => void; extra?: Record<string, () => void> }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return
+      if (typing(e)) return
       if (['ArrowRight', 'ArrowDown', ' ', 'PageDown', 'Enter'].includes(e.key)) {
         e.preventDefault()
         handlers.next()

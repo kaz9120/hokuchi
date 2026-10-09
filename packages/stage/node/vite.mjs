@@ -52,13 +52,25 @@ function talkPlugin(talkDir, meta, fonts) {
   }
 }
 
+/**
+ * 開発サーバでだけ、画面の要素にメモを付ける道具 (agentation) を差し込む (ADR-0032)。
+ * HTML に script を足す形にして、公開用のビルドの依存に入れない
+ */
+const feedbackPlugin = {
+  name: 'hokuchi-stage-feedback',
+  apply: 'serve',
+  transformIndexHtml: () => [
+    { tag: 'script', attrs: { type: 'module', src: `/@fs${resolve(stageDir, 'src/runtime/feedback.tsx')}` }, injectTo: 'body' },
+  ],
+}
+
 export function stageConfig(talkDir, { outDir, meta, fonts, port } = {}) {
   return {
     configFile: false,
     root: resolve(stageDir, 'app'),
     base: './',
     logLevel: 'warn',
-    plugins: [react(), talkPlugin(talkDir, meta, fonts)],
+    plugins: [react(), talkPlugin(talkDir, meta, fonts), feedbackPlugin],
     resolve: {
       alias: [{ find: /^@hokuchi\/stage/, replacement: resolve(stageDir, 'src') }],
       // トークとフレームワークで同じ React と Motion を使うよう、依存の解決を 1 か所に揃える

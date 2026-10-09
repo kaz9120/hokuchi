@@ -83,6 +83,8 @@ export function stageConfig(talkDir, { outDir, meta, fonts, port } = {}) {
     },
     // リポジトリの外のトーク (社内向けの発表など) も扱えるよう、トークのディレクトリも許可する
     server: { port: port ?? 5280, strictPort: false, fs: { allow: [repoRoot, talkDir] } },
+    // agentation は開発サーバが後から差し込むので、初めて開いたときに見つけ直して React が 2 つ読まれないよう、先に最適化しておく
+    optimizeDeps: { include: ['agentation'] },
     build: { outDir, emptyOutDir: true, assetsDir: 'assets', chunkSizeWarningLimit: 2000 },
   }
 }

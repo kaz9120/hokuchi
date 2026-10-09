@@ -11,7 +11,8 @@ import { createServer as createHttp } from 'node:http'
 import { readdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { createServer } from 'vite'
-import { stageConfig } from '../../packages/stage/node/vite.mjs'
+import react from '@vitejs/plugin-react'
+import { stageConfig, stageDir } from '../../packages/stage/node/vite.mjs'
 import { publicInfo } from '../../packages/stage/node/build.mjs'
 import { isTalkDir, launch, loadTalk, talkInfo, waitReady } from '../../packages/stage/node/talk.mjs'
 import { indexHtml, notFoundHtml } from './pages.mjs'
@@ -46,6 +47,26 @@ async function serveSite() {
     talks.set(t.info.slug, t)
   }
 
+  // トップページと 404 ページは、サイト用の Vite に通して agentation を差し込む。
+  // HTML はリクエストのたびに作り直すので、HMR は要らない (トークの HMR と WebSocket を取り合わないよう切る)
+  const site = await createServer({
+    configFile: false,
+    root: here,
+    logLevel: 'warn',
+    appType: 'custom',
+    plugins: [react()],
+    resolve: { dedupe: ['react', 'react-dom'] },
+    server: { middlewareMode: true, hmr: false, fs: { allow: [repoRoot] } },
+    // 初めて開いたときに依存を見つけ直すと、React が 2 つ読まれて落ちる。先に最適化しておく
+    optimizeDeps: { include: ['react', 'react-dom', 'react-dom/client', 'react/jsx-dev-runtime', 'agentation'] },
+  })
+  const toolbar = resolve(stageDir, 'src/runtime/feedback-toolbar.tsx')
+  const page = (url, html) =>
+    site.transformIndexHtml(
+      url,
+      html.replace('</body>', `<script type="module">import { mountFeedback } from '/@fs${toolbar}'; mountFeedback('slides.y-kaz.com')</script></body>`),
+    )
+
   let browser = null
   const shootCover = async (t) => {
     browser ??= await launch()
@@ -63,11 +84,15 @@ async function serveSite() {
     const path = decodeURIComponent(new URL(req.url, 'http://x').pathname)
     if (path === '/' || path === '/index.html') {
       const entries = [...talks.values()].map((t) => t.info).sort((a, b) => (a.date < b.date ? 1 : -1))
-      return send(res, 200, 'text/html; charset=utf-8', indexHtml(entries))
+      return send(res, 200, 'text/html; charset=utf-8', await page(req.url, indexHtml(entries)))
     }
     const slug = path.split('/')[1]
     const t = talks.get(slug)
-    if (!t) return send(res, 404, 'text/html; charset=utf-8', notFoundHtml())
+    if (!t) {
+      // サイト用の Vite が配るもの (/@vite/client、/@fs/… の部品など)
+      if (path.startsWith('/@') || path.startsWith('/node_modules/')) return site.middlewares(req, res)
+      return send(res, 404, 'text/html; charset=utf-8', await page(req.url, notFoundHtml()))
+    }
     if (path === `/${slug}`) {
       res.writeHead(301, { location: `/${slug}/` })
       return res.end()

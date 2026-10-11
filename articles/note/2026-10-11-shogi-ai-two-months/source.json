@@ -1,0 +1,56 @@
+{
+  "id": 184987730,
+  "key": "n063d926295e2",
+  "slug": "slug-n063d926295e2",
+  "type": "TextNote",
+  "status": "published",
+  "format": "4.0",
+  "name": "将棋AI開発日誌",
+  "description": "",
+  "body": "<p name=\"e437024e-1e94-4df4-8a39-5d6e713c0e0e\" id=\"e437024e-1e94-4df4-8a39-5d6e713c0e0e\">本日はコンピュータ将棋の開発状況のご報告です。前回の記事から2か月が経ちました。</p><figure name=\"69a72be6-a551-4042-b557-373a96012efc\" id=\"69a72be6-a551-4042-b557-373a96012efc\" data-src=\"https://note.com/kyamamoto9120/n/nfe667accffd0\" data-identifier=\"nfe667accffd0\" embedded-service=\"note\" embedded-content-key=\"embc2650989b2cb\">\n</figure><p name=\"5cd9b9e8-83fb-479a-8190-b1961a7e5c17\" id=\"5cd9b9e8-83fb-479a-8190-b1961a7e5c17\">この2か月で、floodgate のレーティングは3452から3662まで上がりました。</p><figure name=\"6499cdea-5ce6-4f1e-a4ac-2c8945cacb46\" id=\"6499cdea-5ce6-4f1e-a4ac-2c8945cacb46\"><img src=\"https://assets.st-note.com/img/1791698880-vIw43a6ROu5UAkWQdqC9TbtN.png\" alt=\"\" width=\"620\" height=\"349\"><figcaption></figcaption></figure><p name=\"3b70f3df-fdd0-455e-939d-2121ab48b5c2\" id=\"3b70f3df-fdd0-455e-939d-2121ab48b5c2\">開発の量でいうと、ADR は78本、PR は400本増えています。</p><h2 name=\"664cbb88-e07d-42cb-8d35-78d2a3618089\" id=\"664cbb88-e07d-42cb-8d35-78d2a3618089\">強くなった改善は16件</h2><p name=\"21ad811b-19c4-46c6-bc28-044c0ddcb0f7\" id=\"21ad811b-19c4-46c6-bc28-044c0ddcb0f7\">棋力の向上につながった改善は16件でした。探索が7件、評価関数が9件です。日付は取り込んだ日、数字は自己対局で測った伸びです。負けないことだけを確かめて取り込んだ変更（3件）は除いています。</p><p name=\"285e97c3-4181-425e-8fb9-064ad058c753\" id=\"285e97c3-4181-425e-8fb9-064ad058c753\"><strong>探索の7件</strong></p><ul name=\"501952b9-d06f-412b-a35f-b8d4768a4257\" id=\"501952b9-d06f-412b-a35f-b8d4768a4257\"><li><p name=\"719d444b-dc9d-43ca-88ce-adf338032296\" id=\"719d444b-dc9d-43ca-88ce-adf338032296\">8/9 指し手を変えずに速くする改善をまとめて入れる: +100.1</p></li><li><p name=\"6a284e2a-e034-4c60-b55f-bd6d1cfe2bee\" id=\"6a284e2a-e034-4c60-b55f-bd6d1cfe2bee\">8/17 桂の3段目の不成を指し手に加える: +11.2</p></li><li><p name=\"359a5841-ae12-469d-8af0-575fa399355d\" id=\"359a5841-ae12-469d-8af0-575fa399355d\">8/22 探索の定数24項目を自動調整して焼き込む: +32.0</p></li><li><p name=\"944e2ecc-e66c-4469-9dec-f7cfcb9ff29b\" id=\"944e2ecc-e66c-4469-9dec-f7cfcb9ff29b\">9/2 千日手の判定を16手で打ち切る: +14.3</p></li><li><p name=\"50801e18-bc12-47af-8f7a-be5610a360cb\" id=\"50801e18-bc12-47af-8f7a-be5610a360cb\">9/6 並列探索で、スレッドごとに読む深さをずらす: +19.8</p></li><li><p name=\"62e913d8-655c-4176-a096-93ec7db52eef\" id=\"62e913d8-655c-4176-a096-93ec7db52eef\">9/8 読み筋が1手で終わったとき、相手の番に考える手を補う: +34.9</p></li><li><p name=\"1ad47c76-705b-4e63-8702-cdc8ef019771\" id=\"1ad47c76-705b-4e63-8702-cdc8ef019771\">9/15 探索の定数の自動調整をやり直す: +21.2</p></li></ul><p name=\"660a6ae1-8cf8-460c-b885-e86203b85b62\" id=\"660a6ae1-8cf8-460c-b885-e86203b85b62\"><strong>評価関数の9件</strong></p><ul name=\"f799cb7e-0fd6-4d8c-8d36-524a88a3f00f\" id=\"f799cb7e-0fd6-4d8c-8d36-524a88a3f00f\"><li><p name=\"8415f417-da67-4232-b120-f047833f8434\" id=\"8415f417-da67-4232-b120-f047833f8434\">8/16 ネットの後段を小さくする: +13.4</p></li><li><p name=\"53e7851a-6c8a-4cb9-b6c3-30809cf81cd9\" id=\"53e7851a-6c8a-4cb9-b6c3-30809cf81cd9\">8/17 駒どうしの組み合わせをネットに入れる: +65.4</p></li><li><p name=\"f40b75dc-c8ce-4cb8-919a-dcadce173f35\" id=\"f40b75dc-c8ce-4cb8-919a-dcadce173f35\">8/26 兄弟局面の順位を学ぶ損失に変える: +28.9</p></li><li><p name=\"4e2b7a6b-fe55-479d-9c08-cce819b31576\" id=\"4e2b7a6b-fe55-479d-9c08-cce819b31576\">8/29 自分で指して作った局面で学習する: +13.9</p></li><li><p name=\"3384da9e-ad5e-41ad-bd2f-3ae314e9f7bb\" id=\"3384da9e-ad5e-41ad-bd2f-3ae314e9f7bb\">9/2 教師データを tanuki- の78.6億局面へ移す: +43.2</p></li><li><p name=\"7d74a69b-588e-4722-a999-79d479692c7f\" id=\"7d74a69b-588e-4722-a999-79d479692c7f\">9/10 自分で作った4,700万局面で継続学習する: +20.2</p></li><li><p name=\"731c6956-64f4-4d82-ab01-2335e9aed11a\" id=\"731c6956-64f4-4d82-ab01-2335e9aed11a\">10/4 教師データの評価値を dlshogi で付け直す: +74.8</p></li><li><p name=\"6743f65e-f7b4-4df7-92d5-04ce9ca69bab\" id=\"6743f65e-f7b4-4df7-92d5-04ce9ca69bab\">10/5 付け直した教師で2周学習する: +25.7</p></li><li><p name=\"23802c2e-4d24-4598-a234-33a43447c944\" id=\"23802c2e-4d24-4598-a234-33a43447c944\">10/7 重複を除いて2周学習する: +22.8</p></li></ul><p name=\"f2e40fb6-07fa-42f8-b480-192290d22ca3\" id=\"f2e40fb6-07fa-42f8-b480-192290d22ca3\">並べてみると、探索の改善は9月15日で止まっています。<br>それ以降の3件はすべて評価関数です。</p><p name=\"e5eb0364-6eb7-4ca8-8385-dc03e35d4cd5\" id=\"e5eb0364-6eb7-4ca8-8385-dc03e35d4cd5\">探索は、手本にしている OSS のやねうら王に追いつく作業がひと通り終わりました。そこで9月17日から、評価関数の学習と構造に絞っています。</p><p name=\"106863bd-f1a3-4c16-9b45-c2024765cdf8\" id=\"106863bd-f1a3-4c16-9b45-c2024765cdf8\">いちばん効果があったのは教師データの評価値の付け直しでした。<br>学習に使う局面の評価値を、公開されている深層学習のエンジン dlshogi に付け直してもらいます。</p><p name=\"876041fc-dc1f-44ac-b15e-4477cfec98b1\" id=\"876041fc-dc1f-44ac-b15e-4477cfec98b1\">付け直せたのは78.6億局面のうち、まだ先頭の20億局面だけです。それでも、そのデータで学習した評価関数は今までのものに対して+74.8でした。</p><h2 name=\"ec9e3359-9543-4854-b1bd-b3efc6d7f558\" id=\"ec9e3359-9543-4854-b1bd-b3efc6d7f558\">自己対局の合計と実戦の伸びは別物</h2><p name=\"2d988d2a-42ec-4ea4-ad5c-0e0218457c41\" id=\"2d988d2a-42ec-4ea4-ad5c-0e0218457c41\">16件の伸びを単純に足すと+542 Elo です。一方、floodgate のレーティングの伸びは+210でした。</p><p name=\"954529db-b980-4ebc-b0bd-581e3eff247a\" id=\"954529db-b980-4ebc-b0bd-581e3eff247a\">自己対局の Elo は、それぞれ一つ前の版を相手に測った差です。測る相手も条件も毎回違うので、足しても実戦の伸びにはなりません。</p><p name=\"47f27f2a-65a8-494f-b775-97ac6376d7d1\" id=\"47f27f2a-65a8-494f-b775-97ac6376d7d1\">前回の最後に書いた「本番の対局を観測する」仕組みは入れました。floodgate の棋譜を定期的に集めて、実戦で評価値が急に崩れた局面を、評価の盲点として測っています。</p><h2 name=\"c7ea393c-3674-4707-b586-c7b0fb49aeba\" id=\"c7ea393c-3674-4707-b586-c7b0fb49aeba\">次にやること</h2><p name=\"4b78483f-a6b7-4a60-bcea-174c7a474740\" id=\"4b78483f-a6b7-4a60-bcea-174c7a474740\">教師データの残りの58.5億局面も、dlshogi で付け直します。手元のマシンだと28日ほどかかるので、AWS で回すつもりです。</p><p name=\"685b96ef-2f7f-4b9a-953c-241130f6a8b1\" id=\"685b96ef-2f7f-4b9a-953c-241130f6a8b1\">目標は2027年5月の世界コンピュータ将棋選手権です。また進んだら書きます。</p>",
+  "separator": null,
+  "publish_at": "2026-10-11T15:16:26.000+09:00",
+  "created_at": "2026-10-11T15:07:45.000+09:00",
+  "note_url": "https://note.com/kyamamoto9120/n/n063d926295e2",
+  "price": 0,
+  "is_limited": false,
+  "is_trial": false,
+  "eyecatch": "https://assets.st-note.com/production/uploads/images/323154252/rectangle_large_type_2_14232ef3703366aef623addec7619db3.png?fit=bounds&quality=85&width=1280",
+  "eyecatch_alt": "見出し画像",
+  "eyecatch_width": 1920,
+  "eyecatch_height": 1005,
+  "hashtags": [
+    "#エンジニア",
+    "#ClaudeCode",
+    "#個人開発",
+    "#コンピュータ将棋"
+  ],
+  "pictures": [
+    {
+      "caption": null,
+      "key": "1791698880-vIw43a6ROu5UAkWQdqC9TbtN",
+      "url": "https://assets.st-note.com/img/1791698880-vIw43a6ROu5UAkWQdqC9TbtN.png",
+      "thumbnail_url": "https://assets.st-note.com/img/1791698880-vIw43a6ROu5UAkWQdqC9TbtN.png",
+      "alt": "画像1",
+      "width": null,
+      "height": null,
+      "index": 0
+    }
+  ],
+  "embedded_contents": [
+    {
+      "key": "embc2650989b2cb",
+      "url": "https://note.com/kyamamoto9120/n/nfe667accffd0",
+      "service": "note",
+      "identifier": "nfe667accffd0",
+      "caption": null,
+      "html_for_embed": "<iframe class=\"note-embed\" height=\"210\" scrolling=\"no\" src=\"https://note.com/embed/notes/nfe667accffd0\" style=\"border: 0; display: block; max-width: 99%; width: 494px; padding: 0px; margin: 10px 0px; position: static; visibility: visible;\"></iframe>\n",
+      "html_for_display": null
+    }
+  ],
+  "user": {
+    "urlname": "kyamamoto9120",
+    "nickname": "山本一将｜焚き火を愛するエンジニア"
+  },
+  "_fetched_at": "2026-10-11T06:20:21.848Z"
+}

@@ -77,10 +77,14 @@ hokuchi における意思決定の記録。決定に至る過程（選択肢・
 | [0027](0027-self-hosted-slides-site.md) | 発表資料は slides.y-kaz.com に自前でホスティングし、PDF と docswell をやめる | 承認 (凍結は → ADR-0029、OGP カードは → ADR-0031 で廃止) | リポジトリ全体 / tools/stage |
 | [0028](0028-storyboard-before-scenes.md) | 登壇資料は絵コンテ (storyboard.md) で合意してからシーンを実装し、ノートの正本を絵コンテに置く | 承認 | リポジトリ全体 (skills) / tools/stage |
 | [0029](0029-monorepo-layout-and-live-builds.md) | 発表資料の構造を packages / apps / parts に組み直し、凍結をやめて公開のたびに全トークをビルドする | 承認 | リポジトリ全体 |
-| [0030](0030-studio-chat-and-storyboard-board.md) | 発表資料は制作アプリ studio で、絵コンテのボードを見ながら Claude とチャットして作る | 承認 (起動時にトークを固定するのは → ADR-0035 で廃止) | リポジトリ全体 / apps/studio |
+| [0030](0030-studio-chat-and-storyboard-board.md) | 発表資料は制作アプリ studio で、絵コンテのボードを見ながら Claude とチャットして作る | 承認 (起動時にトークを固定するのは → ADR-0035 で廃止。チャットとプレビューの常設は → ADR-0038 で置き換え) | リポジトリ全体 / apps/studio |
 | [0031](0031-og-image-is-the-cover.md) | OGP 画像は表紙の静止画そのものにし、テーマの OGP カードをやめる | 承認 | リポジトリ全体 / packages/stage / apps/slides |
 | [0032](0032-agentation-on-dev-server.md) | 作業用サーバに agentation を差し込み、画面の要素に付けたメモで細かいフィードバックを返す | 承認 | packages/stage / .claude/skills/crafting-presentation |
 | [0033](0033-notes-are-published.md) | 公開するトークのノートは、公開の前に公開物として仕上げる | 承認 | リポジトリ全体 (skills) |
 | [0034](0034-site-dev-server.md) | slides.y-kaz.com 全体を開発サーバで見られるようにし、`bun run dev` の既定にする | 承認 | apps/slides / packages/stage |
 | [0035](0035-studio-as-publishing-hub.md) | studio を発信準備の入口にし、ホームの一覧から発表資料と note の原稿の編集画面に移る | 承認 (第 2 段の計画は → ADR-0036 で置き換え) | リポジトリ全体 / apps/studio / apps/slides |
-| [0036](0036-studio-stage-first-cocreation.md) | studio は段階の画面を入口にし、AI は各段階で頼めることとして横に置く | 承認 (試作 v0) | リポジトリ全体 / apps/studio |
+| [0036](0036-studio-stage-first-cocreation.md) | studio は段階の画面を入口にし、AI は各段階で頼めることとして横に置く | 承認 (右の AI のカラムと段階 5〜10 は → ADR-0040 で置き換え) | リポジトリ全体 / apps/studio |
+| [0037](0037-feedback-history-per-scene.md) | フィードバックの経緯をトークごとの feedback.yaml に残し、studio のボードでシーンごとに見せる | 承認 (経緯の形は → ADR-0040 で置き換え) | apps/studio / .claude/skills/crafting-presentation |
+| [0038](0038-storyboard-only-screen-in-work.md) | 絵コンテの画面を絵コンテだけにし、作品の段階の中に置く。AI との接点は画面ではなくファイルにする | 承認 (画面の構成は → ADR-0040 で置き換え) | apps/studio |
+| [0039](0039-audience-readers-and-survey.md) | 聴衆役の読みを studio の機能にする。ペルソナは「人」と「場」に分けてプリセットを持ち、アンケートで答えてもらう | 承認 | apps/studio / skills |
+| [0040](0040-studio-work-tabs-and-threads.md) | studio は作品 1 本をタブで進める。絵コンテは「流れ・コマ・読み」の 3 面に分け、指摘は「誰が動く番か」で扱うスレッドにする | 承認 | apps/studio / packages/stage / skills |

@@ -15,11 +15,15 @@ docs/adr/          意思決定の記録（リポジトリ全体で単一系列�
 talks/             発表資料（主役。公開する発表だけを置く）
   <YYYY_MM_DD_タグ_演題>/   命名は過去資料と同じ。URL は日付とタグから作る（/2026-09-29-devsgarden/）
     storyboard.md  絵コンテ。話者と合意する設計図で、話すこと（ノート）の正本（ADR-0028）
+    feedback.yaml  指摘のスレッド。話者・聴衆役・Claude の往復を残す（ADR-0040）
+    readers.yaml   この発表を読んでもらう聴衆役（ADR-0039）
+    reads/         聴衆役の読みの結果（回ごと。アンケートとコマへの感想）
     talk.tsx       トークの定義（テーマ・公開の可否・シーンの並び）
     scenes/        シーン（1 ファイル 1 シーン。React + Motion）
     assets/        実画像など
     out/           作業出力（git 管理外）
 parts/             トークをまたいで使い回す中身（自己紹介・会社紹介・写真）
+personas/          聴衆役のペルソナのプリセット。発表でも記事でも使い回す（ADR-0039）
 articles/
   note/            note.com の記事アーカイブ（原本 + Markdown の 2 層。ADR-0019）
     drafts/        執筆中の原稿（<slug>/index.md。公開したら sync が凍結する）
@@ -33,7 +37,7 @@ packages/
     docs/design.md 生きた設計書
 apps/
   slides/          slides.y-kaz.com。全トークを最新のフレームワークでビルドして組み立てる（ADR-0029）
-  studio/          ローカルの制作アプリ。発表と note の記事を、段階の画面で企画から作る（ADR-0030・ADR-0035・ADR-0036）
+  studio/          ローカルの制作アプリ。発表と note の記事を、企画から公開までタブで作る（ADR-0036・ADR-0039・ADR-0040）
     docs/design.md 生きた設計書。根拠の調査は docs/research/
 archive/talks/     旧方式（意図宣言型 YAML）の deck.yaml と写真。作り直すときの素材で、ビルドしない
 tools/
@@ -65,7 +69,7 @@ tools/
 よく使うコマンドは次のとおりです。`<talk>` は `talks/` の中の名前の先頭だけでも指定できます（例: `2026_09_29`）。
 
 ```sh
-bun run studio                 # 制作アプリ（http://localhost:5300/）。ホームの一覧から編集画面に移る。中でサイト全体（5280）も立てる
+bun run studio                 # 制作アプリ（http://localhost:5300/）。ホームから作品を開く。中でサイト全体（5280）も立てる
 bun run dev                    # サイト全体の開発サーバだけ（http://localhost:5280/）。studio を使わずに見るとき
 bun run dev <talk>             # トーク 1 本の作業用サーバ。いずれも長く動くので、話者に別ターミナルで立ててもらう
 bun run check <talk> --motion  # 全状態の静止画・検査・絵コンテとの照合・遷移のコマ撮り

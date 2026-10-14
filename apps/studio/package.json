@@ -2,7 +2,7 @@
   "name": "@hokuchi/studio",
   "private": true,
   "type": "module",
-  "description": "絵コンテを見ながら Claude とチャットして発表資料を作る、ローカルの制作アプリ (ADR-0030)",
+  "description": "発表資料と記事を、企画から公開まで作るローカルの制作アプリ (ADR-0036・ADR-0040)",
   "scripts": {
     "start": "node server.mjs"
   },

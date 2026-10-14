@@ -8,17 +8,18 @@
 // 長く動くので、別ターミナルで立てる。
 import { createServer as createHttpServer } from 'node:http'
 import { existsSync, readFileSync, readdirSync, watch, writeFileSync } from 'node:fs'
-import { join, resolve } from 'node:path'
+import { join, relative, resolve } from 'node:path'
 import { spawn } from 'node:child_process'
 import { createServer as createViteServer } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { chromium } from 'playwright'
-import { parseStoryboard, replaceNotes } from '../../packages/stage/node/storyboard.mjs'
+import { moveScene, parseStoryboard, replaceNotes, replaceSceneMeta, seconds } from '../../packages/stage/node/storyboard.mjs'
 import { loadTalk, waitReady } from '../../packages/stage/node/talk.mjs'
 import { startSite } from '../slides/site-server.mjs'
-import { ClaudeSession } from './claude.mjs'
-import { PRIVATE, createWork, listSeeds, listWorks, readWork, saveSeed, saveWork } from './store.mjs'
+import { NOTE_KINDS, SURVEY, listPersonas, listReaders, listReads, runRead } from './readers.mjs'
+import { closeThread, importRead, openThread, readThreads, reopenThread, replyThread } from './threads.mjs'
+import { PRIVATE, createWork, listSeeds, listWorks, readWork, saveSeed, saveWork, workOfTalk } from './store.mjs'
 import { listNotes, noteAsset, readNote } from './notes.mjs'
 import { TASKS, ask } from './ai.mjs'
 
@@ -54,6 +55,7 @@ class Workspace {
     this.entry = entry // サイトの開発サーバが持つトーク (dir・vite・info)
     this.dir = entry.dir
     this.boardFile = join(this.dir, 'storyboard.md')
+    this.feedbackFile = join(this.dir, 'feedback.yaml')
     this.stageUrl = `${site.url}/${slug}/`
     this.thumbs = new Map() // 'scene-step' → JPEG
     this.thumbsVersion = 0
@@ -61,17 +63,23 @@ class Workspace {
     this.checking = false
     this.page = null
     this.pageErrors = []
-    this.claude = new ClaudeSession({ repoRoot, talkDir: this.dir, onEvent: (ev) => broadcast(slug, 'chat', ev) })
+    this.reading = null // 聴衆役に読んでもらっている間の進み具合 { done, total, failed }
     let timer = null
+    // 指摘や読みのファイルだけが変わったときは、絵を撮り直さない (絵は変わらないため)
+    let redraw = false
     this.watcher = watch(this.dir, { recursive: true }, (_, file) => {
       if (!file || file.startsWith('out')) return
+      if (!/^(feedback\.yaml|readers\.yaml|reads[\\/]|archive[\\/])/.test(file)) redraw = true
       clearTimeout(timer)
       timer = setTimeout(async () => {
-        // モジュールのキャッシュを捨ててから読み直す
-        this.entry.vite.moduleGraph.invalidateAll()
+        if (redraw) {
+          // モジュールのキャッシュを捨ててから読み直す
+          this.entry.vite.moduleGraph.invalidateAll()
+          this.shoot()
+        }
+        redraw = false
         broadcast(slug, 'board', await this.state())
-        this.shoot()
-      }, 900)
+      }, redraw ? 900 : 150)
     })
     this.shoot()
   }
@@ -87,7 +95,53 @@ class Workspace {
       loadError = String(e.message ?? e)
     }
     const { name, date, tag, title } = this.entry.info
-    return { talk: { slug: this.slug, name, date, tag, title }, board: parseStoryboard(md), scenes, loadError, thumbsVersion: this.thumbsVersion, stageUrl: this.stageUrl }
+    const board = parseStoryboard(md)
+    const personas = listPersonas(repoRoot)
+    const readers = listReaders(this.dir)
+      .map((r) => ({ ...personas.find((p) => p.id === r.persona), why: r.why ?? '' }))
+      .filter((r) => r.id)
+    const w = workOfTalk(this.slug)
+    return {
+      talk: { slug: this.slug, name, date, tag, title, dir: relative(repoRoot, this.dir), event: this.entry.info.event?.name ?? null, minutes: seconds(board.meta['持ち時間'] ?? '') },
+      board,
+      scenes,
+      loadError,
+      thumbsVersion: this.thumbsVersion,
+      stageUrl: this.stageUrl,
+      ...readThreads(this.feedbackFile),
+      reads: listReads(this.dir),
+      reading: this.reading,
+      readers,
+      survey: SURVEY,
+      noteKinds: NOTE_KINDS,
+      work: w ? { id: w.id, oneLiner: w.fields?.oneLiner ?? '' } : null,
+    }
+  }
+
+  /** 絵コンテを書き換える。ファイルの監視が、画面への通知と撮り直しをする */
+  rewrite(fn) {
+    writeFileSync(this.boardFile, fn(readFileSync(this.boardFile, 'utf8')))
+  }
+
+  /** 聴衆役に読んでもらう (ADR-0039)。数分かかるので裏で走らせ、進み具合を画面に知らせる */
+  read() {
+    if (this.reading) return
+    this.reading = { done: 0, total: listReaders(this.dir).length, failed: [] }
+    broadcast(this.slug, 'reading', this.reading)
+    runRead({
+      repoRoot,
+      talkDir: this.dir,
+      onProgress: (p) => {
+        this.reading = p
+        broadcast(this.slug, 'reading', p)
+      },
+    })
+      .then((read) => importRead(this.feedbackFile, read))
+      .catch((e) => broadcast(this.slug, 'reading', { ...this.reading, error: String(e.message ?? e) }))
+      .finally(async () => {
+        this.reading = null
+        broadcast(this.slug, 'board', await this.state())
+      })
   }
 
   shoot() {
@@ -135,7 +189,6 @@ class Workspace {
 
   async close() {
     this.watcher.close()
-    this.claude.stop()
     await this.page?.close()
   }
 }
@@ -172,7 +225,16 @@ function home() {
     })
     .sort((a, b) => (a.date < b.date ? 1 : -1))
   const tasks = Object.fromEntries(Object.entries(TASKS).map(([k, t]) => [k, t.label]))
-  return { talks, notes: listNotes(repoRoot), works: listWorks(), seeds: listSeeds(), tasks, siteUrl: `${site.url}/`, privateDir: PRIVATE }
+  // 作品に、紐づくトークの様子 (場面の数・あなたが答える指摘の数) を載せる。ホームは作品 1 枚で見せる (ADR-0040)
+  const works = listWorks().map((w) => {
+    const t = w.talk ? site.talks.get(w.talk) : null
+    if (!t) return w
+    const item = talks.find((x) => x.slug === w.talk)
+    const { threads } = readThreads(join(t.dir, 'feedback.yaml'))
+    return { ...w, talkInfo: { ...item, mine: threads.filter((x) => x.ball === '話者').length, claude: threads.filter((x) => x.ball === 'Claude').length, reads: listReads(t.dir).length } }
+  })
+  const linked = new Set(works.map((w) => w.talk).filter(Boolean))
+  return { talks: talks.map((t) => ({ ...t, linked: linked.has(t.slug) })), notes: listNotes(repoRoot), works, seeds: listSeeds(), tasks, siteUrl: `${site.url}/`, privateDir: PRIVATE }
 }
 
 // ---------------------------------------------------------------- UI と API
@@ -207,7 +269,6 @@ server.on('request', async (req, res) => {
       const slug = url.searchParams.get('talk')
       const ws = slug ? workspace(slug) : null
       res.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-cache', connection: 'keep-alive' })
-      if (ws) res.write(`event: chat-history\ndata: ${JSON.stringify(ws.claude.transcript)}\n\n`)
       const c = { res, slug }
       clients.add(c)
       req.on('close', () => clients.delete(c))
@@ -267,8 +328,37 @@ server.on('request', async (req, res) => {
         ws.saveNotes(scene, state, text)
         return json(res, { ok: true })
       }
-      if (op === 'chat' && req.method === 'POST') {
-        ws.claude.send((await body(req)).text)
+      // 指摘のスレッド (ADR-0040)。書く・答える・閉じる・もう一度開く
+      if (op === 'threads' && req.method === 'POST') {
+        const { scene, state, text } = await body(req)
+        if (!scene || !String(text ?? '').trim()) return json(res, { error: 'scene と text が要ります' }, 400)
+        return json(res, { id: openThread(ws.feedbackFile, { scene, state: Number(state) || null, text: String(text).trim() }) })
+      }
+      const th = op.match(/^threads\/([^/]+)\/(reply|close|reopen)$/)
+      if (th && req.method === 'POST') {
+        const { text, how } = await body(req)
+        if (th[2] === 'reply') {
+          if (!String(text ?? '').trim()) return json(res, { error: 'text が要ります' }, 400)
+          replyThread(ws.feedbackFile, th[1], String(text).trim())
+        }
+        if (th[2] === 'close') closeThread(ws.feedbackFile, th[1], how)
+        if (th[2] === 'reopen') reopenThread(ws.feedbackFile, th[1])
+        return json(res, { ok: true })
+      }
+      // シーンの情報 (伝えること・粗密) と並びを、話者が直す
+      if (op === 'meta' && req.method === 'PUT') {
+        const { scene, key, value } = await body(req)
+        if (!['伝えること', '粗密'].includes(key)) return json(res, { error: `${key} は直せません` }, 400)
+        ws.rewrite((md) => replaceSceneMeta(md, scene, key, String(value ?? '').trim()))
+        return json(res, { ok: true })
+      }
+      if (op === 'move' && req.method === 'POST') {
+        const { scene, dir } = await body(req)
+        ws.rewrite((md) => moveScene(md, scene, Number(dir) < 0 ? -1 : 1))
+        return json(res, { ok: true })
+      }
+      if (op === 'read' && req.method === 'POST') {
+        ws.read()
         return json(res, { ok: true })
       }
       if (op === 'check' && req.method === 'POST') {

@@ -32,6 +32,11 @@ export function readWork(id) {
   return existsSync(file) ? readYaml(file) : null
 }
 
+/** トークに紐づく作品 (企画シートの talk に、トークの slug を持つもの)。無ければ null (ADR-0038) */
+export function workOfTalk(slug) {
+  return listWorks().find((w) => w.talk === slug) ?? null
+}
+
 /** 作品を始める。kind は talk (発表) か note (記事)。ネタから始めるときは seedId を渡す */
 export function createWork(kind, seedId) {
   const id = newId()

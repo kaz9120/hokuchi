@@ -14,6 +14,8 @@ export type Persona = {
 }
 
 export type Brief = {
+  /** 紐づくトークの slug (talks/ の中の発表)。段階 5〜8 は、その絵コンテの画面で進める (ADR-0038) */
+  talk?: string
   id: string
   kind: Kind
   title: string

@@ -1,7 +1,8 @@
-// 作品の画面。左に段階、中央にその段階の欄、右に AI に頼めること。一言と相手は上に出し続ける (docs/design.md の 4)
+// 作品の画面 (ADR-0040)。発表 1 本・記事 1 本を、企画から公開までタブで進める。
+// 企画 (段階 1〜4) は、左に段階、右にその段階の欄。発表は、絵コンテができたら 流れ・コマ・読み・公開 のタブが使える。
+// 伝えたいことと聴衆は、どのタブでも上に出し続ける (slide:ology p.36-37, p.39)
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { AlertTriangle, ArrowLeft, Check, Circle, CircleDot, Info, Loader2, Lock, Plus, Sparkles, Trash2 } from 'lucide-react'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { ArrowLeft, Check, Circle, CircleDot, Info, Loader2, Plus, Sparkles, Trash2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -10,7 +11,9 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { api, type Candidate } from '@/lib/api'
 import { cn } from '@/lib/utils'
-import { AUDIENCE_LABEL, KIND_LABEL, PERSONA_FIELDS, STAGES, audienceSummary, emptyPersona, stageStatus, type Brief, type Field, type Persona, type Stage } from '@/lib/stages'
+import { KIND_LABEL, PERSONA_FIELDS, STAGES, audienceSummary, emptyPersona, stageStatus, type Brief, type Field, type Persona, type Stage } from '@/lib/stages'
+import { talkApi, useTalk } from '@/lib/talk'
+import { Compass, Handoff, TALK_TABS, TabBar, TalkPane, yoursCount, type TalkTab } from './talk/TalkTabs'
 
 /** 企画シートを読み、直すたびに少し待ってから保存する */
 function useBrief(id: string) {
@@ -39,22 +42,37 @@ function useBrief(id: string) {
   return { brief, setBrief, update, saving }
 }
 
+/** 企画の段階 (1〜4)。5 から先は、絵コンテのタブで進める */
+const PLAN = STAGES.filter((s) => !s.later)
+type Tab = 'plan' | TalkTab
+
+/** URL のハッシュから、タブと、その中の場所を読む。企画は段階の key、コマは koma/<シーン> */
+function readHash(): { tab: Tab; stage: string; scene: string | null } {
+  const h = decodeURIComponent(location.hash.slice(1))
+  const [head, rest] = h.split('/')
+  if (head === 'flow' || head === 'koma' || head === 'reads' || head === 'publish') return { tab: head, stage: PLAN[0].key, scene: rest ?? null }
+  return { tab: 'plan', stage: PLAN.some((s) => s.key === head) ? head : PLAN[0].key, scene: null }
+}
+
 export function Work({ id }: { id: string }) {
   const { brief, setBrief, update, saving } = useBrief(id)
-  // 段階は URL のハッシュに持つ。agentation のメモが段階ごとに分かれ、コピーにも段階が載る
-  const [stageKey, setStageKey] = useState(() => location.hash.slice(1) || 'seed')
+  // タブと段階は URL のハッシュに持つ。agentation のメモが場所ごとに分かれ、コピーにも場所が載る
+  const [at, setAt] = useState(readHash)
   useEffect(() => {
-    if (location.hash.slice(1) !== stageKey) location.hash = stageKey
-  }, [stageKey])
-  useEffect(() => {
-    const on = () => setStageKey(location.hash.slice(1) || 'seed')
+    const on = () => setAt(readHash())
     addEventListener('hashchange', on)
     return () => removeEventListener('hashchange', on)
   }, [])
+  const go = (tab: Tab, where?: string) => {
+    location.hash = tab === 'plan' ? (where ?? at.stage) : where ? `${tab}/${where}` : tab
+  }
+  const { data, thumbs, reading } = useTalk(brief?.talk)
 
   if (!brief) return <div className="p-10 text-muted-foreground">読み込み中…</div>
-  const stage = STAGES.find((s) => s.key === stageKey) ?? STAGES[0]
+  const stage = PLAN.find((s) => s.key === at.stage) ?? PLAN[0]
   const setField = (key: string, value: unknown) => update((b) => ({ ...b, fields: { ...b.fields, [key]: value } }))
+  const tabs = [{ key: 'plan' as Tab, label: '企画', hint: '場・聴衆・聞き終えたあと・伝えたいことを決める' }, ...(brief.kind === 'talk' ? TALK_TABS : [])]
+  const tab: Tab = at.tab !== 'plan' && !data ? 'plan' : at.tab
 
   return (
     <div className="flex h-screen flex-col bg-muted/40">
@@ -69,40 +87,32 @@ export function Work({ id }: { id: string }) {
           value={brief.title}
           onChange={(e) => update((b) => ({ ...b, title: e.target.value }))}
           placeholder="仮のタイトル (あとで何度でも変えられます)"
-          className="h-8 max-w-md border-transparent shadow-none hover:border-input focus-visible:border-input"
+          className="h-8 max-w-md border-transparent font-semibold shadow-none hover:border-input focus-visible:border-input"
         />
-        <span className="ml-auto text-xs text-muted-foreground">{saving === 'pending' ? '保存中…' : saving === 'saved' ? '保存しました' : ''}</span>
+        {data && (
+          <span className="text-xs text-muted-foreground">
+            {[data.talk.event, data.talk.date, data.board.meta['持ち時間']].filter(Boolean).join('・')}
+          </span>
+        )}
+        <span className="text-xs text-muted-foreground">{saving === 'pending' ? '保存中…' : saving === 'saved' ? '保存しました' : ''}</span>
+        <div className="ml-auto">
+          <TabBar tabs={tabs} current={tab} onPick={(t) => (brief.talk || t === 'plan' ? go(t) : undefined)} badge={data ? { reads: yoursCount(data) } : undefined} />
+        </div>
       </header>
 
-      <Compass brief={brief} onJump={setStageKey} />
+      <Compass oneLiner={(brief.fields.oneLiner as string | undefined) ?? ''} readers={data?.readers ?? []} right={data ? <Handoff data={data} /> : <span className="max-w-xs truncate text-xs text-muted-foreground">{audienceSummary(brief)}</span>} />
 
-      <div className="grid min-h-0 flex-1 grid-cols-[300px_minmax(0,1fr)_360px]">
-        <StageNav brief={brief} current={stage.key} onPick={setStageKey} />
-        <main className="min-h-0 overflow-y-auto px-8 py-6">
-          <StagePanel brief={brief} stage={stage} setField={setField} update={update} />
-        </main>
-        <AiPanel brief={brief} stage={stage} setBrief={setBrief} setField={setField} update={update} />
-      </div>
-    </div>
-  )
-}
-
-/** 一言と相手。決めたあとは、どの段階にいても見えるようにする (slide:ology p.39 のメッセージマップと同じ考え) */
-function Compass({ brief, onJump }: { brief: Brief; onJump: (k: string) => void }) {
-  const one = brief.fields.oneLiner as string | undefined
-  const who = audienceSummary(brief)
-  const decided = stageStatus(STAGES.find((s) => s.key === 'oneLiner')!, brief) === 'done'
-  return (
-    <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-6 border-b bg-background px-6 py-2 text-sm">
-      <button className="flex min-w-0 items-baseline gap-2 text-left" onClick={() => onJump('oneLiner')}>
-        <span className="shrink-0 text-xs text-muted-foreground">伝えたいこと</span>
-        <span className={cn('truncate', !one && 'text-muted-foreground')}>{one || 'まだ決めていません'}</span>
-        {one && !decided && <Badge variant="outline">未確定</Badge>}
-      </button>
-      <button className="flex min-w-0 items-baseline gap-2 text-left" onClick={() => onJump('audience')}>
-        <span className="shrink-0 text-xs text-muted-foreground">{AUDIENCE_LABEL[brief.kind]}</span>
-        <span className={cn('truncate', !who && 'text-muted-foreground')}>{who || 'まだ決めていません'}</span>
-      </button>
+      {tab === 'plan' || !data || !brief.talk ? (
+        <div className="grid min-h-0 flex-1 grid-cols-[260px_minmax(0,1fr)]">
+          <StageNav brief={brief} current={stage.key} onPick={(k) => go('plan', k)} />
+          <main className="min-h-0 overflow-y-auto px-8 py-6">
+            <StagePanel brief={brief} stage={stage} setField={setField} update={update} setBrief={setBrief} />
+            {brief.kind === 'talk' && !brief.talk && <p className="mx-auto mt-10 max-w-3xl text-sm text-muted-foreground">伝えたいことが決まったら、ターミナルの Claude Code に絵コンテを頼みます。絵コンテができると、流れ・コマ・読みのタブが使えるようになります。</p>}
+          </main>
+        </div>
+      ) : (
+        <TalkPane tab={tab as TalkTab} data={data} thumbs={thumbs} api={talkApi(brief.talk)} reading={reading} focus={at.scene} go={(t, scene) => go(t, scene)} />
+      )}
     </div>
   )
 }
@@ -110,15 +120,11 @@ function Compass({ brief, onJump }: { brief: Brief; onJump: (k: string) => void 
 function StageNav({ brief, current, onPick }: { brief: Brief; current: string; onPick: (k: string) => void }) {
   return (
     <nav className="min-h-0 overflow-y-auto border-r bg-background px-2 py-4">
-      {STAGES.map((s) => {
+      {PLAN.map((s) => {
         const st = stageStatus(s, brief)
-        const Icon = s.later ? Lock : st === 'done' ? Check : st === 'doing' ? CircleDot : Circle
+        const Icon = st === 'done' ? Check : st === 'doing' ? CircleDot : Circle
         return (
-          <button
-            key={s.key}
-            onClick={() => onPick(s.key)}
-            className={cn('flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-accent', current === s.key && 'bg-accent font-medium', s.later && 'text-muted-foreground')}
-          >
+          <button key={s.key} onClick={() => onPick(s.key)} className={cn('flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-accent', current === s.key && 'bg-accent font-medium')}>
             <Icon className={cn('size-4 shrink-0', st === 'done' && 'text-emerald-600')} />
             <span>
               {s.n}. {s.title[brief.kind]}
@@ -130,12 +136,11 @@ function StageNav({ brief, current, onPick }: { brief: Brief; current: string; o
   )
 }
 
-function StagePanel({ brief, stage, setField, update }: { brief: Brief; stage: Stage; setField: (k: string, v: unknown) => void; update: (fn: (b: Brief) => Brief) => void }) {
-  const oneLinerDone = stageStatus(STAGES.find((s) => s.key === 'oneLiner')!, brief) === 'done'
+function StagePanel({ brief, stage, setField, update, setBrief }: { brief: Brief; stage: Stage; setField: (k: string, v: unknown) => void; update: (fn: (b: Brief) => Brief) => void; setBrief: (b: Brief) => void }) {
   return (
     <div className="mx-auto grid max-w-3xl gap-6">
       <div>
-        <div className="text-sm text-muted-foreground">段階 {stage.n} / {STAGES.length}</div>
+        <div className="text-sm text-muted-foreground">企画 {stage.n} / {PLAN.length}</div>
         <h1 className="text-2xl font-semibold">{stage.title[brief.kind]}</h1>
         <p className="mt-2 text-base">{stage.lead[brief.kind]}</p>
       </div>
@@ -151,19 +156,7 @@ function StagePanel({ brief, stage, setField, update }: { brief: Brief; stage: S
         </div>
       )}
 
-      {stage.n > 4 && !oneLinerDone && (
-        <Alert>
-          <AlertTriangle />
-          <AlertTitle>伝えたいことが、まだ確定していません</AlertTitle>
-          <AlertDescription>先に進んでもかまいません。ただ、伝えたいことが決まらないまま構成や本文に入ると、何を残して何を削るかを判断できません。</AlertDescription>
-        </Alert>
-      )}
-
-      {stage.later ? (
-        <Card>
-          <CardContent className="text-muted-foreground">この段階の画面は、まだ作っていません。次の試作で作ります。</CardContent>
-        </Card>
-      ) : stage.key === 'audience' && brief.kind === 'talk' ? (
+      {stage.key === 'audience' && brief.kind === 'talk' ? (
         <Personas personas={brief.fields.personas ?? []} onChange={(p) => setField('personas', p)} />
       ) : (
         <div className="grid gap-5">
@@ -173,7 +166,8 @@ function StagePanel({ brief, stage, setField, update }: { brief: Brief; stage: S
         </div>
       )}
 
-      {stage.confirm && !stage.later && <Confirm brief={brief} stage={stage} update={update} />}
+      {stage.confirm && <Confirm brief={brief} stage={stage} update={update} />}
+      <AiTasks brief={brief} stage={stage} setBrief={setBrief} update={update} />
     </div>
   )
 }
@@ -290,8 +284,8 @@ function applyTarget(task: string, brief: Brief): ((b: Brief, c: Candidate) => B
   return null
 }
 
-/** AI に頼めること。候補は欄の横に並べ、選んだものだけを人が欄に入れる */
-function AiPanel({ brief, stage, setBrief, update }: { brief: Brief; stage: Stage; setBrief: (b: Brief) => void; setField: (k: string, v: unknown) => void; update: (fn: (b: Brief) => Brief) => void }) {
+/** AI に頼めること。使う段階が限られるので、欄の下に小さく置く。候補を選んで欄に入れるのは人 */
+function AiTasks({ brief, stage, setBrief, update }: { brief: Brief; stage: Stage; setBrief: (b: Brief) => void; update: (fn: (b: Brief) => Brief) => void }) {
   const [running, setRunning] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [labels, setLabels] = useState<Record<string, string>>({})
@@ -299,6 +293,7 @@ function AiPanel({ brief, stage, setBrief, update }: { brief: Brief; stage: Stag
     api.home().then((h) => setLabels(h.tasks))
   }, [])
   const tasks = stage.tasks?.[brief.kind] ?? []
+  if (tasks.length === 0) return null
   const run = async (task: string) => {
     setRunning(task)
     setError(null)
@@ -314,20 +309,16 @@ function AiPanel({ brief, stage, setBrief, update }: { brief: Brief; stage: Stag
     }
   }
   return (
-    <aside className="min-h-0 overflow-y-auto border-l bg-background px-4 py-5">
-      <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
-        <Sparkles className="size-4" /> AI に頼めること
-      </div>
-      <p className="mb-3 text-sm text-muted-foreground">AI は案や意見を出すだけで、欄は書き換えません。使いたい案だけ「この案を使う」で欄に入れます。</p>
-      {tasks.length === 0 && <p className="text-sm text-muted-foreground">{stage.later ? 'この段階は、まだ作っていません。' : 'この段階は、自分の言葉で書くことに集中します。AI に頼めることはありません。'}</p>}
-      <div className="grid gap-2">
+    <div className="mt-4 border-t pt-4">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-xs text-muted-foreground">行き詰まったら</span>
         {tasks.map((t) => (
-          <Button key={t} variant="outline" className="h-auto justify-start py-2 text-left whitespace-normal" disabled={!!running} onClick={() => run(t)}>
+          <Button key={t} variant="outline" size="sm" disabled={!!running} onClick={() => run(t)}>
             {running === t ? <Loader2 className="animate-spin" /> : <Sparkles />} {labels[t] ?? t}
           </Button>
         ))}
       </div>
-      {running && <p className="mt-2 text-sm text-muted-foreground">Claude に聞いています。20 秒ほどかかります。</p>}
+      {running && <p className="mt-2 text-sm text-muted-foreground">Claude に聞いています。20 秒ほどかかります。案や意見が出るだけで、欄は書き換わりません。</p>}
       {error && <p className="mt-2 text-xs text-destructive">{error}</p>}
 
       {tasks.map((t) => {
@@ -358,7 +349,7 @@ function AiPanel({ brief, stage, setBrief, update }: { brief: Brief; stage: Stag
           </div>
         )
       })}
-    </aside>
+    </div>
   )
 }
 

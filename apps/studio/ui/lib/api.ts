@@ -1,10 +1,12 @@
 // studio のサーバ (server.mjs) を呼ぶ
 import type { Brief, Kind } from './stages'
 
-export type TalkItem = { slug: string; name: string; title: string; date: string | null; tag: string | null; event: string | null; public: boolean; scenes: number; states: number; siteUrl: string }
+export type TalkItem = { slug: string; name: string; title: string; date: string | null; tag: string | null; event: string | null; public: boolean; scenes: number; states: number; siteUrl: string; linked?: boolean }
+/** 作品に紐づくトークの様子。mine は、あなたが答える指摘の数 */
+export type TalkInfo = TalkItem & { mine: number; claude: number; reads: number }
 export type NoteItem = { dir: string; title: string; publishedAt: string; url: string | null; eyecatch: string | null; tags: string[]; chars: number }
 export type Seed = { id: string; createdAt: string; happening: string; why?: string; workIds?: string[] }
-export type HomeData = { talks: TalkItem[]; notes: NoteItem[]; works: Brief[]; seeds: Seed[]; tasks: Record<string, string>; siteUrl: string; privateDir: string }
+export type HomeData = { talks: TalkItem[]; notes: NoteItem[]; works: (Brief & { talkInfo?: TalkInfo })[]; seeds: Seed[]; tasks: Record<string, string>; siteUrl: string; privateDir: string }
 export type NoteView = { dir: string; title: string; publishedAt: string; url: string | null; eyecatch: string | null; tags: string[]; html: string }
 export type Candidate = { text: string; note: string }
 

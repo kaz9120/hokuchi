@@ -1,0 +1,829 @@
+# 指摘のスレッド (ADR-0040)。1 件の指摘と、その往復を 1 本にまとめる。studio の画面が読み書きし、Claude Code も直接直す。
+#   scene: 絵コンテのシーン id。トーク全体への指摘は "*"。state: コマの番号 (1 始まり)。無ければシーン全体
+#   by: 話者 / 聴衆役 / Claude / 検査。聴衆役は name (誰が)・read (何回目の読みか)・kind (感想の種類) を持つ
+#   replies: 返事を順に足す。Claude は thinking (考えたこと) と change (変えたこと)、話者は text
+#   ball: いま誰が動く番か。話者 / Claude / none。closed: 済んだ件の終わり方 (直した / そのままにした / 良かった点 / 読み直した)
+threads:
+  - id: t001
+    scene: hands-on
+    state: 3
+    by: 聴衆役
+    name: 高橋さん
+    read: 1
+    kind: good
+    text: 2案作らせて選ぶ、理由を1行残す、あとで見比べる。小さくて具体的で、明日そのままやれる。理由を残すと「見分けられたのか、ただの好みか」が分かる、という説明も腑に落ちた。
+    at: 2026-10-12T17:41:22.936Z
+    ball: none
+    closed: 良かった点
+  - id: t002
+    scene: hands-on
+    state: 3
+    by: 聴衆役
+    name: 高橋さん
+    read: 1
+    kind: unconvinced
+    text: 「あとで結果と見比べる」の結果が、将棋では対局の点数だった。自分の仕事（APIの設計やリファクタ）では何が結果に当たるのかが分からず、そこで手が止まりそう。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t003
+    scene: build-many
+    state: 2
+    by: 聴衆役
+    name: 高橋さん
+    read: 1
+    kind: unconvinced
+    text: 会員サイトを作って自分で使えば迷う所は分かる、は分かる。でもそれは自分の感想で、価値が上がったかどうかとは別では。将棋と違って答え合わせがないまま「見分けられるようになった」と言えるのかが引っかかった。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t004
+    scene: reading-adr
+    state: 3
+    by: 聴衆役
+    name: 高橋さん
+    read: 1
+    kind: good
+    text: AIは「離れる」、自分は「まとめて移す」と逆の判断をした場面。同じ記録を読んで結論が分かれた所に経験が出ている、というのがいちばん具体的に伝わった。
+    at: 2026-10-12T17:41:22.936Z
+    ball: none
+    closed: 良かった点
+  - id: t005
+    scene: not-gacha
+    state: 1
+    by: 聴衆役
+    name: 高橋さん
+    read: 1
+    kind: good
+    text: 方向まで任せたのは実質1日で、3か月任せた場合とは比べていない、と先に言ってくれた。ここで話全体を信用できた。
+    at: 2026-10-12T17:41:22.936Z
+    ball: none
+    closed: 良かった点
+  - id: t006
+    scene: not-gacha
+    state: 3
+    by: 聴衆役
+    name: 高橋さん
+    read: 1
+    kind: unconvinced
+    text: 比べていないと言った直後に「人の経験が入ると速く安く進むことは分かっている」と言い切るのは少し強く感じた。3日で200点は事実でも、AIだけの場合の数字がない。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t007
+    scene: delegable
+    state: 2
+    by: 聴衆役
+    name: 高橋さん
+    read: 1
+    kind: unconvinced
+    text: 話し手には10年の将棋AIがあった。自分には「ここなら見分けられる」と言える領域が思い当たらない。6年分のバックエンドの経験のどこが小さい円に当たるのか、見つけ方の話がほしかった。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t008
+    scene: someday
+    state: 2
+    by: 聴衆役
+    name: 高橋さん
+    read: 1
+    kind: unconvinced
+    text: 「平均点のような丸まった答えを出しやすい」「誰もが自由に使える形になるかは疑問」は話し手の見立てで、根拠が聞き取れなかった。分からないと認めてくれたのは良かったが、不安は残った。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t009
+    scene: release-judge
+    state: 4
+    by: 聴衆役
+    name: 高橋さん
+    read: 1
+    kind: good
+    text: 手法を入れても仕事が変わらないのは、見分ける人のところが変わらないから、という説明。新しい手法を試しても成果が変わらない自分の実感と合った。
+    at: 2026-10-12T17:41:22.936Z
+    ball: none
+    closed: 良かった点
+  - id: t010
+    scene: my-calls
+    state: 2
+    by: 聴衆役
+    name: 高橋さん
+    read: 1
+    kind: word
+    text: 「学習データの採点を、もっと強いソフトにやり直してもらう」は一度聞いただけではつかみきれなかった。75点伸びたいちばんの当たり、という所だけ残った。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t011
+    scene: new-method
+    state: 2
+    by: 聴衆役
+    name: 高橋さん
+    read: 1
+    kind: jump
+    text: 「新しい方式」が何を指すのか分からないまま話が進んだ。10年やっていた人でも手を出せなかった所を今回積み直せた、という趣旨は伝わったが、中身は追えていない。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t012
+    scene: new-method
+    state: 4
+    by: 聴衆役
+    name: 高橋さん
+    read: 1
+    kind: unreadable
+    text: 改善9件の一覧（日付と点数）は読み切れなかった。「9件採用された」だけ分かれば足りるので、数字1つで見せてくれたほうが楽。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t013
+    scene: hands-on
+    state: 3
+    by: 聴衆役
+    name: 中村さん
+    read: 1
+    kind: good
+    text: 2案作らせて自分で決める、理由を1行残す、あとで見比べる。ここがいちばん具体的で、明日からやれると思えた。
+    at: 2026-10-12T17:41:22.936Z
+    ball: none
+    closed: 良かった点
+  - id: t014
+    scene: hands-on
+    state: 3
+    by: 聴衆役
+    name: 中村さん
+    read: 1
+    kind: unconvinced
+    text: 「あとで結果と見比べる」の結果が、将棋なら対局だけど、自分の普段のタスクだと何と見比べればいいのか分からなかった。レビューの指摘なのか、リリース後の反応なのか。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t015
+    scene: new-method
+    state: 3
+    by: 聴衆役
+    name: 中村さん
+    read: 1
+    kind: unconvinced
+    text: 「見分けられる所を足場にして隣へ広げた」は、10年の足場がある人の話に聞こえた。足場がまだほとんどない自分は、どこから広げればいいのか。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t016
+    scene: answer
+    state: 3
+    by: 聴衆役
+    name: 中村さん
+    read: 1
+    kind: good
+    text: 「下がったのは経験を積むためのコスト」は、経験の機会をAIに吸い取られていると感じていた自分には逆の見方で、少し気が楽になった。
+    at: 2026-10-12T17:41:22.936Z
+    ball: none
+    closed: 良かった点
+  - id: t017
+    scene: beginner
+    state: 3
+    by: 聴衆役
+    name: 中村さん
+    read: 1
+    kind: good
+    text: オンライン講座が苦手で、磨いてきたものがない、と話者自身が初心者の立場に立ってくれたので、ここから自分ごととして聞けた。
+    at: 2026-10-12T17:41:22.936Z
+    ball: none
+    closed: 良かった点
+  - id: t018
+    scene: build-many
+    state: 2
+    by: 聴衆役
+    name: 中村さん
+    read: 1
+    kind: unconvinced
+    text: 仕事の片手間に会員サイトをかなりの数作る、というのは EM だからできる気もした。チケットに追われている自分に、その時間と題材をどう作るのかは触れられていなかった。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t019
+    scene: release-judge
+    state: 4
+    by: 聴衆役
+    name: 中村さん
+    read: 1
+    kind: good
+    text: 「見分けられないと、良し悪しが分からないまま通ってしまう」は、AIの出力をそのまま通している自分のことだと思って刺さった。
+    at: 2026-10-12T17:41:22.936Z
+    ball: none
+    closed: 良かった点
+  - id: t020
+    scene: delegable
+    state: 2
+    by: 聴衆役
+    name: 中村さん
+    read: 1
+    kind: good
+    text: 大きい円の中に小さい円の図は一瞬で分かった。演題の意味がここでつながった。
+    at: 2026-10-12T17:41:22.936Z
+    ball: none
+    closed: 良かった点
+  - id: t021
+    scene: someday
+    state: 3
+    by: 聴衆役
+    name: 中村さん
+    read: 1
+    kind: jump
+    text: 優位が縮まる、発明する側にはつらい、積み直し続ける、と話が次々に進んで、結局何が言いたいのか耳だけでは追い切れなかった。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t022
+    scene: my-calls
+    state: 2
+    by: 聴衆役
+    name: 中村さん
+    read: 1
+    kind: word
+    text: 「学習データの採点をもっと強いソフトにやり直してもらう」は説明を聞いても何をしているのかぼんやりしたまま。75点伸びた、だけ受け取った。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t023
+    scene: reading-adr
+    state: 1
+    by: 聴衆役
+    name: 中村さん
+    read: 1
+    kind: unreadable
+    text: 設計の記録の実物は文字が細かくて3秒では何も読めなかった。雰囲気だけ。ADR という言葉も setup で一度聞いただけなので、ここで少し思い出すのに時間がかかった。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t024
+    scene: enough
+    state: 3
+    by: 聴衆役
+    name: 中村さん
+    read: 1
+    kind: jump
+    text: 急にスタートアップと競合の話になって、自分にはあまり関係のない話に感じた。事業の話はなじみが薄い。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t025
+    scene: reading-adr
+    state: 3
+    by: 聴衆役
+    name: 斎藤さん
+    read: 1
+    kind: good
+    text: AI が「離れる」と結論した所で、昔自分で実装した経験から「まとめて移す」と逆の判断をした場面。経験が効く瞬間が具体的で、自分のレビューでの違和感と重なった。
+    at: 2026-10-12T17:41:22.936Z
+    ball: none
+    closed: 良かった点
+  - id: t026
+    scene: hands-on
+    state: 3
+    by: 聴衆役
+    name: 斎藤さん
+    read: 1
+    kind: good
+    text: 理由を 1 行残してあとで結果と見比べれば、見分け方が合っていたのか好みだったのかが分かる、という話。「好みの問題では」に言い返せない自分への、初めての実用的な手がかりだった。
+    at: 2026-10-12T17:41:22.936Z
+    ball: none
+    closed: 良かった点
+  - id: t027
+    scene: not-gacha
+    state: 1
+    by: 聴衆役
+    name: 斎藤さん
+    read: 1
+    kind: unconvinced
+    text: 方向まで任せたのは実質 1 日で比較はしていない、とのこと。正直さは買うが、「人の経験が入ると速く安く進む」は対照のない見立てに聞こえた。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t028
+    scene: new-method
+    state: 5
+    by: 聴衆役
+    name: 斎藤さん
+    read: 1
+    kind: good
+    text: そのまま効いたのは全体の見当を付ける所で、古かったのは新方式の中身、という切り分け。自分の経験は古い種類では、という不安にそのまま答えていた。労力が 10 分の 1 という話も、体力の悩みに響いた。
+    at: 2026-10-12T17:41:22.936Z
+    ball: none
+    closed: 良かった点
+  - id: t029
+    scene: beginner
+    state: 3
+    by: 聴衆役
+    name: 斎藤さん
+    read: 1
+    kind: unconvinced
+    text: 数字で測れない仕事の話が、話し手自身も経験のない領域の例だった。経験のある人が数字の出ない場で違和感をどう通すのか、という自分の知りたい場面にはならなかった。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t030
+    scene: release-judge
+    state: 4
+    by: 聴衆役
+    name: 斎藤さん
+    read: 1
+    kind: unconvinced
+    text: 成果は見分ける人のところで決まる、は筋として分かる。ただ、うちの若手が実際に速く成果を出しているのは、見分けられているのか、分からないまま通っているのか、判断材料がなかった。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t031
+    scene: enough
+    state: 2
+    by: 聴衆役
+    name: 斎藤さん
+    read: 1
+    kind: good
+    text: 知識は誰でも手に入るが、差が付いたのはどう使うかの見当、という整理。6 件外れと 3 日で届いた対比があるので、腹に落ちた。
+    at: 2026-10-12T17:41:22.936Z
+    ball: none
+    closed: 良かった点
+  - id: t032
+    scene: build-many
+    state: 3
+    by: 聴衆役
+    name: 斎藤さん
+    read: 1
+    kind: unconvinced
+    text: 自分で使い比べて違いが見える、というのは自分の感覚の範囲の話に聞こえた。それが利用者にとっての価値と合っているかをどう確かめるのかが、語られなかった。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t033
+    scene: my-calls
+    state: 2
+    by: 聴衆役
+    name: 斎藤さん
+    read: 1
+    kind: word
+    text: 「学習データの採点をやり直してもらう」は、説明を 1 度聞いただけでは何をしたのか掴みきれなかった。75 点伸びた、という結果だけ持ち帰った。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t034
+    scene: reading-adr
+    state: 1
+    by: 聴衆役
+    name: 斎藤さん
+    read: 1
+    kind: unreadable
+    text: 設計の記録の実物は、数秒では中身を読めなかった。こういうものを読んでいる、という雰囲気だけ受け取った。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t035
+    scene: someday
+    state: 3
+    by: 聴衆役
+    name: 斎藤さん
+    read: 1
+    kind: jump
+    text: 「積んだものは積み直し続けることになる」「発明する側にはつらい時代」と、直後の「AI だけで簡単に勝てる時代にはなりにくい」のつながりが、耳では追いきれなかった。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t036
+    scene: result
+    state: 4
+    by: 聴衆役
+    name: 斎藤さん
+    read: 1
+    kind: good
+    text: 4000 点には届いていない、3800 点も AI が自分で届いた数字ではない、と先に言い切った所。成功談の自慢ではないと分かり、ここから身を入れて聞けた。
+    at: 2026-10-12T17:41:22.936Z
+    ball: none
+    closed: 良かった点
+  - id: t037
+    scene: hands-on
+    state: 3
+    by: 聴衆役
+    name: 小林さん
+    read: 1
+    kind: good
+    text: 2 案作らせて選ぶ、理由を 1 行残す、あとで見比べる、の 3 つは具体的で、今日いちばんメモしたところです。
+    at: 2026-10-12T17:41:22.936Z
+    ball: none
+    closed: 良かった点
+  - id: t038
+    scene: answer
+    state: 3
+    by: 聴衆役
+    name: 小林さん
+    read: 1
+    kind: good
+    text: 「下がったのは経験を積むためのコスト」で、今からでは間に合わないのではという不安が少し軽くなりました。
+    at: 2026-10-12T17:41:22.936Z
+    ball: none
+    closed: 良かった点
+  - id: t039
+    scene: hands-on
+    state: 3
+    by: 聴衆役
+    name: 小林さん
+    read: 1
+    kind: unconvinced
+    text: 「あとで結果と見比べる」の結果が、自分の課題や個人開発では何になるのか分かりません。使う人も売上もないので、ただの好みで終わりそうです。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t040
+    scene: new-method
+    state: 3
+    by: 聴衆役
+    name: 小林さん
+    read: 1
+    kind: unconvinced
+    text: 「見分けられる所を足場にして隣へ広げた」は、足場がある人の話に聞こえました。足場がまだない自分はどこから始めるのかが気になりました。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t041
+    scene: beginner
+    state: 3
+    by: 聴衆役
+    name: 小林さん
+    read: 1
+    kind: good
+    text: 10 年の経験がある人でも、会員サイトでは「磨いてきたものがない」と言ってくれたので、ここからは自分と同じ立場の話として聞けました。
+    at: 2026-10-12T17:41:22.936Z
+    ball: none
+    closed: 良かった点
+  - id: t042
+    scene: enough
+    state: 3
+    by: 聴衆役
+    name: 小林さん
+    read: 1
+    kind: jump
+    text: 将棋の点数の話から、急に競合やスタートアップの話になりました。「トップ以外はつらい」がなぜなのか、働いたことがないので実感がわかなかったです。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t043
+    scene: setup
+    state: 1
+    by: 聴衆役
+    name: 小林さん
+    read: 1
+    kind: word
+    text: ADR は初めて聞きました。「設計の記録」と言い換えてくれたので付いていけましたが、どんな見た目の文書なのかは最後まで想像でした。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t044
+    scene: release-judge
+    state: 3
+    by: 聴衆役
+    name: 小林さん
+    read: 1
+    kind: word
+    text: CI は聞いたことがある程度です。「自動の検査」と言ってもらえて意味は取れましたが、「価値が上がったかを人が判定する」が実際にどういう作業なのかはイメージできませんでした。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t045
+    scene: reading-adr
+    state: 2
+    by: 聴衆役
+    name: 小林さん
+    read: 1
+    kind: unreadable
+    text: 設計の記録の実物は、拡大されても 3 秒では読めませんでした。話を聞いて内容は分かったので、雰囲気だけ受け取りました。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t046
+    scene: someday
+    state: 3
+    by: 聴衆役
+    name: 小林さん
+    read: 1
+    kind: unconvinced
+    text: 「先を走る人は残る」は分かりますが、先を走れない普通のエンジニアはどうなるのかが気になりました。「積み直し続ける」「つらい時代」と聞いて、少し怖くなりました。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t047
+    scene: six-losses
+    state: 3
+    by: 聴衆役
+    name: 小林さん
+    read: 1
+    kind: good
+    text: AI が 6 件続けて外して「離れる」と結論を出した話は、自分が AI に課題をやらせて行き詰まるときと似ていて、分かりやすかったです。
+    at: 2026-10-12T17:41:22.936Z
+    ball: none
+    closed: 良かった点
+  - id: t048
+    scene: goal
+    state: 1
+    by: 聴衆役
+    name: 小林さん
+    read: 1
+    kind: word
+    text: floodgate とレーティングは知りませんでしたが、「200 点差で 4 回に 3 回勝つ」の説明で、そのあとの点数の話に付いていけました。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t049
+    scene: release-judge
+    state: 4
+    by: 聴衆役
+    name: 佐々木さん
+    read: 1
+    kind: good
+    text: 「成果は見分ける人のところで決まる」は、メンバーごとに成果がばらつく理由の説明としてそのままチームに持ち帰れる
+    at: 2026-10-12T17:41:22.936Z
+    ball: none
+    closed: 良かった点
+  - id: t050
+    scene: someday
+    state: 4
+    by: 聴衆役
+    name: 佐々木さん
+    read: 1
+    kind: unconvinced
+    text: チームの大きさはどれくらいが良いのか、という一番聞きたい問いが「答えがない」で終わった。経営に何と答えるかの材料にならない
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t051
+    scene: hands-on
+    state: 3
+    by: 聴衆役
+    name: 佐々木さん
+    read: 1
+    kind: unconvinced
+    text: 2案作らせて理由を1行残すのは個人ならできる。8人のチームで誰がいつ結果と見比べるのかが分からず、明日変えることに落ちない
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t052
+    scene: beginner
+    state: 3
+    by: 聴衆役
+    name: 佐々木さん
+    read: 1
+    kind: good
+    text: 趣味の話だけで終わるのではと思っていたところで、磨いてきたものがない仕事の話に移った。ここで自分の現場とつながった
+    at: 2026-10-12T17:41:22.936Z
+    ball: none
+    closed: 良かった点
+  - id: t053
+    scene: build-many
+    state: 2
+    by: 聴衆役
+    name: 佐々木さん
+    read: 1
+    kind: unconvinced
+    text: 自分で使い比べて違いが分かるようになった、で止まっている。それで会員サイトの判断が良くなったのかの結果が出てこない
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t054
+    scene: not-gacha
+    state: 1
+    by: 聴衆役
+    name: 佐々木さん
+    read: 1
+    kind: good
+    text: 方向まで任せたのは実質1日で比べていない、と先に言ってくれたので、どこまで信じてよい話かの線引きができた
+    at: 2026-10-12T17:41:22.936Z
+    ball: none
+    closed: 良かった点
+  - id: t055
+    scene: not-gacha
+    state: 3
+    by: 聴衆役
+    name: 佐々木さん
+    read: 1
+    kind: unconvinced
+    text: 「速く、安く進む」は比べていないと言った直後なので、見立てとして聞くしかない。3日で200点は強い例だが1件
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t056
+    scene: delegable
+    state: 2
+    by: 聴衆役
+    name: 佐々木さん
+    read: 1
+    kind: good
+    text: 2つの円の図は一目で分かった。若手は小さい円、ベテランは大きい円、と考えれば両方の悩みに使える
+    at: 2026-10-12T17:41:22.936Z
+    ball: none
+    closed: 良かった点
+  - id: t057
+    scene: new-method
+    state: 5
+    by: 聴衆役
+    name: 佐々木さん
+    read: 1
+    kind: good
+    text: 昔の経験がそのまま効いた所と古くて足りなかった所を分けた話は、ベテランの活かし方を考える材料になる
+    at: 2026-10-12T17:41:22.936Z
+    ball: none
+    closed: 良かった点
+  - id: t058
+    scene: reading-adr
+    state: 1
+    by: 聴衆役
+    name: 佐々木さん
+    read: 1
+    kind: unreadable
+    text: 設計の記録の実物は文字が読めなかった。読めなくても話は追えたが、何が書いてある文書かの手がかりがほしい
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t059
+    scene: method-names
+    state: 1
+    by: 聴衆役
+    name: 佐々木さん
+    read: 1
+    kind: word
+    text: ハーネスエンジニアリング、ループエンジニアリングは初めて聞いた。覚えなくてよいと言われたので引っかからずに済んだ
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t060
+    scene: someday
+    state: 3
+    by: 聴衆役
+    name: 佐々木さん
+    read: 1
+    kind: jump
+    text: 平均点、先を走る人、優位が縮まる速さ、発明する側、と論点が続けて出て、耳だけでは結論がどちらなのか追えなかった
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t061
+    scene: not-gacha
+    state: 1
+    by: 聴衆役
+    name: 吉田さん
+    read: 1
+    kind: unconvinced
+    text: 方向まで任せたのは実質 1 日、6 件の不採用だけで、演題の「任せきった結果」を支えるには標本が小さいと感じた。正直に言ってくれたのは良いが、この告白が後半まで出てこないのも遅い。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t062
+    scene: my-calls
+    state: 1
+    by: 聴衆役
+    name: 吉田さん
+    read: 1
+    kind: good
+    text: 変更前後を対局させる判定では、両方が同じ見落としをするので気づけない、という指摘がいちばんの収穫だった。自動評価ループの盲点として、うちのやり方にもそのまま当てはまる。
+    at: 2026-10-12T17:41:22.936Z
+    ball: none
+    closed: 良かった点
+  - id: t063
+    scene: reading-adr
+    state: 4
+    by: 聴衆役
+    name: 吉田さん
+    read: 1
+    kind: good
+    text: 採用率が 67%、43% から 91% に上がり、3 日で 11 のうち 10 が入ったという数字で、人の判断 1 つの効果が具体的に見えた。
+    at: 2026-10-12T17:41:22.936Z
+    ball: none
+    closed: 良かった点
+  - id: t064
+    scene: batting
+    state: 2
+    by: 聴衆役
+    name: 吉田さん
+    read: 1
+    kind: good
+    text: 公開知識を入れ終えた翌週に採用率 27%、当たりの伸びも 4 分の 1 という数字は、まさに知りたかった頭打ちの実測だった。
+    at: 2026-10-12T17:41:22.936Z
+    ball: none
+    closed: 良かった点
+  - id: t065
+    scene: setup
+    state: 1
+    by: 聴衆役
+    name: 吉田さん
+    read: 1
+    kind: unconvinced
+    text: どのモデルを、何本のエージェントで、どんなハーネスで回したのか、トークン費用はいくらかが最後まで出てこなかった。これがないと自分たちの構成と比べられない。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t066
+    scene: someday
+    state: 2
+    by: 聴衆役
+    name: 吉田さん
+    read: 1
+    kind: unconvinced
+    text: 「AI は平均点のような丸まった答えを出しやすい」は数字のない一般論で、モデルが 1 つ進めば崩れる話ではないかという疑問に答えていなかった。3 か月の間にモデルを変えて挙動が変わったかも聞きたかった。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t067
+    scene: six-losses
+    state: 3
+    by: 聴衆役
+    name: 吉田さん
+    read: 1
+    kind: unconvinced
+    text: 6 件外して「この部分からは離れる」は探索としては妥当な判断にも見える。AI の限界なのか、撤退条件や視野の与え方といったハーネス設計の問題なのかが切り分けられていない。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t068
+    scene: ladder
+    state: 3
+    by: 聴衆役
+    name: 吉田さん
+    read: 1
+    kind: unconvinced
+    text: 「口を出すことが増えた」「関わりが増えている」が定性のままだった。介入の回数や、227 本の記録のうち人が起点の割合、人起点と AI 起点の採用率の差を見たかった。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t069
+    scene: enough
+    state: 3
+    by: 聴衆役
+    name: 吉田さん
+    read: 1
+    kind: good
+    text: 公開知識で届くのは 3400 点まで、競合と同じ所まで来ただけではひっくり返す材料にならない、という整理は自分の問いに直接答えていた。
+    at: 2026-10-12T17:41:22.936Z
+    ball: none
+    closed: 良かった点
+  - id: t070
+    scene: goal
+    state: 4
+    by: 聴衆役
+    name: 吉田さん
+    read: 1
+    kind: unconvinced
+    text: 成功の線の 4000 点は話し手の見立てで置いた数字で、根拠が弱い。計算資源がパソコン 1 台なので、3800 での停滞が方向決めの限界なのか計算量の限界なのかも分からなかった。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t071
+    scene: new-method
+    state: 4
+    by: 聴衆役
+    name: 吉田さん
+    read: 1
+    kind: unreadable
+    text: 改善 9 件の日付と点数の一覧は、1 行ずつ出ても 3 秒では読めなかった。作りの案が 7 連敗、データの案が 4 連勝という数字のほうを画面に出してほしかった。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t072
+    scene: hands-on
+    state: 3
+    by: 聴衆役
+    name: 吉田さん
+    read: 1
+    kind: unconvinced
+    text: 2 案作らせて理由を 1 行残す、は並列でエージェントを回している身には日常で、持ち帰りとしては物足りなかった。会員サイトの試作も「かなりの数」止まりで、数字も結果もなかった。
+    at: 2026-10-12T17:41:22.936Z
+    ball: Claude
+  - id: t073
+    scene: ladder
+    by: Claude
+    text: 段階の数字を、himawari-rs の記録に合わせて引き直しました。3200（AI が 1 つずつ積んだ）、3400（強いソフトの考え方をまとめて移した）、3600（口を出すことが増えた）、3800（方針を決めている）です。うかがっていた「口を出さずに 3400、参照して 3600、経験で 3800」とは違います。この引き方で話して良いですか。
+    at: 2026-10-12T17:50:00.191Z
+    ball: 話者
+  - id: t074
+    scene: result
+    state: 3
+    by: Claude
+    text: "グラフは形だけのラフです。2 週間レーティングの推移と 3800 という値は、リポジトリの記録にありませんでした。`hmwr kifu rate` の出力か Issue #507 の表をもらえますか。"
+    at: 2026-10-12T17:50:00.191Z
+    ball: 話者
+  - id: t075
+    scene: result
+    state: 3
+    by: Claude
+    text: かけた時間は「仕事の片手間、趣味の範囲」と入れました。聴衆役は「週に何時間くらいか」の目安が 1 つあれば足りる、と答えています。言える数字はありますか。
+    at: 2026-10-12T17:50:00.191Z
+    ball: 話者
+  - id: t076
+    scene: reading-adr
+    state: 1
+    by: Claude
+    text: 画面に出す設計の記録が、note の記事の画像の仮置きです。6 件続けて不採用になった件（ADR-0104 のあたり）と、まとめて移す方針（ADR-0109）のどちらかの実物を見せたいです。どこを見せますか。
+    at: 2026-10-12T17:50:00.191Z
+    ball: 話者
+  - id: t077
+    scene: batting
+    state: 1
+    by: Claude
+    text: 採用された割合の棒（67%・43%・91%・27%）は、note の記事の集計を並べたものです。週の区切りと、91% の 3 日間をこの位置に置くことは、合っていますか。
+    at: 2026-10-12T17:50:00.191Z
+    ball: 話者
+  - id: t078
+    scene: someday
+    state: 2
+    by: Claude
+    text: 「AI は何もしなければ平均点のような丸まった答えを出しやすい」が、今回の実験のどこで見えたのかを、聴衆役が聞いています。強いソフトの工夫を 1 つずつ持ってきて外した件がそれに当たる、と言って良いですか。
+    at: 2026-10-12T17:50:00.191Z
+    ball: 話者
+  - id: t079
+    scene: someday
+    state: 3
+    by: Claude
+    text: 「先を走る人は残る」が、世界 9 位の人の話に聞こえる、中堅の居場所はむしろ狭くなるのでは、という反応がありました。「先を走る人」は誰のことだと言いますか。
+    at: 2026-10-12T17:50:00.191Z
+    ball: 話者
+  - id: t080
+    scene: delegable
+    state: 2
+    by: Claude
+    text: 任せられる条件を「良し悪しを機械が測ってくれるか、自分で見分けられるか」にしました。見分けられない新しい方式を任せたのは演題と矛盾する、という指摘への対応です。ここに補足が欲しいとのことでした。どんな補足が要りますか。
+    at: 2026-10-12T17:50:00.191Z
+    ball: 話者
+  - id: t081
+    scene: build-many
+    state: 2
+    by: Claude
+    text: 仕事の側の実例が、まだ入っていません。聴衆役が 3 周とも最後まで納得しなかった所です。会員サイトを細かく話すと知るべきことが増える、とのことで、題材を考えていただいています。
+    at: 2026-10-12T17:50:00.191Z
+    ball: 話者
+  - id: t082
+    scene: hands-on
+    state: 3
+    by: Claude
+    text: 「小さく始めるなら」の 3 つ（2 案作らせて自分で決める／決めた理由を 1 行で残す／あとで結果と見比べる）は、将棋でのやり方を仕事に置き換えた私の提案です。この 3 つで話して良いですか。
+    at: 2026-10-12T17:50:00.191Z
+    ball: 話者
+  - id: t083
+    scene: answer
+    state: 3
+    by: Claude
+    text: 締めの行動を、企画シートの「良し悪しを自分で判定できる題材を 1 つ選ぶ」から、「気になる題材を 1 つ選び、何パターンも作らせて使い比べる」に変えました。判定できる題材が無いのが悩みの人には、出発点にならないためです。これで良いですか。
+    at: 2026-10-12T17:50:00.191Z
+    ball: 話者

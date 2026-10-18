@@ -4,10 +4,11 @@
 読む用の Markdown (`index.md`) の 2 層でアーカイブしています。取り込みと検査は
 `tools/notes` の `hokuchi-note` が行います。詳しくは [ADR-0019](../../docs/adr/0019-note-archive-two-layer.md)。
 
-全 50 本。
+全 51 本。
 
 | 公開日 | タイトル | 原文 |
 |---|---|---|
+| 2026-10-18 | [LINE API Expert制度への感謝](2026-10-18-line-api-expert-thanks/) | [note](https://note.com/kyamamoto9120/n/n4bbb17a0a6ed) |
 | 2026-10-11 | [将棋AI開発日誌](2026-10-11-shogi-ai-two-months/) | [note](https://note.com/kyamamoto9120/n/n063d926295e2) |
 | 2026-10-04 | [次に自動化したいのは記録](2026-10-04-automate-the-record/) | [note](https://note.com/kyamamoto9120/n/n69b154924897) |
 | 2026-09-27 | [2026年9月の活動振り返り](2026-09-27-monthly-review/) | [note](https://note.com/kyamamoto9120/n/ne137a21dd2fe) |

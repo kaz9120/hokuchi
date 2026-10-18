@@ -1,0 +1,49 @@
+{
+  "id": 186180895,
+  "key": "n4bbb17a0a6ed",
+  "slug": "slug-n4bbb17a0a6ed",
+  "type": "TextNote",
+  "status": "published",
+  "format": "3.2",
+  "name": "LINE API Expert制度への感謝",
+  "description": "",
+  "body": "<p name=\"f4c08006-05f2-4d0f-845a-3dba3d1213b3\" id=\"f4c08006-05f2-4d0f-845a-3dba3d1213b3\">初代で、最後の LINE API Platform Evangelist になりました。</p><p name=\"9e226e06-8c8e-4bcd-b3b4-2c2805425a84\" id=\"9e226e06-8c8e-4bcd-b3b4-2c2805425a84\">10月15日、日本の LINE API Expert 制度と LINE API Platform Evangelist（LAPE）制度の終了が発表されました。2026年末の任期満了で終わります。</p><figure name=\"542b41ce-adbb-41a9-b5d2-3eeb4ede6330\" id=\"542b41ce-adbb-41a9-b5d2-3eeb4ede6330\" data-src=\"https://developers.line.biz/ja/news/2026/10/15/line-api-expert-program-in-japan-will-be-discontinued/\" data-identifier=\"null\" embedded-service=\"external-article\" embedded-content-key=\"embbc32af242c5d\"> \n<a href=\"https://developers.line.biz/ja/news/2026/10/15/line-api-expert-program-in-japan-will-be-discontinued/\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong>\n日本におけるLINE API Expert制度終了のお知らせ\n</strong>\n<em>\n日本におけるLINE API Expert、およびLINE API Platform Evangelistの制度は、現在任\n</em>\n<em>\ndevelopers.line.biz\n</em>\n</a><a href=\"https://developers.line.biz/ja/news/2026/10/15/line-api-expert-program-in-japan-will-be-discontinued/\" rel=\"nofollow noopener\" target=\"_blank\"></a>\n\n \n</figure><h2 name=\"12812794-87b4-45f9-bf88-e4566930a051\" id=\"12812794-87b4-45f9-bf88-e4566930a051\">運営を任せてもらえた1年でした</h2><p name=\"930ba7a8-aa8d-48c4-b389-59a6b364b459\" id=\"930ba7a8-aa8d-48c4-b389-59a6b364b459\">私は2024年に LINE API Expert に認定され、2026年1月に LAPE になりました。</p><p name=\"243cbcdf-6b54-4a48-b304-adf27f8391aa\" id=\"243cbcdf-6b54-4a48-b304-adf27f8391aa\">1月の note には、「できた！」に変わる瞬間を一つでも多く見たいと書きました。正直、これはやりきれていません。<br>春ごろから制度の行き先を考えることが増え、この半年は大変でした。</p><figure name=\"79164259-975d-4513-a2f5-61f906e5436d\" id=\"79164259-975d-4513-a2f5-61f906e5436d\" data-src=\"https://note.com/kyamamoto9120/n/nfd82304e4849\" data-identifier=\"nfd82304e4849\" embedded-service=\"note\" embedded-content-key=\"emb9d82965e4474\">\n</figure><p name=\"1e2c432e-a30d-4f8a-81d7-bf84a95b8f43\" id=\"1e2c432e-a30d-4f8a-81d7-bf84a95b8f43\">それでも、LAPE になってよかったと思っています。</p><p name=\"b62b3c5e-b9e3-488e-9163-68471c897716\" id=\"b62b3c5e-b9e3-488e-9163-68471c897716\">LAE だった2年間、私がしていたのはイベントの企画でした。LAPE になってからは、コミュニティ全体を見るようになりました。いちばん嬉しかったのは、Discord で質問や相談が届くようになったことです。</p><p name=\"a8fdff46-5146-4c1c-b918-5e8f0fb74e62\" id=\"a8fdff46-5146-4c1c-b918-5e8f0fb74e62\">1本ずつイベントを企画するのではなく、コミュニティを運営している。そう感じられたのは、この制度があったからです。</p><h2 name=\"5194ca33-f7d5-468e-915c-d2836a14ac2f\" id=\"5194ca33-f7d5-468e-915c-d2836a14ac2f\">ありがとうございました</h2><p name=\"87b1cf8d-fb6c-4598-b4ed-a4902ff6b341\" id=\"87b1cf8d-fb6c-4598-b4ed-a4902ff6b341\">LINEヤフーのみなさん、この制度を続けてくださって、ありがとうございました。一緒に走ってくれたしげるさん、スペシャルマンさん、前田さん。LAE のみなさん。本当にありがとうございました。</p><p name=\"798b4337-70d4-47e2-80ec-bfce40fd8469\" id=\"798b4337-70d4-47e2-80ec-bfce40fd8469\">形は変わりますが、コミュニティは続けるつもりです。その話は、またあらためて。</p>",
+  "separator": null,
+  "publish_at": "2026-10-18T12:44:34.000+09:00",
+  "created_at": "2026-10-18T12:31:48.000+09:00",
+  "note_url": "https://note.com/kyamamoto9120/n/n4bbb17a0a6ed",
+  "price": 0,
+  "is_limited": false,
+  "is_trial": false,
+  "eyecatch": "https://assets.st-note.com/production/uploads/images/325652599/rectangle_large_type_2_7e8fc5762a6695b37d4859f35e162d23.png?fit=bounds&quality=85&width=1280",
+  "eyecatch_alt": "見出し画像",
+  "eyecatch_width": 1920,
+  "eyecatch_height": 1005,
+  "hashtags": [],
+  "pictures": [],
+  "embedded_contents": [
+    {
+      "key": "embbc32af242c5d",
+      "url": "https://developers.line.biz/ja/news/2026/10/15/line-api-expert-program-in-japan-will-be-discontinued/",
+      "service": "external-article",
+      "identifier": null,
+      "caption": null,
+      "html_for_embed": "<span><div class=\"external-article-widget\">\n<a href=\"https://developers.line.biz/ja/news/2026/10/15/line-api-expert-program-in-japan-will-be-discontinued/\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong class=\"external-article-widget-title\">\n日本におけるLINE API Expert制度終了のお知らせ\n</strong>\n<em class=\"external-article-widget-description\">\n日本におけるLINE API Expert、およびLINE API Platform Evangelistの制度は、現在任\n</em>\n<em class=\"external-article-widget-url\">\ndevelopers.line.biz\n</em>\n</a><a class=\"external-article-widget-image\" href=\"https://developers.line.biz/ja/news/2026/10/15/line-api-expert-program-in-japan-will-be-discontinued/\" rel=\"nofollow noopener\" style=\"background-image: url('https://assets.st-note.com/production/uploads/ext/6e19d15d124925ba4e4463ee4f80abea4b25f9cbac1cae801086862f57b6.jpeg?x-type=ogp');\" target=\"_blank\"></a>\n\n</div>\n</span>",
+      "html_for_display": null
+    },
+    {
+      "key": "emb9d82965e4474",
+      "url": "https://note.com/kyamamoto9120/n/nfd82304e4849",
+      "service": "note",
+      "identifier": "nfd82304e4849",
+      "caption": null,
+      "html_for_embed": "<iframe class=\"note-embed\" height=\"210\" scrolling=\"no\" src=\"https://note.com/embed/notes/nfd82304e4849\" style=\"border: 0; display: block; max-width: 99%; width: 494px; padding: 0px; margin: 10px 0px; position: static; visibility: visible;\"></iframe>\n",
+      "html_for_display": null
+    }
+  ],
+  "user": {
+    "urlname": "kyamamoto9120",
+    "nickname": "山本一将｜焚き火を愛するエンジニア"
+  },
+  "_fetched_at": "2026-10-18T03:49:16.619Z"
+}

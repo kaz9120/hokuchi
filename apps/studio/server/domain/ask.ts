@@ -1,15 +1,18 @@
-// 段階ごとに「AI に頼めること」。ローカルの Claude Code を非対話で 1 回呼び、候補を JSON で受け取る (ADR-0036)。
-// AI は候補を出すだけで、企画シートの欄は書き換えない。選んで欄に入れるのは人
-import { spawn } from 'node:child_process'
+// 企画の段階ごとに「Claude に頼めること」(ADR-0036)。候補を出すだけで、欄は書き換えない。選んで欄に入れるのは人。
+// 出した候補は企画シートの candidates に残す (あとで見返せるように)
 import YAML from 'yaml'
+import type { Candidate } from '../../shared/api.ts'
+import { askClaude } from '../infra/claude.ts'
+import { repoRoot } from '../infra/config.ts'
+import { invalid } from '../infra/errors.ts'
+import { mediaOf } from '../media/index.ts'
+import { readBrief, writeBrief } from './brief.ts'
+import type { WorkRef } from './work.ts'
 
-const WORD = {
-  talk: { work: '発表', oneLiner: '中核メッセージ', audience: '聴衆', reader: '聴衆' },
-  note: { work: 'note の記事', oneLiner: '芯', audience: '読者', reader: '読者' },
-}
+type Words = { work: string; oneLiner: string; audience: string }
 
 /** 依頼の一覧。画面はこの key でボタンを出す */
-export const TASKS = {
+export const TASKS: Record<string, { label: string; draft?: boolean; prompt: (w: Words) => string }> = {
   'audience.gaps': {
     label: '足りない問いを洗い出す',
     prompt: (w) =>
@@ -43,8 +46,13 @@ export const TASKS = {
   },
 }
 
-function buildPrompt(brief, task, draft) {
-  const w = WORD[brief.kind] ?? WORD.note
+export const taskLabels = () => Object.fromEntries(Object.entries(TASKS).map(([k, t]) => [k, t.label]))
+
+function prompt(ref: WorkRef, task: string) {
+  const media = mediaOf(ref.kind)
+  const w = media.words
+  const brief = ref.brief!
+  const draft = TASKS[task].draft ? media.draftForAsk(ref) : null
   const sheet = YAML.stringify({ 種類: w.work, タイトル: brief.title || '(未定)', 欄: brief.fields ?? {} }, { lineWidth: 0 })
   return [
     `あなたは、書き手と一緒に${w.work}を企画している相談相手です。決めるのは書き手で、あなたは候補と講評を出します。`,
@@ -52,7 +60,7 @@ function buildPrompt(brief, task, draft) {
     '',
     '## 企画シート',
     sheet,
-    ...(TASKS[task].draft && draft ? ['## 原稿', draft, ''] : []),
+    ...(draft ? ['## 原稿', draft, ''] : []),
     '## 依頼',
     TASKS[task].prompt(w),
     '',
@@ -61,24 +69,12 @@ function buildPrompt(brief, task, draft) {
   ].join('\n')
 }
 
-/** 依頼を 1 回投げて、候補の配列を返す */
-export function ask(brief, task, { cwd, draft = null }) {
-  if (!TASKS[task]) return Promise.reject(new Error(`依頼「${task}」はありません`))
-  return new Promise((ok, ng) => {
-    const p = spawn('claude', ['-p', '--output-format', 'json'], { cwd, stdio: ['pipe', 'pipe', 'pipe'] })
-    let out = ''
-    let err = ''
-    p.stdout.on('data', (d) => (out += d))
-    p.stderr.on('data', (d) => (err += d))
-    p.on('close', (code) => {
-      try {
-        const result = JSON.parse(out).result ?? ''
-        const json = result.slice(result.indexOf('{'), result.lastIndexOf('}') + 1)
-        ok((JSON.parse(json).items ?? []).map((i) => ({ text: String(i.text ?? ''), note: String(i.note ?? '') })))
-      } catch (e) {
-        ng(new Error(`Claude の答えを読めませんでした (${code}): ${err || out.slice(0, 300) || e.message}`))
-      }
-    })
-    p.stdin.end(buildPrompt(brief, task, draft))
-  })
+export async function ask(ref: WorkRef, task: string): Promise<Candidate[]> {
+  if (!TASKS[task]) throw invalid(`依頼「${task}」はありません`)
+  if (!ref.brief) throw invalid('企画シートの無い作品には頼めません')
+  const raw = await askClaude(prompt(ref, task), { cwd: repoRoot })
+  const items: Candidate[] = (raw.items ?? []).map((i: any) => ({ text: String(i.text ?? ''), note: String(i.note ?? '') }))
+  const latest = readBrief(ref.brief.id)!.brief
+  writeBrief(ref.brief.id, { candidates: { ...(latest.candidates ?? {}), [task]: { at: new Date().toISOString(), items } } })
+  return items
 }

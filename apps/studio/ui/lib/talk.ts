@@ -1,5 +1,7 @@
-// 発表 1 本の絵コンテ・指摘・聴衆役の読みを、studio のサーバから読む (ADR-0040)
-import { useEffect, useState } from 'react'
+// 発表 1 本の絵コンテ・指摘・聴衆役の読みを、studio のサーバから読む (ADR-0040)。
+// サーバの作品の WorkView (shared/api.ts) を、いまの画面の形 (Talk) に写して渡す
+import type { WorkView } from '../../shared/api'
+import { current, useWork, workPath, write } from './works'
 
 export type Koma = { screen: string; roles: string[]; notes: string[] }
 export type Scene = { id: string; title: string; chapter: string | null; meta: Record<string, string>; states: Koma[]; notes: string[] }
@@ -23,6 +25,8 @@ export type Thread = {
   replies?: Reply[]
   ball: '話者' | 'Claude' | 'none'
   closed?: string
+  /** スレッドの版。返信・閉じるときにサーバへ送る */
+  rev?: string
 }
 
 export type Score = { score: number; reason: string }
@@ -48,50 +52,62 @@ export type Talk = {
   work: { id: string; oneLiner: string } | null
 }
 
-const base = (slug: string) => `/api/talks/${encodeURIComponent(slug)}`
-const send = (url: string, method: string, body?: unknown) => fetch(url, { method, headers: { 'content-type': 'application/json' }, body: JSON.stringify(body ?? {}) })
+/** 作品の WorkView を、発表の画面が使う形にする (段 2 で画面を作り直すまでの橋渡し) */
+export function toTalk(v: WorkView): Talk | null {
+  const b = v.body
+  if (!b || b.kind !== 'talk') return null
+  return {
+    talk: { slug: b.slug, name: b.name, date: b.date, tag: b.tag, title: b.title, dir: b.dir, outside: b.outside, event: b.event, minutes: b.minutes },
+    board: b.board,
+    scenes: b.implemented,
+    loadError: b.loadError,
+    thumbsVersion: b.thumbsVersion,
+    stageUrl: b.stageUrl,
+    threads: v.threads.items as Thread[],
+    error: v.threads.error,
+    reads: v.reads as Read[],
+    reading: v.reading,
+    readers: v.readers,
+    survey: v.survey,
+    noteKinds: v.unitKinds,
+    work: v.brief ? { id: v.brief.id, oneLiner: v.oneLiner } : null,
+  }
+}
 
-/** 画面からの操作。どれもファイルを書き換え、サーバが変化を知らせてくる */
-export const talkApi = (slug: string) => ({
-  thumb: (scene: string, i: number, v: number) => `${base(slug)}/thumb/${scene}-${i}?v=${v}`,
-  saveNotes: (scene: string, state: number, text: string) => send(`${base(slug)}/note`, 'PUT', { scene, state, text }),
-  saveMeta: (scene: string, key: '伝えること' | '粗密', value: string) => send(`${base(slug)}/meta`, 'PUT', { scene, key, value }),
-  move: (scene: string, dir: 1 | -1) => send(`${base(slug)}/move`, 'POST', { scene, dir }),
-  open: (scene: string, state: number | null, text: string) => send(`${base(slug)}/threads`, 'POST', { scene, state, text }),
-  reply: (id: string, text: string) => send(`${base(slug)}/threads/${id}/reply`, 'POST', { text }),
-  close: (id: string, how: '直した' | 'そのままにした') => send(`${base(slug)}/threads/${id}/close`, 'POST', { how }),
-  reopen: (id: string) => send(`${base(slug)}/threads/${id}/reopen`, 'POST'),
-  read: () => send(`${base(slug)}/read`, 'POST'),
+const keyOf = (slug: string) => `talk:${slug}`
+const sceneOf = (v: WorkView, scene: string) => (v.body?.kind === 'talk' ? v.body.board.scenes.find((s) => s.id === scene) : undefined)
+/** 指摘のスレッドへの操作。発表と記事で共通。rev は手元の最新の WorkView から添える */
+export const threadOps = (key: string) => ({
+  reply: async (id: string, text: string) => write(key, `/threads/${id}/reply`, 'POST', { rev: revOf(await current(key), id), text }),
+  close: async (id: string, how: '直した' | 'そのままにした') => write(key, `/threads/${id}/close`, 'POST', { rev: revOf(await current(key), id), how }),
+  reopen: async (id: string) => write(key, `/threads/${id}/reopen`, 'POST', { rev: revOf(await current(key), id) }),
 })
+const revOf = (v: WorkView, id: string) => v.threads.items.find((t) => t.id === id)?.rev ?? ''
+
+/** 画面からの操作。どれもファイルを書き換え、サーバが変化を知らせてくる。コマの番号は、画面の中では 0 始まり、API は 1 始まり */
+export const talkApi = (slug: string) => {
+  const key = keyOf(slug)
+  return {
+    thumb: (scene: string, i: number, v: number) => `${workPath(key)}/thumbs/${scene}/${i + 1}?v=${v}`,
+    saveNotes: async (scene: string, state: number, text: string) => write(key, `/units/${scene}/${state + 1}`, 'PUT', { orig: sceneOf(await current(key), scene)?.notes[state] ?? '', text }),
+    saveMeta: async (scene: string, k: '伝えること' | '粗密', value: string) => write(key, '/outline', 'PATCH', { op: 'meta', scene, key: k, orig: sceneOf(await current(key), scene)?.meta[k] ?? '', value }),
+    move: async (scene: string, dir: 1 | -1) => {
+      const v = await current(key)
+      return write(key, '/outline', 'PATCH', { op: 'move', scene, dir, base: v.body?.kind === 'talk' ? v.body.version : '' })
+    },
+    open: (scene: string, state: number | null, text: string) => write(key, '/threads', 'POST', { at: { scene, state }, text }),
+    ...threadOps(key),
+    read: () => write(key, '/read', 'POST', {}),
+  }
+}
 export type TalkApi = ReturnType<typeof talkApi>
 /** 指摘のスレッドへの操作。発表と記事の原稿 (ADR-0046) で共通 */
 export type ThreadApi = Pick<TalkApi, 'reply' | 'close' | 'reopen'>
 
 /** トークの状態を読み、ファイルが変わるたびに受け取り直す */
 export function useTalk(slug: string | undefined) {
-  const [data, setData] = useState<Talk | null>(null)
-  const [thumbs, setThumbs] = useState(0)
-  const [reading, setReading] = useState<Reading | null>(null)
-  useEffect(() => {
-    if (!slug) return
-    fetch(`${base(slug)}/state`)
-      .then((r) => r.json())
-      .then((d: Talk) => {
-        setData(d)
-        setThumbs(d.thumbsVersion)
-        setReading(d.reading)
-      })
-    const es = new EventSource(`/api/events?talk=${encodeURIComponent(slug)}`)
-    es.addEventListener('board', (e) => {
-      const d = JSON.parse((e as MessageEvent).data) as Talk
-      setData(d)
-      setReading(d.reading)
-    })
-    es.addEventListener('thumbs', (e) => setThumbs(JSON.parse((e as MessageEvent).data).version))
-    es.addEventListener('reading', (e) => setReading(JSON.parse((e as MessageEvent).data)))
-    return () => es.close()
-  }, [slug])
-  return { data, thumbs, reading }
+  const { data, thumbs, reading } = useWork(slug ? keyOf(slug) : undefined)
+  return { data: data ? toTalk(data) : null, thumbs, reading }
 }
 
 // ---------------------------------------------------------------- 時間

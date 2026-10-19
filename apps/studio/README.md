@@ -33,10 +33,22 @@ bun run studio <talk>    # 同じものを立て、そのトークの編集画�
 
 ## しくみ
 
+作り直しの途中です (ADR-0049、計画は `docs/rebuild.md`)。サーバは段 1 で作り直し、画面は段 2 以降で作り直します。
+
+```
+server/
+  main.ts    起動。画面 (5300)・サイト全体の開発サーバ (5280)・撮影に使うブラウザを立てる
+  http/      ルーティングと、薄いハンドラ (routes.ts)
+  domain/    作品 (work.ts)・状態の表 (state.ts)・企画シート・ネタ・指摘・読み・ごみ箱・作品ごとの購読 (sessions.ts)
+  media/     発表と記事の違いを持つ部品 (talk.ts・note.ts)。kind の分岐は media/index.ts の 1 か所だけ
+  infra/     ファイルの読み書き (版つき)・監視・SSE・claude の呼び出し・撮影・サイト
+shared/      画面とサーバで共有する型 (API の契約。先頭に API の一覧)
+ui/          画面。ui/lib/works.ts が作品ごとのデータの層、ui/lib/api.ts・talk.ts・note.ts がいまの画面への橋渡し
+test/        振る舞いの固定 (studio.test.ts) と API の規則 (contract.test.ts)。bun run test:studio
+```
+
+- サーバは TypeScript で、Node 22 の型の取り除き (`--experimental-strip-types`) で動かします。ビルドは要りません。型検査は `bun run typecheck` です
+- 書き込みは、どのファイルも「読んだ版や中身と違えば保存しない」(409) にそろえています。Claude Code と画面が同じファイルを直すためです
+- 撮影とファイルの監視は、作品の画面を開いているあいだだけ動きます。閉じると止まります
+- 新しいトークを置き場の `talks/` に足すと、ホームを開き直すだけで一覧に並びます (studio の立て直しは要りません)
 - 新しい画面は shadcn/ui (Tailwind v4) で作っています。部品は `ui/components/ui/` にあり、`bunx shadcn@latest add <部品>` で足せます (`apps/studio` で実行)。CLI が `cn` の読み込み先を `"cn"` と書くことがあるので、`@/lib/utils` に直してください
-- `store.mjs` が置き場、`notes.mjs` が公開済みの記事、`ai.mjs` が AI に頼めること (`claude -p` の単発の依頼) を持ちます
-- `server.mjs` が、画面 (5300)・サイト全体の開発サーバ (5280、`apps/slides/site-server.mjs`)・描画の撮影 (Playwright)・ファイルの監視を持ちます。プレビューと撮影は、サイトの開発サーバのトークの URL (`/<slug>/`) から描きます
-- 撮影・ファイルの監視・Claude の会話は、トークの編集画面を初めて開いたときに立てます。トークのファイルが変わると、ボードを読み直して描画を撮り直します
-- 新しいトークを `talks/` に足したら、studio を立て直すと一覧に並びます
-- `claude.mjs` が、ローカルの Claude Code を非対話モード (`claude -p` のストリーム入出力) で常駐させます。話者がログインしている Claude Code をそのまま使います。会話は `talks/<トーク>/out/studio-session.txt` の session id で続きから再開します。最初からやり直したいときは、このファイルを消してください
-- 確認なしで許可しているのは、ファイルの読み書きと、`bun run check`・`bun run typecheck`・粗密の確認だけです

@@ -34,7 +34,6 @@
     "examples",
     "../../talks/*/talk.tsx",
     "../../talks/*/scenes",
-    "../../parts",
-    "../../apps/studio/ui"
+    "../../parts"
   ]
 }

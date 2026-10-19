@@ -1,6 +1,8 @@
-// 記事の原稿 (ADR-0046) を、studio のサーバから読み書きする。段落を単位に、本文・検査・指摘を扱う
-import { useEffect, useState } from 'react'
-import { forClaude, type Persona, type Read, type Reading, type Thread } from './talk'
+// 記事の原稿 (ADR-0046) を、studio のサーバから読み書きする。段落を単位に、本文・検査・指摘を扱う。
+// サーバの作品の WorkView (shared/api.ts) を、いまの画面の形 (Draft) に写して渡す
+import type { PasteText, WorkView } from '../../shared/api'
+import { forClaude, threadOps, type Persona, type Read, type Reading, type Thread } from './talk'
+import { call, current, useWork, workPath, write } from './works'
 
 export type Block = { n: number; kind: 'heading' | 'image' | 'code' | 'embed' | 'quote' | 'list' | 'comment' | 'prose'; text: string; head: string }
 /** lint の検査結果。n は寄せた段落の番号。記事全体のものは null */
@@ -27,7 +29,9 @@ export type Draft = {
   stats: { chars: number; paragraphs: number; sentences: number; medianSentence: number; images: number; headings: number }
   sections: SectionChars[]
   assets: string[]
-  outline: { exists: boolean; sections: Section[] }
+  outline: { exists: boolean; sections: Section[]; version: string }
+  version: string
+  metaVersion: string
   threads: Thread[]
   error: string | null
   noteKinds: Record<string, string>
@@ -38,60 +42,60 @@ export type Draft = {
   reading: Reading | null
   work: { id: string; oneLiner: string; candidates: Record<string, { at: string; items: { text: string; note: string }[] }> } | null
 }
-export type PasteText = { text: string; images: { n: number; file: string; path: string; caption: string; link: string | null }[]; eyecatch: string | null }
+export type { PasteText }
 
-const base = (slug: string) => `/api/drafts/${encodeURIComponent(slug)}`
-const send = async (url: string, method: string, body?: unknown) => {
-  const r = await fetch(url, { method, headers: { 'content-type': 'application/json' }, body: JSON.stringify(body ?? {}) })
-  if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error ?? `${r.status}`)
-  return r
+/** 作品の WorkView を、原稿の画面が使う形にする (段 2 で画面を作り直すまでの橋渡し) */
+export function toDraft(v: WorkView): Draft | null {
+  const b = v.body
+  if (!b || b.kind !== 'note') return null
+  return {
+    ...b,
+    threads: v.threads.items as Thread[],
+    error: v.threads.error,
+    noteKinds: v.unitKinds,
+    survey: v.survey,
+    readers: v.readers,
+    personas: v.personas as Persona[],
+    reads: v.reads as Read[],
+    reading: v.reading,
+    work: v.brief ? { id: v.brief.id, oneLiner: v.oneLiner, candidates: v.brief.candidates ?? {} } : null,
+  }
 }
 
-/** 画面からの操作。どれもファイルを書き換え、サーバが変化を知らせてくる */
-export const draftApi = (slug: string) => ({
-  asset: (rel: string) => `${base(slug)}/${rel}`,
-  /** 段落 n を直す。orig は読んだときの段落で、ほかで変わっていれば保存しない */
-  saveBlock: (n: number, orig: string, text: string) => send(`${base(slug)}/block`, 'PUT', { n, orig, text }),
-  append: (text: string) => send(`${base(slug)}/append`, 'POST', { text }),
-  saveOutline: (sections: Section[]) => send(`${base(slug)}/outline`, 'PUT', { sections }),
-  /** front matter を書き換える。title は企画シートの title にも揃える */
-  setMeta: (meta: { title?: string; tags?: string[]; eyecatch?: string | null }) => send(`${base(slug)}/meta`, 'PUT', meta),
-  saveReaders: (readers: { persona: string; why?: string }[]) => send(`${base(slug)}/readers`, 'PUT', { readers }),
-  read: () => send(`${base(slug)}/read`, 'POST'),
-  paste: async () => (await fetch(`${base(slug)}/paste`)).json() as Promise<PasteText>,
-  openAssets: () => send(`${base(slug)}/open-assets`, 'POST'),
-  open: (para: number | '*', text: string) => send(`${base(slug)}/threads`, 'POST', { para, text }),
-  reply: (id: string, text: string) => send(`${base(slug)}/threads/${id}/reply`, 'POST', { text }),
-  close: (id: string, how: '直した' | 'そのままにした') => send(`${base(slug)}/threads/${id}/close`, 'POST', { how }),
-  reopen: (id: string) => send(`${base(slug)}/threads/${id}/reopen`, 'POST'),
-})
+const keyOf = (slug: string) => `draft:${slug}`
+const noteBody = (v: WorkView) => (v.body?.kind === 'note' ? v.body : null)
+
+/** 画面からの操作。どれもファイルを書き換え、サーバが変化を知らせてくる。書くときは、手元の最新の版を添える */
+export const draftApi = (slug: string) => {
+  const key = keyOf(slug)
+  return {
+    asset: (rel: string) => `${workPath(key)}/${rel}`,
+    /** 段落 n を直す。orig は読んだときの段落で、ほかで変わっていれば保存しない */
+    saveBlock: (n: number, orig: string, text: string) => write(key, `/units/${n}`, 'PUT', { orig, text }),
+    append: (text: string) => write(key, '/units', 'POST', { text }),
+    saveOutline: async (sections: Section[]) => write(key, '/outline', 'PATCH', { op: 'replace', base: noteBody(await current(key))?.outline.version ?? 'none', sections }),
+    /** front matter を書き換える。title は企画シートの title にも揃える */
+    setMeta: async (meta: { title?: string; tags?: string[]; eyecatch?: string | null }) => {
+      if (meta.title !== undefined) await write(key, '/title', 'PUT', { orig: (await current(key)).title, title: meta.title })
+      if (meta.tags === undefined && meta.eyecatch === undefined) return
+      const b = noteBody(await current(key))
+      return write(key, '/meta', 'PATCH', { base: b?.metaVersion ?? 'none', ...(meta.tags !== undefined && { tags: meta.tags }), ...(meta.eyecatch !== undefined && { eyecatch: meta.eyecatch }) })
+    },
+    saveReaders: async (readers: { persona: string; why?: string }[]) => write(key, '/readers', 'PUT', { base: (await current(key)).readersVersion, readers }),
+    read: () => write(key, '/read', 'POST', {}),
+    paste: () => call<PasteText>(`${workPath(key)}/paste`),
+    openAssets: () => call(`${workPath(key)}/open-assets`, 'POST', {}),
+    open: (para: number | '*', text: string) => write(key, '/threads', 'POST', { at: { para }, text }),
+    ...threadOps(key),
+  }
+}
 export type DraftApi = ReturnType<typeof draftApi>
 
-/** 原稿を読み、ファイルが変わるたびに受け取り直す。原稿が無ければ null のまま */
+/** 原稿を読み、ファイルが変わるたびに受け取り直す。原稿が無ければ missing */
 export function useDraft(slug: string | undefined) {
-  const [data, setData] = useState<Draft | null>(null)
-  const [missing, setMissing] = useState(false)
-  const [reading, setReading] = useState<Reading | null>(null)
-  useEffect(() => {
-    setData(null)
-    setMissing(false)
-    if (!slug) return
-    fetch(`${base(slug)}/state`).then(async (r) => {
-      if (!r.ok) return setMissing(true)
-      const d = (await r.json()) as Draft
-      setData(d)
-      setReading(d.reading)
-    })
-    const es = new EventSource(`/api/events?note=${encodeURIComponent(slug)}`)
-    es.addEventListener('draft', (e) => {
-      const d = JSON.parse((e as MessageEvent).data) as Draft
-      setData(d)
-      setReading(d.reading)
-    })
-    es.addEventListener('reading', (e) => setReading(JSON.parse((e as MessageEvent).data)))
-    return () => es.close()
-  }, [slug])
-  return { data, missing, reading }
+  const { data, missing, reading } = useWork(slug ? keyOf(slug) : undefined)
+  const draft = data ? toDraft(data) : null
+  return { data: draft, missing: missing || (!!data && !draft), reading }
 }
 
 /** Claude Code に渡す依頼文。原稿と指摘のファイルの場所を入れる */

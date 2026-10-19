@@ -2,34 +2,9 @@
 // 画面の言葉は、本を読んでいない人にも通じるように書く (知識の呪いを避ける。docs/design.md の 6)
 export type Kind = 'talk' | 'note'
 
-export type Persona = {
-  name: string
-  who: string
-  why: string
-  trouble: string
-  solve: string
-  action: string
-  pushback: string
-  approach: string
-}
-
-export type Brief = {
-  /** 紐づくトークの slug (talks/ か、置き場の talks/ の中の発表)。流れ・コマ・読み・公開のタブは、その絵コンテを読む (ADR-0040・ADR-0041) */
-  talk?: string
-  /** 紐づく記事の slug (articles/note/drafts/<slug>/。公開すると articles/note/<公開日>-<slug>/ になる) */
-  note?: string
-  /** 「完成にする」を押した日時。「下書きに戻す」で消える。公開かどうかは実物から決めるので書かない (ADR-0045) */
-  finishedAt?: string
-  id: string
-  kind: Kind
-  title: string
-  createdAt: string
-  updatedAt: string
-  seedId: string | null
-  fields: Record<string, any> & { personas?: Persona[] }
-  gates: Record<string, { passedAt: string; value: string }>
-  candidates: Record<string, { at: string; items: { text: string; note: string }[] }>
-}
+/** 聴衆を描く 7 つの問い。企画シートの型は、画面とサーバで共有する (shared/api.ts) */
+export type { AudiencePersona as Persona, Brief } from '../../shared/api'
+import type { AudiencePersona as Persona, Brief } from '../../shared/api'
 
 export type Option = { value: string; description?: string }
 

@@ -19,6 +19,14 @@ export function Home() {
   const reload = () => api.home().then(setData)
   useEffect(() => {
     reload()
+    // 置き場が変わったら (Claude Code が企画や原稿を直したときも) 読み直す
+    let timer: number | undefined
+    const es = new EventSource('/api/events?home=1')
+    es.addEventListener('home', () => {
+      clearTimeout(timer)
+      timer = window.setTimeout(reload, 300)
+    })
+    return () => es.close()
   }, [])
 
   const start = async (kind: Kind, seedId?: string) => {

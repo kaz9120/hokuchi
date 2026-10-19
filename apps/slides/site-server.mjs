@@ -19,26 +19,65 @@ export const PORT = 5280
 
 /**
  * サイト全体の開発サーバを立てる。studio も同じものを、同じプロセスの中で立てる (ADR-0035)。
- * 戻り値の talks は slug → { dir, info, vite, firstScene, og, outside }。browser を渡すと、表紙の撮影に使い回す。
+ * 戻り値の talks は slug → { dir, info, vite, firstScene, og, outside }。refresh で置き場を読み直し、unmount で 1 本を外す。browser を渡すと、表紙の撮影に使い回す。
  * moreTalkDirs は、talks/ のほかに読むトークの置き場。そこのトークは outside の印を持ち、talk.tsx に関わらず非公開として扱う
  */
 export async function startSite({ port = PORT, browser: shared = null, quiet = false, moreTalkDirs = [] } = {}) {
   const http = createHttp()
-  const roots = [{ dir: join(repoRoot, 'talks'), outside: false }, ...moreTalkDirs.filter((d) => existsSync(d)).map((dir) => ({ dir, outside: true }))]
-  const dirs = roots.flatMap(({ dir, outside }) =>
-    readdirSync(dir)
-      .filter((n) => !n.startsWith('_') && !n.startsWith('.'))
-      .map((n) => ({ dir: join(dir, n), outside }))
-      .filter((t) => isTalkDir(t.dir))
-      .sort((a, b) => (a.dir < b.dir ? -1 : 1)),
-  )
+  const scan = () => {
+    const roots = [{ dir: join(repoRoot, 'talks'), outside: false }, ...moreTalkDirs.filter((d) => existsSync(d)).map((dir) => ({ dir, outside: true }))]
+    return roots.flatMap(({ dir, outside }) =>
+      readdirSync(dir)
+        .filter((n) => !n.startsWith('_') && !n.startsWith('.'))
+        .map((n) => ({ dir: join(dir, n), outside }))
+        .filter((t) => isTalkDir(t.dir))
+        .sort((a, b) => (a.dir < b.dir ? -1 : 1)),
+    )
+  }
 
   /** slug → { info, vite, og } */
   const talks = new Map()
-  for (const { dir, outside } of dirs) {
+  for (const { dir, outside } of scan()) {
     const t = await mountTalk(dir, http, outside)
     if (talks.has(t.info.slug)) throw new Error(`/${t.info.slug}/ が重複しています。talk.tsx の slug で区別してください`)
     talks.set(t.info.slug, t)
+  }
+
+  /** トークを外す。ディレクトリを動かす前に呼ぶ (studio が下書きをごみ箱に移すとき) */
+  const unmount = async (slug) => {
+    const t = talks.get(slug)
+    if (!t) return
+    talks.delete(slug)
+    await t.vite.close()
+  }
+  /**
+   * 置き場を読み直し、増えたトークを立て、消えたトークを外す。立て直さずにトークを足せるようにする (studio が使う)。
+   * 立てられなかったトークは飛ばし、その理由を返す
+   */
+  let refreshing = null
+  const rescan = async () => {
+    const errors = []
+    const found = scan()
+    for (const [slug, t] of [...talks]) if (!found.some((f) => f.dir === t.dir)) await unmount(slug)
+    for (const { dir, outside } of found) {
+      if ([...talks.values()].some((t) => t.dir === dir)) continue
+      try {
+        const t = await mountTalk(dir, http, outside)
+        if (talks.has(t.info.slug)) {
+          await t.vite.close()
+          throw new Error(`/${t.info.slug}/ が重複しています`)
+        }
+        talks.set(t.info.slug, t)
+      } catch (e) {
+        errors.push(`${dir}: ${e.message ?? e}`)
+      }
+    }
+    return errors
+  }
+  // 同時に呼ばれたら、走っている読み直しを待つ。終わったら次の呼び出しでまた読み直す
+  const refresh = () => {
+    refreshing ??= rescan().finally(() => (refreshing = null))
+    return refreshing
   }
 
   // トップページと 404 ページは、サイト用の Vite に通して agentation を差し込む。
@@ -120,7 +159,7 @@ export async function startSite({ port = PORT, browser: shared = null, quiet = f
     if (browser && browser !== shared) await browser.close()
     http.close()
   }
-  return { talks, url, close }
+  return { talks, url, close, refresh, unmount }
 }
 
 /**

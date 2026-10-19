@@ -2,10 +2,10 @@
   "name": "@hokuchi/studio",
   "private": true,
   "type": "module",
-  "description": "発表資料と記事を、企画から公開まで作るローカルの制作アプリ (ADR-0036・ADR-0040)",
+  "description": "発表資料と記事を、企画から公開まで作るローカルの制作アプリ (ADR-0036・ADR-0040・ADR-0049)",
   "scripts": {
-    "start": "node server.mjs",
-    "test": "node --experimental-strip-types --disable-warning=ExperimentalWarning --test test/studio.test.ts"
+    "start": "node --experimental-strip-types --disable-warning=ExperimentalWarning server/main.ts",
+    "test": "node --experimental-strip-types --disable-warning=ExperimentalWarning --test test/studio.test.ts test/contract.test.ts"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",

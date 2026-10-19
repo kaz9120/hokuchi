@@ -10,6 +10,7 @@ import { mine } from '@/lib/talk'
 import { cn } from '@/lib/utils'
 import type { Thread } from '@/lib/talk'
 import { facesOf, planOf, type Child, type FaceItem } from './faces'
+import { freshReaderNotes, openInbox, toggleInbox, useInboxOpen, useSeenVersion } from './Inbox'
 
 /** 発表の日まで、あと何日か */
 const daysTo = (date: string | null) => (date && /^\d{4}-\d{2}-\d{2}/.test(date) ? Math.ceil((new Date(`${date.slice(0, 10)}T00:00:00`).getTime() - new Date(new Date().toDateString()).getTime()) / 86400000) : null)
@@ -217,23 +218,42 @@ const Mine = ({ n }: { n: number }) => (
 
 // ---------------------------------------------------------------- 受け渡し
 
-/** あなた宛てと Claude への件数。件数は画面の中でここにだけ出す。「Claude へ」は押すと依頼文をコピーする */
+/**
+ * あなた宛てと Claude への件数。件数は画面の中でここにだけ出す。
+ * 「あなた宛て」は受信箱を開く。「Claude へ」は押すと依頼文をコピーする。聴衆役の感想が届いたばかりなら、その 1 行も出す
+ */
 function Handoff({ view }: { view: WorkView }) {
+  const inbox = useInboxOpen()
+  useSeenVersion()
+  if (!view.body) return null
   const threads = view.threads.items as Thread[]
   const yours = threads.filter(mine).length
   const claude = view.handoff.count
-  if (!view.body) return null
-  const readsHref = workHref(view.key, 'reads')
+  const fresh = freshReaderNotes(view)
   const copy = async () => {
     await navigator.clipboard.writeText(view.handoff.text)
     notify(`Claude への依頼文をコピーしました（指摘 ${claude} 件）。ターミナルの Claude Code に貼ってください。`)
   }
+  if (yours === 0 && claude === 0 && !fresh)
+    return (
+      <div className="shrink-0 border-t px-2 py-2">
+        <button onClick={toggleInbox} className={cn('flex w-full items-center rounded-md px-2 py-1.5 text-left text-sm text-muted-foreground hover:bg-accent', inbox && 'bg-accent')}>
+          指摘はありません
+        </button>
+      </div>
+    )
   return (
-    <div className="grid gap-0.5 border-t px-2 py-2">
-      <a href={readsHref} onClick={(e) => (onLinkClick(e, readsHref), yours && setTimeout(() => document.getElementById('yours')?.scrollIntoView({ behavior: 'smooth' }), 120))} className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent" title="あなたの返事や判断を待っている指摘です">
+    <div className="grid shrink-0 gap-0.5 border-t px-2 py-2">
+      {fresh && (
+        <button onClick={openInbox} className="flex items-center gap-2 rounded-md bg-muted px-2 py-1.5 text-left text-xs hover:bg-accent" title="受信箱で、まとめて Claude に渡すか見送ります">
+          <span className="flex-1">聴衆役の感想が届きました</span>
+          <span className="font-semibold tabular-nums">{fresh.notes.length}</span>
+        </button>
+      )}
+      <button onClick={toggleInbox} aria-expanded={inbox} className={cn('flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-accent', inbox && 'bg-accent font-medium')} title="あなたの返事や判断を待っている指摘を、受信箱で 1 件ずつ見ます">
         <span className="flex-1">あなた宛て</span>
         <span className={cn('min-w-6 rounded-full px-1.5 text-center text-xs font-semibold tabular-nums', yours ? 'bg-amber-500 text-white' : 'text-muted-foreground')}>{yours}</span>
-      </a>
+      </button>
       <button disabled={claude === 0} onClick={copy} className="group flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-accent disabled:pointer-events-none disabled:text-muted-foreground" title="Claude の番の指摘を直してもらう依頼文をコピーします">
         <span className="flex-1">Claude へ</span>
         <Copy className="size-3.5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />

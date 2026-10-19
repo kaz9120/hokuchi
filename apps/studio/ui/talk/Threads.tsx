@@ -1,7 +1,7 @@
 // 指摘のスレッドの見せ方 (ADR-0040)。1 件の指摘と、その往復を 1 枚にまとめる。
 // 話者ができるのは、書く・答える・閉じるの 3 つ。状態を選ばせない
 import { useState } from 'react'
-import { Check, CornerDownRight, MessageSquarePlus, RotateCcw } from 'lucide-react'
+import { Check, CornerDownRight, RotateCcw } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -47,28 +47,6 @@ export function Compose({ placeholder, onSend, onCancel, autoFocus = false }: { 
         <span>Enter で送信・Shift+Enter で改行</span>
       </div>
     </div>
-  )
-}
-
-/** 指摘を書く入口。押すと欄が開く。何件でも書ける */
-export function NewThread({ label, placeholder = '話す内容でも見た目でも、気になったことを自由に入力', onSend }: { label: string; placeholder?: string; onSend: (text: string) => void }) {
-  const [open, setOpen] = useState(false)
-  if (!open)
-    return (
-      <Button variant="ghost" size="xs" className="justify-start text-muted-foreground/70 hover:text-foreground" onClick={() => setOpen(true)}>
-        <MessageSquarePlus /> {label}
-      </Button>
-    )
-  return (
-    <Compose
-      autoFocus
-      placeholder={placeholder}
-      onCancel={() => setOpen(false)}
-      onSend={(t) => {
-        onSend(t)
-        setOpen(false)
-      }}
-    />
   )
 }
 
@@ -127,7 +105,7 @@ export function ThreadCard({ thread, api, kinds, place, onJump, quiet = false }:
       {replying ? (
         <Compose
           autoFocus
-          placeholder={mine ? '返信を入力' : '追記を入力'}
+          placeholder="返信を入力"
           onCancel={() => setReplying(false)}
           onSend={(text) => {
             api.reply(t.id, text)
@@ -135,33 +113,26 @@ export function ThreadCard({ thread, api, kinds, place, onJump, quiet = false }:
           }}
         />
       ) : (
+        // 動詞は 3 つ (返信・解決・見送る) と、済んだ件の「戻す」だけにする
         <div className="flex flex-wrap gap-1.5">
-          {mine && (
-            <>
-              <Button size="xs" onClick={() => setReplying(true)}>
-                返信する
-              </Button>
-              <Button size="xs" variant="outline" onClick={() => api.close(t.id, '直した')} title="この内容で良ければ、解決にして閉じます">
-                <Check /> 解決する
-              </Button>
-              <Button size="xs" variant="ghost" onClick={() => api.close(t.id, 'そのままにした')} title="直さずに閉じます">
-                見送る
-              </Button>
-            </>
+          {!closed && (
+            <Button size="xs" variant={mine ? 'default' : 'ghost'} className={cn(!mine && 'text-muted-foreground')} onClick={() => setReplying(true)} title="返信すると、Claude の番になります">
+              返信
+            </Button>
           )}
-          {t.ball === 'Claude' && (
-            <>
-              <Button size="xs" variant="ghost" className="text-muted-foreground" onClick={() => setReplying(true)}>
-                追記する
-              </Button>
-              <Button size="xs" variant="ghost" className="text-muted-foreground" onClick={() => api.close(t.id, 'そのままにした')} title={t.by === '話者' ? 'この指摘を取り下げます' : '直さずに閉じます'}>
-                {t.by === '話者' ? '取り下げる' : '見送る'}
-              </Button>
-            </>
+          {mine && (
+            <Button size="xs" variant="outline" onClick={() => api.close(t.id, '直した')} title="この内容で良ければ、解決にして閉じます">
+              <Check /> 解決
+            </Button>
+          )}
+          {!closed && (
+            <Button size="xs" variant="ghost" className="text-muted-foreground" onClick={() => api.close(t.id, 'そのままにした')} title={t.by === '話者' && t.ball === 'Claude' ? 'この指摘を取り下げます' : '直さずに閉じます'}>
+              見送る
+            </Button>
           )}
           {closed && (
-            <Button size="xs" variant="ghost" className="text-muted-foreground" onClick={() => api.reopen(t.id)}>
-              <RotateCcw /> 未解決に戻す
+            <Button size="xs" variant="ghost" className="text-muted-foreground" onClick={() => api.reopen(t.id)} title="閉じた指摘を、もう一度開きます">
+              <RotateCcw /> 戻す
             </Button>
           )}
         </div>

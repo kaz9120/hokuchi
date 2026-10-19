@@ -1,7 +1,7 @@
 // 作品の画面 (design.md 3 章「作品の画面」・ADR-0049)。帯 1 行・左のレール・面 の骨組み。
 // 発表も記事も、公開済みも改稿中も、企画シートの無い作品も、この 1 つの骨組みで見せる。
 // 面と場所は URL のハッシュ (/works/<key>#<面>/<場所>) に持ち、ルータ (lib/router.ts) から受け取る
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
 import type { WorkView } from '../../shared/api'
 import { notify } from '@/lib/notice'
@@ -25,6 +25,7 @@ import { FaceFrame } from './FaceBar'
 import { PlanFace } from './Plan'
 import { Rail } from './Rail'
 import { StateMenu } from './StateMenu'
+import { Inbox, openInbox } from './Inbox'
 
 /** 発表と記事で、同じ位置の面は名前が違う。もう片方の名前で来たら、こちらの名前に読み替える */
 const SAME: Record<'talk' | 'note', Partial<Record<Face, Face>>> = { talk: { outline: 'flow', draft: 'koma' }, note: { flow: 'outline', koma: 'draft' } }
@@ -53,6 +54,12 @@ export function WorkScreen({ routeKey, face, place, seq }: { routeKey: string; f
     notify('この作品は、ごみ箱に移されました。')
     navigate('/', { replace: true })
   }, [gone])
+  // 聴衆役が読み終えたら、受信箱を開いて感想を受ける
+  const wasReading = useRef(false)
+  useEffect(() => {
+    if (wasReading.current && !data.reading) openInbox()
+    wasReading.current = !!data.reading
+  }, [data.reading])
   useEffect(() => {
     document.title = view ? `${view.title || '無題'} — hokuchi studio` : 'hokuchi studio'
   }, [view?.title])
@@ -92,8 +99,9 @@ export function WorkScreen({ routeKey, face, place, seq }: { routeKey: string; f
           <StateMenu view={view} />
         </div>
       </header>
-      <div className={cn('grid min-h-0', RAIL)}>
+      <div className={cn('relative grid min-h-0', RAIL)}>
         <Rail view={view} face={f} place={place} />
+        <Inbox view={view} />
         <main key={f} className="flex min-h-0 animate-in flex-col duration-200 fade-in-0">
           <FaceFrame label={facesOf(view).find((x) => x.face === f)?.label ?? ''}>
             <FaceBody data={data} view={view} face={f} place={place} seq={seq} />

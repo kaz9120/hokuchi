@@ -407,10 +407,10 @@ export const note: Media = {
     const list = threads.filter((t) => t.ball === 'Claude')
     const own = list.filter((t) => t.by !== '聴衆役').length
     const dir = hasDraft(ref.draft) ? shownDir(draftDir(ref.draft)) : ''
+    // 依頼文は短くし、直し方と feedback.yaml の書き方は skill の側に任せる (rebuild.md 5 章)
     return [
       `${dir}/feedback.yaml に、Claude の番の指摘が ${list.length} 件あります（話者から ${own} 件、聴衆役から ${list.length - own} 件）。原稿は ${dir}/index.md です。`,
-      'writing-note skill に従って、原稿を直してください。指摘の para は段落の番号（見出し・画像も 1 つと数える）、head は段落の書き出しです。"*" は記事全体への指摘です。',
-      '直したら、各スレッドの replies に thinking (考えたこと) と change (変えたこと) を足してください。話者に確かめたいことは ball を「話者」に、済んだものは ball を none にして closed を書いてください。',
+      'writing-note skill の Phase 5（studio の指摘を受けて直す）に従って直してください。',
     ].join('\n')
   },
 

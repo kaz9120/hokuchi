@@ -83,7 +83,7 @@ const patchThread = (id: string, fn: (t: WorkView['threads']['items'][number]) =
 
 /** 指摘のスレッドへの操作。発表と記事で共通。rev は手元の最新の WorkView から添える */
 export const threadOps = (key: string) => ({
-  reply: async (id: string, text: string) => send(key, `/threads/${id}/reply`, 'POST', { rev: revOf(await current(key), id), text }, { optimistic: patchThread(id, (t) => ({ ...t, replies: [...(t.replies ?? []), { by: '話者', text }] })) }),
+  reply: async (id: string, text: string) => send(key, `/threads/${id}/reply`, 'POST', { rev: revOf(await current(key), id), text }, { optimistic: patchThread(id, (t) => ({ ...t, ball: 'Claude', closed: undefined, replies: [...(t.replies ?? []), { by: '話者', text }] })) }),
   close: async (id: string, how: '直した' | 'そのままにした') => send(key, `/threads/${id}/close`, 'POST', { rev: revOf(await current(key), id), how }, { optimistic: patchThread(id, (t) => ({ ...t, ball: 'none', closed: how })) }),
   reopen: async (id: string) => send(key, `/threads/${id}/reopen`, 'POST', { rev: revOf(await current(key), id) }),
 })

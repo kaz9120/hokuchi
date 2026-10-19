@@ -5,10 +5,9 @@ import { Loader2, Users } from 'lucide-react'
 import { Button } from '../components/ui/button'
 import { BarActions, BarSummary } from '../work/FaceBar'
 import { cn } from '../lib/utils'
-import { draftApi, placeOf, type Draft } from '../lib/note'
-import { forClaude, mine, type Reading, type Thread } from '../lib/talk'
+import { draftApi, type Draft } from '../lib/note'
+import type { Reading } from '../lib/talk'
 import { Survey } from '../talk/Reads'
-import { ThreadCard } from '../talk/Threads'
 
 const when = (iso: string) => new Date(iso).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })
 
@@ -18,12 +17,6 @@ export function NoteReadsView({ data, reading, onJump }: { data: Draft; reading:
   const [choosing, setChoosing] = useState(false)
   const read = data.reads.find((r) => r.id === picked) ?? data.reads.at(-1) ?? null
   const prev = read ? (data.reads.filter((r) => r.id < read.id).at(-1) ?? null) : null
-  const yours = data.threads.filter(mine)
-  const claude = data.threads.filter(forClaude)
-  const finished = data.threads.filter((t) => t.ball === 'none' && t.closed !== '良かった点')
-  const [showDone, setShowDone] = useState(false)
-  const order = (list: Thread[]) => [...list].sort((a, b) => (a.para === '*' ? 0 : (a.para ?? 0)) - (b.para === '*' ? 0 : (b.para ?? 0)))
-  const jump = (t: Thread) => onJump(typeof t.para === 'number' ? t.para : null)
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-32">
@@ -39,11 +32,6 @@ export function NoteReadsView({ data, reading, onJump }: { data: Draft; reading:
                     {r.id} 回目・{when(r.at)}
                   </Button>
                 ))}
-              {yours.length > 0 && (
-                <Button size="sm" variant="outline" onClick={() => document.getElementById('yours')?.scrollIntoView({ behavior: 'smooth' })}>
-                  あなた宛て {yours.length} 件へ ↓
-                </Button>
-              )}
               <Button size="sm" disabled={!!reading || data.readers.length === 0} onClick={() => api.read()} title="いまの原稿を、まっさらな読み手に読んでもらいます。数分かかります">
                 {reading ? <Loader2 className="animate-spin" /> : <Users />}
                 {reading ? `読んでもらっています… ${reading.done} / ${reading.total} 人` : read ? 'もう一度読んでもらう' : '読んでもらう'}
@@ -75,32 +63,6 @@ export function NoteReadsView({ data, reading, onJump }: { data: Draft; reading:
           )}
         </section>
 
-        <section id="yours" className="grid scroll-mt-4 gap-3">
-          <div className="flex flex-wrap items-center gap-3">
-            <h2 className="text-lg font-semibold">あなた宛ての指摘</h2>
-            <span className="rounded-full bg-amber-500 px-2 text-sm font-semibold text-white">{yours.length}</span>
-            <span className="text-sm text-muted-foreground">Claude からの確認と、あなたの判断が要る指摘です。返信すると Claude 宛てになります。</span>
-          </div>
-          {yours.length === 0 && <p className="text-sm text-muted-foreground">あなた宛ての指摘はありません。</p>}
-          <div className="grid items-start gap-2 lg:grid-cols-2">
-            {order(yours).map((t) => (
-              <ThreadCard key={t.id} quiet thread={t} api={api} kinds={data.noteKinds} place={placeOf(t, data)} onJump={() => jump(t)} />
-            ))}
-          </div>
-        </section>
-
-        <section className="grid gap-3">
-          <button className="justify-self-start text-sm text-muted-foreground hover:text-foreground" onClick={() => setShowDone((v) => !v)}>
-            Claude 宛て {claude.length} 件と解決済み {finished.length} 件を{showDone ? '隠す' : '表示'}
-          </button>
-          {showDone && (
-            <div className="grid gap-2 lg:grid-cols-2">
-              {order([...claude, ...finished]).map((t) => (
-                <ThreadCard key={t.id} thread={t} api={api} kinds={data.noteKinds} place={placeOf(t, data)} onJump={() => jump(t)} />
-              ))}
-            </div>
-          )}
-        </section>
       </div>
     </div>
   )

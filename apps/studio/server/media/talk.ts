@@ -265,10 +265,10 @@ export const talk: Media = {
   handoff(ref, threads: Thread[]) {
     const list = threads.filter((t) => t.ball === 'Claude')
     const own = list.filter((t) => t.by !== '聴衆役').length
+    // 依頼文は短くし、直し方と feedback.yaml の書き方は skill の側に任せる (rebuild.md 5 章)
     return [
       `${ref.talk ? shownDir(ref.talk.dir) : ''}/feedback.yaml に、Claude の番の指摘が ${list.length} 件あります（話者から ${own} 件、聴衆役から ${list.length - own} 件）。`,
-      'crafting-presentation skill の Phase 8 に従って、絵コンテ (storyboard.md) を先に直し、実装を追従させてください。',
-      '直したら、各スレッドの replies に thinking (考えたこと) と change (変えたこと) を足してください。話者に確かめたいことは ball を「話者」に、済んだものは ball を none にして closed を書いてください。',
+      'crafting-presentation skill の Phase 8 に従って直してください。',
     ].join('\n')
   },
 

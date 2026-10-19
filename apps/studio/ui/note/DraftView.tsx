@@ -10,7 +10,7 @@ import { setReading } from '../lib/router'
 import { BarSummary } from '../work/FaceBar'
 import { draftApi, headingLevel, tocOf, type Block, type Draft, type DraftApi, type Finding } from '../lib/note'
 import type { Thread } from '../lib/talk'
-import { Margin } from '../talk/Koma'
+import { Anchor, MarginLayer, useComposing, type MarginItem } from '../talk/Margin'
 
 const PLACEHOLDER = '表現でも中身でも、気になったことを自由に入力'
 
@@ -31,6 +31,19 @@ export function DraftView({ data, focus, seq }: { data: Draft; focus: string | n
     return m
   }, [data.lint])
   const toc = useMemo(() => tocOf(data), [data])
+  // 余白の指摘と検査。記事全体は p:*、段落は p:<番号> の印に置く
+  const sheet = useRef<HTMLDivElement>(null)
+  const [composing, setComposing] = useComposing()
+  const marginItems = useMemo<MarginItem[]>(
+    () => [
+      { id: 'p:*', threads: byPara.get('*') ?? [], extra: <Checks findings={lintBy.get(null) ?? []} title="記事全体の検査" />, onSend: (text: string) => void api.open('*', text) },
+      ...data.blocks.map((b) => {
+        const f = lintBy.get(b.n) ?? []
+        return { id: `p:${b.n}`, threads: byPara.get(b.n) ?? [], extra: f.length ? <Checks findings={f} /> : undefined, onSend: (text: string) => void api.open(b.n, text) }
+      }),
+    ],
+    [data.blocks, byPara, lintBy, api],
+  )
 
   // レールで見出しを選んだら (URL の場所が変わったら)、その段落へ。最初の 1 回は飛ばずに動かす
   const moved = useRef(false)
@@ -68,8 +81,8 @@ export function DraftView({ data, focus, seq }: { data: Draft; focus: string | n
 
   return (
     <div ref={scroller} className="min-h-0 flex-1 overflow-y-auto pr-6 pb-40 pl-12">
-      <div className="mx-auto max-w-[1180px]">
-        <section id="draft-top" className="grid scroll-mt-2 grid-cols-[minmax(0,1fr)_300px] gap-6 border-b py-6 min-[1400px]:grid-cols-[minmax(0,1fr)_340px] min-[1400px]:gap-8">
+      <div ref={sheet} className="relative mx-auto max-w-[1180px]">
+        <section id="draft-top" className="group/row grid scroll-mt-2 grid-cols-[minmax(0,1fr)_300px] gap-6 border-b py-6 min-[1400px]:grid-cols-[minmax(0,1fr)_340px] min-[1400px]:gap-8">
           <div>
             <BarSummary>
               <span>
@@ -79,17 +92,15 @@ export function DraftView({ data, focus, seq }: { data: Draft; focus: string | n
             </BarSummary>
             <h1 className="text-2xl font-semibold leading-snug">{data.title || '無題'}</h1>
           </div>
-          <div className="grid content-start gap-3">
-            <Checks findings={lintBy.get(null) ?? []} title="記事全体の検査" />
-            <Margin threads={byPara.get('*') ?? []} api={api} kinds={data.noteKinds} label="記事全体に指摘を追加" placeholder={PLACEHOLDER} onSend={(text) => api.open('*', text)} />
-          </div>
+          <Anchor id="p:*" onWrite={setComposing} />
         </section>
 
         {data.blocks.length === 0 && <p className="py-8 text-muted-foreground">本文はまだありません。下の欄から書き始めるか、Claude Code に下書きを頼んでください。</p>}
 
         {data.blocks.map((b) => (
-          <Row key={b.n} block={b} api={api} kinds={data.noteKinds} findings={lintBy.get(b.n) ?? []} threads={byPara.get(b.n) ?? []} />
+          <Row key={b.n} block={b} api={api} onWrite={setComposing} />
         ))}
+        <MarginLayer container={sheet} items={marginItems} api={api} kinds={data.noteKinds} composing={composing} setComposing={setComposing} placeholder={PLACEHOLDER} />
 
         <AddParagraph api={api} open={data.blocks.length === 0} />
       </div>
@@ -98,7 +109,7 @@ export function DraftView({ data, focus, seq }: { data: Draft; focus: string | n
 }
 
 /** 段落 1 つ。真ん中に本文 (その場で直せる)、右の余白に検査と指摘 */
-function Row({ block, api, kinds, findings, threads }: { block: Block; api: DraftApi; kinds: Record<string, string>; findings: Finding[]; threads: Thread[] }) {
+function Row({ block, api, onWrite }: { block: Block; api: DraftApi; onWrite: (id: string) => void }) {
   // 見出しは「## 」を外して見せ、保存のときに付け直す
   const prefix = block.kind === 'heading' ? block.text.match(/^#{1,6}\s+/)![0] : ''
   const shown = block.text.slice(prefix.length)
@@ -115,7 +126,7 @@ function Row({ block, api, kinds, findings, threads }: { block: Block; api: Draf
   }
   const level = headingLevel(block)
   return (
-    <section id={`para-${block.n}`} className={cn('group grid scroll-mt-2 grid-cols-[minmax(0,1fr)_300px] gap-6 min-[1400px]:grid-cols-[minmax(0,1fr)_340px] min-[1400px]:gap-8', block.kind === 'heading' ? 'pt-8 pb-2' : 'py-2')}>
+    <section id={`para-${block.n}`} className={cn('group/row grid scroll-mt-2 grid-cols-[minmax(0,1fr)_300px] gap-6 min-[1400px]:grid-cols-[minmax(0,1fr)_340px] min-[1400px]:gap-8', block.kind === 'heading' ? 'pt-8 pb-2' : 'py-2')}>
       <div className="relative min-w-0">
         <span className="absolute top-2 -left-7 w-5 text-right text-[11px] text-muted-foreground/50 tabular-nums" title={`段落 ${block.n}`}>
           {block.n}
@@ -136,10 +147,7 @@ function Row({ block, api, kinds, findings, threads }: { block: Block; api: Draf
         />
         {dirty && <div className="px-2 text-xs text-muted-foreground">未保存です。欄の外を押すと保存します（空にすると段落を削除します）</div>}
       </div>
-      <div className="grid content-start gap-2">
-        {findings.length > 0 && <Checks findings={findings} />}
-        <Margin threads={threads} api={api} kinds={kinds} label="段落に指摘を追加" placeholder={PLACEHOLDER} onSend={(t) => api.open(block.n, t)} />
-      </div>
+      <Anchor id={`p:${block.n}`} onWrite={onWrite} />
     </section>
   )
 }

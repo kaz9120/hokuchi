@@ -224,7 +224,7 @@ function SectionCard({ index, section, actual, last, onChange, onMove, onRemove,
             実際 {chars.toLocaleString()} 字
           </button>
         ) : (
-          <span className="ml-auto whitespace-nowrap text-amber-700">原稿に無い</span>
+          <span className={cn('ml-auto whitespace-nowrap', section.title || lead ? 'text-amber-700' : 'text-muted-foreground')}>{section.title || lead ? '原稿に無い' : '見出し未定'}</span>
         )}
       </div>
       {warn && <p className="px-1 text-xs text-amber-700">{warn}</p>}

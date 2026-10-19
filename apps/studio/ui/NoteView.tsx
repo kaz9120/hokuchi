@@ -1,6 +1,6 @@
-// 公開済みの note の記事を読む画面。改稿は次の段で作る (docs/design.md の 4)
+// 公開済みの note の記事を読む画面。「改稿する」で、記事を原稿に写して原稿タブで開く (ADR-0047)
 import { useEffect, useState } from 'react'
-import { ArrowLeft, ExternalLink } from 'lucide-react'
+import { ArrowLeft, ExternalLink, Loader2, PenLine } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { api, type NoteView as Note } from '@/lib/api'
@@ -8,6 +8,18 @@ import { api, type NoteView as Note } from '@/lib/api'
 export function NoteView({ dir }: { dir: string }) {
   const [note, setNote] = useState<Note | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [revising, setRevising] = useState(false)
+  // 改稿の原稿があれば、それを開く。無ければアーカイブを原稿に写す。アーカイブは書き換えない
+  const revise = async () => {
+    setRevising(true)
+    try {
+      const { work } = await api.revise(dir)
+      location.href = `/works/${encodeURIComponent(work)}#draft`
+    } catch (e) {
+      setError(String((e as Error).message))
+      setRevising(false)
+    }
+  }
   useEffect(() => {
     api.note(dir).then(setNote, (e) => setError(String(e.message)))
   }, [dir])
@@ -30,8 +42,8 @@ export function NoteView({ dir }: { dir: string }) {
               </a>
             </Button>
           )}
-          <Button size="sm" disabled title="準備中">
-            改稿する
+          <Button size="sm" disabled={revising} onClick={revise} title="この記事を原稿に写して、原稿タブで直します。note の記事は、公開タブから更新します">
+            {revising ? <Loader2 className="animate-spin" /> : <PenLine />} 改稿する
           </Button>
         </div>
       </header>

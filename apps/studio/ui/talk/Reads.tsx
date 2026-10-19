@@ -51,7 +51,7 @@ export function ReadsView({ data, api, reading, onJump }: { data: Talk; api: Tal
           </div>
           {reading?.error && <p className="text-sm text-destructive">{reading.error}</p>}
 
-          {read ? <Survey data={data} read={read} prev={prev} /> : <p className="rounded-lg border border-dashed bg-background p-8 text-center text-muted-foreground">まだ読んでもらっていません。「読んでもらう」を押すと、聴衆役が絵コンテを読み、アンケートとコマへの感想を返します。</p>}
+          {read ? <Survey survey={data.survey} oneLiner={data.work?.oneLiner || data.board.meta['中核メッセージ'] || ''} read={read} prev={prev} /> : <p className="rounded-lg border border-dashed bg-background p-8 text-center text-muted-foreground">まだ読んでもらっていません。「読んでもらう」を押すと、聴衆役が絵コンテを読み、アンケートとコマへの感想を返します。</p>}
         </section>
 
         <section id="yours" className="grid scroll-mt-4 gap-3">
@@ -88,16 +88,16 @@ export function ReadsView({ data, api, reading, onJump }: { data: Talk; api: Tal
   )
 }
 
-/** アンケートの結果。行を選ぶと、その項目に付けた理由を読める */
-function Survey({ data, read, prev }: { data: Talk; read: Read; prev: Read | null }) {
+/** アンケートの結果。行を選ぶと、その項目に付けた理由を読める。記事の読みの面 (ADR-0046) でも使う */
+export function Survey({ survey, oneLiner, read, prev }: { survey: Talk['survey']; oneLiner: string; read: Read; prev: Read | null }) {
   const rows = useMemo(
     () =>
-      data.survey.map((q) => {
+      survey.map((q) => {
         const now = mean(read.readers.map((r) => r.scores[q.key]?.score ?? 0))
         const before = prev ? mean(prev.readers.map((r) => r.scores[q.key]?.score ?? 0)) : null
         return { ...q, now, diff: before === null ? null : now - before }
       }),
-    [data.survey, read, prev],
+    [survey, read, prev],
   )
   // 最初は、いちばん点の低い項目を開いておく
   const [open, setOpen] = useState<string>(() => [...rows].sort((a, b) => a.now - b.now)[0]?.key ?? '')
@@ -157,7 +157,7 @@ function Survey({ data, read, prev }: { data: Talk; read: Read; prev: Read | nul
           <div className="mb-2 text-xs font-medium text-muted-foreground">いちばん伝えたいことは何だと思ったか</div>
           <div className="mb-2 rounded-md bg-muted px-2.5 py-1.5 leading-relaxed">
             <span className="mr-2 text-xs text-muted-foreground">あなたが伝えたいこと</span>
-            {data.work?.oneLiner || data.board.meta['中核メッセージ']}
+            {oneLiner}
           </div>
           <div className="grid gap-1.5">
             {read.readers.map((r) => (

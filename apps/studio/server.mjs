@@ -18,11 +18,12 @@ import { chromium } from 'playwright'
 import { moveScene, parseStoryboard, replaceNotes, replaceSceneMeta, seconds } from '../../packages/stage/node/storyboard.mjs'
 import { SITE, loadTalk, waitReady } from '../../packages/stage/node/talk.mjs'
 import { startSite } from '../slides/site-server.mjs'
-import { NOTE_KINDS, SURVEY, listPersonas, listReaders, listReads, runRead } from './readers.mjs'
+import { NOTE_KINDS, NOTE_SURVEY, SURVEY, listPersonas, listReaders, listReads, runNoteRead, runRead, saveReaders } from './readers.mjs'
 import { closeThread, importRead, openThread, readThreads, reopenThread, replyThread, retargetThreads } from './threads.mjs'
-import { SLUG, appendBlock, createDraft, draftDir, draftFile, hasDraft, readDraft, reanchor, replaceBlock } from './draft.mjs'
+import { SLUG, appendBlock, createDraft, draftDir, draftFile, hasDraft, readDraft, readOutline, reanchor, replaceBlock, reviseFromArchive, saveOutline, setMeta } from './draft.mjs'
+import { toPasteText } from '../../tools/notes/src/paste.mjs'
 import { PRIVATE, createWork, listSeeds, listWorks, readWork, saveSeed, saveWork, trashWork, workOfTalk } from './store.mjs'
-import { listNotes, noteAsset, readNote } from './notes.mjs'
+import { listNotes, noteAsset, notesRoot, readNote } from './notes.mjs'
 import { TASKS, ask } from './ai.mjs'
 
 const here = import.meta.dirname
@@ -241,13 +242,15 @@ function home() {
   }).map((w) => (w.kind === 'note' && hasDraft(w.note) ? { ...w, draftInfo: draftInfo(w.note) } : w))
 
   // 発表と記事を 1 つの一覧にする (ADR-0043)。企画シートが公開物に紐づいていれば 1 枚にまとめる。
-  // 状態は 2 つの軸で持つ (ADR-0045)。公開範囲は実物から決め、進み具合は企画シートの finishedAt で決める。公開したものは完成として扱う
+  // 状態は 2 つの軸で持つ (ADR-0045)。公開範囲は実物から決め、進み具合は企画シートの finishedAt で決める。公開したものは完成として扱う。
+  // ただし、公開済みの記事を改稿している (原稿がある) あいだは下書きとして見せる (ADR-0047)
   const item = ({ work = null, talk = null, note = null, kind }) => {
     const visibility = talk?.public || note ? 'public' : 'private'
+    const revising = visibility === 'public' && !!work?.draftInfo
     return {
       key: work ? `work:${work.id}` : talk ? `talk:${talk.slug}` : `note:${note.dir}`,
       kind,
-      progress: visibility === 'public' || work?.finishedAt ? 'finished' : 'draft',
+      progress: revising ? 'draft' : visibility === 'public' || work?.finishedAt ? 'finished' : 'draft',
       visibility,
       title: work?.title || talk?.title || note?.title || '',
       date: talk?.date ?? note?.publishedAt ?? work?.fields?.date ?? null,
@@ -292,7 +295,11 @@ function repoFilesOf(w) {
 }
 
 /** 作品の画面に渡す企画シート。published と repoFiles はサーバが実物から決めた値で、企画シートには書かない */
-const workView = (w) => ({ ...w, published: isPublished(w), repoFiles: repoFilesOf(w), trashDir: join(PRIVATE, 'trash') })
+const workView = (w) => {
+  const published = isPublished(w)
+  // revising は、公開済みの記事を原稿で改稿しているか (ADR-0047)。そのあいだは進み具合を下書きとして見せる
+  return { ...w, published, revising: published && w.kind === 'note' && hasDraft(w.note), repoFiles: repoFilesOf(w), trashDir: join(PRIVATE, 'trash') }
+}
 
 /** 下書きを削除する。企画シートと、リポジトリの外のトークをごみ箱に移す。完成した作品と公開した作品は削除できない (ADR-0044・ADR-0045) */
 async function deleteWork(w) {
@@ -338,22 +345,66 @@ function draftState(slug) {
   const d = readDraft(slug)
   retargetThreads(feedbackOf(slug), reanchor(d.blocks))
   const w = listWorks().find((x) => x.note === slug)
+  const personas = listPersonas(repoRoot)
   return {
     slug,
     dir: shownDir(draftDir(slug)),
     file: shownDir(draftFile(slug)),
     ...d,
     ...readThreads(feedbackOf(slug)),
+    outline: readOutline(slug),
     noteKinds: NOTE_KINDS,
-    work: w ? { id: w.id, oneLiner: w.fields?.oneLiner ?? '' } : null,
+    survey: NOTE_SURVEY,
+    readers: listReaders(draftDir(slug))
+      .map((r) => ({ ...personas.find((p) => p.id === r.persona), why: r.why ?? '' }))
+      .filter((r) => r.id),
+    personas: personas.map(({ id, name, label, who, troubles, knows, pushback }) => ({ id, name, label, who, troubles, knows, pushback })),
+    reads: listReads(draftDir(slug)),
+    reading: draftReading.get(slug) ?? null,
+    work: w ? { id: w.id, oneLiner: w.fields?.oneLiner ?? '', candidates: w.candidates ?? {} } : null,
   }
+}
+
+/** 聴衆役に記事を読んでもらう (ADR-0046)。数分かかるので裏で走らせ、進み具合を画面に知らせる */
+const draftReading = new Map()
+function readDraftByReaders(slug) {
+  if (draftReading.has(slug)) return
+  const notify = (p) => {
+    draftReading.set(slug, p)
+    broadcast(`note:${slug}`, 'reading', p)
+  }
+  notify({ done: 0, total: listReaders(draftDir(slug)).length, failed: [] })
+  const d = readDraft(slug)
+  runNoteRead({ repoRoot, dir: draftDir(slug), title: d.title, blocks: d.blocks, onProgress: notify })
+    .then((read) => importRead(feedbackOf(slug), read))
+    .catch((e) => broadcast(`note:${slug}`, 'reading', { ...draftReading.get(slug), error: String(e.message ?? e) }))
+    .finally(() => {
+      draftReading.delete(slug)
+      broadcast(`note:${slug}`, 'draft', draftState(slug))
+    })
+}
+
+/** 原稿のタイトルを変える。タイトルの正は原稿の front matter で、紐づく企画シートの title も揃える (ADR-0046) */
+function setDraftTitle(slug, title) {
+  setMeta(slug, { title })
+  const w = listWorks().find((x) => x.note === slug)
+  if (w && w.title !== title) saveWork(w.id, { title })
 }
 
 /** ホームのカードに出す、原稿の様子 */
 function draftInfo(slug) {
   const { threads } = readThreads(feedbackOf(slug))
-  const { stats } = readDraft(slug)
-  return { slug, chars: stats.chars, paragraphs: stats.paragraphs, mine: threads.filter((x) => x.ball === '話者').length, claude: threads.filter((x) => x.ball === 'Claude').length }
+  const { stats, blocks } = readDraft(slug)
+  return {
+    slug,
+    chars: stats.chars,
+    paragraphs: stats.paragraphs,
+    blocks: blocks.length,
+    outline: readOutline(slug).sections.length,
+    reads: listReads(draftDir(slug)).length,
+    mine: threads.filter((x) => x.ball === '話者').length,
+    claude: threads.filter((x) => x.ball === 'Claude').length,
+  }
 }
 
 // ---------------------------------------------------------------- UI と API
@@ -434,7 +485,9 @@ server.on('request', async (req, res) => {
       }
       if (w[2] === 'ask' && req.method === 'POST') {
         const { task } = await body(req)
-        const items = await ask(brief, task, { cwd: repoRoot })
+        // 原稿を読んで出す依頼 (タイトルの案) には、原稿を渡す
+        const draft = brief.kind === 'note' && hasDraft(brief.note) ? readFileSync(draftFile(brief.note), 'utf8') : null
+        const items = await ask(brief, task, { cwd: repoRoot, draft })
         // 出した候補は企画シートに残す。あとで見返せるように
         const latest = readWork(id)
         saveWork(id, { candidates: { ...(latest.candidates ?? {}), [task]: { at: new Date().toISOString(), items } } })
@@ -473,6 +526,35 @@ server.on('request', async (req, res) => {
         }
         return json(res, { ok: true })
       }
+      // 構成 (outline.yaml) を丸ごと書き換える
+      if (op === 'outline' && req.method === 'PUT') {
+        saveOutline(slug, (await body(req)).sections ?? [])
+        return json(res, { ok: true })
+      }
+      // front matter (タイトル・タグ・見出し画像)。タイトルは企画シートにも揃える
+      if (op === 'meta' && req.method === 'PUT') {
+        const { title, tags, eyecatch } = await body(req)
+        if (title !== undefined) setDraftTitle(slug, String(title).trim())
+        if (tags !== undefined) setMeta(slug, { hashtags: (tags ?? []).map((t) => String(t).replace(/^#/, '').trim()).filter(Boolean) })
+        if (eyecatch !== undefined) setMeta(slug, { eyecatch: eyecatch || null })
+        return json(res, { ok: true })
+      }
+      // 聴衆役の読み手を決める・読んでもらう
+      if (op === 'readers' && req.method === 'PUT') {
+        saveReaders(draftDir(slug), (await body(req)).readers ?? [])
+        return json(res, { ok: true })
+      }
+      if (op === 'read' && req.method === 'POST') {
+        readDraftByReaders(slug)
+        return json(res, { ok: true })
+      }
+      // note に貼る本文 (tools/notes の paste と同じ)。画像の一覧も返す
+      if (op === 'paste') return json(res, toPasteText(readFileSync(draftFile(slug), 'utf8')))
+      // 画像を入れるときに、assets/ を Finder で開く
+      if (op === 'open-assets' && req.method === 'POST') {
+        if (process.platform === 'darwin') spawn('open', [join(draftDir(slug), existsSync(join(draftDir(slug), 'assets')) ? 'assets' : '')])
+        return json(res, { ok: true })
+      }
       if (op === 'append' && req.method === 'POST') {
         appendBlock(slug, String((await body(req)).text ?? ''))
         return json(res, { ok: true })
@@ -497,6 +579,21 @@ server.on('request', async (req, res) => {
         return json(res, { ok: true })
       }
       return json(res, { error: 'not found' }, 404)
+    }
+    // 公開済みの記事を改稿する (ADR-0047)。アーカイブを原稿に写し、企画シートに紐づける。アーカイブは読むだけ
+    const rv = url.pathname.match(/^\/api\/notes\/([^/]+)\/revise$/)
+    if (rv && req.method === 'POST') {
+      const name = decodeURIComponent(rv[1])
+      const note = listNotes(repoRoot).find((x) => x.dir === name)
+      if (!note) return json(res, { error: `記事（${name}）が見つかりません` }, 404)
+      try {
+        const { slug } = reviseFromArchive(join(notesRoot(repoRoot), name), name)
+        let w = listWorks().find((x) => x.note === slug)
+        if (!w) w = saveWork(createWork('note').id, { title: readDraft(slug).title || note.title, note: slug })
+        return json(res, { work: w.id, slug })
+      } catch (e) {
+        return json(res, { error: String(e.message ?? e) }, 400)
+      }
     }
     // 公開済みの note の記事。/api/notes/<dir> が本文、/api/notes/<dir>/assets/… が画像
     const n = url.pathname.match(/^\/api\/notes\/([^/]+)(?:\/(.+))?$/)

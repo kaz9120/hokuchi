@@ -22,7 +22,8 @@ const TONE: Record<Progress | Visibility, string> = {
 export function StateBadges({ progress, visibility, className }: { progress: Progress; visibility: Visibility; className?: string }) {
   return (
     <span className={cn('flex shrink-0 items-center gap-1', className)}>
-      {visibility !== 'public' && (
+      {/* 公開したものは完成なので「公開」だけ。改稿中 (ADR-0047) は「下書き」も並べる */}
+      {(visibility !== 'public' || progress === 'draft') && (
         <Badge variant="outline" className={TONE[progress]}>
           {PROGRESS_LABEL[progress]}
         </Badge>

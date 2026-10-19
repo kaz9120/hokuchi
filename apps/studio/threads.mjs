@@ -137,33 +137,38 @@ export function reopenThread(file, id) {
  * 前の読みの感想で、Claude の番のまま残っているものは「読み直した」として閉じる。話者の番のものは残す
  */
 export function importRead(file, read) {
-  edit(file, (seq, doc) => {
-    for (const t of seq.items) {
-      if (t.get('by') === '聴衆役' && t.get('ball') === 'Claude' && t.get('read') !== read.id) {
-        t.set('ball', 'none')
-        t.set('closed', '読み直した')
+  // 記事の読み (ADR-0046) は、感想の位置が段落 (para と head)
+  const forNote = read.readers.some((r) => r.notes.some((n) => n.para !== undefined))
+  edit(
+    file,
+    (seq, doc) => {
+      for (const t of seq.items) {
+        if (t.get('by') === '聴衆役' && t.get('ball') === 'Claude' && t.get('read') !== read.id) {
+          t.set('ball', 'none')
+          t.set('closed', '読み直した')
+        }
       }
-    }
-    let n = Math.max(0, ...seq.items.map((t) => Number(String(t.get('id') ?? '').slice(1)) || 0))
-    for (const r of read.readers) {
-      for (const note of r.notes) {
-        const good = note.kind === 'good'
-        seq.add(
-          doc.createNode({
-            id: `t${String(++n).padStart(3, '0')}`,
-            scene: note.scene,
-            ...(note.state ? { state: note.state } : {}),
-            by: '聴衆役',
-            name: r.name,
-            read: read.id,
-            kind: note.kind,
-            text: note.text,
-            at: read.at,
-            ball: good ? 'none' : 'Claude',
-            ...(good ? { closed: '良かった点' } : {}),
-          }),
-        )
+      let n = Math.max(0, ...seq.items.map((t) => Number(String(t.get('id') ?? '').slice(1)) || 0))
+      for (const r of read.readers) {
+        for (const note of r.notes) {
+          const good = note.kind === 'good'
+          seq.add(
+            doc.createNode({
+              id: `t${String(++n).padStart(3, '0')}`,
+              ...(note.para !== undefined ? { para: note.para, ...(note.head ? { head: note.head } : {}) } : { scene: note.scene, ...(note.state ? { state: note.state } : {}) }),
+              by: '聴衆役',
+              name: r.name,
+              read: read.id,
+              kind: note.kind,
+              text: note.text,
+              at: read.at,
+              ball: good ? 'none' : 'Claude',
+              ...(good ? { closed: '良かった点' } : {}),
+            }),
+          )
+        }
       }
-    }
-  })
+    },
+    forNote ? NOTE_HEAD : HEAD,
+  )
 }

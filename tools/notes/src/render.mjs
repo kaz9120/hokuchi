@@ -1,4 +1,4 @@
-// render.mjs — 原稿の Markdown を、serve で見せる HTML に変える。
+// render.mjs — 原稿の Markdown を、画面で見せる HTML に変える (studio の公開済み記事の画面が使う)。
 //
 // 対象は markdown.mjs が出す (= 原稿で使う) 記法だけ。見出し・段落・強調・
 // リンク・画像とキャプション・引用・リスト・コード・区切り線・URL だけの行

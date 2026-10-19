@@ -23,9 +23,8 @@ articles/note/
 | `hokuchi-note sync` | 一覧取得 → 記事取得 → 画像取得 → build → verify → index | 使う |
 | `hokuchi-note build [dir...]` | `source.json` から `index.md` を作り直す | 使わない |
 | `hokuchi-note verify [dir...]` | 取り込みの忠実さを検査する。欠落があれば終了コード 1 | 使わない |
-| `hokuchi-note lint [原稿.md...]` | 原稿の文体を検査する。引数を省くと公開済み記事全部 | 使わない |
-| `hokuchi-note paste <原稿.md>` | 原稿を note に貼れる形にしてクリップボードへ。`--stdout` で標準出力 | 使わない |
-| `hokuchi-note serve <原稿dir>` | 原稿をブラウザで見せ、コメントを `feedback.md` に受ける。`--port` (既定 4647) | 使わない (localhost) |
+| `hokuchi-note lint [原稿...]` | 原稿の文体を検査する。原稿は index.md・ディレクトリ・slug のどれでもよい。引数を省くと公開済み記事全部 | 使わない |
+| `hokuchi-note paste <原稿>` | 原稿を note に貼れる形にしてクリップボードへ。`--stdout` で標準出力 | 使わない |
 | `hokuchi-note index` | `articles/note/README.md` を作り直す | 使わない |
 
 `tools/notes` で一度 `npm link` すると `hokuchi-note` として使える。`npm test` は変換規則の回帰テストとアーカイブ全体の検査を回す。
@@ -101,30 +100,22 @@ note のエディタは Markdown を貼ると見出しや強調を解釈する�
 
 あわせて画像の一覧を番号付きで出し、`assets/` を Finder で開く。note 側では、この行を消してその位置に画像を入れ、キャプションを付ける。原稿の側は `![alt](assets/…)` のままにする。プレビューで見えることと、`verify` が画像の並びと実体を検査することを保つためである (ADR-0021)。
 
-## 原稿のフィードバックループ (serve)
+## 原稿の置き場と、studio との分担
 
-[ADR-0022](../../../docs/adr/0022-note-serve-feedback-loop.md)。`serve` は原稿を note 風に描画して `http://localhost:4647/` で見せる。依存はゼロで、描画は `render.mjs` (原稿で使う記法だけの最小レンダラ。各ブロックに `data-block` の通し番号を付ける)、画面は `serve.html` 1 枚。
-
-```
-<HOKUCHI_PRIVATE>/notes/<slug>/   (ADR-0046 で articles/note/drafts/ から移した。既定は ~/Hobby/hokuchi-private)
-  index.md       原稿。Claude が書き換えると画面が追従する (1.5 秒ごとに mtime を見る)
-  assets/        画像。画面に出す
-  feedback.md    ブラウザで付けたコメント。Claude が読んで反映し、反映した節を消す
-```
-
-読み手が本文の文を選ぶと、選択のすぐ下に入力欄が出る。一言書いて Enter で送る (Shift+Enter で改行、Esc で閉じる。IME の確定 Enter は送らない)。`feedback.md` には次の形で追記される。段落番号は `data-block` の値で、見出しは直前の h2/h3。
+[ADR-0046](../../../docs/adr/0046-articles-in-studio.md)。公開前の原稿は、公開リポジトリの外の `<HOKUCHI_PRIVATE>/notes/<slug>/` に置く (`src/drafts.mjs`)。原稿を読んで直す・指摘を往復する・聴衆役に読んでもらう画面は、studio の記事の作品の画面 (構成・原稿・読み・公開のタブ) が持つ。かつての `serve` と `feedback.md` (ADR-0022) は、studio の原稿タブに置き換えて外した。
 
 ```
-## 2026-09-09 00:05 — 段落 2 / 見出し「100個並べて、選ぶ」
-
-> 選択した本文
-
-3 文目がくどい。前の 2 文で言えている
+<HOKUCHI_PRIVATE>/notes/<slug>/   (既定は ~/Hobby/hokuchi-private)
+  index.md       原稿 (front matter と本文)
+  assets/        画像
+  outline.yaml   構成 (見出しの並び・粗密・字数の予算)
+  feedback.yaml  指摘のスレッド
+  readers.yaml   聴衆役の読み手。reads/ が読みの結果
 ```
 
-`feedback.md` は往復の受け渡し口であって記録ではない。画面は節を「未反映のフィードバック」として見せ、「ターミナルに貼る」が未反映分を依頼文付きでクリップボードに入れる (agentation と同じ体験)。Claude は反映した節を消し、「全部消す」で人が空にもできる。原稿ディレクトリは公開後に消える。
+この CLI に残るのは、機械で数える `lint` と、note に貼る形を作る `paste` で、studio もこの 2 つの中身 (`lintDraft`・`toPasteText`) を呼ぶ。`render.mjs` は、studio の公開済み記事の画面が本文を HTML にするのに使う。
 
-サイドバーには lint の指摘 (クリックで該当段落へ移動。`lintDraft` の `at` を本文から探す)、「note に貼る本文をコピー」(`/__paste`。`paste` と同じ本文)、`assets/` を Finder で開くボタンを置く。エンドポイントは `/__draft` (状態を JSON で)、`/__feedback` (POST)、`/__clear` (POST)、`/__paste`、`/__open`。それ以外は原稿ディレクトリの画像だけを配信する。サーバに繋がらなくなると画面上部に出しっぱなしで知らせる (serve のプロセスが生きている間だけ画面が動く)。
+公開済みの記事を直すときは、studio の「改稿する」でアーカイブを原稿に写す (ADR-0047)。アーカイブの `index.md` は生成物なので、直接は直さない。note を更新したら `sync` で取り込み直す。
 
 ## 記事を書き足したとき
 

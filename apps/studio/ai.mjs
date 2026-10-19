@@ -29,6 +29,13 @@ export const TASKS = {
     prompt: (w) =>
       `この${w.work}の${w.oneLiner}を 1 文で、候補を 3 案出してください。主張になっていること (「〜について話す」は題目で主張ではない)、書き手の体験から出ていること、相手にとって自明でないこと、反論できる形であることを満たします。最初に浮かんだ案だけで終わらせず、角度の違う案を並べます。text に 1 文を、note にその案を選ぶとどこが厚くなり何を捨てることになるかを入れます。`,
   },
+  // 記事の公開タブで使う。原稿を読んで出す (ADR-0046)
+  'title.candidates': {
+    label: 'タイトルの案を出す',
+    draft: true,
+    prompt: (w) =>
+      `この${w.work}のタイトルを 3 案出してください。何が書いてあるかが 1 秒で分かること、先頭 25 字に核を置くこと、固有名詞・数字・具体的な場面を含めること、煽りや釣りを使わないことを満たします。芯の 1 文から作ると外れにくいです。角度の違う案を並べます (具体的な体験 + テーマ・言い切り・問い + 主観・対象 + 意外性・数字 + スコープ)。text にタイトルを、note にそのタイトルで誰がなぜ開くかを入れます。`,
+  },
   'oneLiner.critique': {
     label: '1 文をレビューする',
     prompt: (w) =>
@@ -36,15 +43,16 @@ export const TASKS = {
   },
 }
 
-function buildPrompt(brief, task) {
+function buildPrompt(brief, task, draft) {
   const w = WORD[brief.kind] ?? WORD.note
   const sheet = YAML.stringify({ 種類: w.work, タイトル: brief.title || '(未定)', 欄: brief.fields ?? {} }, { lineWidth: 0 })
   return [
     `あなたは、書き手と一緒に${w.work}を企画している相談相手です。決めるのは書き手で、あなたは候補と講評を出します。`,
-    'ファイルの読み書きや検索などの道具は使わず、下の企画シートだけを根拠に答えてください。シートに無い事実は作らないでください。',
+    'ファイルの読み書きや検索などの道具は使わず、下の企画シート (と原稿) だけを根拠に答えてください。書かれていない事実は作らないでください。',
     '',
     '## 企画シート',
     sheet,
+    ...(TASKS[task].draft && draft ? ['## 原稿', draft, ''] : []),
     '## 依頼',
     TASKS[task].prompt(w),
     '',
@@ -54,7 +62,7 @@ function buildPrompt(brief, task) {
 }
 
 /** 依頼を 1 回投げて、候補の配列を返す */
-export function ask(brief, task, { cwd }) {
+export function ask(brief, task, { cwd, draft = null }) {
   if (!TASKS[task]) return Promise.reject(new Error(`依頼「${task}」はありません`))
   return new Promise((ok, ng) => {
     const p = spawn('claude', ['-p', '--output-format', 'json'], { cwd, stdio: ['pipe', 'pipe', 'pipe'] })
@@ -71,6 +79,6 @@ export function ask(brief, task, { cwd }) {
         ng(new Error(`Claude の答えを読めませんでした (${code}): ${err || out.slice(0, 300) || e.message}`))
       }
     })
-    p.stdin.end(buildPrompt(brief, task))
+    p.stdin.end(buildPrompt(brief, task, draft))
   })
 }

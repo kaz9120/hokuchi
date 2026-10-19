@@ -3,7 +3,8 @@
 // 段落は、本文を空行で分けたまとまり。コードの囲み (```) は中に空行があっても 1 つにまとめる。
 // 見出し・画像・埋め込みも 1 つの段落として数える。番号は本文の頭から 1 始まり。
 // 書き戻すときは、その段落の範囲だけを置き換える。front matter とほかの段落には触らない。
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+// 構成 (outline.yaml)・front matter の書き換え・改稿 (ADR-0047) もここが持つ。
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import YAML from 'yaml'
 import { draftStats, lintDraft, splitFrontMatter } from '../../tools/notes/src/lint.mjs'
@@ -82,10 +83,101 @@ export function readDraft(slug) {
   return {
     title: String(meta.title ?? ''),
     tags: meta.hashtags ?? [],
+    eyecatch: meta.eyecatch ?? null,
+    revises: meta.revises ?? null,
     blocks: blocks.map(({ n, kind, text, head }) => ({ n, kind, text, head })),
     lint: lintBlocks(md, blocks),
     stats: draftStats(md),
+    sections: sectionChars(blocks),
+    assets: listAssets(slug),
   }
+}
+
+// ---------------------------------------------------------------- 構成 (outline.yaml)
+
+/** 地の文として数える段落。見出し・画像・埋め込み・コード・コメントは数えない (lint の proseBlocks と揃える) */
+const PROSE = new Set(['prose', 'quote', 'list'])
+const visible = (t) => t.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/\s/g, '').length
+
+/** 原稿を見出し (##) で区切り、区切りごとの地の文の字数を数える。先頭は「冒頭」 */
+export function sectionChars(blocks) {
+  const out = [{ title: '冒頭', n: null, chars: 0 }]
+  for (const b of blocks) {
+    if (b.kind === 'heading' && /^## /.test(b.text)) out.push({ title: b.text.replace(/^##\s+/, '').trim(), n: b.n, chars: 0 })
+    else if (PROSE.has(b.kind)) out[out.length - 1].chars += visible(b.text)
+  }
+  return out
+}
+
+const OUTLINE_HEAD = [
+  '# 記事の構成 (ADR-0046)。studio の構成タブが読み書きし、Claude Code も直接直す。',
+  '#   sections: 見出しの並び。先頭は「冒頭」で、point がフック (冒頭に置く場面)',
+  '#   title: 見出し (原稿の ## と同じ文字)。point: その見出しで伝えること (1 行)',
+  '#   grain: 密 か 粗。密は 2 つまで (writing-note の somitsu.md)。budget: 字数の予算 (空白を除く)',
+  '',
+].join('\n')
+
+export const outlineFile = (slug) => join(NOTES, slug, 'outline.yaml')
+
+/** 構成を読む。無ければ空。先頭が「冒頭」でなければ足す */
+export function readOutline(slug) {
+  const file = outlineFile(slug)
+  let sections = []
+  try {
+    sections = existsSync(file) ? (YAML.parse(readFileSync(file, 'utf8'))?.sections ?? []) : []
+  } catch {}
+  sections = sections.map((x) => ({ title: String(x.title ?? ''), point: String(x.point ?? ''), grain: x.grain === '密' ? '密' : '粗', budget: Number(x.budget) || 0 }))
+  if (sections.length && sections[0].title !== '冒頭') sections.unshift({ title: '冒頭', point: '', grain: '粗', budget: 0 })
+  return { exists: existsSync(file), sections }
+}
+
+/** 構成を丸ごと書き換える */
+export function saveOutline(slug, sections) {
+  const clean = sections.map((x, i) => ({ title: i === 0 ? '冒頭' : String(x.title ?? '').trim(), point: String(x.point ?? '').trim(), grain: x.grain === '密' ? '密' : '粗', budget: Math.max(0, Math.round(Number(x.budget) || 0)) }))
+  writeFileSync(outlineFile(slug), OUTLINE_HEAD + YAML.stringify({ sections: clean }, { lineWidth: 0 }))
+}
+
+// ---------------------------------------------------------------- front matter と画像
+
+/** front matter の項目を書き換える。null を渡した項目は消す。本文には触らない */
+export function setMeta(slug, patch) {
+  const file = draftFile(slug)
+  const md = readFileSync(file, 'utf8')
+  const { meta, offset } = parseDraft(md)
+  const next = { ...meta }
+  for (const [k, v] of Object.entries(patch)) {
+    if (v === null || v === undefined || (Array.isArray(v) && v.length === 0)) delete next[k]
+    else next[k] = v
+  }
+  writeFileSync(file, `---\n${YAML.stringify(next, { lineWidth: 0 })}---\n${md.slice(offset).replace(/^\n?/, '\n')}`)
+}
+
+/** 原稿の assets/ にある画像 */
+export function listAssets(slug) {
+  const dir = join(NOTES, slug, 'assets')
+  if (!existsSync(dir)) return []
+  return readdirSync(dir)
+    .filter((f) => /\.(png|jpe?g|gif|webp)$/i.test(f))
+    .sort()
+    .map((f) => `assets/${f}`)
+}
+
+// ---------------------------------------------------------------- 改稿 (ADR-0047)
+
+/**
+ * 公開済みの記事を、原稿に写す。アーカイブ (articles/note/<公開日>-<slug>/) の index.md と assets/ を
+ * <置き場>/notes/<slug>/ に写し、front matter に revises を残す。アーカイブは読むだけで書き換えない。
+ * すでに同じ slug の原稿があれば、何もせずにその slug を返す
+ */
+export function reviseFromArchive(archiveDir, name) {
+  const slug = name.slice(11)
+  if (!SLUG.test(slug)) throw new Error(`「${name}」から slug を読めません`)
+  if (hasDraft(slug)) return { slug, created: false }
+  mkdirSync(draftDir(slug), { recursive: true })
+  if (existsSync(join(archiveDir, 'assets'))) cpSync(join(archiveDir, 'assets'), join(draftDir(slug), 'assets'), { recursive: true })
+  writeFileSync(draftFile(slug), readFileSync(join(archiveDir, 'index.md'), 'utf8'))
+  setMeta(slug, { revises: name })
+  return { slug, created: true }
 }
 
 /**

@@ -60,22 +60,33 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 /** 発表の日まで、あと何日か */
 const daysTo = (date: string | null) => (date ? Math.ceil((new Date(date).getTime() - Date.now()) / 86400000) : null)
 
-/** 下書きの作品 1 枚。いまどこにいて、次に何をするかを言う */
-function WorkCard({ work }: { work: WorkItem }) {
+/**
+ * 下書きの作品 1 枚。いまどこにいて、次に何をするかを言う。
+ * 公開済みの記事を改稿しているとき (ADR-0047) は、公開のバッジのまま下書きのカードで見せ、企画と構成は飛ばす
+ */
+function WorkCard({ work, visibility = 'private' }: { work: WorkItem; visibility?: Visibility }) {
+  const revising = visibility === 'public'
   const next = STAGES.find((s) => !s.later && stageStatus(s, work) !== 'done')
   const t = work.talkInfo
   const days = daysTo(t?.date ?? (work.fields.date as string | undefined) ?? null)
   const d = work.draftInfo
   // 次にやること。企画が残っていれば企画、絵コンテがあれば、答える指摘 → 読んでもらう → コマを読む の順。
   // 記事は、原稿が無ければ原稿を作る、あれば答える指摘 → 原稿を読んで直す (ADR-0046)
-  const todo = next
-    ? { text: `企画の「${next.title[work.kind]}」を書く`, href: `/works/${work.id}#${next.key}`, label: '企画を開く' }
+  const at = (tab: string) => `/works/${work.id}#${tab}`
+  const todo = next && !revising
+    ? { text: `企画の「${next.title[work.kind]}」を書く`, href: at(next.key), label: '企画を開く' }
     : work.kind === 'note'
       ? !d
-        ? { text: '原稿を作成する', href: `/works/${work.id}#draft`, label: '原稿を開く' }
-        : d.mine > 0
-          ? { text: `あなた宛ての指摘が ${d.mine} 件`, href: `/works/${work.id}#draft`, label: '返信する' }
-          : { text: '原稿を読んで、段落ごとに直す', href: `/works/${work.id}#draft`, label: '原稿を開く' }
+        ? { text: '原稿を作成する', href: at('draft'), label: '原稿を開く' }
+        : d.outline === 0 && !revising
+          ? { text: '構成（見出しの並びと、密にする場所）を決める', href: at('outline'), label: '構成を開く' }
+          : d.blocks === 0
+            ? { text: '本文を書く（Claude Code に下書きを頼む）', href: at('draft'), label: '原稿を開く' }
+            : d.mine > 0
+              ? { text: `あなた宛ての指摘が ${d.mine} 件`, href: at('reads'), label: '返信する' }
+              : d.reads === 0
+                ? { text: '聴衆役に読んでもらう', href: at('reads'), label: '読みを開く' }
+                : { text: revising ? '直した記事で、note を更新する' : 'タイトル・タグ・見出し画像を決めて公開する', href: at('publish'), label: '公開を開く' }
     : !t
       ? { text: 'Claude Code に絵コンテを頼む', href: `/works/${work.id}`, label: '企画を開く' }
       : t.mine > 0
@@ -89,7 +100,7 @@ function WorkCard({ work }: { work: WorkItem }) {
       <CardHeader className="px-4">
         <div className="flex items-center gap-2">
           <Badge variant="secondary">{KIND_LABEL[work.kind]}</Badge>
-          <StateBadges progress="draft" visibility="private" />
+          <StateBadges progress="draft" visibility={visibility} />
           {/* 項目の途中で折り返さない (「あと / 12 日」のように割れないように) */}
           <span className="flex min-w-0 flex-wrap text-xs text-muted-foreground">
             {meta.length
@@ -287,7 +298,7 @@ function Works({ items }: { items: Item[] }) {
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {shown.map((i: Item) =>
-            i.progress === 'draft' && i.work ? <WorkCard key={i.key} work={i.work} /> : i.progress === 'draft' && i.talk ? <DraftTalkCard key={i.key} talk={i.talk} /> : <CoverCard key={i.key} item={i} />,
+            i.progress === 'draft' && i.work ? <WorkCard key={i.key} work={i.work} visibility={i.visibility} /> : i.progress === 'draft' && i.talk ? <DraftTalkCard key={i.key} talk={i.talk} /> : <CoverCard key={i.key} item={i} />,
           )}
         </div>
       )}

@@ -1,6 +1,6 @@
 // 作品の画面 (ADR-0040)。発表 1 本・記事 1 本を、企画から公開までタブで進める。
 // 企画 (段階 1〜4) は、左に段階、右にその段階の欄。発表は、絵コンテができたら 流れ・コマ・読み・公開 のタブが使える。
-// 記事は 企画・原稿 のタブ。構成・読み・公開は ADR-0046 の 2 段目で作るので、まだ出さない
+// 記事は 企画・構成・原稿・読み・公開 のタブ (ADR-0046)。原稿があるあいだ、上のタイトルは原稿の front matter を読み書きする
 // 伝えたいことと聴衆は、どのタブでも上に出し続ける (slide:ology p.36-37, p.39)。
 // 状態は 進み具合 (下書き・完成) と公開範囲 (非公開・公開) の 2 つの軸。右上に、進み具合の操作と公開の手順を置く (ADR-0045)
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -19,9 +19,12 @@ import { talkApi, useTalk } from '@/lib/talk'
 import { StateBadges } from './status'
 import { Compass, Handoff, TALK_TABS, TabBar, TalkPane, yoursCount, type TalkTab } from './talk/TalkTabs'
 import { HandoffButton } from './talk/Handoff'
-import { draftHandoffText, useDraft } from './lib/note'
+import { draftApi, draftHandoffText, useDraft } from './lib/note'
 import { mine } from './lib/talk'
 import { CreateDraft, DraftView } from './note/DraftView'
+import { OutlineView } from './note/OutlineView'
+import { NoteReadsView } from './note/NoteReads'
+import { NotePublishView } from './note/NotePublish'
 
 /** 企画シートを読み、直すたびに少し待ってから保存する */
 function useBrief(id: string) {
@@ -52,14 +55,21 @@ function useBrief(id: string) {
 
 /** 企画の段階 (1〜4)。5 から先は、絵コンテのタブで進める */
 const PLAN = STAGES.filter((s) => !s.later)
-type Tab = 'plan' | TalkTab | 'draft'
-const NOTE_TABS: { key: Tab; label: string; hint: string }[] = [{ key: 'draft', label: '原稿', hint: '段落ごとに読んで直し、指摘を書く' }]
+type Tab = 'plan' | TalkTab | 'draft' | 'outline'
+/** 記事のタブ。発表の 流れ・コマ・読み・公開 に、構成・原稿・読み・公開 が当たる (ADR-0046) */
+const NOTE_TABS: { key: Tab; label: string; hint: string }[] = [
+  { key: 'outline', label: '構成', hint: '見出しの並び・フック・密にする場所・字数の予算を決める' },
+  { key: 'draft', label: '原稿', hint: '段落ごとに読んで直し、指摘を書く' },
+  { key: 'reads', label: '読み', hint: '聴衆役に記事として読んでもらい、指摘に返信する' },
+  { key: 'publish', label: '公開', hint: 'タイトル・タグ・見出し画像を決め、note に貼る' },
+]
+const NOTE_TAB_KEYS: Tab[] = NOTE_TABS.map((t) => t.key)
 
 /** URL のハッシュから、タブと、その中の場所を読む。企画は段階の key、コマは koma/<シーン> */
 function readHash(): { tab: Tab; stage: string; scene: string | null } {
   const h = decodeURIComponent(location.hash.slice(1))
   const [head, rest] = h.split('/')
-  if (head === 'flow' || head === 'koma' || head === 'reads' || head === 'publish' || head === 'draft') return { tab: head, stage: PLAN[0].key, scene: rest ?? null }
+  if (head === 'flow' || head === 'koma' || head === 'reads' || head === 'publish' || head === 'draft' || head === 'outline') return { tab: head, stage: PLAN[0].key, scene: rest ?? null }
   return { tab: 'plan', stage: PLAN.some((s) => s.key === head) ? head : PLAN[0].key, scene: null }
 }
 
@@ -76,14 +86,16 @@ export function Work({ id }: { id: string }) {
     location.hash = tab === 'plan' ? (where ?? at.stage) : where ? `${tab}/${where}` : tab
   }
   const { data, thumbs, reading } = useTalk(brief?.talk)
-  const { data: draft, missing: noDraft } = useDraft(brief?.kind === 'note' ? brief.note : undefined)
+  const { data: draft, missing: noDraft, reading: draftReading } = useDraft(brief?.kind === 'note' ? brief.note : undefined)
 
   if (!brief) return <div className="p-10 text-muted-foreground">読み込み中…</div>
   const stage = PLAN.find((s) => s.key === at.stage) ?? PLAN[0]
   const setField = (key: string, value: unknown) => update((b) => ({ ...b, fields: { ...b.fields, [key]: value } }))
   const tabs = [{ key: 'plan' as Tab, label: '企画', hint: '場・聴衆・聞き終えたあと・伝えたいことを決める' }, ...(brief.kind === 'talk' ? TALK_TABS : NOTE_TABS)]
   // 記事は原稿のタブだけ、発表は絵コンテがあるときだけ、企画のほかのタブを開ける
-  const tab: Tab = brief.kind === 'note' ? (at.tab === 'draft' ? 'draft' : 'plan') : at.tab !== 'plan' && at.tab !== 'draft' && data ? at.tab : 'plan'
+  const tab: Tab = brief.kind === 'note' ? (NOTE_TAB_KEYS.includes(at.tab) ? at.tab : 'plan') : at.tab !== 'plan' && at.tab !== 'draft' && at.tab !== 'outline' && data ? at.tab : 'plan'
+  // 原稿があるあいだ、タイトルの正は原稿の front matter。企画シートの title はサーバが揃える
+  const title = draft ? draft.title : brief.title
   const createDraft = async (slug: string) => {
     const saved = await api.createDraft(brief.id, slug)
     setBrief((cur: WorkView | null) => cur && { ...cur, note: saved.note })
@@ -98,13 +110,17 @@ export function Work({ id }: { id: string }) {
           </a>
         </Button>
         <Badge variant="secondary">{KIND_LABEL[brief.kind]}</Badge>
-        <StateBadges progress={brief.published || brief.finishedAt ? 'finished' : 'draft'} visibility={brief.published ? 'public' : 'private'} />
-        <Input
-          value={brief.title}
-          onChange={(e) => update((b) => ({ ...b, title: e.target.value }))}
-          placeholder="タイトル（仮でかまいません）"
-          className="h-8 max-w-md border-transparent font-semibold shadow-none hover:border-input focus-visible:border-input"
-        />
+        <StateBadges progress={brief.revising ? 'draft' : brief.published || brief.finishedAt ? 'finished' : 'draft'} visibility={brief.published ? 'public' : 'private'} />
+        {draft ? (
+          <DraftTitle key={draft.slug} title={title} onSave={(t) => draftApi(draft.slug).setMeta({ title: t })} />
+        ) : (
+          <Input
+            value={brief.title}
+            onChange={(e) => update((b) => ({ ...b, title: e.target.value }))}
+            placeholder="タイトル（仮でかまいません）"
+            className="h-8 max-w-md border-transparent font-semibold shadow-none hover:border-input focus-visible:border-input"
+          />
+        )}
         {data && (
           <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
             {[data.talk.event, data.talk.date, data.board.meta['持ち時間']].filter(Boolean).join('・')}
@@ -115,8 +131,8 @@ export function Work({ id }: { id: string }) {
           <TabBar
             tabs={tabs}
             current={tab}
-            onPick={(t) => (brief.talk || t === 'plan' || t === 'draft' ? go(t) : undefined)}
-            badge={data ? { reads: yoursCount(data) } : draft ? { draft: draft.threads.filter(mine).length } : undefined}
+            onPick={(t) => (brief.talk || brief.kind === 'note' || t === 'plan' ? go(t) : undefined)}
+            badge={data ? { reads: yoursCount(data) } : draft ? { reads: draft.threads.filter(mine).length } : undefined}
           />
           {!brief.published && (
             <div className="flex items-center gap-1 border-l pl-3">
@@ -129,8 +145,19 @@ export function Work({ id }: { id: string }) {
 
       <Compass oneLiner={(brief.fields.oneLiner as string | undefined) ?? ''} readers={data?.readers ?? []} right={data ? <Handoff data={data} /> : draft ? <HandoffButton threads={draft.threads} text={draftHandoffText(draft)} /> : <span className="max-w-xs truncate text-xs text-muted-foreground">{audienceSummary(brief)}</span>} />
 
-      {tab === 'draft' ? (
-        draft ? <DraftView data={draft} focus={at.scene} /> : brief.note && !noDraft ? <div className="p-10 text-muted-foreground">読み込み中…</div> : <CreateDraft title={brief.title} onCreate={createDraft} />
+      {brief.kind === 'note' && tab !== 'plan' ? (
+        // 構成・読み・公開も、原稿の置き場に保存する。原稿が無ければ、まず原稿を作る
+        !draft ? (
+          brief.note && !noDraft ? <div className="p-10 text-muted-foreground">読み込み中…</div> : <CreateDraft title={brief.title} onCreate={createDraft} />
+        ) : tab === 'outline' ? (
+          <OutlineView data={draft} onOpen={(n) => go('draft', n ? String(n) : undefined)} />
+        ) : tab === 'reads' ? (
+          <NoteReadsView data={draft} reading={draftReading} onJump={(n) => go('draft', n ? String(n) : undefined)} />
+        ) : tab === 'publish' ? (
+          <NotePublishView data={draft} />
+        ) : (
+          <DraftView data={draft} focus={at.scene} />
+        )
       ) : tab === 'plan' || !data || !brief.talk ? (
         <div className="grid min-h-0 flex-1 grid-cols-[260px_minmax(0,1fr)]">
           <StageNav brief={brief} current={stage.key} onPick={(k) => go('plan', k)} />
@@ -226,6 +253,23 @@ function DeleteDraft({ brief }: { brief: WorkView }) {
         </Button>
       </PopoverContent>
     </Popover>
+  )
+}
+
+/** 原稿があるときの上のタイトル。欄の外を押すと、原稿の front matter に保存する */
+function DraftTitle({ title, onSave }: { title: string; onSave: (t: string) => void }) {
+  const [value, setValue] = useState(title)
+  useEffect(() => setValue(title), [title])
+  return (
+    <Input
+      value={value}
+      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValue(e.target.value)}
+      onBlur={() => value.trim() && value.trim() !== title && onSave(value.trim())}
+      onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
+      placeholder="タイトル"
+      title="原稿のタイトルです。公開タブのタイトルと同じものです"
+      className="h-8 max-w-md border-transparent font-semibold shadow-none hover:border-input focus-visible:border-input"
+    />
   )
 }
 

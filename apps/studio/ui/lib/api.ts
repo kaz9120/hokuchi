@@ -7,7 +7,7 @@ export type TalkInfo = TalkItem & { mine: number; claude: number; reads: number 
 export type NoteItem = { dir: string; title: string; publishedAt: string; url: string | null; eyecatch: string | null; tags: string[]; chars: number }
 export type Seed = { id: string; createdAt: string; happening: string; why?: string; workIds?: string[] }
 /** 記事の作品に紐づく原稿の様子 (ADR-0046)。mine は、あなた宛ての指摘の数 */
-export type DraftInfo = { slug: string; chars: number; paragraphs: number; mine: number; claude: number }
+export type DraftInfo = { slug: string; chars: number; paragraphs: number; blocks: number; outline: number; reads: number; mine: number; claude: number }
 export type WorkItem = Brief & { talkInfo?: TalkInfo; draftInfo?: DraftInfo }
 /** 進み具合。完成は、企画シートの finishedAt か、公開したもの (ADR-0045) */
 export type Progress = 'draft' | 'finished'
@@ -19,6 +19,8 @@ export type HomeData = { items: Item[]; seeds: Seed[]; tasks: Record<string, str
 /** 作品の画面で読む企画シート。published はサーバが実物から決めた値で、保存はしない */
 export type WorkView = Brief & {
   published: boolean
+  /** 公開済みの記事を、原稿で改稿しているか (ADR-0047) */
+  revising: boolean
   /** 紐づくリポジトリの中のファイル (talks/ のトーク・記事の原稿)。削除しても残る */
   repoFiles: string[]
   /** 削除した下書きの移し先 (ごみ箱) */
@@ -50,6 +52,8 @@ export const api = {
   deleteWork: (id: string) => call<{ trash: string }>(`/api/works/${encodeURIComponent(id)}`, { method: 'DELETE' }),
   ask: (id: string, task: string) => call<{ items: Candidate[] }>(`/api/works/${encodeURIComponent(id)}/ask`, { method: 'POST', body: { task } }),
   saveSeed: (seed: Partial<Seed>) => call<Seed>('/api/seeds', { method: 'POST', body: seed }),
+  /** 公開済みの記事を改稿する。原稿に写し、紐づく作品の id を返す (ADR-0047) */
+  revise: (dir: string) => call<{ work: string; slug: string }>(`/api/notes/${encodeURIComponent(dir)}/revise`, { method: 'POST' }),
   note: (dir: string) => call<NoteView>(`/api/notes/${encodeURIComponent(dir)}`),
 }
 

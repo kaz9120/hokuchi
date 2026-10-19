@@ -61,7 +61,7 @@ const count = (text, word) => text.split(word).length - 1;
 /**
  * note の原稿を検査する。
  * @param {string} md - 原稿 (front matter は任意)
- * @returns {Array<{severity, id, message, at?: string}>} at は該当箇所を探すための本文の抜粋 (serve が使う)
+ * @returns {Array<{severity, id, message, at?: string}>} at は該当箇所を探すための本文の抜粋 (studio が段落に寄せるのに使う)
  */
 export function lintDraft(md) {
   const findings = [];

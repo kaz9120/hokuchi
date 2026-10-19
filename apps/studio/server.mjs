@@ -5,10 +5,11 @@
 //   bun run studio <talk>    同じものを立て、そのトークの編集画面の URL を出す
 //
 // 同じプロセスの中で、サイト全体の開発サーバ (http://localhost:5280/) も立てる。プレビューはそこから描く。
+// トークは、リポジトリの talks/ と、公開リポジトリの外の <HOKUCHI_PRIVATE>/talks/ の両方から読む (ADR-0041)。
 // 長く動くので、別ターミナルで立てる。
 import { createServer as createHttpServer } from 'node:http'
 import { existsSync, readFileSync, readdirSync, watch, writeFileSync } from 'node:fs'
-import { join, relative, resolve } from 'node:path'
+import { join, relative, resolve, sep } from 'node:path'
 import { spawn } from 'node:child_process'
 import { createServer as createViteServer } from 'vite'
 import react from '@vitejs/plugin-react'
@@ -32,12 +33,15 @@ const SITE_PORT = Number(process.env.HOKUCHI_SITE_PORT ?? 5280)
 const browser = await chromium.launch({ channel: 'chrome' })
 let site
 try {
-  site = await startSite({ port: SITE_PORT, browser, quiet: true })
+  site = await startSite({ port: SITE_PORT, browser, quiet: true, moreTalkDirs: [join(PRIVATE, 'talks')] })
 } catch (e) {
   console.error(e.message)
   await browser.close()
   process.exit(1)
 }
+
+/** 画面と依頼文に出すトークの場所。リポジトリの中は相対パス、外 (社内向けの発表) は絶対パスにする */
+const shownDir = (dir) => (dir.startsWith(repoRoot + sep) ? relative(repoRoot, dir) : dir)
 
 // ---------------------------------------------------------------- 画面への通知 (Server-Sent Events)
 // 接続ごとに、見ている画面 (ホームか、どのトークか) を持つ
@@ -102,7 +106,7 @@ class Workspace {
       .filter((r) => r.id)
     const w = workOfTalk(this.slug)
     return {
-      talk: { slug: this.slug, name, date, tag, title, dir: relative(repoRoot, this.dir), event: this.entry.info.event?.name ?? null, minutes: seconds(board.meta['持ち時間'] ?? '') },
+      talk: { slug: this.slug, name, date, tag, title, dir: shownDir(this.dir), outside: this.entry.outside, event: this.entry.info.event?.name ?? null, minutes: seconds(board.meta['持ち時間'] ?? '') },
       board,
       scenes,
       loadError,
@@ -224,6 +228,7 @@ function home() {
       }
     })
     .sort((a, b) => (a.date < b.date ? 1 : -1))
+  const notes = listNotes(repoRoot)
   const tasks = Object.fromEntries(Object.entries(TASKS).map(([k, t]) => [k, t.label]))
   // 作品に、紐づくトークの様子 (場面の数・あなたが答える指摘の数) を載せる。ホームは作品 1 枚で見せる (ADR-0040)
   const works = listWorks().map((w) => {
@@ -233,9 +238,49 @@ function home() {
     const { threads } = readThreads(join(t.dir, 'feedback.yaml'))
     return { ...w, talkInfo: { ...item, mine: threads.filter((x) => x.ball === '話者').length, claude: threads.filter((x) => x.ball === 'Claude').length, reads: listReads(t.dir).length } }
   })
-  const linked = new Set(works.map((w) => w.talk).filter(Boolean))
-  return { talks: talks.map((t) => ({ ...t, linked: linked.has(t.slug) })), notes: listNotes(repoRoot), works, seeds: listSeeds(), tasks, siteUrl: `${site.url}/`, privateDir: PRIVATE }
+
+  // 発表と記事を 1 つの一覧にする (ADR-0043)。企画シートが公開物に紐づいていれば 1 枚にまとめる。
+  // 公開は実物から決める。企画シートに書くのは、非公開にしたこと (status: private) だけ
+  const item = ({ work = null, talk = null, note = null, kind }) => {
+    const status = talk?.public || note ? 'public' : work?.status === 'private' ? 'private' : 'draft'
+    return {
+      key: work ? `work:${work.id}` : talk ? `talk:${talk.slug}` : `note:${note.dir}`,
+      kind,
+      status,
+      title: work?.title || talk?.title || note?.title || '',
+      date: talk?.date ?? note?.publishedAt ?? work?.fields?.date ?? null,
+      event: talk?.event ?? work?.fields?.event ?? null,
+      tags: note?.tags ?? [],
+      updatedAt: work?.updatedAt ?? null,
+      work,
+      talk,
+      note,
+    }
+  }
+  const usedTalks = new Set()
+  const usedNotes = new Set()
+  const items = works.map((w) => {
+    const note = w.kind === 'note' ? noteOfWork(w, notes) : null
+    if (w.talkInfo) usedTalks.add(w.talk)
+    if (note) usedNotes.add(note.dir)
+    return item({ work: w, talk: w.talkInfo ?? null, note, kind: w.kind })
+  })
+  for (const t of talks) if (!usedTalks.has(t.slug)) items.push(item({ talk: t, kind: 'talk' }))
+  for (const n of notes) if (!usedNotes.has(n.dir)) items.push(item({ note: n, kind: 'note' }))
+  // 下書きを上に (触った順)。そのあとに非公開と公開を、日付の新しい順に
+  items.sort((a, b) => {
+    if ((a.status === 'draft') !== (b.status === 'draft')) return a.status === 'draft' ? -1 : 1
+    const [x, y] = a.status === 'draft' ? [a.updatedAt, b.updatedAt] : [a.date, b.date]
+    return (x ?? '') < (y ?? '') ? 1 : -1
+  })
+  return { items, seeds: listSeeds(), tasks, siteUrl: `${site.url}/`, privateDir: PRIVATE }
 }
+
+/** 記事の作品に紐づく、アーカイブの記事。企画シートの note は記事の slug (articles/note/<公開日>-<slug>/ の slug) */
+const noteOfWork = (w, notes = listNotes(repoRoot)) => (w.note ? (notes.find((n) => n.dir.slice(11) === w.note) ?? null) : null)
+
+/** 作品が公開されているか。発表はサイトに載るトーク、記事は note のアーカイブにあるもの (ADR-0043) */
+const isPublished = (w) => (w.kind === 'talk' ? site.talks.get(w.talk ?? '')?.info.public === true : !!noteOfWork(w))
 
 // ---------------------------------------------------------------- UI と API
 const server = createHttpServer()
@@ -284,8 +329,13 @@ server.on('request', async (req, res) => {
       const id = decodeURIComponent(w[1])
       const brief = readWork(id)
       if (!brief) return json(res, { error: `作品 ${id} がありません` }, 404)
-      if (!w[2] && req.method === 'GET') return json(res, brief)
-      if (!w[2] && req.method === 'PUT') return json(res, saveWork(id, await body(req)))
+      // published は実物から決めた値で、企画シートには書かない
+      if (!w[2] && req.method === 'GET') return json(res, { ...brief, published: isPublished(brief) })
+      if (!w[2] && req.method === 'PUT') {
+        const { published, ...next } = await body(req)
+        const saved = saveWork(id, next)
+        return json(res, { ...saved, published: isPublished(saved) })
+      }
       if (w[2] === 'ask' && req.method === 'POST') {
         const { task } = await body(req)
         const items = await ask(brief, task, { cwd: repoRoot })

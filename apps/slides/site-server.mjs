@@ -1,9 +1,10 @@
 // slides.y-kaz.com を、ローカルの開発サーバでまるごと見る (ADR-0034)。bun run dev と studio の両方が使う。
 //
 // トークごとに Vite を立て、/<slug>/ の下にぶら下げる。保存すると即座に反映され、agentation も使える。
-// 一覧のサムネイル (og.png) は、表紙をその場で撮る。非公開のトークも、印を付けて一覧に出す
+// 一覧のサムネイル (og.png) は、表紙をその場で撮る。非公開のトークも、印を付けて一覧に出す。
+// studio は、公開リポジトリの外のトーク (社内向けの発表) の置き場も足して立てる (ADR-0041)
 import { createServer as createHttp } from 'node:http'
-import { readdirSync } from 'node:fs'
+import { existsSync, readdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { createServer } from 'vite'
 import react from '@vitejs/plugin-react'
@@ -18,21 +19,24 @@ export const PORT = 5280
 
 /**
  * サイト全体の開発サーバを立てる。studio も同じものを、同じプロセスの中で立てる (ADR-0035)。
- * 戻り値の talks は slug → { dir, info, vite, firstScene, og }。browser を渡すと、表紙の撮影に使い回す
+ * 戻り値の talks は slug → { dir, info, vite, firstScene, og, outside }。browser を渡すと、表紙の撮影に使い回す。
+ * moreTalkDirs は、talks/ のほかに読むトークの置き場。そこのトークは outside の印を持ち、talk.tsx に関わらず非公開として扱う
  */
-export async function startSite({ port = PORT, browser: shared = null, quiet = false } = {}) {
+export async function startSite({ port = PORT, browser: shared = null, quiet = false, moreTalkDirs = [] } = {}) {
   const http = createHttp()
-  const talksDir = join(repoRoot, 'talks')
-  const dirs = readdirSync(talksDir)
-    .filter((n) => !n.startsWith('_') && !n.startsWith('.'))
-    .map((n) => join(talksDir, n))
-    .filter(isTalkDir)
-    .sort()
+  const roots = [{ dir: join(repoRoot, 'talks'), outside: false }, ...moreTalkDirs.filter((d) => existsSync(d)).map((dir) => ({ dir, outside: true }))]
+  const dirs = roots.flatMap(({ dir, outside }) =>
+    readdirSync(dir)
+      .filter((n) => !n.startsWith('_') && !n.startsWith('.'))
+      .map((n) => ({ dir: join(dir, n), outside }))
+      .filter((t) => isTalkDir(t.dir))
+      .sort((a, b) => (a.dir < b.dir ? -1 : 1)),
+  )
 
   /** slug → { info, vite, og } */
   const talks = new Map()
-  for (const dir of dirs) {
-    const t = await mountTalk(dir, http)
+  for (const { dir, outside } of dirs) {
+    const t = await mountTalk(dir, http, outside)
     if (talks.has(t.info.slug)) throw new Error(`/${t.info.slug}/ が重複しています。talk.tsx の slug で区別してください`)
     talks.set(t.info.slug, t)
   }
@@ -119,8 +123,12 @@ export async function startSite({ port = PORT, browser: shared = null, quiet = f
   return { talks, url, close }
 }
 
-/** トーク 1 本の Vite を、/<slug>/ の下で動かす。slug は talk.tsx の指定を優先する */
-async function mountTalk(dir, http) {
+/**
+ * トーク 1 本の Vite を、/<slug>/ の下で動かす。slug は talk.tsx の指定を優先する。
+ * リポジトリの外のトークは、サイトの組み立て (build.mjs) に載らないので、public: true と書いてあっても非公開にする
+ */
+async function mountTalk(dir, http, outside) {
+  const infoOf = (talk) => ({ ...publicInfo(dir, talk), ...(outside && { public: false }) })
   const make = (slug) => {
     const cfg = stageConfig(dir)
     return createServer({
@@ -134,20 +142,20 @@ async function mountTalk(dir, http) {
   let slug = talkInfo(dir).slug ?? 'talk'
   let vite = await make(slug)
   let talk = await loadTalk(vite)
-  let info = publicInfo(dir, talk)
+  let info = infoOf(talk)
   if (info.slug !== slug) {
     await vite.close()
     slug = info.slug
     vite = await make(slug)
     talk = await loadTalk(vite)
   }
-  const t = { dir, info, vite, firstScene: talk.scenes[0].id, og: null }
+  const t = { dir, info, vite, firstScene: talk.scenes[0].id, og: null, outside }
   // トークのファイルが変わったら、表紙を撮り直す。一覧の名前や日付も読み直す
   vite.watcher.on('change', async () => {
     t.og = null
     try {
       const fresh = await loadTalk(vite)
-      t.info = publicInfo(dir, fresh)
+      t.info = infoOf(fresh)
       t.firstScene = fresh.scenes[0].id
     } catch {}
   })

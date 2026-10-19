@@ -1,15 +1,17 @@
-// studio のホーム (ADR-0040)。作っているもの・ネタ帳・公開したものを並べ、新しく始める。
-// 発表 1 本は、作品 1 枚で見せる。作っている途中の発表は、公開したものの側には出さない
+// studio のホーム (ADR-0040・ADR-0043)。ネタ帳と、発表と記事の一覧を並べ、新しく始める。
+// 一覧は、企画シートのある作品と、企画シートの無い公開物 (note の記事・サイトに載る発表) を 1 つにまとめる。
+// 状態は 下書き・非公開・公開 の 3 つで、下書きは「次にやること」のカード、非公開と公開は表紙の絵のカードで見せる
 import { useEffect, useMemo, useState } from 'react'
 import { FileText, Lightbulb, Plus, Presentation, Search } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
-import { api, go, type HomeData, type TalkInfo, type TalkItem } from '@/lib/api'
-import { KIND_LABEL, STAGES, stageStatus, type Brief, type Kind } from '@/lib/stages'
+import { api, go, type HomeData, type Item, type Status, type TalkItem, type WorkItem } from '@/lib/api'
+import { KIND_LABEL, STAGES, stageStatus, type Kind } from '@/lib/stages'
+import { STATUS_LABEL, StatusBadge } from './status'
 
 export function Home() {
   const [data, setData] = useState<HomeData | null>(null)
@@ -24,8 +26,6 @@ export function Home() {
   }
 
   if (!data) return <div className="p-10 text-muted-foreground">読み込み中…</div>
-  // 作品に紐づいておらず、まだ公開していない発表。作っているものとして出す
-  const drafts = data.talks.filter((t) => !t.public && !t.linked)
   return (
     <div className="min-h-screen bg-muted/40">
       <header className="sticky top-0 z-10 border-b bg-background">
@@ -50,28 +50,11 @@ export function Home() {
         </div>
       </header>
 
+      {/* ネタ → 下書き → 非公開・公開 の順に、上から下へ。一覧は公開した記事で長くなるので、ネタ帳を上に置く */}
       <main className="mx-auto grid max-w-6xl gap-10 px-6 py-8">
-        <section>
-          <SectionTitle>作っているもの</SectionTitle>
-          {data.works.length + drafts.length === 0 ? (
-            <p className="text-sm text-muted-foreground">まだありません。右上の「新しい発表」「新しい記事」か、下のネタ帳から始められます。</p>
-          ) : (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {data.works.map((w) => (
-                <WorkCard key={w.id} work={w} />
-              ))}
-              {drafts.map((t) => (
-                <DraftTalkCard key={t.slug} talk={t} />
-              ))}
-            </div>
-          )}
-        </section>
-
         <Seeds data={data} onSaved={reload} onStart={start} />
-
-        <Published data={data} />
-
-        <p className="text-xs text-muted-foreground">作品の企画シートとネタ帳は、公開リポジトリの外 ({data.privateDir}) に置いています。</p>
+        <Works items={data.items} />
+        <p className="text-xs text-muted-foreground">作品の企画シートとネタ帳、非公開の発表は、公開リポジトリの外 ({data.privateDir}) に置いています。</p>
       </main>
     </div>
   )
@@ -84,8 +67,8 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 /** 発表の日まで、あと何日か */
 const daysTo = (date: string | null) => (date ? Math.ceil((new Date(date).getTime() - Date.now()) / 86400000) : null)
 
-/** 作っているもの 1 枚。いまどこにいて、次に何をするかを言う */
-function WorkCard({ work }: { work: Brief & { talkInfo?: TalkInfo } }) {
+/** 下書きの作品 1 枚。いまどこにいて、次に何をするかを言う */
+function WorkCard({ work }: { work: WorkItem }) {
   const next = STAGES.find((s) => !s.later && stageStatus(s, work) !== 'done')
   const t = work.talkInfo
   const days = daysTo(t?.date ?? (work.fields.date as string | undefined) ?? null)
@@ -103,6 +86,7 @@ function WorkCard({ work }: { work: Brief & { talkInfo?: TalkInfo } }) {
     <Card className="h-full gap-3 py-4">
       <CardHeader className="px-4">
         <div className="flex items-center gap-2">
+          <StatusBadge status="draft" />
           <Badge variant="secondary">{KIND_LABEL[work.kind]}</Badge>
           <span className="text-xs text-muted-foreground">
             {[t?.event ?? (work.fields.event as string | undefined), t?.date, days !== null && days >= 0 ? `あと ${days} 日` : null].filter(Boolean).join('・') || `${work.updatedAt.slice(0, 10)} 更新`}
@@ -142,6 +126,7 @@ function DraftTalkCard({ talk }: { talk: TalkItem }) {
     <Card className="h-full gap-3 py-4">
       <CardHeader className="px-4">
         <div className="flex items-center gap-2">
+          <StatusBadge status="draft" />
           <Badge variant="secondary">発表</Badge>
           <span className="text-xs text-muted-foreground">{[talk.event, talk.date].filter(Boolean).join('・')}</span>
         </div>
@@ -170,27 +155,36 @@ function Seeds({ data, onSaved, onStart }: { data: HomeData; onSaved: () => void
     setWhy('')
     onSaved()
   }
+  // Enter で書き留める (Shift+Enter で改行。IME の確定の Enter は送らない)
+  const onKey = (e: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+      e.preventDefault()
+      add()
+    }
+  }
+  // 毎日開く画面なので、書き留める欄は 1 行に収め、一覧を押し下げすぎないようにする
   return (
     <section>
       <SectionTitle>ネタ帳</SectionTitle>
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
-        <Card className="gap-3 py-4">
-          <CardHeader className="px-4">
-            <CardTitle className="flex items-center gap-2 text-sm">
+      <Card className="gap-2 py-3">
+        <CardContent className="grid gap-2 px-4">
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <span className="flex items-center gap-1.5 text-sm font-medium">
               <Lightbulb className="size-4" /> ネタを書き留める
-            </CardTitle>
-            <CardDescription>思いついたらすぐ書き留めます。なぜそう感じたかまで書いておくと、あとで発表や記事にしやすくなります。</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-2 px-4">
-            <Textarea value={happening} onChange={(e) => setHappening(e.target.value)} placeholder="あったこと・引っかかったこと" rows={3} />
-            <Input value={why} onChange={(e) => setWhy(e.target.value)} placeholder="なぜそう感じたか (任意)" />
-            <Button size="sm" onClick={add} disabled={!happening.trim()} className="justify-self-start">
+            </span>
+            <span className="text-xs text-muted-foreground">思いついたらすぐ書きます。なぜそう感じたかまで書いておくと、あとで発表や記事にしやすくなります。</span>
+          </div>
+          <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_minmax(0,18rem)_auto] md:items-start">
+            <Textarea value={happening} onChange={(e) => setHappening(e.target.value)} onKeyDown={onKey} placeholder="あったこと・引っかかったこと" rows={1} className="min-h-9" />
+            <Input value={why} onChange={(e) => setWhy(e.target.value)} onKeyDown={onKey} placeholder="なぜそう感じたか (任意)" />
+            <Button onClick={add} disabled={!happening.trim()}>
               <Plus /> 書き留める
             </Button>
-          </CardContent>
-        </Card>
-        <div className="grid content-start gap-2">
-          {data.seeds.length === 0 && <p className="text-sm text-muted-foreground">まだありません。</p>}
+          </div>
+        </CardContent>
+      </Card>
+      {data.seeds.length > 0 && (
+        <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {data.seeds.map((s) => (
             <Card key={s.id} className="gap-2 py-3">
               <CardContent className="grid gap-2 px-4">
@@ -212,67 +206,90 @@ function Seeds({ data, onSaved, onStart }: { data: HomeData; onSaved: () => void
             </Card>
           ))}
         </div>
-      </div>
+      )}
     </section>
   )
 }
 
-/** 公開したもの。発表と note の記事を切り替えて、検索できる。作っている途中の発表は出さない */
-function Published({ data }: { data: HomeData }) {
+const KIND_FILTERS: { value: 'all' | Kind; label: string }[] = [
+  { value: 'all', label: 'すべて' },
+  { value: 'talk', label: '発表' },
+  { value: 'note', label: '記事' },
+]
+const STATUS_FILTERS: ('all' | Status)[] = ['all', 'draft', 'private', 'public']
+
+/** 発表と記事の一覧。種類と状態で絞り込み、タイトル・タグ・イベントで探せる。並びはサーバが決める (下書きが上、そのあとは日付の新しい順) */
+function Works({ items }: { items: Item[] }) {
+  const [kind, setKind] = useState<'all' | Kind>('all')
+  const [status, setStatus] = useState<'all' | Status>('all')
   const [q, setQ] = useState('')
-  const notes = useMemo(() => data.notes.filter((n) => !q || n.title.includes(q) || n.tags.some((t) => t.includes(q))), [data.notes, q])
-  const talks = useMemo(() => data.talks.filter((t) => t.public && (!q || t.title.includes(q) || (t.event ?? '').includes(q))), [data.talks, q])
+  const hit = (i: Item) => !q || i.title.includes(q) || (i.event ?? '').includes(q) || i.tags.some((t: string) => t.includes(q))
+  const byKind = (i: Item, k: 'all' | Kind) => k === 'all' || i.kind === k
+  const byStatus = (i: Item, s: 'all' | Status) => s === 'all' || i.status === s
+  const shown = useMemo(() => items.filter((i: Item) => hit(i) && byKind(i, kind) && byStatus(i, status)), [items, q, kind, status])
+  // 絞り込みの数は、もう一方の絞り込みと検索を効かせた数にする
+  const kindCount = (k: 'all' | Kind) => items.filter((i: Item) => hit(i) && byStatus(i, status) && byKind(i, k)).length
+  const statusCount = (s: 'all' | Status) => items.filter((i: Item) => hit(i) && byKind(i, kind) && byStatus(i, s)).length
   return (
     <section>
-      <SectionTitle>公開したもの</SectionTitle>
-      <Tabs defaultValue="notes">
-        <div className="flex items-center gap-3">
+      <SectionTitle>発表と記事</SectionTitle>
+      <div className="mb-3 flex flex-wrap items-center gap-3">
+        <Tabs value={kind} onValueChange={(v: string) => setKind(v as 'all' | Kind)}>
           <TabsList>
-            <TabsTrigger value="notes">note ({data.notes.length})</TabsTrigger>
-            <TabsTrigger value="talks">発表 ({data.talks.filter((t) => t.public).length})</TabsTrigger>
+            {KIND_FILTERS.map((f) => (
+              <TabsTrigger key={f.value} value={f.value}>
+                {f.label} ({kindCount(f.value)})
+              </TabsTrigger>
+            ))}
           </TabsList>
-          <div className="relative ml-auto w-64">
-            <Search className="absolute top-2.5 left-2.5 size-4 text-muted-foreground" />
-            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="タイトル・タグで探す" className="pl-8" />
-          </div>
+        </Tabs>
+        <Tabs value={status} onValueChange={(v: string) => setStatus(v as 'all' | Status)}>
+          <TabsList>
+            {STATUS_FILTERS.map((s: 'all' | Status) => (
+              <TabsTrigger key={s} value={s}>
+                {s === 'all' ? 'すべて' : STATUS_LABEL[s]} ({statusCount(s)})
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+        <div className="relative ml-auto w-64">
+          <Search className="absolute top-2.5 left-2.5 size-4 text-muted-foreground" />
+          <Input value={q} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQ(e.target.value)} placeholder="タイトル・タグで探す" className="pl-8" />
         </div>
-        <TabsContent value="notes" className="mt-3">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {notes.map((n) => (
-              <a key={n.dir} href={`/notes/${encodeURIComponent(n.dir)}`} className="block">
-                <Card className="h-full gap-2 overflow-hidden py-0 transition-colors hover:border-foreground/30">
-                  {n.eyecatch ? <img src={n.eyecatch} alt="" loading="lazy" className="aspect-[1280/670] w-full object-cover" /> : <div className="aspect-[1280/670] bg-muted" />}
-                  <div className="grid gap-1 px-3 pb-3">
-                    <div className="line-clamp-2 text-sm font-medium">{n.title}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {n.publishedAt} ・ {n.chars.toLocaleString()} 字
-                    </div>
-                  </div>
-                </Card>
-              </a>
-            ))}
-          </div>
-        </TabsContent>
-        <TabsContent value="talks" className="mt-3">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {talks.map((t) => (
-              <a key={t.slug} href={`/talks/${encodeURIComponent(t.slug)}`} className="block">
-                <Card className="h-full gap-2 overflow-hidden py-0 transition-colors hover:border-foreground/30">
-                  <img src={`${t.siteUrl}og.png`} alt="" loading="lazy" className="aspect-video w-full object-cover" />
-                  <div className="grid gap-1 px-3 pb-3">
-                    <div className="text-xs text-muted-foreground">{t.date}</div>
-                    <div className="text-sm font-medium">{t.title}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {t.event ? `${t.event} ・ ` : ''}
-                      {t.scenes} 場面・{t.states} コマ
-                    </div>
-                  </div>
-                </Card>
-              </a>
-            ))}
-          </div>
-        </TabsContent>
-      </Tabs>
+      </div>
+      {shown.length === 0 ? (
+        <p className="text-sm text-muted-foreground">{items.length === 0 ? 'まだありません。右上の「新しい発表」「新しい記事」か、上のネタ帳から始められます。' : '当てはまるものがありません。'}</p>
+      ) : (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {shown.map((i: Item) =>
+            i.status === 'draft' && i.work ? <WorkCard key={i.key} work={i.work} /> : i.status === 'draft' && i.talk ? <DraftTalkCard key={i.key} talk={i.talk} /> : <CoverCard key={i.key} item={i} />,
+          )}
+        </div>
+      )}
     </section>
+  )
+}
+
+/** 非公開と公開の 1 枚。表紙の絵 (発表は表紙のスライド、記事は見出し画像) を出す */
+function CoverCard({ item }: { item: Item }) {
+  const { work, talk, note } = item
+  // 発表は作品の画面 (無ければトークの画面)、公開した記事は読む画面、記事の作品は企画の画面を開く
+  const href = item.kind === 'talk' ? (work ? `/works/${work.id}` : `/talks/${encodeURIComponent(talk!.slug)}`) : note ? `/notes/${encodeURIComponent(note.dir)}` : `/works/${work!.id}`
+  const image = talk ? `${talk.siteUrl}og.png` : note?.eyecatch
+  return (
+    <a href={href} className="block">
+      <Card className="h-full gap-2 overflow-hidden py-0 transition-colors hover:border-foreground/30">
+        {image ? <img src={image} alt="" loading="lazy" className="aspect-video w-full object-cover" /> : <div className="aspect-video bg-muted" />}
+        <div className="grid gap-1.5 px-3 pb-3">
+          <div className="flex items-center gap-1.5">
+            <StatusBadge status={item.status} />
+            <Badge variant="secondary">{KIND_LABEL[item.kind]}</Badge>
+            <span className="truncate text-xs text-muted-foreground">{[item.date, item.event].filter(Boolean).join('・')}</span>
+          </div>
+          <div className="line-clamp-2 text-sm font-medium">{item.title || 'タイトル未定'}</div>
+          <div className="text-xs text-muted-foreground">{talk ? `${talk.scenes} 場面・${talk.states} コマ` : note ? `${note.chars.toLocaleString()} 字` : ''}</div>
+        </div>
+      </Card>
+    </a>
   )
 }

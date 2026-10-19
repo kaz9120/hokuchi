@@ -14,8 +14,12 @@ export type Persona = {
 }
 
 export type Brief = {
-  /** 紐づくトークの slug (talks/ の中の発表)。段階 5〜8 は、その絵コンテの画面で進める (ADR-0038) */
+  /** 紐づくトークの slug (talks/ か、置き場の talks/ の中の発表)。流れ・コマ・読み・公開のタブは、その絵コンテを読む (ADR-0040・ADR-0041) */
   talk?: string
+  /** 紐づく記事の slug (articles/note/drafts/<slug>/。公開すると articles/note/<公開日>-<slug>/ になる) */
+  note?: string
+  /** 「非公開で終える」を押した作品だけが持つ。公開かどうかは実物から決めるので書かない (ADR-0043) */
+  status?: 'private'
   id: string
   kind: Kind
   title: string

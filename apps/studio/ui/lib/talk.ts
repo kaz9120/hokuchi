@@ -29,7 +29,7 @@ export type Persona = { id: string; name: string; label: string; who: string; tr
 export type Reading = { done: number; total: number; failed: string[]; error?: string }
 
 export type Talk = {
-  talk: { slug: string; name: string; date: string | null; tag: string | null; title: string; dir: string; event: string | null; minutes: number | null }
+  talk: { slug: string; name: string; date: string | null; tag: string | null; title: string; dir: string; outside: boolean; event: string | null; minutes: number | null }
   board: Board
   scenes: { id: string; steps: number }[]
   loadError: string | null

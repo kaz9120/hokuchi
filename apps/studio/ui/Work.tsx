@@ -1,23 +1,26 @@
 // 作品の画面 (ADR-0040)。発表 1 本・記事 1 本を、企画から公開までタブで進める。
 // 企画 (段階 1〜4) は、左に段階、右にその段階の欄。発表は、絵コンテができたら 流れ・コマ・読み・公開 のタブが使える。
-// 伝えたいことと聴衆は、どのタブでも上に出し続ける (slide:ology p.36-37, p.39)
+// 伝えたいことと聴衆は、どのタブでも上に出し続ける (slide:ology p.36-37, p.39)。
+// 状態は 下書き → 非公開 → 公開 の一方通行。下書きは「非公開で終える」、非公開は公開の頼み方を出す (ADR-0043)
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { ArrowLeft, Check, Circle, CircleDot, Info, Loader2, Plus, Sparkles, Trash2 } from 'lucide-react'
+import { ArrowLeft, Check, Circle, CircleDot, Info, Loader2, Lock, Plus, Sparkles, Trash2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Textarea } from '@/components/ui/textarea'
-import { api, type Candidate } from '@/lib/api'
+import { api, type Candidate, type WorkView } from '@/lib/api'
 import { cn } from '@/lib/utils'
 import { KIND_LABEL, PERSONA_FIELDS, STAGES, audienceSummary, emptyPersona, stageStatus, type Brief, type Field, type Persona, type Stage } from '@/lib/stages'
-import { talkApi, useTalk } from '@/lib/talk'
+import { talkApi, useTalk, type Talk } from '@/lib/talk'
+import { StatusBadge } from './status'
 import { Compass, Handoff, TALK_TABS, TabBar, TalkPane, yoursCount, type TalkTab } from './talk/TalkTabs'
 
 /** 企画シートを読み、直すたびに少し待ってから保存する */
 function useBrief(id: string) {
-  const [brief, setBrief] = useState<Brief | null>(null)
+  const [brief, setBrief] = useState<WorkView | null>(null)
   const [saving, setSaving] = useState<'idle' | 'pending' | 'saved'>('idle')
   const timer = useRef<number | undefined>(undefined)
   useEffect(() => {
@@ -27,7 +30,7 @@ function useBrief(id: string) {
     (fn: (b: Brief) => Brief) => {
       setBrief((b) => {
         if (!b) return b
-        const next = fn(b)
+        const next = { ...fn(b), published: b.published }
         setSaving('pending')
         clearTimeout(timer.current)
         timer.current = window.setTimeout(async () => {
@@ -83,6 +86,7 @@ export function Work({ id }: { id: string }) {
           </a>
         </Button>
         <Badge variant="secondary">{KIND_LABEL[brief.kind]}</Badge>
+        <StatusBadge status={brief.published ? 'public' : brief.status === 'private' ? 'private' : 'draft'} />
         <Input
           value={brief.title}
           onChange={(e) => update((b) => ({ ...b, title: e.target.value }))}
@@ -90,13 +94,18 @@ export function Work({ id }: { id: string }) {
           className="h-8 max-w-md border-transparent font-semibold shadow-none hover:border-input focus-visible:border-input"
         />
         {data && (
-          <span className="text-xs text-muted-foreground">
+          <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
             {[data.talk.event, data.talk.date, data.board.meta['持ち時間']].filter(Boolean).join('・')}
           </span>
         )}
-        <span className="text-xs text-muted-foreground">{saving === 'pending' ? '保存中…' : saving === 'saved' ? '保存しました' : ''}</span>
-        <div className="ml-auto">
+        <span className="shrink-0 text-xs text-muted-foreground">{saving === 'pending' ? '保存中…' : saving === 'saved' ? '保存しました' : ''}</span>
+        <div className="ml-auto flex shrink-0 items-center gap-3 whitespace-nowrap">
           <TabBar tabs={tabs} current={tab} onPick={(t) => (brief.talk || t === 'plan' ? go(t) : undefined)} badge={data ? { reads: yoursCount(data) } : undefined} />
+          {!brief.published && (
+            <div className="border-l pl-3">
+              <NextStatus brief={brief} talk={data} setBrief={setBrief} />
+            </div>
+          )}
         </div>
       </header>
 
@@ -106,7 +115,7 @@ export function Work({ id }: { id: string }) {
         <div className="grid min-h-0 flex-1 grid-cols-[260px_minmax(0,1fr)]">
           <StageNav brief={brief} current={stage.key} onPick={(k) => go('plan', k)} />
           <main className="min-h-0 overflow-y-auto px-8 py-6">
-            <StagePanel brief={brief} stage={stage} setField={setField} update={update} setBrief={setBrief} />
+            <StagePanel brief={brief} stage={stage} setField={setField} update={update} setBrief={(b: Brief) => setBrief((cur: WorkView | null) => cur && { ...b, published: cur.published })} />
             {brief.kind === 'talk' && !brief.talk && <p className="mx-auto mt-10 max-w-3xl text-sm text-muted-foreground">伝えたいことが決まったら、ターミナルの Claude Code に絵コンテを頼みます。絵コンテができると、流れ・コマ・読みのタブが使えるようになります。</p>}
           </main>
         </div>
@@ -114,6 +123,54 @@ export function Work({ id }: { id: string }) {
         <TalkPane tab={tab as TalkTab} data={data} thumbs={thumbs} api={talkApi(brief.talk)} reading={reading} focus={at.scene} go={(t, scene) => go(t, scene)} />
       )}
     </div>
+  )
+}
+
+/**
+ * 下書きなら「非公開で終える」(押すと status: private)。非公開なら、公開の頼み方を出す。
+ * 公開は手作業とデプロイの確認が要るので、画面からはしない。どちらも戻す操作は置かない (ADR-0043)
+ */
+function NextStatus({ brief, talk, setBrief }: { brief: WorkView; talk: Talk | null; setBrief: React.Dispatch<React.SetStateAction<WorkView | null>> }) {
+  const [busy, setBusy] = useState(false)
+  if (brief.status === 'private')
+    return (
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button variant="ghost" size="sm">
+            <Info /> 公開するには
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent align="end" className="w-96 text-sm leading-relaxed">
+          {brief.kind === 'talk'
+            ? '公開するときは、ターミナルの Claude Code に頼んでください。トークをリポジトリの talks/ に移して public: true にし、デプロイします。公開したあとは、非公開に戻せません。'
+            : '公開するときは、note に投稿してから、ターミナルの Claude Code にアーカイブへの取り込みを頼んでください。公開したあとは、非公開に戻せません。'}
+        </PopoverContent>
+      </Popover>
+    )
+  const finish = async () => {
+    setBusy(true)
+    try {
+      const saved = await api.saveWork(brief.id, { status: 'private' })
+      setBrief((b: WorkView | null) => b && { ...b, status: saved.status })
+    } finally {
+      setBusy(false)
+    }
+  }
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="outline" size="sm">
+          <Lock /> 非公開で終える
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="grid w-96 gap-3 text-sm leading-relaxed">
+        <p>非公開で終えると、この作品は「非公開」になります。下書きに戻す操作はありません。あとから公開にはできます。</p>
+        {talk && !talk.talk.outside && <p className="text-amber-800">トークがリポジトリの talks/ にあります。非公開のトークはリポジトリの外に置くので、Claude Code に移してもらってください。</p>}
+        <Button size="sm" className="justify-self-start" disabled={busy} onClick={finish}>
+          <Check /> 非公開で終える
+        </Button>
+      </PopoverContent>
+    </Popover>
   )
 }
 

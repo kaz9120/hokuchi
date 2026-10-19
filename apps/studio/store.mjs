@@ -1,7 +1,8 @@
 // 作品の企画シートとネタ帳の置き場。公開リポジトリの外 (既定は ~/Hobby/hokuchi-private) に置く (ADR-0036)。
 // 環境変数 HOKUCHI_PRIVATE で場所を変えられる。中身は人が読めて、AI も直せるように YAML にする。
 //
-//   <置き場>/works/<id>/brief.yaml   作品 1 本の企画シート (段階ごとの欄・関門・AI の候補)
+//   <置き場>/works/<id>/brief.yaml   作品 1 本の企画シート (段階ごとの欄・関門・AI の候補・非公開にしたか status)
+//   <置き場>/talks/<トーク>/          非公開 (社内向け) の発表。studio は読むが、サイトには載せない (ADR-0041・ADR-0043)
 //   <置き場>/seeds/<id>.yaml         ネタ 1 件
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'

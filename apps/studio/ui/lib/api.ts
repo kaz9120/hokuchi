@@ -1,12 +1,19 @@
 // studio のサーバ (server.mjs) を呼ぶ
 import type { Brief, Kind } from './stages'
 
-export type TalkItem = { slug: string; name: string; title: string; date: string | null; tag: string | null; event: string | null; public: boolean; scenes: number; states: number; siteUrl: string; linked?: boolean }
+export type TalkItem = { slug: string; name: string; title: string; date: string | null; tag: string | null; event: string | null; public: boolean; scenes: number; states: number; siteUrl: string }
 /** 作品に紐づくトークの様子。mine は、あなたが答える指摘の数 */
 export type TalkInfo = TalkItem & { mine: number; claude: number; reads: number }
 export type NoteItem = { dir: string; title: string; publishedAt: string; url: string | null; eyecatch: string | null; tags: string[]; chars: number }
 export type Seed = { id: string; createdAt: string; happening: string; why?: string; workIds?: string[] }
-export type HomeData = { talks: TalkItem[]; notes: NoteItem[]; works: (Brief & { talkInfo?: TalkInfo })[]; seeds: Seed[]; tasks: Record<string, string>; siteUrl: string; privateDir: string }
+export type WorkItem = Brief & { talkInfo?: TalkInfo }
+/** 作品の状態。公開は実物 (サイトに載る発表・note のアーカイブの記事) から決まる (ADR-0043) */
+export type Status = 'draft' | 'private' | 'public'
+/** ホームの一覧の 1 枚。企画シート・トーク・記事のどれか (紐づいていれば複数) を持つ */
+export type Item = { key: string; kind: Kind; status: Status; title: string; date: string | null; event: string | null; tags: string[]; work: WorkItem | null; talk: TalkItem | null; note: NoteItem | null }
+export type HomeData = { items: Item[]; seeds: Seed[]; tasks: Record<string, string>; siteUrl: string; privateDir: string }
+/** 作品の画面で読む企画シート。published はサーバが実物から決めた値で、保存はしない */
+export type WorkView = Brief & { published: boolean }
 export type NoteView = { dir: string; title: string; publishedAt: string; url: string | null; eyecatch: string | null; tags: string[]; html: string }
 export type Candidate = { text: string; note: string }
 
@@ -24,8 +31,8 @@ async function call<T>(path: string, init?: { method?: string; body?: unknown })
 export const api = {
   home: () => call<HomeData>('/api/home'),
   createWork: (kind: Kind, seedId?: string) => call<Brief>('/api/works', { method: 'POST', body: { kind, seedId } }),
-  work: (id: string) => call<Brief>(`/api/works/${encodeURIComponent(id)}`),
-  saveWork: (id: string, brief: Partial<Brief>) => call<Brief>(`/api/works/${encodeURIComponent(id)}`, { method: 'PUT', body: brief }),
+  work: (id: string) => call<WorkView>(`/api/works/${encodeURIComponent(id)}`),
+  saveWork: (id: string, brief: Partial<Brief>) => call<WorkView>(`/api/works/${encodeURIComponent(id)}`, { method: 'PUT', body: brief }),
   ask: (id: string, task: string) => call<{ items: Candidate[] }>(`/api/works/${encodeURIComponent(id)}/ask`, { method: 'POST', body: { task } }),
   saveSeed: (seed: Partial<Seed>) => call<Seed>('/api/seeds', { method: 'POST', body: seed }),
   note: (dir: string) => call<NoteView>(`/api/notes/${encodeURIComponent(dir)}`),

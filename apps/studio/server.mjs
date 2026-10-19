@@ -22,7 +22,7 @@ import { NOTE_KINDS, NOTE_SURVEY, SURVEY, listPersonas, listReaders, listReads, 
 import { closeThread, importRead, openThread, readThreads, reopenThread, replyThread, retargetThreads } from './threads.mjs'
 import { SLUG, appendBlock, createDraft, draftDir, draftFile, hasDraft, readDraft, readOutline, reanchor, replaceBlock, reviseFromArchive, saveOutline, setMeta } from './draft.mjs'
 import { toPasteText } from '../../tools/notes/src/paste.mjs'
-import { PRIVATE, createWork, listSeeds, listWorks, readWork, saveSeed, saveWork, trashWork, workOfTalk } from './store.mjs'
+import { PRIVATE, createWork, listSeeds, listWorks, readWork, saveSeed, saveWork, trashRevision, trashWork, workOfTalk } from './store.mjs'
 import { listNotes, noteAsset, notesRoot, readNote } from './notes.mjs'
 import { TASKS, ask } from './ai.mjs'
 
@@ -451,7 +451,7 @@ server.on('request', async (req, res) => {
       const { kind, seedId } = await body(req)
       return json(res, createWork(kind === 'talk' ? 'talk' : 'note', seedId))
     }
-    const w = url.pathname.match(/^\/api\/works\/([^/]+)(?:\/(ask|draft))?$/)
+    const w = url.pathname.match(/^\/api\/works\/([^/]+)(?:\/(ask|draft|revise))?$/)
     if (w) {
       const id = decodeURIComponent(w[1])
       const brief = readWork(id)
@@ -468,6 +468,11 @@ server.on('request', async (req, res) => {
         } catch (e) {
           return json(res, { error: String(e.message ?? e) }, 400)
         }
+      }
+      // 公開済みの記事の改稿をやめる (ADR-0047)。改稿の原稿だけをごみ箱へ移す。企画シートとアーカイブは残す
+      if (w[2] === 'revise' && req.method === 'DELETE') {
+        if (!workView(brief).revising) return json(res, { error: '改稿中の記事ではありません' }, 400)
+        return json(res, { trash: trashRevision(draftDir(brief.note)) })
       }
       // 記事の原稿を作る。slug を決めて index.md を作り、企画シートの note に書く (ADR-0046)
       if (w[2] === 'draft' && req.method === 'POST') {

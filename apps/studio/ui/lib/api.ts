@@ -50,6 +50,7 @@ export const api = {
   createDraft: (id: string, slug: string) => call<WorkView>(`/api/works/${encodeURIComponent(id)}/draft`, { method: 'POST', body: { slug } }),
   /** 下書きを削除する。企画シートと、リポジトリの外のトークをごみ箱に移す (ADR-0044) */
   deleteWork: (id: string) => call<{ trash: string }>(`/api/works/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+  cancelRevision: (id: string) => call<{ trash: string }>(`/api/works/${encodeURIComponent(id)}/revise`, { method: 'DELETE' }),
   ask: (id: string, task: string) => call<{ items: Candidate[] }>(`/api/works/${encodeURIComponent(id)}/ask`, { method: 'POST', body: { task } }),
   saveSeed: (seed: Partial<Seed>) => call<Seed>('/api/seeds', { method: 'POST', body: seed }),
   /** 公開済みの記事を改稿する。原稿に写し、紐づく作品の id を返す (ADR-0047) */

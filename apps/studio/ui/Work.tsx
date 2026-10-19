@@ -140,6 +140,11 @@ export function Work({ id }: { id: string }) {
               {brief.finishedAt ? <PublishHowTo brief={brief} /> : <DeleteDraft brief={brief} />}
             </div>
           )}
+          {brief.revising && (
+            <div className="flex items-center gap-1 border-l pl-3">
+              <CancelRevision brief={brief} />
+            </div>
+          )}
         </div>
       </header>
 
@@ -250,6 +255,41 @@ function DeleteDraft({ brief }: { brief: WorkView }) {
         {error && <p className="text-destructive">{error}</p>}
         <Button size="sm" variant="destructive" className="justify-self-start" disabled={busy} onClick={remove}>
           <Trash2 /> 削除する
+        </Button>
+      </PopoverContent>
+    </Popover>
+  )
+}
+
+/** 公開済みの記事の改稿をやめる (ADR-0047)。改稿の原稿をごみ箱へ移し、公開済みの記事に戻す。note の記事とアーカイブは変わらない */
+function CancelRevision({ brief }: { brief: WorkView }) {
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const cancel = async () => {
+    setBusy(true)
+    setError(null)
+    try {
+      await api.cancelRevision(brief.id)
+      location.hash = ''
+      location.reload()
+    } catch (e) {
+      setError(String((e as Error).message))
+      setBusy(false)
+    }
+  }
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="ghost" size="sm" className="text-muted-foreground">
+          <Undo2 /> 改稿をやめる
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="grid w-96 gap-3 text-sm leading-relaxed">
+        <p className="font-medium">改稿をやめますか？</p>
+        <p>直した原稿を、ごみ箱（{brief.trashDir}）に移します。note の記事とアーカイブは変わりません。</p>
+        {error && <p className="text-destructive">{error}</p>}
+        <Button size="sm" variant="destructive" className="justify-self-start" disabled={busy} onClick={cancel}>
+          <Undo2 /> 改稿をやめる
         </Button>
       </PopoverContent>
     </Popover>

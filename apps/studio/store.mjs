@@ -85,6 +85,17 @@ export function trashWork(id, { talkDir = null, noteDir = null } = {}) {
   return to
 }
 
+/**
+ * 公開済みの記事の改稿をやめる (ADR-0047)。改稿の原稿だけを、ごみ箱 (<置き場>/trash/<日時>-revise-<slug>/notes/<slug>/) に移す。
+ * 企画シートとアーカイブには触らない。戻り値は、移した先のディレクトリ
+ */
+export function trashRevision(noteDir) {
+  const to = join(PRIVATE, 'trash', `${now().slice(0, 19).replace(/:/g, '-')}-revise-${basename(noteDir)}`)
+  mkdirSync(join(to, 'notes'), { recursive: true })
+  renameSync(noteDir, join(to, 'notes', basename(noteDir)))
+  return to
+}
+
 // ---------------------------------------------------------------- ネタ
 export function listSeeds() {
   if (!existsSync(seedsDir)) return []

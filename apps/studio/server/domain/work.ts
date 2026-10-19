@@ -10,7 +10,7 @@ import { conflict, invalid, notFound } from '../infra/errors.ts'
 import { theSite, type SiteTalk } from '../infra/site.ts'
 import { mediaOf } from '../media/index.ts'
 import { createDraft, draftDir, hasDraft, reviseFromArchive } from '../media/note.ts'
-import { archiveOfSlug, listArchives, readArchive, slugOfArchive } from './archive.ts'
+import { archiveDir, archiveOfSlug, listArchives, readArchive, slugOfArchive } from './archive.ts'
 import { briefDir, createBrief, isBriefId, listBriefs, readBrief, writeBrief } from './brief.ts'
 import { listPersonas, listReads, readReaders, readings } from './reads.ts'
 import { unlinkWork } from './seeds.ts'
@@ -154,6 +154,15 @@ export async function act(ref: WorkRef, action: Action): Promise<ActionResult> {
     }
   }
   throw invalid(`${action} はできません`)
+}
+
+/** 作品の置き場 (「⋯」の「置き場を開く」で Finder に出す)。中身があれば中身のフォルダ、無ければ企画シートのフォルダ */
+export function folderOf(ref: WorkRef): string {
+  if (ref.talk) return ref.talk.dir
+  if (ref.draft) return draftDir(ref.draft)
+  if (ref.archive) return archiveDir(ref.archive.dir)
+  if (ref.brief) return briefDir(ref.brief.id)
+  throw notFound('この作品には、置き場がありません')
 }
 
 // ---------------------------------------------------------------- 中身を作る・直す

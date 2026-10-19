@@ -51,7 +51,7 @@ if (arg && !picked) console.warn(`「${arg}」に当たるトークがありま�
 
 server.listen(PORT, () => {
   console.log(`\n  hokuchi studio   http://localhost:${PORT}/`)
-  if (picked) console.log(`  作品の画面       http://localhost:${PORT}/talks/${picked[0]}`)
+  if (picked) console.log(`  作品の画面       http://localhost:${PORT}/works/talk:${encodeURIComponent(picked[0])}`)
   console.log(`  サイト           ${site.url}/  (studio の中で立てています)\n`)
 })
 

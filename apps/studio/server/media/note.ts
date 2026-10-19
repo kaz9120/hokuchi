@@ -5,7 +5,6 @@
 // 書き戻すときは、その段落の範囲だけを置き換える。front matter とほかの段落には触らない。
 // 公開済みの記事は、アーカイブ (articles/note/) を読むだけにし、改稿は原稿に写してから直す (ADR-0047)
 import { cpSync, existsSync, mkdirSync, readdirSync } from 'node:fs'
-import { spawn } from 'node:child_process'
 import { join } from 'node:path'
 import YAML from 'yaml'
 import type { Block, BlockKind, Finding, NoteBody, PasteText, Section, SectionChars, SurveyItem, Thread } from '../../shared/api.ts'
@@ -16,6 +15,7 @@ import { draftStats, lintDraft, splitFrontMatter } from '../../../../tools/notes
 import { toPasteText } from '../../../../tools/notes/src/paste.mjs'
 import { places, shownDir } from '../infra/config.ts'
 import { conflict, invalid } from '../infra/errors.ts'
+import { reveal } from '../infra/reveal.ts'
 import { readText, readVersioned, rewrite, versionOf, writeText, yamlText } from '../infra/files.ts'
 import { archiveAsset, archiveDir, archiveOfSlug, slugOfArchive } from '../domain/archive.ts'
 import { retarget } from '../domain/threads.ts'
@@ -423,7 +423,7 @@ export const note: Media = {
   },
   openAssets(ref) {
     const slug = need(ref)
-    if (process.platform === 'darwin') spawn('open', [join(draftDir(slug), existsSync(join(draftDir(slug), 'assets')) ? 'assets' : '')])
+    reveal(join(draftDir(slug), existsSync(join(draftDir(slug), 'assets')) ? 'assets' : ''))
   },
   assetFile(ref, rel) {
     if (rel.includes('..')) return null

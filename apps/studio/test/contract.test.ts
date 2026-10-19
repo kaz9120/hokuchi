@@ -129,6 +129,15 @@ describe('ごみ箱と改稿', () => {
   })
 })
 
+describe('置き場を開く', () => {
+  it('どの作品も置き場を開ける。無い作品は 404', async () => {
+    const id = await create('note')
+    assert.equal((await call(`${w(id)}/reveal`, 'POST', {})).status, 200)
+    assert.equal((await call(`${w(`note:${archive}`)}/reveal`, 'POST', {})).status, 200)
+    assert.equal((await call(`${w('talk:no-such-talk')}/reveal`, 'POST', {})).status, 404)
+  })
+})
+
 describe('画像', () => {
   it('ホームの表紙と、公開済みの記事の画像が読める', async () => {
     const home = (await call('/api/home')).data as HomeData

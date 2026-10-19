@@ -58,6 +58,7 @@ export async function startStudio(): Promise<Studio> {
       HOKUCHI_PRIVATE: priv,
       HOKUCHI_STUDIO_PORT: String(port),
       HOKUCHI_SITE_PORT: String(sitePort),
+      HOKUCHI_NO_OPEN: '1',
       FAKE_CLAUDE_LOG: claudeLog,
       PATH: `${bin}:${process.env.PATH}`,
     },

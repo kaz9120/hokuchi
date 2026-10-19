@@ -11,7 +11,8 @@ import { createBrief, patchBrief } from '../domain/brief.ts'
 import { saveReaders } from '../domain/reads.ts'
 import { addSeed, listSeeds } from '../domain/seeds.ts'
 import { changed, openSession, startRead, thumb, topicOf, viewNow } from '../domain/sessions.ts'
-import { act, createBody, homeItems, openThreadOn, operateThread, resolve, setTitle } from '../domain/work.ts'
+import { act, createBody, folderOf, homeItems, openThreadOn, operateThread, resolve, setTitle } from '../domain/work.ts'
+import { reveal } from '../infra/reveal.ts'
 import { createRouter, HANDLED, sendFile } from './router.ts'
 
 const ACTIONS: Action[] = ['finish', 'unfinish', 'delete', 'publish-howto', 'revise', 'cancel-revision']
@@ -143,6 +144,9 @@ export function routes() {
   r.post('/api/works/:key/open-assets', ({ params }) => {
     const ref = resolve(params.key)
     mediaOf(ref.kind).openAssets(ref)
+  })
+  r.post('/api/works/:key/reveal', ({ params }) => {
+    reveal(folderOf(resolve(params.key)))
   })
   r.get('/api/works/:key/assets/*path', ({ params, res }) => {
     const ref = resolve(params.key)

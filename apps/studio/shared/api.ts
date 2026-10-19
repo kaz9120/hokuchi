@@ -22,6 +22,7 @@
 //   POST   /api/works/:key/ask                         { task } → { items }
 //   GET    /api/works/:key/paste                       PasteText
 //   POST   /api/works/:key/open-assets                 {}
+//   POST   /api/works/:key/reveal                      {} (作品の置き場を Finder で開く)
 //   GET    /api/works/:key/assets/<path>               画像 (原稿か、アーカイブ)
 //   GET    /api/works/:key/thumbs/<scene>/<コマ>        JPEG (作品を購読しているあいだだけ)
 //   POST   /api/seeds                                  { happening, why } → Seed

@@ -29,13 +29,13 @@ bun run studio <talk>    # 同じものを立て、そのトークの編集画�
 
 ## しくみ
 
-作り直しの途中です (ADR-0049、計画は `docs/rebuild.md`)。サーバは段 1、画面の骨組みは段 2 で作り直しました。ホームは段 5 で作り直しました。
+2026-10 に作り直しました (ADR-0049・ADR-0050。経緯は `docs/rebuild.md`、いまの設計は `docs/design.md`)。
 
 ```
 server/
   main.ts    起動。画面 (5300)・サイト全体の開発サーバ (5280)・撮影に使うブラウザを立てる
   http/      ルーティングと、薄いハンドラ (routes.ts)
-  domain/    作品 (work.ts)・状態の表 (state.ts)・企画シート・ネタ・指摘・読み・ごみ箱・作品ごとの購読 (sessions.ts)
+  domain/    作品 (work.ts)・状態の表 (state.ts)・企画シート・ネタ・指摘・読み・ごみ箱・原稿の名前 (slug.ts)・作品ごとの購読 (sessions.ts)
   media/     発表と記事の違いを持つ部品 (talk.ts・note.ts)。kind の分岐は media/index.ts の 1 か所だけ
   infra/     ファイルの読み書き (版つき)・監視・SSE・claude の呼び出し・撮影・サイト
 shared/      画面とサーバで共有する型 (API の契約。先頭に API の一覧)

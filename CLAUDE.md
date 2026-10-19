@@ -36,8 +36,8 @@ packages/
     docs/design.md 生きた設計書
 apps/
   slides/          slides.y-kaz.com。全トークを最新のフレームワークでビルドして組み立てる（ADR-0029）
-  studio/          ローカルの制作アプリ。発表と note の記事を、企画から公開までタブで作る（ADR-0036・ADR-0039・ADR-0040）
-    docs/design.md 生きた設計書。根拠の調査は docs/research/
+  studio/          ローカルの制作アプリ。発表と note の記事を、企画から公開まで作る（ADR-0036・ADR-0040・ADR-0049・ADR-0050）
+    docs/design.md 生きた設計書。根拠の調査は docs/research/、作り直しの経緯は docs/rebuild.md
 archive/talks/     旧方式（意図宣言型 YAML）の deck.yaml と写真。作り直すときの素材で、ビルドしない
 tools/
   notes/           note の CLI（sync / build / verify / lint / index）
@@ -53,7 +53,7 @@ tools/
 
 ## note の記事
 
-記事を書く依頼は、writing-note skill に従ってください。原稿は公開リポジトリの外の `~/Hobby/hokuchi-private/notes/<slug>/` に置き、studio の原稿タブで段落ごとに直します。文体は `hokuchi-note lint <slug>` で検査します（ADR-0046）。文体の規範は、公開済み記事の実測（2026-09 時点で 44 本）から引いています。記事が増えたら測り直してください（ADR-0020）。
+記事を書く依頼は、writing-note skill に従ってください。原稿は公開リポジトリの外の `~/Hobby/hokuchi-private/notes/<slug>/` に置き、studio の原稿の面で段落ごとに直します。文体は `hokuchi-note lint <slug>` で検査します（ADR-0046）。文体の規範は、公開済み記事の実測（2026-09 時点で 44 本）から引いています。記事が増えたら測り直してください（ADR-0020）。
 
 公開済みの記事は、`hokuchi-note sync` で取り込みます。`index.md` は生成物なので、手では直しません。直したいときは変換規則を直して、`build` を回します。取り込みの欠落は `verify` が検査するので、記事を足したら必ず通してください（ADR-0019）。
 
@@ -68,7 +68,8 @@ tools/
 よく使うコマンドは次のとおりです。`<talk>` は `talks/` の中の名前の先頭だけでも指定できます（例: `2026_09_29`）。
 
 ```sh
-bun run studio                 # 制作アプリ（http://localhost:5300/）。ホームから作品を開く。中でサイト全体（5280）も立てる
+bun run studio                 # 制作アプリ（http://localhost:5300/）。ホームの「いま」から作品を開く。中でサイト全体（5280）も立てる
+bun run test:studio            # studio のファイルの形・振る舞い・API の規則のテスト（偽物の claude で動く）
 bun run dev                    # サイト全体の開発サーバだけ（http://localhost:5280/）。studio を使わずに見るとき
 bun run dev <talk>             # トーク 1 本の作業用サーバ。いずれも長く動くので、話者に別ターミナルで立ててもらう
 bun run check <talk> --motion  # 全状態の静止画・検査・絵コンテとの照合・遷移のコマ撮り

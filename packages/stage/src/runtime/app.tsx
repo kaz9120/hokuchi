@@ -1,7 +1,8 @@
 import { useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
-import { MODE, SHOT, setMotionScale } from './config'
+import { MODE, SHOT, VIEW, setMotionScale } from './config'
 import { Player, Presenter } from './player'
+import { PublicPlayer } from './public'
 import { StaticFrame } from './scene'
 import type { TalkDef } from './types'
 import './base.css'
@@ -46,6 +47,8 @@ export async function mount(original: TalkDef) {
   document.title = talk.title
   document.body.dataset.mode = MODE
   const el = document.getElementById('root')!
-  const view = MODE === 'presenter' ? <Presenter talk={talk} /> : MODE === 'shot' ? <Shots talk={talk} /> : <Player talk={talk} />
+  // 公開用の画面には、発表者ビューを持たせない (ADR-0042)
+  const view =
+    MODE === 'shot' ? <Shots talk={talk} /> : VIEW === 'public' ? <PublicPlayer talk={talk} /> : MODE === 'presenter' ? <Presenter talk={talk} /> : <Player talk={talk} />
   createRoot(el).render(view)
 }

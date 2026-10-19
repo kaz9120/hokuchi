@@ -4,13 +4,16 @@
 //   bun run dev <talk>              作業用のサーバ。保存すると即座に反映される
 //   bun run check <talk> [--motion] 全状態の静止画と、はみ出し・重なり・小さい文字の検査、絵コンテとの照合 (out/check.md)
 //                                 --motion で遷移のコマ撮りも出す (out/motion/)
-//   bun run build <talk>          公開用の静的ファイルを out/build/ に出す (OGP 画像・同梱フォントつき)
+//   bun run build <talk>          公開用の静的ファイルを out/build/ に出す (OGP 画像・同梱フォント・テキスト・PDF つき)
+//   bun run single <talk> [--present] 1 つの HTML (out/<slug>.html) と PDF に書き出す。サイトに載せずにファイルで共有するとき
+//                                 --present で、発表用の画面 (発表者ビュー・ノートつき) にする
 //
 // <talk> はトークのディレクトリ (talk.tsx を持つ)。リポジトリの外にあってもよい。talks/ の中なら名前の先頭だけでもよい
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { basename, join, resolve } from 'node:path'
 import { check } from './node/check.mjs'
 import { buildTalk } from './node/build.mjs'
+import { buildSingle } from './node/single.mjs'
 import { isTalkDir, startServer } from './node/talk.mjs'
 
 const [cmd, arg, ...flags] = process.argv.slice(2)
@@ -41,6 +44,7 @@ switch (cmd) {
     console.log(`\n  ${basename(dir)}\n`)
     console.log(`  ライブ         ${url}`)
     console.log(`  発表者ビュー   ${url}?presenter  (ライブで p キーでも開く)`)
+    console.log(`  公開用の画面   ${url}?public`)
     console.log(`  全状態の静止画 ${url}?shot=all`)
     console.log(`  テーマの比較   ${url}?theme=hokuchi-light\n`)
     break
@@ -55,6 +59,11 @@ switch (cmd) {
     await buildTalk(dir, join(dir, 'out', 'build'))
     break
   }
+  case 'single': {
+    const dir = talkDirOf(arg)
+    await buildSingle(dir, join(dir, 'out'), { present: flags.includes('--present') })
+    break
+  }
   default:
-    console.log(readFileSync(new URL(import.meta.url), 'utf8').split('\n').slice(1, 9).join('\n').replace(/^\/\/ ?/gm, ''))
+    console.log(readFileSync(new URL(import.meta.url), 'utf8').split('\n').slice(1, 12).join('\n').replace(/^\/\/ ?/gm, ''))
 }

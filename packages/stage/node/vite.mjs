@@ -69,15 +69,24 @@ function feedbackPlugin() {
   }
 }
 
-export function stageConfig(talkDir, { outDir, meta, fonts, port } = {}) {
+/**
+ * view は画面の種類 (ADR-0042)。present は発表用 (発表者ビュー・ノートつき)、public は公開用 (読むだけ・テキストと PDF の書き出しつき)。
+ * 開発サーバと studio は present、サイトの組み立てと単一 HTML は public で作る
+ */
+export function stageConfig(talkDir, { outDir, meta, fonts, port, view = 'present' } = {}) {
   return {
     configFile: false,
     root: resolve(stageDir, 'app'),
     base: './',
     logLevel: 'warn',
+    define: { __STAGE_VIEW__: JSON.stringify(view) },
     plugins: [react(), talkPlugin(talkDir, meta, fonts), feedbackPlugin()],
     resolve: {
-      alias: [{ find: /^@hokuchi\/stage/, replacement: resolve(stageDir, 'src') }],
+      // parts は、リポジトリの外のトーク (社内向けの発表など) からも相対パスなしで読めるよう alias にする
+      alias: [
+        { find: /^@hokuchi\/stage/, replacement: resolve(stageDir, 'src') },
+        { find: /^@hokuchi\/parts/, replacement: resolve(repoRoot, 'parts') },
+      ],
       // トークとフレームワークで同じ React と Motion を使うよう、依存の解決を 1 か所に揃える
       dedupe: ['react', 'react-dom', 'motion'],
     },

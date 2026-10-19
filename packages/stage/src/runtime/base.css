@@ -167,6 +167,119 @@ body[data-mode='shot'] * {
   opacity: 0.45;
 }
 
+/* ---- 公開用の画面 (ADR-0042)。資料を読むことだけに絞る ---- */
+.public {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: #1d1c1f;
+  color: #f4f3f1;
+  /* ステージの外の UI は OS のフォントで描く (同梱するのはステージの書体だけ) */
+  font-family: system-ui, -apple-system, 'Hiragino Sans', sans-serif;
+}
+.public-main {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+}
+.public-stage {
+  box-shadow: 0 8px 30px rgb(0 0 0 / 0.35);
+}
+.public-bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 16px;
+  font-size: 14px;
+  border-top: 1px solid rgb(255 255 255 / 0.08);
+}
+.public-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+}
+.public-pos {
+  min-width: 64px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.8;
+}
+.public-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  opacity: 0.6;
+}
+.public-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  margin-left: auto;
+}
+.public button,
+.public-actions a {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.public-nav button {
+  font-size: 22px;
+  line-height: 1;
+  padding: 4px 12px 8px;
+}
+.public button:hover:not(:disabled),
+.public-actions a:hover {
+  background: rgb(255 255 255 / 0.1);
+}
+.public button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.public-progress {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+}
+.public-progress > div {
+  height: 100%;
+  background: rgb(255 255 255 / 0.5);
+  transition: width 0.4s;
+}
+/* 縦長の画面では、スライドと操作の帯を離さず、まとめて縦の真ん中に置く */
+@media (orientation: portrait) {
+  .public {
+    justify-content: center;
+  }
+  .public-main {
+    flex: none;
+  }
+}
+@media (max-width: 720px) {
+  .public-title,
+  .public-wide {
+    display: none;
+  }
+  .public-bar {
+    gap: 4px;
+    padding: 0 4px;
+  }
+}
+
 /* ---- ノートを読むモード (話者なしで読む人向け。スマホの縦画面では既定) ---- */
 .player.reader {
   min-height: 100%;
@@ -351,6 +464,20 @@ body[data-mode='shot'] {
 .shots {
   display: grid;
   gap: 0;
+}
+/* PDF の書き出し (ADR-0042)。1 状態を 1 ページにする */
+@media print {
+  @page {
+    size: 1280px 720px;
+    margin: 0;
+  }
+  body {
+    margin: 0;
+  }
+  .shot {
+    break-after: page;
+    overflow: hidden;
+  }
 }
 
 /* ---- 小さな型 ---- */

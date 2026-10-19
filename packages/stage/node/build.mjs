@@ -1,10 +1,12 @@
-// 公開用のビルド。OGP 画像 (表紙の静止画)・メタタグ・同梱フォントつきの静的ファイル一式を出す
+// 公開用のビルド。OGP 画像 (表紙の静止画)・メタタグ・同梱フォントつきの静的ファイル一式を出す。
+// 画面は公開用 (ADR-0042) で、トーク全体のテキスト (talk.md) と PDF も書き出す
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { build as viteBuild } from 'vite'
 import { stageConfig } from './vite.mjs'
 import { bundleFonts, familiesIn } from './fonts.mjs'
 import { SITE, launch, loadTalk, shootStates, startServer, talkInfo } from './talk.mjs'
+import { collectFrames, exportTag, renderPdf, talkText } from './export.mjs'
 
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c])
 
@@ -29,6 +31,8 @@ function metaTags(talk, slug) {
     `<meta name="twitter:title" content="${title}" />`,
     `<meta name="twitter:description" content="${desc}" />`,
     `<meta name="twitter:image" content="${url}og.png" />`,
+    // AI に読ませたい人とクローラのために、トーク全体のテキストの在りかを示す (ADR-0042)
+    `<link rel="alternate" type="text/markdown" href="talk.md" />`,
   ].join('\n    ')
 }
 
@@ -65,6 +69,9 @@ export async function buildTalk(talkDir, outDir, { states = false } = {}) {
   // 全状態を撮る。OGP 画像は最初の状態 (表紙) そのもので、別のカードは描かない (ADR-0031)
   const shots = await shootStates(page, url)
   const og = shots[0].png
+  // 公開用の書き出し (ADR-0042)。テキストは全状態の画面の文字とノートから、PDF は全状態を並べたページから作る
+  const doc = talkText(talk, info, await collectFrames(page))
+  const pdf = await renderPdf(browser, url)
   // 同梱するフォントのために、全状態に出てくる文字と、テーマの書体を集める
   const { text, fontFamily } = await page.evaluate(() => ({
     text: document.body.innerText,
@@ -75,10 +82,13 @@ export async function buildTalk(talkDir, outDir, { states = false } = {}) {
 
   const families = familiesIn(fontFamily)
   const marker = '<!--stage:bundled-fonts-->'
-  await viteBuild(stageConfig(talkDir, { outDir, meta: metaTags(talk, info.slug), fonts: marker }))
+  await viteBuild(stageConfig(talkDir, { outDir, meta: metaTags(talk, info.slug), fonts: marker, view: 'public' }))
   const bundled = await bundleFonts(families, text + talk.title, outDir)
   const html = join(outDir, 'index.html')
-  writeFileSync(html, readFileSync(html, 'utf8').replace(marker, bundled.link))
+  const pdfName = `${info.slug}.pdf`
+  writeFileSync(html, readFileSync(html, 'utf8').replace(marker, bundled.link).replace('</body>', `${exportTag({ text: doc, pdf: `./${pdfName}` })}</body>`))
+  writeFileSync(join(outDir, 'talk.md'), doc)
+  writeFileSync(join(outDir, pdfName), pdf)
   writeFileSync(join(outDir, 'og.png'), og)
   writeFileSync(join(outDir, 'stage.json'), JSON.stringify(info, null, 2) + '\n')
   console.log(`  ${info.name} → /${info.slug}/ (フォント ${families.join(', ')} を ${bundled.chars} 字・${Math.round(bundled.bytes / 1024)} KB で同梱)`)

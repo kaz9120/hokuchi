@@ -73,6 +73,7 @@ bun run studio                 # 制作アプリ（http://localhost:5300/）。�
 bun run dev                    # サイト全体の開発サーバだけ（http://localhost:5280/）。studio を使わずに見るとき
 bun run dev <talk>             # トーク 1 本の作業用サーバ。いずれも長く動くので、話者に別ターミナルで立ててもらう
 bun run check <talk> --motion  # 全状態の静止画・検査・絵コンテとの照合・遷移のコマ撮り
+bun run single <talk>          # 1 つの HTML と PDF に書き出す (公開用の画面。--present で発表用)。社内向けの発表をファイルで共有するとき
 bun run typecheck
 bun run site                   # slides.y-kaz.com を apps/slides/dist に組み立てる
 bun run deploy                 # 組み立てて公開する（話者の確認を取ってから。手順は apps/slides/README.md）

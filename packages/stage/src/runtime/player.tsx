@@ -1,4 +1,4 @@
-// ライブ再生・発表者ビュー・一覧・ノートを読むモード
+// 発表用の画面 (ADR-0042)。ライブ再生・発表者ビュー・一覧・ノート。公開用の画面は public.tsx
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { MotionConfig, motion } from 'motion/react'
 import { H, W, panT } from './config'
@@ -12,7 +12,7 @@ import type { TalkDef } from './types'
  * 前のシーンは最後の状態、次のシーンは最初の状態で待たせる (順に送れば、そのまま続きになる)。
  * ブランド枠はパンの外に留まる。
  */
-function LiveStage({ talk, pos }: { talk: TalkDef; pos: Pos }) {
+export function LiveStage({ talk, pos }: { talk: TalkDef; pos: Pos }) {
   const i = pos.scene
   const scene = talk.scenes[i]
   const { Frame } = talk.theme
@@ -168,7 +168,7 @@ export function Player({ talk }: { talk: TalkDef }) {
   )
 }
 
-function Overview({ talk, current, onPick, onClose }: { talk: TalkDef; current: number; onPick: (i: number) => void; onClose: () => void }) {
+export function Overview({ talk, current, onPick, onClose }: { talk: TalkDef; current: number; onPick: (i: number) => void; onClose: () => void }) {
   const cols = innerWidth < 700 ? 2 : 4
   const scale = (Math.min(innerWidth, 1400) - 48 - (cols - 1) * 16) / cols / W
   return (

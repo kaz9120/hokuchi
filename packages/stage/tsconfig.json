@@ -22,6 +22,9 @@
       ],
       "@hokuchi/stage/*": [
         "./src/*"
+      ],
+      "@hokuchi/parts/*": [
+        "../../parts/*"
       ]
     }
   },

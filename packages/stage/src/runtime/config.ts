@@ -15,6 +15,12 @@ export type Mode = 'live' | 'presenter' | 'shot'
 export const MODE: Mode = q.has('presenter') ? 'presenter' : q.has('shot') ? 'shot' : 'live'
 export const SHOT = q.get('shot') ?? ''
 
+// 画面の種類 (ADR-0042)。発表用 (present) か公開用 (public) かは、ビルドのときに決まる。
+// 発表用のビルドでも ?public を付ければ、公開用の画面を確かめられる
+export type View = 'present' | 'public'
+const BUILT_VIEW: View = typeof __STAGE_VIEW__ === 'undefined' ? 'present' : __STAGE_VIEW__
+export const VIEW: View = q.has('public') ? 'public' : BUILT_VIEW
+
 // 静止画を撮るモードでは、すべての動きを 0 秒にして最終状態だけを描く
 export const STATIC = MODE === 'shot'
 

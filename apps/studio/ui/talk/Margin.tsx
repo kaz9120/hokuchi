@@ -7,6 +7,9 @@ import { cn } from '@/lib/utils'
 import { author, mine, type Thread, type ThreadApi } from '@/lib/talk'
 import { Compose, ThreadCard } from './Threads'
 
+/** 1 か所で、最初から見せる聴衆役の感想の数。多いところは「ほか n 件」に畳み、余白が下にずれ続けないようにする */
+const READERS_SHOWN = 2
+
 /** 余白に置くもの 1 か所分。id は行の印 (<Anchor id>) と同じにする */
 export type MarginItem = { id: string; threads: Thread[]; extra?: React.ReactNode; onSend: (text: string) => void }
 
@@ -29,8 +32,10 @@ export function MarginLayer({ container, items, api, kinds, composing, setCompos
   const layer = useRef<HTMLDivElement>(null)
   const shown = items.filter((i) => i.threads.length > 0 || i.extra || composing === i.id)
   useLayoutEffect(() => {
-    const root = container.current
+    // 行を並べた箱は、層の親から取る。親の ref は、子のこの effect より後に付くことがある
+    // (面を切り替えて開いたとき、ref が空のまま一度も置けず、カードが先頭に重なっていた)
     const l = layer.current
+    const root = l?.parentElement ?? container.current
     if (!root || !l) return
     let frame = 0
     const place = () => {
@@ -93,6 +98,7 @@ export const useComposing = () => useState<string | null>(null)
 /** 1 か所の指摘。あなたが答える件を先頭に、聴衆役の感想は詰めて、済んだ件は畳む */
 function MarginThreads({ threads, api, kinds }: { threads: Thread[]; api: ThreadApi; kinds: Record<string, string> }) {
   const [showDone, setShowDone] = useState(false)
+  const [showReaders, setShowReaders] = useState(false)
   const yours = threads.filter(mine)
   const own = threads.filter((t) => t.ball === 'Claude' && t.by !== '聴衆役')
   const readers = threads.filter((t) => t.by === '聴衆役' && (t.ball === 'Claude' || t.closed === '良かった点'))
@@ -107,9 +113,14 @@ function MarginThreads({ threads, api, kinds }: { threads: Thread[]; api: Thread
       ))}
       {readers.length > 0 && (
         <div className="grid gap-1">
-          {readers.map((t) => (
+          {(showReaders ? readers : readers.slice(0, READERS_SHOWN)).map((t) => (
             <ReaderNote key={t.id} thread={t} api={api} kinds={kinds} />
           ))}
+          {readers.length > READERS_SHOWN && (
+            <button className="justify-self-start text-xs text-muted-foreground hover:text-foreground" onClick={() => setShowReaders((v) => !v)}>
+              {showReaders ? '聴衆役の感想を畳む' : `聴衆役の感想 ほか ${readers.length - READERS_SHOWN} 件`}
+            </button>
+          )}
         </div>
       )}
       {finished.length > 0 && (

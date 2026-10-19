@@ -44,7 +44,7 @@ tools/
     docs/design.md 生きた設計書
 .claude/skills/
   crafting-presentation/  対話から発表資料を作る skill（Phase 0〜8。ADR-0024・ADR-0028）
-  writing-note/           note の記事を書く skill（Phase 0〜7。ADR-0020）
+  writing-note/           note の記事を書く skill（Phase 0〜7。ADR-0020・ADR-0046。studio の記事の作品の画面と同じ流れ）
 ```
 
 作品の企画シートとネタ帳、記事の原稿（`notes/<slug>/`）は、公開リポジトリの外の `~/Hobby/hokuchi-private` に置きます（ADR-0036・ADR-0046）。

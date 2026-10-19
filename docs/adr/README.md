@@ -74,7 +74,7 @@ hokuchi における意思決定の記録。決定に至る過程（選択肢・
 | [0024](0024-crafting-presentation-reread-slideology.md) | crafting-presentation を slide:ology の読み直しに合わせて作り直す | 承認 (Phase 4・7・8 は → ADR-0028) | リポジトリ全体 (skills) / tools/slides |
 | [0025](0025-renderer-lint-reread-slideology.md) | deck スキーマ 0.5.0 — レンダラと lint を slide:ology の読み直しに合わせる | 廃止 (→ ADR-0026) | tools/slides |
 | [0026](0026-scene-state-presentation-framework.md) | 発表資料はシーン×状態の React コードで書き、再生と部品のフレームワーク tools/stage を自作する | 承認 | リポジトリ全体 / tools/stage |
-| [0027](0027-self-hosted-slides-site.md) | 発表資料は slides.y-kaz.com に自前でホスティングし、PDF と docswell をやめる | 承認 (凍結は → ADR-0029、OGP カードは → ADR-0031 で廃止) | リポジトリ全体 / tools/stage |
+| [0027](0027-self-hosted-slides-site.md) | 発表資料は slides.y-kaz.com に自前でホスティングし、PDF と docswell をやめる | 承認 (凍結は → ADR-0029、OGP カードは → ADR-0031 で廃止。ノートを読むモードは → ADR-0042 で置き換え) | リポジトリ全体 / tools/stage |
 | [0028](0028-storyboard-before-scenes.md) | 登壇資料は絵コンテ (storyboard.md) で合意してからシーンを実装し、ノートの正本を絵コンテに置く | 承認 | リポジトリ全体 (skills) / tools/stage |
 | [0029](0029-monorepo-layout-and-live-builds.md) | 発表資料の構造を packages / apps / parts に組み直し、凍結をやめて公開のたびに全トークをビルドする | 承認 | リポジトリ全体 |
 | [0030](0030-studio-chat-and-storyboard-board.md) | 発表資料は制作アプリ studio で、絵コンテのボードを見ながら Claude とチャットして作る | 承認 (起動時にトークを固定するのは → ADR-0035 で廃止。チャットとプレビューの常設は → ADR-0038 で置き換え) | リポジトリ全体 / apps/studio |
@@ -88,3 +88,6 @@ hokuchi における意思決定の記録。決定に至る過程（選択肢・
 | [0038](0038-storyboard-only-screen-in-work.md) | 絵コンテの画面を絵コンテだけにし、作品の段階の中に置く。AI との接点は画面ではなくファイルにする | 承認 (画面の構成は → ADR-0040 で置き換え) | apps/studio |
 | [0039](0039-audience-readers-and-survey.md) | 聴衆役の読みを studio の機能にする。ペルソナは「人」と「場」に分けてプリセットを持ち、アンケートで答えてもらう | 承認 | apps/studio / skills |
 | [0040](0040-studio-work-tabs-and-threads.md) | studio は作品 1 本をタブで進める。絵コンテは「流れ・コマ・読み」の 3 面に分け、指摘は「誰が動く番か」で扱うスレッドにする | 承認 | apps/studio / packages/stage / skills |
+| [0041](0041-studio-private-talks-and-finished-works.md) | studio は公開リポジトリの外のトークも扱い、作品に「終わった」を持たせる | 承認 (「終わった」は → ADR-0043 で置き換え) | apps/studio / apps/slides |
+| [0042](0042-public-view-and-text-export.md) | 発表用の画面と公開用の画面を分け、公開用ではノートの代わりにテキストと PDF を渡す | 承認 | packages/stage / apps/slides / skills |
+| [0043](0043-one-list-with-three-statuses.md) | studio のホームは、発表と記事を 1 つの一覧にし、下書き・非公開・公開の 3 つの状態で見せる | 承認 | apps/studio |

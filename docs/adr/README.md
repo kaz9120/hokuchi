@@ -94,3 +94,4 @@ hokuchi における意思決定の記録。決定に至る過程（選択肢・
 | [0044](0044-create-menu-delete-drafts-and-site-link.md) | 作成は 1 つのボタンにまとめ、下書きは削除できるようにし、「サイトを開く」は本番を開く | 承認 | apps/studio |
 | [0045](0045-progress-and-visibility-are-separate.md) | 作品の状態を、進み具合 (下書き・完成) と公開範囲 (非公開・公開) の 2 つの軸に分ける | 承認 | apps/studio |
 | [0046](0046-articles-in-studio.md) | 記事も発表と同じ流れで studio で作る。原稿はリポジトリの外に置き、段落を単位に指摘と読みを回す | 承認 | apps/studio / tools/notes / skills |
+| [0047](0047-revise-published-articles.md) | 公開済みの記事は、原稿に写して原稿タブで直し、note を更新してから取り込み直す | 承認 | apps/studio / tools/notes |

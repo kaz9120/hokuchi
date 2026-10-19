@@ -13,7 +13,7 @@ const ROUGH_MAX = 150
 const DENSE_MAX = 2
 
 export function OutlineView({ data, onOpen }: { data: Draft; onOpen: (n: number | null) => void }) {
-  const api = useMemo(() => draftApi(data.slug), [data.slug])
+  const api = useMemo(() => draftApi(data.key), [data.key])
   const saved = data.outline.sections
   const [sections, setSections] = useState<Section[]>(saved)
   // Claude Code が outline.yaml を直したら、画面も読み直す

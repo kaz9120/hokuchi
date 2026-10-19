@@ -4,16 +4,15 @@ import { useMemo, useState } from 'react'
 import { Loader2, Users } from 'lucide-react'
 import { Button } from '../components/ui/button'
 import { cn } from '../lib/utils'
-import { draftApi, draftHandoffText, placeOf, type Draft } from '../lib/note'
+import { draftApi, placeOf, type Draft } from '../lib/note'
 import { forClaude, mine, type Reading, type Thread } from '../lib/talk'
 import { Survey } from '../talk/Reads'
 import { ThreadCard } from '../talk/Threads'
-import { HandoffButton } from '../talk/Handoff'
 
 const when = (iso: string) => new Date(iso).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })
 
 export function NoteReadsView({ data, reading, onJump }: { data: Draft; reading: Reading | null; onJump: (n: number | null) => void }) {
-  const api = useMemo(() => draftApi(data.slug), [data.slug])
+  const api = useMemo(() => draftApi(data.key), [data.key])
   const [picked, setPicked] = useState<number | null>(null)
   const [choosing, setChoosing] = useState(false)
   const read = data.reads.find((r) => r.id === picked) ?? data.reads.at(-1) ?? null
@@ -70,7 +69,7 @@ export function NoteReadsView({ data, reading, onJump }: { data: Draft; reading:
 
           {reading?.error && <p className="text-sm text-destructive">{reading.error}</p>}
           {read ? (
-            <Survey survey={data.survey} oneLiner={data.work?.oneLiner ?? ''} read={read} prev={prev} />
+            <Survey survey={data.survey} oneLiner={data.oneLiner} read={read} prev={prev} />
           ) : (
             <p className="rounded-lg border border-dashed bg-background p-8 text-center text-muted-foreground">まだ読んでもらっていません。読み手を選んで「読んでもらう」を押すと、読み手が原稿を読み、アンケートと段落への感想を返します。</p>
           )}
@@ -81,9 +80,6 @@ export function NoteReadsView({ data, reading, onJump }: { data: Draft; reading:
             <h2 className="text-lg font-semibold">あなた宛ての指摘</h2>
             <span className="rounded-full bg-amber-500 px-2 text-sm font-semibold text-white">{yours.length}</span>
             <span className="text-sm text-muted-foreground">Claude からの確認と、あなたの判断が要る指摘です。返信すると Claude 宛てになります。</span>
-            <div className="ml-auto">
-              <HandoffButton threads={data.threads} text={draftHandoffText(data)} />
-            </div>
           </div>
           {yours.length === 0 && <p className="text-sm text-muted-foreground">あなた宛ての指摘はありません。</p>}
           <div className="grid items-start gap-2 lg:grid-cols-2">

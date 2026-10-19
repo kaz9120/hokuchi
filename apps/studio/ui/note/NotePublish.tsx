@@ -5,13 +5,13 @@ import { Check, Copy, FolderOpen, Loader2, Sparkles, X } from 'lucide-react'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { cn } from '../lib/utils'
-import { api } from '../lib/api'
+import { send } from '../lib/works'
 import { draftApi, type Draft, type PasteText } from '../lib/note'
 
 const TITLE_TASK = 'title.candidates'
 
 export function NotePublishView({ data }: { data: Draft }) {
-  const dapi = useMemo(() => draftApi(data.slug), [data.slug])
+  const dapi = useMemo(() => draftApi(data.key), [data.key])
   return (
     <div className="min-h-0 flex-1 overflow-y-auto px-6 py-8">
       <div className="mx-auto grid max-w-3xl gap-6">
@@ -39,21 +39,20 @@ function Card({ title, help, children }: { title: string; help?: string; childre
 
 /** タイトル。先頭 25 字に核を置く (writing-note の structure.md)。案は Claude が原稿を読んで出す */
 function TitleCard({ data }: { data: Draft }) {
-  const dapi = useMemo(() => draftApi(data.slug), [data.slug])
+  const dapi = useMemo(() => draftApi(data.key), [data.key])
   const [title, setTitle] = useState(data.title)
   useEffect(() => setTitle(data.title), [data.title])
   const [running, setRunning] = useState(false)
   const [error, setError] = useState<string | null>(null)
   // 出した案は企画シートにも残る。出した直後は、返ってきた案をそのまま見せる
   const [fresh, setFresh] = useState<{ text: string; note: string }[] | null>(null)
-  const candidates = fresh ?? data.work?.candidates?.[TITLE_TASK]?.items
+  const candidates = fresh ?? data.candidates[TITLE_TASK]?.items
   const len = [...title].length
   const suggest = async () => {
-    if (!data.work) return
     setRunning(true)
     setError(null)
     try {
-      setFresh((await api.ask(data.work.id, TITLE_TASK)).items)
+      setFresh((await send<{ items: { text: string; note: string }[] }>(data.key, '/ask', 'POST', { task: TITLE_TASK }, { quiet: true }))?.items ?? null)
     } catch (e) {
       setError(String((e as Error).message))
     } finally {
@@ -67,7 +66,7 @@ function TitleCard({ data }: { data: Draft }) {
         <span className={cn(len > 40 && 'text-amber-700')}>
           {len} 字{len > 25 && <span className="ml-1">（先頭 25 字:「{[...title].slice(0, 25).join('')}」）</span>}
         </span>
-        <Button size="sm" variant="outline" className="ml-auto" disabled={running || !data.work} onClick={suggest}>
+        <Button size="sm" variant="outline" className="ml-auto" disabled={running} onClick={suggest}>
           {running ? <Loader2 className="animate-spin" /> : <Sparkles />} タイトルの案を出す
         </Button>
       </div>
@@ -123,7 +122,7 @@ function TagsCard({ data, save }: { data: Draft; save: (tags: string[]) => void 
 
 /** 見出し画像。1280×670 の画像を原稿の assets/ に置き、選ぶと front matter の eyecatch に入る */
 function EyecatchCard({ data }: { data: Draft }) {
-  const dapi = useMemo(() => draftApi(data.slug), [data.slug])
+  const dapi = useMemo(() => draftApi(data.key), [data.key])
   const [size, setSize] = useState<{ w: number; h: number } | null>(null)
   useEffect(() => setSize(null), [data.eyecatch])
   const right = size && size.w === 1280 && size.h === 670
@@ -160,7 +159,7 @@ function EyecatchCard({ data }: { data: Draft }) {
 
 /** note に貼る本文。画像の行は「（画像 n/N: …）」の 1 行に置き換わるので、note 側で画像を入れる */
 function PasteCard({ data }: { data: Draft }) {
-  const dapi = useMemo(() => draftApi(data.slug), [data.slug])
+  const dapi = useMemo(() => draftApi(data.key), [data.key])
   const [paste, setPaste] = useState<PasteText | null>(null)
   const [copied, setCopied] = useState(false)
   useEffect(() => {

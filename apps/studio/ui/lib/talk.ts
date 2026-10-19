@@ -1,7 +1,7 @@
-// 発表 1 本の絵コンテ・指摘・聴衆役の読みを、studio のサーバから読む (ADR-0040)。
-// サーバの作品の WorkView (shared/api.ts) を、いまの画面の形 (Talk) に写して渡す
+// 発表の面 (流れ・コマ・読み・公開) が読む形と、そこからの操作 (ADR-0040)。
+// 作品の WorkView (shared/api.ts) から、面が読む形 (Talk) を作る。取得と購読は works.ts が持つ
 import type { WorkView } from '../../shared/api'
-import { current, useWork, workPath, write } from './works'
+import { current, send, workPath } from './works'
 
 export type Koma = { screen: string; roles: string[]; notes: string[] }
 export type Scene = { id: string; title: string; chapter: string | null; meta: Record<string, string>; states: Koma[]; notes: string[] }
@@ -36,6 +36,8 @@ export type Persona = { id: string; name: string; label: string; who: string; tr
 export type Reading = { done: number; total: number; failed: string[]; error?: string }
 
 export type Talk = {
+  /** 作品の key。書き込みはこの key で送る */
+  key: string
   talk: { slug: string; name: string; date: string | null; tag: string | null; title: string; dir: string; outside: boolean; event: string | null; minutes: number | null }
   board: Board
   scenes: { id: string; steps: number }[]
@@ -45,18 +47,19 @@ export type Talk = {
   threads: Thread[]
   error: string | null
   reads: Read[]
-  reading: Reading | null
   readers: Persona[]
   survey: { key: string; group: string; label: string }[]
   noteKinds: Record<string, string>
-  work: { id: string; oneLiner: string } | null
+  /** 伝えたいこと (企画の段階 4。無ければ絵コンテの中核メッセージ) */
+  oneLiner: string
 }
 
-/** 作品の WorkView を、発表の画面が使う形にする (段 2 で画面を作り直すまでの橋渡し) */
+/** 作品の WorkView から、発表の面が読む形を作る。中身 (絵コンテ) が無ければ null */
 export function toTalk(v: WorkView): Talk | null {
   const b = v.body
   if (!b || b.kind !== 'talk') return null
   return {
+    key: v.key,
     talk: { slug: b.slug, name: b.name, date: b.date, tag: b.tag, title: b.title, dir: b.dir, outside: b.outside, event: b.event, minutes: b.minutes },
     board: b.board,
     scenes: b.implemented,
@@ -66,49 +69,51 @@ export function toTalk(v: WorkView): Talk | null {
     threads: v.threads.items as Thread[],
     error: v.threads.error,
     reads: v.reads as Read[],
-    reading: v.reading,
     readers: v.readers,
     survey: v.survey,
     noteKinds: v.unitKinds,
-    work: v.brief ? { id: v.brief.id, oneLiner: v.oneLiner } : null,
+    oneLiner: v.oneLiner || b.board.meta['中核メッセージ'] || '',
   }
 }
 
-const keyOf = (slug: string) => `talk:${slug}`
 const sceneOf = (v: WorkView, scene: string) => (v.body?.kind === 'talk' ? v.body.board.scenes.find((s) => s.id === scene) : undefined)
+const revOf = (v: WorkView, id: string) => v.threads.items.find((t) => t.id === id)?.rev ?? ''
+/** 指摘のスレッドの 1 件を、手元で書き換える (楽観的な更新) */
+const patchThread = (id: string, fn: (t: WorkView['threads']['items'][number]) => WorkView['threads']['items'][number]) => (v: WorkView): WorkView => ({ ...v, threads: { ...v.threads, items: v.threads.items.map((t) => (t.id === id ? fn(t) : t)) } })
+
 /** 指摘のスレッドへの操作。発表と記事で共通。rev は手元の最新の WorkView から添える */
 export const threadOps = (key: string) => ({
-  reply: async (id: string, text: string) => write(key, `/threads/${id}/reply`, 'POST', { rev: revOf(await current(key), id), text }),
-  close: async (id: string, how: '直した' | 'そのままにした') => write(key, `/threads/${id}/close`, 'POST', { rev: revOf(await current(key), id), how }),
-  reopen: async (id: string) => write(key, `/threads/${id}/reopen`, 'POST', { rev: revOf(await current(key), id) }),
+  reply: async (id: string, text: string) => send(key, `/threads/${id}/reply`, 'POST', { rev: revOf(await current(key), id), text }, { optimistic: patchThread(id, (t) => ({ ...t, replies: [...(t.replies ?? []), { by: '話者', text }] })) }),
+  close: async (id: string, how: '直した' | 'そのままにした') => send(key, `/threads/${id}/close`, 'POST', { rev: revOf(await current(key), id), how }, { optimistic: patchThread(id, (t) => ({ ...t, ball: 'none', closed: how })) }),
+  reopen: async (id: string) => send(key, `/threads/${id}/reopen`, 'POST', { rev: revOf(await current(key), id) }),
 })
-const revOf = (v: WorkView, id: string) => v.threads.items.find((t) => t.id === id)?.rev ?? ''
 
-/** 画面からの操作。どれもファイルを書き換え、サーバが変化を知らせてくる。コマの番号は、画面の中では 0 始まり、API は 1 始まり */
-export const talkApi = (slug: string) => {
-  const key = keyOf(slug)
-  return {
-    thumb: (scene: string, i: number, v: number) => `${workPath(key)}/thumbs/${scene}/${i + 1}?v=${v}`,
-    saveNotes: async (scene: string, state: number, text: string) => write(key, `/units/${scene}/${state + 1}`, 'PUT', { orig: sceneOf(await current(key), scene)?.notes[state] ?? '', text }),
-    saveMeta: async (scene: string, k: '伝えること' | '粗密', value: string) => write(key, '/outline', 'PATCH', { op: 'meta', scene, key: k, orig: sceneOf(await current(key), scene)?.meta[k] ?? '', value }),
-    move: async (scene: string, dir: 1 | -1) => {
-      const v = await current(key)
-      return write(key, '/outline', 'PATCH', { op: 'move', scene, dir, base: v.body?.kind === 'talk' ? v.body.version : '' })
-    },
-    open: (scene: string, state: number | null, text: string) => write(key, '/threads', 'POST', { at: { scene, state }, text }),
-    ...threadOps(key),
-    read: () => write(key, '/read', 'POST', {}),
-  }
-}
+/** 発表の面からの操作。どれもファイルを書き換え、サーバが変化を知らせてくる。コマの番号は、画面の中では 0 始まり、API は 1 始まり */
+export const talkApi = (key: string) => ({
+  thumb: (scene: string, i: number, v: number) => `${workPath(key)}/thumbs/${scene}/${i + 1}?v=${v}`,
+  saveNotes: async (scene: string, state: number, text: string) => {
+    const v = await current(key)
+    return send(key, `/units/${scene}/${state + 1}`, 'PUT', { orig: sceneOf(v, scene)?.notes[state] ?? '', text }, {
+      optimistic: (w) => (w.body?.kind === 'talk' ? { ...w, body: { ...w.body, board: { ...w.body.board, scenes: w.body.board.scenes.map((s) => (s.id === scene ? { ...s, notes: s.notes.map((n, i) => (i === state ? text : n)) } : s)) } } } : w),
+    })
+  },
+  saveMeta: async (scene: string, k: '伝えること' | '粗密', value: string) => {
+    const v = await current(key)
+    return send(key, '/outline', 'PATCH', { op: 'meta', scene, key: k, orig: sceneOf(v, scene)?.meta[k] ?? '', value }, {
+      optimistic: (w) => (w.body?.kind === 'talk' ? { ...w, body: { ...w.body, board: { ...w.body.board, scenes: w.body.board.scenes.map((s) => (s.id === scene ? { ...s, meta: { ...s.meta, [k]: value } } : s)) } } } : w),
+    })
+  },
+  move: async (scene: string, dir: 1 | -1) => {
+    const v = await current(key)
+    return send(key, '/outline', 'PATCH', { op: 'move', scene, dir, base: v.body?.kind === 'talk' ? v.body.version : '' })
+  },
+  open: (scene: string, state: number | null, text: string) => send(key, '/threads', 'POST', { at: { scene, state }, text }),
+  ...threadOps(key),
+  read: () => send(key, '/read', 'POST', {}),
+})
 export type TalkApi = ReturnType<typeof talkApi>
 /** 指摘のスレッドへの操作。発表と記事の原稿 (ADR-0046) で共通 */
 export type ThreadApi = Pick<TalkApi, 'reply' | 'close' | 'reopen'>
-
-/** トークの状態を読み、ファイルが変わるたびに受け取り直す */
-export function useTalk(slug: string | undefined) {
-  const { data, thumbs, reading } = useWork(slug ? keyOf(slug) : undefined)
-  return { data: data ? toTalk(data) : null, thumbs, reading }
-}
 
 // ---------------------------------------------------------------- 時間
 /** 「中（1 分 20 秒）」から、粗密と秒を読む */
@@ -147,14 +152,3 @@ export const where = (t: Thread, board: Board) => {
 }
 /** 誰が書いたか。聴衆役は名前で呼ぶ */
 export const author = (t: { by: string; name?: string }) => (t.by === '聴衆役' ? (t.name ?? '聴衆役') : t.by === '話者' ? 'あなた' : t.by)
-
-/** Claude Code に渡す依頼文。ターミナルに貼って使う */
-export function handoffText(data: Talk) {
-  const list = data.threads.filter(forClaude)
-  const own = list.filter((t) => t.by !== '聴衆役').length
-  return [
-    `${data.talk.dir}/feedback.yaml に、Claude の番の指摘が ${list.length} 件あります（話者から ${own} 件、聴衆役から ${list.length - own} 件）。`,
-    'crafting-presentation skill の Phase 8 に従って、絵コンテ (storyboard.md) を先に直し、実装を追従させてください。',
-    '直したら、各スレッドの replies に thinking (考えたこと) と change (変えたこと) を足してください。話者に確かめたいことは ball を「話者」に、済んだものは ball を none にして closed を書いてください。',
-  ].join('\n')
-}

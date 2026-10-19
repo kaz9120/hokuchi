@@ -53,6 +53,7 @@ export function FlowView({ data, thumbs, api, onOpen }: { data: Talk; thumbs: nu
                     scene={s}
                     api={api}
                     thumb={data.scenes.some((x) => x.id === s.id) && thumbs > 0 ? api.thumb(s.id, 0, thumbs) : null}
+                    shooting={data.scenes.some((x) => x.id === s.id) && thumbs === 0}
                     yours={data.threads.filter((t) => t.scene === s.id && mine(t)).length}
                     first={i === 0}
                     last={i === scenes.length - 1}
@@ -108,7 +109,7 @@ function TimeBar({ data, total, limit }: { data: Talk; total: number; limit: num
   )
 }
 
-function SceneCard({ scene, api, thumb, yours, first, last, onOpen }: { scene: Scene; api: TalkApi; thumb: string | null; yours: number; first: boolean; last: boolean; onOpen: () => void }) {
+function SceneCard({ scene, api, thumb, shooting, yours, first, last, onOpen }: { scene: Scene; api: TalkApi; thumb: string | null; shooting: boolean; yours: number; first: boolean; last: boolean; onOpen: () => void }) {
   const tellNow = scene.meta['伝えること'] ?? ''
   const [tell, setTell] = useState(tellNow)
   useEffect(() => setTell(tellNow), [tellNow])
@@ -126,7 +127,7 @@ function SceneCard({ scene, api, thumb, yours, first, last, onOpen }: { scene: S
   return (
     <div id={`card-${scene.id}`} className="group relative flex flex-col overflow-hidden rounded-lg border bg-background">
       <button onClick={onOpen} className="relative block bg-muted" title="このシーンのコマを開く">
-        {thumb ? <img src={thumb} alt="" loading="lazy" className="aspect-video w-full object-cover" /> : <div className="grid aspect-video place-items-center text-xs text-muted-foreground">絵はまだありません</div>}
+        {thumb ? <img src={thumb} alt="" loading="lazy" className="aspect-video w-full object-cover" /> : <div className={cn('grid aspect-video place-items-center text-xs text-muted-foreground', shooting && 'animate-pulse')}>{shooting ? '絵を撮っています…' : '絵はまだありません'}</div>}
         {yours > 0 && (
           <span className="absolute top-1.5 right-1.5 rounded-full bg-amber-500 px-2 text-xs font-semibold leading-5 text-white" title={`あなた宛ての指摘が ${yours} 件`}>
             あなた宛て {yours} 件

@@ -1,21 +1,21 @@
 // 原稿の面 (ADR-0046)。記事の本文を上から読み、段落ごとにその場で直し、指摘を書く。
-// 発表のコマの面と同じ並びにする。左に見出しの目次、真ん中に段落、右の余白にその段落への検査と指摘。
+// 発表のコマの面と同じ並びにする。真ん中に段落、右の余白にその段落への検査と指摘。見出しの目次は、レールの「原稿」の子に出す。
 // いちばん上の帯は記事全体で、段落に寄せられない検査と、記事全体への指摘を置く (docs/design.md の「原稿」)
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Plus } from 'lucide-react'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { cn } from '../lib/utils'
-import { draftApi, headingLevel, headingText, type Block, type Draft, type DraftApi, type Finding } from '../lib/note'
-import { mine, type Thread } from '../lib/talk'
+import { setReading } from '../lib/router'
+import { draftApi, headingLevel, tocOf, type Block, type Draft, type DraftApi, type Finding } from '../lib/note'
+import type { Thread } from '../lib/talk'
 import { Margin } from '../talk/Koma'
 
 const PLACEHOLDER = '表現でも中身でも、気になったことを自由に入力'
 
-export function DraftView({ data, focus }: { data: Draft; focus: string | null }) {
-  const api = useMemo(() => draftApi(data.slug), [data.slug])
+export function DraftView({ data, focus, seq }: { data: Draft; focus: string | null; seq: number }) {
+  const api = useMemo(() => draftApi(data.key), [data.key])
   const scroller = useRef<HTMLDivElement>(null)
-  const [current, setCurrent] = useState<number>(0)
   const byPara = useMemo(() => {
     const m = new Map<number | '*', Thread[]>()
     for (const t of data.threads) {
@@ -29,31 +29,20 @@ export function DraftView({ data, focus }: { data: Draft; focus: string | null }
     for (const f of data.lint) m.set(f.n, [...(m.get(f.n) ?? []), f])
     return m
   }, [data.lint])
+  const toc = useMemo(() => tocOf(data), [data])
 
-  // 目次は見出し (## と ###)。見出しの下の段落にあるあなた宛ての指摘を、見出しごとに数える
-  const toc = useMemo(() => {
-    const items: { n: number; level: number; text: string; mine: number }[] = []
-    for (const b of data.blocks) {
-      if (b.kind === 'heading' && headingLevel(b) >= 2 && headingLevel(b) <= 3) items.push({ n: b.n, level: headingLevel(b), text: headingText(b), mine: 0 })
-      const owner = items[items.length - 1]
-      if (owner) owner.mine += (byPara.get(b.n) ?? []).filter(mine).length
-    }
-    return items
-  }, [data.blocks, byPara])
-  const leadMine = data.blocks.filter((b) => !toc.length || b.n < toc[0].n).reduce((n, b) => n + (byPara.get(b.n) ?? []).filter(mine).length, 0)
-
-  const jump = useCallback((n: number, smooth = true) => {
-    const el = document.getElementById(n ? `para-${n}` : 'draft-top')
-    el?.scrollIntoView({ block: 'start', behavior: smooth ? 'smooth' : 'auto' })
-    history.replaceState(null, '', n ? `#draft/${n}` : '#draft')
-  }, [])
+  // レールで見出しを選んだら (URL の場所が変わったら)、その段落へ。最初の 1 回は飛ばずに動かす
+  const moved = useRef(false)
   useEffect(() => {
-    if (!focus) return
-    const t = setTimeout(() => jump(Number(focus) || 0, false), 150)
+    if (focus === null) return
+    const smooth = moved.current
+    moved.current = true
+    const n = Number(focus) || 0
+    const t = setTimeout(() => document.getElementById(n ? `para-${n}` : 'draft-top')?.scrollIntoView({ block: 'start', behavior: smooth ? 'smooth' : 'auto' }), smooth ? 0 : 150)
     return () => clearTimeout(t)
-  }, [focus, jump])
+  }, [focus, seq])
 
-  // いま読んでいる所を、目次に映す。画面の上から 1/4 の線を越えた最後の段落を、読んでいる段落とする
+  // いま読んでいる見出しを、レールの目次と URL に映す。画面の上から 1/4 の線を越えた最後の段落を、読んでいる段落とする
   useEffect(() => {
     const root = scroller.current
     if (!root) return
@@ -66,66 +55,42 @@ export function DraftView({ data, focus }: { data: Draft; focus: string | null }
         root.querySelectorAll<HTMLElement>('[id^="para-"]').forEach((el) => {
           if (el.getBoundingClientRect().top <= line) n = Number(el.id.replace('para-', ''))
         })
-        setCurrent(n)
+        setReading('draft', String([...toc].reverse().find((h) => h.n <= n)?.n ?? 0))
       })
     }
-    update()
     root.addEventListener('scroll', update, { passive: true })
     return () => {
       cancelAnimationFrame(frame)
       root.removeEventListener('scroll', update)
     }
-  }, [data.blocks.length])
-  const section = [...toc].reverse().find((h) => h.n <= current)?.n ?? 0
+  }, [toc])
 
   return (
-    <div className="grid min-h-0 flex-1 grid-cols-[232px_minmax(0,1fr)]">
-      <nav className="min-h-0 overflow-y-auto border-r bg-background py-3 text-sm">
-        <TocItem active={section === 0} level={2} text="冒頭" mine={leadMine} onClick={() => jump(0)} />
-        {toc.map((h) => (
-          <TocItem key={h.n} active={section === h.n} level={h.level} text={h.text} mine={h.mine} onClick={() => jump(h.n)} />
+    <div ref={scroller} className="min-h-0 flex-1 overflow-y-auto pr-6 pb-40 pl-12">
+      <div className="mx-auto max-w-[1180px]">
+        <section id="draft-top" className="grid scroll-mt-2 grid-cols-[minmax(0,1fr)_300px] gap-6 border-b py-6 min-[1400px]:grid-cols-[minmax(0,1fr)_340px] min-[1400px]:gap-8">
+          <div>
+            <h1 className="text-2xl font-semibold leading-snug">{data.title || '無題'}</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {data.stats.chars.toLocaleString()} 字・{data.stats.paragraphs} 段落・文の長さの中央値 {data.stats.medianSentence} 字
+              {data.tags.length > 0 && <span className="ml-3">{data.tags.map((t) => `#${t}`).join(' ')}</span>}
+            </p>
+          </div>
+          <div className="grid content-start gap-3">
+            <Checks findings={lintBy.get(null) ?? []} title="記事全体の検査" />
+            <Margin threads={byPara.get('*') ?? []} api={api} kinds={data.noteKinds} label="記事全体に指摘を追加" placeholder={PLACEHOLDER} onSend={(text) => api.open('*', text)} />
+          </div>
+        </section>
+
+        {data.blocks.length === 0 && <p className="py-8 text-muted-foreground">本文はまだありません。下の欄から書き始めるか、Claude Code に下書きを頼んでください。</p>}
+
+        {data.blocks.map((b) => (
+          <Row key={b.n} block={b} api={api} kinds={data.noteKinds} findings={lintBy.get(b.n) ?? []} threads={byPara.get(b.n) ?? []} />
         ))}
-      </nav>
 
-      <div ref={scroller} className="min-h-0 overflow-y-auto scroll-smooth px-6 pb-40">
-        <div className="mx-auto max-w-[1180px]">
-          <section id="draft-top" className="grid scroll-mt-2 grid-cols-[minmax(0,1fr)_360px] gap-8 border-b py-6">
-            <div>
-              <h1 className="text-2xl font-semibold leading-snug">{data.title || '無題'}</h1>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {data.stats.chars.toLocaleString()} 字・{data.stats.paragraphs} 段落・文の長さの中央値 {data.stats.medianSentence} 字
-                {data.tags.length > 0 && <span className="ml-3">{data.tags.map((t) => `#${t}`).join(' ')}</span>}
-              </p>
-            </div>
-            <div className="grid content-start gap-3">
-              <Checks findings={lintBy.get(null) ?? []} title="記事全体の検査" />
-              <Margin threads={byPara.get('*') ?? []} api={api} kinds={data.noteKinds} label="記事全体に指摘を追加" placeholder={PLACEHOLDER} onSend={(text) => api.open('*', text)} />
-            </div>
-          </section>
-
-          {data.blocks.length === 0 && <p className="py-8 text-muted-foreground">本文はまだありません。下の「段落を追加」から書き始めるか、Claude Code に下書きを頼んでください。</p>}
-
-          {data.blocks.map((b) => (
-            <Row key={b.n} block={b} api={api} kinds={data.noteKinds} findings={lintBy.get(b.n) ?? []} threads={byPara.get(b.n) ?? []} />
-          ))}
-
-          <AddParagraph api={api} open={data.blocks.length === 0} />
-        </div>
+        <AddParagraph api={api} open={data.blocks.length === 0} />
       </div>
     </div>
-  )
-}
-
-function TocItem({ active, level, text, mine, onClick }: { active: boolean; level: number; text: string; mine: number; onClick: () => void }) {
-  return (
-    <button onClick={onClick} className={cn('flex w-full items-center gap-2 py-1 pr-3 text-left hover:bg-accent', level === 3 ? 'pl-7 text-muted-foreground' : 'pl-4', active && 'bg-accent font-medium text-foreground')}>
-      <span className="min-w-0 flex-1 truncate">{text}</span>
-      {mine > 0 && (
-        <span className="rounded-full bg-amber-500 px-1.5 text-xs font-semibold text-white" title={`あなた宛ての指摘が ${mine} 件`}>
-          {mine}
-        </span>
-      )}
-    </button>
   )
 }
 
@@ -135,23 +100,19 @@ function Row({ block, api, kinds, findings, threads }: { block: Block; api: Draf
   const prefix = block.kind === 'heading' ? block.text.match(/^#{1,6}\s+/)![0] : ''
   const shown = block.text.slice(prefix.length)
   const [text, setText] = useState(shown)
-  const [error, setError] = useState<string | null>(null)
-  useEffect(() => {
-    setText(shown)
-    setError(null)
-  }, [block.text])
+  // ほかで直されたら (Claude Code・409 で読み直したとき)、欄も読み直す
+  useEffect(() => setText(shown), [block.text])
   const dirty = text !== shown
+  // 失敗したときは、works.ts が読み直して知らせる
   const save = async () => {
     if (!dirty) return
-    try {
-      await api.saveBlock(block.n, block.text, text.trim() ? prefix + text : '')
-    } catch (e) {
-      setError(String((e as Error).message))
-    }
+    const mine = text
+    // 保存できなかったら (409 など)、読み直した段落の上に、書いた文を未保存のまま残す
+    if ((await api.saveBlock(block.n, block.text, mine.trim() ? prefix + mine : '')) === undefined) setTimeout(() => setText(mine), 0)
   }
   const level = headingLevel(block)
   return (
-    <section id={`para-${block.n}`} className={cn('group grid scroll-mt-2 grid-cols-[minmax(0,1fr)_360px] gap-8', block.kind === 'heading' ? 'pt-8 pb-2' : 'py-2')}>
+    <section id={`para-${block.n}`} className={cn('group grid scroll-mt-2 grid-cols-[minmax(0,1fr)_300px] gap-6 min-[1400px]:grid-cols-[minmax(0,1fr)_340px] min-[1400px]:gap-8', block.kind === 'heading' ? 'pt-8 pb-2' : 'py-2')}>
       <div className="relative min-w-0">
         <span className="absolute top-2 -left-7 w-5 text-right text-[11px] text-muted-foreground/50 tabular-nums" title={`段落 ${block.n}`}>
           {block.n}
@@ -170,8 +131,7 @@ function Row({ block, api, kinds, findings, threads }: { block: Block; api: Draf
             block.kind === 'quote' && 'border-l-muted-foreground/30 text-muted-foreground',
           )}
         />
-        {dirty && !error && <div className="px-2 text-xs text-muted-foreground">未保存です。欄の外を押すと保存します（空にすると段落を削除します）</div>}
-        {error && <div className="px-2 text-xs text-destructive">{error}</div>}
+        {dirty && <div className="px-2 text-xs text-muted-foreground">未保存です。欄の外を押すと保存します（空にすると段落を削除します）</div>}
       </div>
       <div className="grid content-start gap-2">
         {findings.length > 0 && <Checks findings={findings} />}
@@ -229,7 +189,7 @@ function AddParagraph({ api, open: initial }: { api: DraftApi; open: boolean }) 
       </Button>
     )
   return (
-    <div className="mt-6 grid max-w-[calc(100%-392px)] gap-2">
+    <div className="mt-6 grid max-w-[calc(100%-324px)] gap-2 min-[1400px]:max-w-[calc(100%-372px)]">
       <textarea
         autoFocus
         value={text}

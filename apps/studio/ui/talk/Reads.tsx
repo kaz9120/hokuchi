@@ -5,16 +5,15 @@ import { useMemo, useState } from 'react'
 import { Loader2, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { forClaude, mine, where, type Read, type Talk, type TalkApi, type Thread } from '@/lib/talk'
+import { forClaude, mine, where, type Read, type Reading, type Talk, type TalkApi, type Thread } from '@/lib/talk'
 import { ThreadCard } from './Threads'
-import { Handoff } from './Handoff'
 
 const mean = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0)
 /** 点の色。低いほど目立たせる */
 const tone = (score: number) => (score <= 2 ? 'bg-red-100 text-red-900' : score < 3.5 ? 'bg-amber-100 text-amber-900' : score < 4.5 ? 'bg-emerald-50 text-emerald-900' : 'bg-emerald-200 text-emerald-950')
 const when = (iso: string) => new Date(iso).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })
 
-export function ReadsView({ data, api, reading, onJump }: { data: Talk; api: TalkApi; reading: Talk['reading']; onJump: (scene: string) => void }) {
+export function ReadsView({ data, api, reading, onJump }: { data: Talk; api: TalkApi; reading: Reading | null; onJump: (scene: string) => void }) {
   const [picked, setPicked] = useState<number | null>(null)
   const read = data.reads.find((r) => r.id === picked) ?? data.reads.at(-1) ?? null
   const prev = read ? (data.reads.filter((r) => r.id < read.id).at(-1) ?? null) : null
@@ -51,7 +50,7 @@ export function ReadsView({ data, api, reading, onJump }: { data: Talk; api: Tal
           </div>
           {reading?.error && <p className="text-sm text-destructive">{reading.error}</p>}
 
-          {read ? <Survey survey={data.survey} oneLiner={data.work?.oneLiner || data.board.meta['中核メッセージ'] || ''} read={read} prev={prev} /> : <p className="rounded-lg border border-dashed bg-background p-8 text-center text-muted-foreground">まだ読んでもらっていません。「読んでもらう」を押すと、聴衆役が絵コンテを読み、アンケートとコマへの感想を返します。</p>}
+          {read ? <Survey survey={data.survey} oneLiner={data.oneLiner} read={read} prev={prev} /> : <p className="rounded-lg border border-dashed bg-background p-8 text-center text-muted-foreground">まだ読んでもらっていません。「読んでもらう」を押すと、聴衆役が絵コンテを読み、アンケートとコマへの感想を返します。</p>}
         </section>
 
         <section id="yours" className="grid scroll-mt-4 gap-3">
@@ -59,9 +58,6 @@ export function ReadsView({ data, api, reading, onJump }: { data: Talk; api: Tal
             <h2 className="text-lg font-semibold">あなた宛ての指摘</h2>
             <span className="rounded-full bg-amber-500 px-2 text-sm font-semibold text-white">{yours.length}</span>
             <span className="text-sm text-muted-foreground">Claude からの確認と、あなたの判断が要る指摘です。返信すると Claude 宛てになります。</span>
-            <div className="ml-auto">
-              <Handoff data={data} />
-            </div>
           </div>
           {yours.length === 0 && <p className="text-sm text-muted-foreground">あなた宛ての指摘はありません。</p>}
           <div className="grid items-start gap-2 lg:grid-cols-2">
@@ -103,7 +99,7 @@ export function Survey({ survey, oneLiner, read, prev }: { survey: Talk['survey'
   const [open, setOpen] = useState<string>(() => [...rows].sort((a, b) => a.now - b.now)[0]?.key ?? '')
   const row = rows.find((r) => r.key === open)
   return (
-    <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
+    <div className="grid items-start gap-4 min-[1400px]:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
       <div className="overflow-hidden rounded-lg border bg-background">
         <table className="w-full text-sm">
           <thead>

@@ -9,10 +9,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
-import { api, go, type HomeData, type Item, type Progress, type TalkItem, type Visibility, type WorkItem } from '@/lib/api'
+import { api, type HomeData, type Item, type Progress, type TalkItem, type Visibility, type WorkItem } from '@/lib/api'
+import { navigate, onLinkClick, workHref } from '@/lib/router'
+import type { WorkState } from '../shared/api'
 import { KIND_LABEL, STAGES, stageStatus, type Kind } from '@/lib/stages'
 import { CreateMenu } from './CreateMenu'
-import { PROGRESS_OPTIONS, StateBadges, VISIBILITY_OPTIONS } from './status'
+import { StateLabel } from './status'
+
+const PROGRESS_OPTIONS: { value: 'all' | Progress; label: string }[] = [{ value: 'all', label: 'すべて' }, { value: 'draft', label: '下書き' }, { value: 'finished', label: '完成' }]
+const VISIBILITY_OPTIONS: { value: 'all' | Visibility; label: string }[] = [{ value: 'all', label: 'すべて' }, { value: 'private', label: '非公開' }, { value: 'public', label: '公開' }]
+
+/** 読み込み直さずに作品の画面へ移るリンク */
+const Go = ({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) => (
+  <a href={href} onClick={(e) => onLinkClick(e, href)} className={className}>
+    {children}
+  </a>
+)
 
 export function Home() {
   const [data, setData] = useState<HomeData | null>(null)
@@ -31,7 +43,7 @@ export function Home() {
 
   const start = async (kind: Kind, seedId?: string) => {
     const brief = await api.createWork(kind, seedId)
-    go(`/works/${brief.id}`)
+    navigate(workHref(brief.id))
   }
 
   if (!data) return <div className="p-10 text-muted-foreground">読み込み中…</div>
@@ -72,15 +84,15 @@ const daysTo = (date: string | null) => (date ? Math.ceil((new Date(date).getTim
  * 下書きの作品 1 枚。いまどこにいて、次に何をするかを言う。
  * 公開済みの記事を改稿しているとき (ADR-0047) は、公開のバッジのまま下書きのカードで見せ、企画と構成は飛ばす
  */
-function WorkCard({ work, visibility = 'private' }: { work: WorkItem; visibility?: Visibility }) {
-  const revising = visibility === 'public'
+function WorkCard({ work, state }: { work: WorkItem; state: WorkState }) {
+  const revising = state.word === '改稿中'
   const next = STAGES.find((s) => !s.later && stageStatus(s, work) !== 'done')
   const t = work.talkInfo
   const days = daysTo(t?.date ?? (work.fields.date as string | undefined) ?? null)
   const d = work.draftInfo
   // 次にやること。企画が残っていれば企画、絵コンテがあれば、答える指摘 → 読んでもらう → コマを読む の順。
   // 記事は、原稿が無ければ原稿を作る、あれば答える指摘 → 原稿を読んで直す (ADR-0046)
-  const at = (tab: string) => `/works/${work.id}#${tab}`
+  const at = (face: string) => workHref(work.id, face as never)
   const todo = next && !revising
     ? { text: `企画の「${next.title[work.kind]}」を書く`, href: at(next.key), label: '企画を開く' }
     : work.kind === 'note'
@@ -96,19 +108,19 @@ function WorkCard({ work, visibility = 'private' }: { work: WorkItem; visibility
                 ? { text: '聴衆役に読んでもらう', href: at('reads'), label: '読みを開く' }
                 : { text: revising ? '直した記事で、note を更新する' : 'タイトル・タグ・見出し画像を決めて公開する', href: at('publish'), label: '公開を開く' }
     : !t
-      ? { text: 'Claude Code に絵コンテを頼む', href: `/works/${work.id}`, label: '企画を開く' }
+      ? { text: 'Claude Code に絵コンテを頼む', href: workHref(work.id), label: '企画を開く' }
       : t.mine > 0
-        ? { text: `あなた宛ての指摘が ${t.mine} 件`, href: `/works/${work.id}#reads`, label: '返信する' }
+        ? { text: `あなた宛ての指摘が ${t.mine} 件`, href: at('reads'), label: '返信する' }
         : t.reads === 0
-          ? { text: '聴衆役に読んでもらう', href: `/works/${work.id}#reads`, label: '読みを開く' }
-          : { text: 'コマを読んで、話すことを直す', href: `/works/${work.id}#koma`, label: 'コマを開く' }
+          ? { text: '聴衆役に読んでもらう', href: at('reads'), label: '読みを開く' }
+          : { text: 'コマを読んで、話すことを直す', href: at('koma'), label: 'コマを開く' }
   const meta = [t?.event ?? (work.fields.event as string | undefined), t?.date, days === 0 ? '今日' : days !== null && days > 0 ? `あと ${days} 日` : null].filter(Boolean) as string[]
   return (
     <Card className="h-full gap-3 py-4">
       <CardHeader className="px-4">
         <div className="flex items-center gap-2">
           <Badge variant="secondary">{KIND_LABEL[work.kind]}</Badge>
-          <StateBadges progress="draft" visibility={visibility} />
+          <StateLabel state={state} />
           {/* 項目の途中で折り返さない (「あと / 12 日」のように割れないように) */}
           <span className="flex min-w-0 flex-wrap text-xs text-muted-foreground">
             {meta.length
@@ -141,11 +153,11 @@ function WorkCard({ work, visibility = 'private' }: { work: WorkItem; visibility
         </div>
         <div className="flex gap-2">
           <Button size="sm" asChild>
-            <a href={todo.href}>{todo.label}</a>
+            <Go href={todo.href}>{todo.label}</Go>
           </Button>
           {t && (
             <Button size="sm" variant="outline" asChild>
-              <a href={`/works/${work.id}#flow`}>流れを見る</a>
+              <Go href={at('flow')}>流れを見る</Go>
             </Button>
           )}
         </div>
@@ -155,13 +167,13 @@ function WorkCard({ work, visibility = 'private' }: { work: WorkItem; visibility
 }
 
 /** 企画を持たない、作りかけの発表 */
-function DraftTalkCard({ talk }: { talk: TalkItem }) {
+function DraftTalkCard({ item, talk }: { item: Item; talk: TalkItem }) {
   return (
     <Card className="h-full gap-3 py-4">
       <CardHeader className="px-4">
         <div className="flex items-center gap-2">
           <Badge variant="secondary">発表</Badge>
-          <StateBadges progress="draft" visibility="private" />
+          <StateLabel state={item.state} />
           <span className="text-xs text-muted-foreground">{[talk.event, talk.date].filter(Boolean).join('・')}</span>
         </div>
         <CardTitle className="text-base">{talk.title}</CardTitle>
@@ -171,7 +183,7 @@ function DraftTalkCard({ talk }: { talk: TalkItem }) {
       </CardHeader>
       <CardContent className="px-4">
         <Button size="sm" asChild>
-          <a href={`/talks/${encodeURIComponent(talk.slug)}`}>コマを開く</a>
+          <Go href={workHref(item.key, 'koma')}>コマを開く</Go>
         </Button>
       </CardContent>
     </Card>
@@ -306,7 +318,7 @@ function Works({ items }: { items: Item[] }) {
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {shown.map((i: Item) =>
-            i.progress === 'draft' && i.work ? <WorkCard key={i.key} work={i.work} visibility={i.visibility} /> : i.progress === 'draft' && i.talk ? <DraftTalkCard key={i.key} talk={i.talk} /> : <CoverCard key={i.key} item={i} />,
+            i.progress === 'draft' && i.work ? <WorkCard key={i.key} work={i.work} state={i.state} /> : i.progress === 'draft' && i.talk ? <DraftTalkCard key={i.key} item={i} talk={i.talk} /> : <CoverCard key={i.key} item={i} />,
           )}
         </div>
       )}
@@ -316,24 +328,24 @@ function Works({ items }: { items: Item[] }) {
 
 /** 完成した作品の 1 枚。表紙の絵 (発表は表紙のスライド、記事は見出し画像) を出す */
 function CoverCard({ item }: { item: Item }) {
-  const { work, talk, note } = item
-  // 発表は作品の画面 (無ければトークの画面)、公開した記事は読む画面、記事の作品は企画の画面を開く
-  const href = item.kind === 'talk' ? (work ? `/works/${work.id}` : `/talks/${encodeURIComponent(talk!.slug)}`) : note ? `/notes/${encodeURIComponent(note.dir)}` : `/works/${work!.id}`
+  const { talk, note } = item
+  // どれも作品の画面を開く (公開した記事は、原稿の面で読む)
+  const href = workHref(item.key)
   const image = talk ? `${talk.siteUrl}og.png` : note?.eyecatch
   return (
-    <a href={href} className="block">
+    <Go href={href} className="block">
       <Card className="h-full gap-2 overflow-hidden py-0 transition-colors hover:border-foreground/30">
         {image ? <img src={image} alt="" loading="lazy" className="aspect-video w-full object-cover" /> : <div className="aspect-video bg-muted" />}
         <div className="grid gap-1.5 px-3 pb-3">
           <div className="flex items-center gap-1.5">
             <Badge variant="secondary">{KIND_LABEL[item.kind]}</Badge>
-            <StateBadges progress={item.progress} visibility={item.visibility} />
+            <StateLabel state={item.state} />
             <span className="truncate text-xs text-muted-foreground">{[item.date, item.event].filter(Boolean).join('・')}</span>
           </div>
           <div className="line-clamp-2 text-sm font-medium">{item.title || '無題'}</div>
           <div className="text-xs text-muted-foreground">{talk ? `${talk.scenes} シーン・${talk.states} コマ` : note ? `${note.chars.toLocaleString()} 字` : ''}</div>
         </div>
       </Card>
-    </a>
+    </Go>
   )
 }

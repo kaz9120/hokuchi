@@ -69,7 +69,7 @@ hokuchi における意思決定の記録。決定に至る過程（選択肢・
 | [0019](0019-note-archive-two-layer.md) | note の記事は原本 JSON と Markdown の 2 層でアーカイブする | 承認 | リポジトリ全体 / tools/notes |
 | [0020](0020-note-writing-skill-and-style-lint.md) | note の執筆はスキルで進め、文体の規範は実測から引いて lint に落とす | 承認 | リポジトリ全体 / tools/notes |
 | [0021](0021-note-markdown-paste-ready.md) | note アーカイブの index.md は note のエディタにそのまま貼れる Markdown にする | 承認 | リポジトリ全体 / tools/notes |
-| [0022](0022-note-serve-feedback-loop.md) | note の原稿レビューは serve のフィードバックループで回す | 承認 | tools/notes |
+| [0022](0022-note-serve-feedback-loop.md) | note の原稿レビューは serve のフィードバックループで回す | 廃止 (→ ADR-0046) | tools/notes |
 | [0023](0023-somitsu-as-design-target.md) | 粗密を構成の設計対象にし、スキルで山を先に決める | 承認 (crafting-presentation 部分は → ADR-0024) | リポジトリ全体 (skills) |
 | [0024](0024-crafting-presentation-reread-slideology.md) | crafting-presentation を slide:ology の読み直しに合わせて作り直す | 承認 (Phase 4・7・8 は → ADR-0028) | リポジトリ全体 (skills) / tools/slides |
 | [0025](0025-renderer-lint-reread-slideology.md) | deck スキーマ 0.5.0 — レンダラと lint を slide:ology の読み直しに合わせる | 廃止 (→ ADR-0026) | tools/slides |
@@ -93,3 +93,4 @@ hokuchi における意思決定の記録。決定に至る過程（選択肢・
 | [0043](0043-one-list-with-three-statuses.md) | studio のホームは、発表と記事を 1 つの一覧にし、下書き・非公開・公開の 3 つの状態で見せる | 承認 (状態の持ち方は → ADR-0045 で置き換え) | apps/studio |
 | [0044](0044-create-menu-delete-drafts-and-site-link.md) | 作成は 1 つのボタンにまとめ、下書きは削除できるようにし、「サイトを開く」は本番を開く | 承認 | apps/studio |
 | [0045](0045-progress-and-visibility-are-separate.md) | 作品の状態を、進み具合 (下書き・完成) と公開範囲 (非公開・公開) の 2 つの軸に分ける | 承認 | apps/studio |
+| [0046](0046-articles-in-studio.md) | 記事も発表と同じ流れで studio で作る。原稿はリポジトリの外に置き、段落を単位に指摘と読みを回す | 承認 | apps/studio / tools/notes / skills |

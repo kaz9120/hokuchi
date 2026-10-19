@@ -129,6 +129,51 @@ describe('ごみ箱と改稿', () => {
   })
 })
 
+describe('原稿の名前と読み手 (段 4)', () => {
+  it('原稿は slug を渡さずに作れ、タイトルから名前を決める。空や日本語だけのタイトルでも作れる', async () => {
+    const id = await create('note')
+    const v0 = await view(id)
+    assert.equal((await call(`${w(id)}/title`, 'PUT', { orig: v0.title, title: 'ジャンプしよう' })).status, 200)
+    assert.equal((await call(`${w(id)}/body`, 'POST', {})).status, 200)
+    assert.equal((await view(id)).brief!.note, 'janpushiyou')
+    const empty = await create('note')
+    assert.equal((await call(`${w(empty)}/body`, 'POST', {})).status, 200)
+    assert.match((await view(empty)).brief!.note!, /^note-\d{4}-\d{2}-\d{2}(-\d+)?$/)
+    const kanji = await create('note')
+    const k0 = await view(kanji)
+    await call(`${w(kanji)}/title`, 'PUT', { orig: k0.title, title: '将棋開発日誌' })
+    assert.equal((await call(`${w(kanji)}/body`, 'POST', {})).status, 200)
+    assert.notEqual((await view(kanji)).brief!.note, (await view(empty)).brief!.note)
+  })
+  it('原稿の名前を変えられる。使っている名前と、改稿中の原稿は断る', async () => {
+    const id = await create('note')
+    await call(`${w(id)}/body`, 'POST', {})
+    const other = (await view(id)).brief!.note!
+    assert.equal((await call(`${w(id)}/slug`, 'PUT', { slug: 'renamed-draft' })).status, 200)
+    assert.equal((await view(id)).brief!.note, 'renamed-draft')
+    assert.ok(existsSync(join(s.priv, 'notes', 'renamed-draft', 'index.md')))
+    assert.ok(!existsSync(join(s.priv, 'notes', other)))
+    assert.equal((await call(`${w(id)}/slug`, 'PUT', { slug: 'Bad Name' })).status, 400)
+    const r = await call(`${w(`note:${archive}`)}/actions/revise`, 'POST', {})
+    assert.equal((await call(`${w(r.data.key)}/slug`, 'PUT', { slug: 'x-y-z' })).status, 400)
+    await call(`${w(r.data.key)}/actions/cancel-revision`, 'POST', {})
+  })
+  it('企画で描いた聴衆を、読み手にできる。readers.yaml には persona の id だけを書く', async () => {
+    const v = await view(`talk:${TALK_A}`)
+    assert.ok(v.brief, 'TALK_A は前のテストで企画シートに紐づいている')
+    const id = v.brief!.id
+    await call(`${w(id)}/brief`, 'PATCH', { base: v.brief!.version, set: { fields: { personas: [{ name: '佐藤さん（新人）', who: '入社 2 年目', why: '上司に言われて', trouble: '', solve: '', action: '', pushback: '', approach: '' }] } } })
+    const v2 = await view(id)
+    assert.deepEqual(v2.audiencePersonas.map((p) => p.id), ['brief:佐藤さん'])
+    const preset = v2.personas[0].id
+    assert.equal((await call(`${w(id)}/readers`, 'PUT', { base: v2.readersVersion, readers: [{ persona: 'brief:佐藤さん', why: '上司に言われて' }, { persona: preset }] })).status, 200)
+    const v3 = await view(id)
+    assert.deepEqual(v3.readers.map((r) => r.id), ['brief:佐藤さん', preset])
+    assert.equal(v3.readers[0].why, '上司に言われて')
+    assert.equal((await call(`${w(id)}/readers`, 'PUT', { base: v3.readersVersion, readers: [{ persona: 'brief:だれか' }] })).status, 400)
+  })
+})
+
 describe('置き場を開く', () => {
   it('どの作品も置き場を開ける。無い作品は 404', async () => {
     const id = await create('note')

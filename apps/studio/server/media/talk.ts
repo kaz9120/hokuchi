@@ -126,7 +126,7 @@ export const talk: Media = {
   kind: 'talk',
   words: { work: '発表', oneLiner: '中核メッセージ', audience: '聴衆' },
   threadsHeader: THREADS_HEAD,
-  readersHeader: '# この発表を読んでもらう聴衆役 (ADR-0039)。persona は personas/ のプリセットの id。\n# why は「場」の文脈で、なぜこの発表を聞きに来たかを書く。\n',
+  readersHeader: '# この発表を読んでもらう聴衆役 (ADR-0039)。persona は personas/ のプリセットの id か、企画で描いた人 (brief:<名前>)。\n# why は「場」の文脈で、なぜこの発表を聞きに来たかを書く。\n',
   survey: SURVEY,
 
   home: (ref) => ref.talk?.dir ?? null,

@@ -7,6 +7,8 @@ import { Input } from '../components/ui/input'
 import { cn } from '../lib/utils'
 import { send } from '../lib/works'
 import { draftApi, type Draft, type PasteText } from '../lib/note'
+import { BarSummary } from '../work/FaceBar'
+import { RequestStep, Step, Steps } from '../work/Steps'
 
 const TITLE_TASK = 'title.candidates'
 
@@ -14,26 +16,17 @@ export function NotePublishView({ data }: { data: Draft }) {
   const dapi = useMemo(() => draftApi(data.key), [data.key])
   return (
     <div className="min-h-0 flex-1 overflow-y-auto px-6 py-8">
-      <div className="mx-auto grid max-w-3xl gap-6">
+      <BarSummary>
+        <span>{data.revises ? '直した原稿で、公開している記事を更新します' : '確かめてから note に貼り、取り込みを頼みます'}</span>
+      </BarSummary>
+      <Steps>
         <TitleCard data={data} />
         <TagsCard data={data} save={(tags) => dapi.setMeta({ tags })} />
         <EyecatchCard data={data} />
         <PasteCard data={data} />
         <AfterCard data={data} />
-      </div>
+      </Steps>
     </div>
-  )
-}
-
-function Card({ title, help, children }: { title: string; help?: string; children: React.ReactNode }) {
-  return (
-    <section className="grid gap-3 rounded-lg border bg-background p-5">
-      <div>
-        <h2 className="font-semibold">{title}</h2>
-        {help && <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{help}</p>}
-      </div>
-      {children}
-    </section>
   )
 }
 
@@ -60,7 +53,7 @@ function TitleCard({ data }: { data: Draft }) {
     }
   }
   return (
-    <Card title="タイトル" help="何が書いてあるかが 1 秒で分かるようにします。SNS では 25 字より後ろが省略されるので、先頭に核を置きます。">
+    <Step n={1} title="タイトル" state={title.trim() && title.trim() !== '無題' ? 'done' : 'todo'} note={title.trim() && title.trim() !== '無題' ? undefined : 'まだ決めていません'} help="何が書いてあるかが 1 秒で分かるようにします。SNS では 25 字より後ろが省略されるので、先頭に核を置きます。">
       <Input value={title} onChange={(e) => setTitle(e.target.value)} onBlur={() => title.trim() !== data.title && dapi.setMeta({ title: title.trim() })} className="text-base font-semibold" />
       <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
         <span className={cn(len > 40 && 'text-amber-700')}>
@@ -87,7 +80,7 @@ function TitleCard({ data }: { data: Draft }) {
           ))}
         </div>
       )}
-    </Card>
+    </Step>
   )
 }
 
@@ -103,7 +96,7 @@ function TagsCard({ data, save }: { data: Draft; save: (tags: string[]) => void 
   }
   const ok = tags.length >= 3 && tags.length <= 5
   return (
-    <Card title="タグ" help="3〜5 個にします。記事のテーマ（主題）・形式（エッセイ・イベントレポートなど）・note のお題、の 3 種類から選びます。">
+    <Step n={2} title="タグ" state={ok ? 'done' : tags.length > 5 ? 'warn' : 'todo'} note={ok ? `${tags.length} 個` : tags.length > 5 ? `${tags.length} 個。5 個までにします` : `${tags.length} 個（3〜5 個）`} help="3〜5 個にします。記事のテーマ（主題）・形式（エッセイ・イベントレポートなど）・note のお題、の 3 種類から選びます。">
       <div className="flex flex-wrap items-center gap-2">
         {tags.map((t) => (
           <span key={t} className="flex items-center gap-1 rounded-full border bg-muted/50 py-0.5 pr-1 pl-2.5 text-sm">
@@ -115,8 +108,7 @@ function TagsCard({ data, save }: { data: Draft; save: (tags: string[]) => void 
         ))}
         <Input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && add()} placeholder="タグを追加（Enter）" className="h-8 w-48" />
       </div>
-      <p className={cn('text-xs', ok ? 'text-muted-foreground' : 'text-amber-700')}>{tags.length} 個{ok ? '' : '。3〜5 個にしてください'}</p>
-    </Card>
+    </Step>
   )
 }
 
@@ -127,7 +119,7 @@ function EyecatchCard({ data }: { data: Draft }) {
   useEffect(() => setSize(null), [data.eyecatch])
   const right = size && size.w === 1280 && size.h === 670
   return (
-    <Card title="見出し画像" help="1280×670 の画像を、原稿の assets フォルダに置いてください。置いた画像はここに並び、選ぶと見出し画像になります。">
+    <Step n={3} title="見出し画像" state={data.eyecatch ? (size && !right ? 'warn' : 'done') : 'todo'} note={data.eyecatch ? (size && !right ? '1280×670 ではありません' : undefined) : 'まだありません'} help="1280×670 の画像を、原稿の assets フォルダに置いてください。置いた画像はここに並び、選ぶと見出し画像になります。">
       {data.eyecatch ? (
         <div className="grid gap-1.5">
           <img src={dapi.asset(data.eyecatch)} alt="" onLoad={(e) => setSize({ w: e.currentTarget.naturalWidth, h: e.currentTarget.naturalHeight })} className="w-full max-w-sm rounded-md border" />
@@ -138,7 +130,7 @@ function EyecatchCard({ data }: { data: Draft }) {
           </p>
         </div>
       ) : (
-        <p className="text-sm text-amber-700">見出し画像はまだありません。</p>
+        <p className="text-sm text-muted-foreground">まだ選んでいません。</p>
       )}
       <div className="flex flex-wrap items-start gap-2">
         {data.assets
@@ -153,7 +145,7 @@ function EyecatchCard({ data }: { data: Draft }) {
           <FolderOpen /> assets フォルダを開く
         </Button>
       </div>
-    </Card>
+    </Step>
   )
 }
 
@@ -173,7 +165,7 @@ function PasteCard({ data }: { data: Draft }) {
     setTimeout(() => setCopied(false), 2500)
   }
   return (
-    <Card title="note に貼る" help="本文をコピーして、note のエディタに貼ります。見出し・強調・埋め込みの URL はそのまま入ります。">
+    <Step n={4} title="note に貼る" state={copied ? 'done' : null} help="本文をコピーして、note のエディタに貼ります。見出し・強調・埋め込みの URL はそのまま入ります。">
       <div className="flex flex-wrap gap-2">
         <Button onClick={copy}>
           {copied ? <Check /> : <Copy />} {copied ? 'コピーしました' : '本文をコピー'}
@@ -198,13 +190,12 @@ function PasteCard({ data }: { data: Draft }) {
           </ol>
         </div>
       )}
-    </Card>
+    </Step>
   )
 }
 
 /** 公開したあと。取り込み (sync) を Claude Code に頼む依頼文 */
 function AfterCard({ data }: { data: Draft }) {
-  const [copied, setCopied] = useState(false)
   const text = data.revises
     ? [
         `note の記事（articles/note/${data.revises}）を、原稿 ${data.file} の内容で更新しました。`,
@@ -217,20 +208,11 @@ function AfterCard({ data }: { data: Draft }) {
         `取り込みが済んだら、原稿のフォルダ ${data.dir} を、消さずに <HOKUCHI_PRIVATE>/trash/<日時>-notes-${data.slug}/ に移してください。`,
       ].join('\n')
   return (
-    <Card title={data.revises ? 'note の記事を更新したら' : 'note に公開したら'} help="公開した記事は、Claude Code にアーカイブへの取り込みを頼みます。取り込むと、ホームの一覧で「公開」になります。">
-      <pre className="max-h-40 overflow-auto rounded-md bg-muted p-2.5 text-xs leading-relaxed whitespace-pre-wrap">{text}</pre>
-      <Button
-        size="sm"
-        variant="outline"
-        className="justify-self-start"
-        onClick={() => {
-          navigator.clipboard.writeText(text)
-          setCopied(true)
-          setTimeout(() => setCopied(false), 2500)
-        }}
-      >
-        {copied ? <Check /> : <Copy />} {copied ? 'コピーしました' : '依頼文をコピー'}
-      </Button>
-    </Card>
+    <RequestStep
+      n={5}
+      title={data.revises ? 'note の記事を更新したら' : 'note に公開したら'}
+      help="公開した記事は、Claude Code にアーカイブへの取り込みを頼みます。取り込むと、作品は「公開」になります。"
+      text={text}
+    />
   )
 }

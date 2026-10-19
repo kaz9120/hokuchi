@@ -1,7 +1,8 @@
 // 帯の右端の「⋯」(design.md 3 章「状態の見せ方」)。状態の表がその状態で許す操作 (WorkState.actions) だけを出す。
 // 画面は判定を持たない。危険な操作 (削除・改稿をやめる) は、確かめる文を 1 文で出す。パスは出さない
 import { useState } from 'react'
-import { Check, ExternalLink, FolderOpen, Info, MoreHorizontal, PenLine, Trash2, Undo2 } from 'lucide-react'
+import { Check, ExternalLink, FolderOpen, Info, MoreHorizontal, PenLine, TextCursorInput, Trash2, Undo2 } from 'lucide-react'
+import { Input } from '@/components/ui/input'
 import type { Action, ActionResult, WorkView } from '../../shared/api'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -37,6 +38,17 @@ export async function runAction(view: WorkView, action: Action) {
 export function StateMenu({ view }: { view: WorkView }) {
   const [confirm, setConfirm] = useState<'delete' | 'cancel-revision' | null>(null)
   const [howto, setHowto] = useState(false)
+  // 記事の原稿の置き場の名前 (slug)。ふだんは画面に出さず、ここでだけ見せて直せるようにする
+  const slug = view.kind === 'note' && view.body?.kind === 'note' && !view.archive && view.brief ? view.body.slug : null
+  const [renaming, setRenaming] = useState<string | null>(null)
+  const rename = async () => {
+    if (renaming === null || renaming === slug) return setRenaming(null)
+    const r = await send(view.key, '/slug', 'PUT', { slug: renaming.trim() })
+    if (r) {
+      notify('原稿の名前を変えました。')
+      setRenaming(null)
+    }
+  }
   const [busy, setBusy] = useState(false)
   const pick = (a: Action) => {
     if (a === 'delete' || a === 'cancel-revision') return setConfirm(a)
@@ -86,6 +98,11 @@ export function StateMenu({ view }: { view: WorkView }) {
             )
           })}
           {safe.length > 0 && <DropdownMenuSeparator />}
+          {slug && (
+            <DropdownMenuItem onSelect={() => setRenaming(slug)}>
+              <TextCursorInput /> 原稿の名前を変更…
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem onSelect={reveal}>
             <FolderOpen /> 置き場を開く
           </DropdownMenuItem>
@@ -127,6 +144,28 @@ export function StateMenu({ view }: { view: WorkView }) {
               }}
             >
               {confirm === 'delete' ? '削除する' : '改稿をやめる'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={renaming !== null} onOpenChange={(o) => !o && setRenaming(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>原稿の名前を変更</AlertDialogTitle>
+            <AlertDialogDescription>原稿のフォルダと、公開したあとのアーカイブの名前になります。半角の英小文字・数字・ハイフンで書きます。</AlertDialogDescription>
+          </AlertDialogHeader>
+          <Input value={renaming ?? ''} onChange={(e) => setRenaming(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && void rename()} className="font-mono" aria-label="原稿の名前" />
+          <AlertDialogFooter>
+            <AlertDialogCancel>キャンセル</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={!/^[a-z0-9][a-z0-9-]*$/.test(renaming ?? '')}
+              onClick={(e) => {
+                e.preventDefault()
+                void rename()
+              }}
+            >
+              変更する
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

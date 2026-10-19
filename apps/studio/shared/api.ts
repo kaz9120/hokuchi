@@ -10,7 +10,8 @@
 //   PATCH  /api/works/:key/brief                       BriefPatch → BriefView
 //   POST   /api/works/:key/actions/:action             {} → ActionResult (状態の表で押せる操作だけ)
 //   PUT    /api/works/:key/title                       TitleEdit
-//   POST   /api/works/:key/body                        CreateBody (記事の原稿を作る)
+//   POST   /api/works/:key/body                        CreateBody (記事の原稿を作る。slug を省くとタイトルから決める)
+//   PUT    /api/works/:key/slug                        { slug } (記事の原稿の置き場の名前を変える。公開前だけ)
 //   PUT    /api/works/:key/units/:unit                 UnitEdit (発表は <scene>/<コマ 1 始まり>、記事は <段落の番号>)
 //   POST   /api/works/:key/units                       { text } (記事の末尾に段落を足す)
 //   PATCH  /api/works/:key/outline                     OutlineOp
@@ -191,6 +192,10 @@ export type WorkView = {
   readers: ReaderChoice[]
   readersVersion: string
   personas: Persona[]
+  /** 企画の段階 2 で描いた人。読み手にできる (id は brief:<名前>) */
+  audiencePersonas: Persona[]
+  /** 中身 (絵コンテ・下書き) を Claude Code に頼む依頼文。頼む中身が無ければ null */
+  bodyRequest: string | null
   survey: SurveyItem[]
   unitKinds: Record<string, string>
   /** Claude に渡す指摘 */
@@ -229,7 +234,7 @@ export type CreateWork = { kind: Kind; seedId?: string }
 /** 企画シートを直す。base は読んだときの版。fields と gates は、渡した欄だけを変える (null で消す) */
 export type BriefPatch = { base: string; set: { title?: string; fields?: Record<string, unknown>; gates?: Record<string, { passedAt: string; value: string } | null> } }
 export type TitleEdit = { orig: string; title: string }
-export type CreateBody = { slug: string }
+export type CreateBody = { slug?: string }
 /** 単位 (コマの話すこと・段落) を直す。orig は読んだときの中身 */
 export type UnitEdit = { orig: string; text: string }
 export type OutlineOp =

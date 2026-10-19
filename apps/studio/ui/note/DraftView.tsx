@@ -4,7 +4,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Plus } from 'lucide-react'
 import { Button } from '../components/ui/button'
-import { Input } from '../components/ui/input'
 import { cn } from '../lib/utils'
 import { setReading } from '../lib/router'
 import { BarSummary } from '../work/FaceBar'
@@ -228,17 +227,15 @@ function AddParagraph({ api, open: initial }: { api: DraftApi; open: boolean }) 
   )
 }
 
-/** 原稿がまだ無い記事。slug を決めて原稿を作る。タイトルは企画から入れる */
-export function CreateDraft({ title, onCreate }: { title: string; onCreate: (slug: string) => Promise<void> }) {
-  const [slug, setSlug] = useState('')
+/** 原稿がまだ無い記事。置き場の名前 (slug) は聞かず、サーバが企画のタイトルから決める。名前は「⋯」から変えられる */
+export function CreateDraft({ title, onCreate }: { title: string; onCreate: () => Promise<void> }) {
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
-  const ok = /^[a-z0-9][a-z0-9-]*$/.test(slug)
   const create = async () => {
     setBusy(true)
     setError(null)
     try {
-      await onCreate(slug)
+      await onCreate()
     } catch (e) {
       setError(String((e as Error).message))
     } finally {
@@ -247,27 +244,22 @@ export function CreateDraft({ title, onCreate }: { title: string; onCreate: (slu
   }
   return (
     <div className="min-h-0 flex-1 overflow-y-auto px-6 py-10">
-      <div className="mx-auto grid max-w-xl gap-5 rounded-lg border bg-background p-6">
+      <div className="mx-auto grid max-w-xl gap-4 rounded-lg border bg-background p-6">
         <div>
-          <h2 className="text-lg font-semibold">原稿を作成</h2>
-          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">原稿は公開リポジトリの外に保存します。段落ごとに読んで直し、指摘を書けるようになります。</p>
+          <h2 className="text-lg font-semibold">原稿はまだありません</h2>
+          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">原稿を作ると、段落ごとに読んで直し、指摘を書けるようになります。原稿は公開リポジトリの外に保存します。</p>
         </div>
-        <div className="grid gap-1.5">
-          <div className="text-sm font-medium">タイトル</div>
-          <div className="text-sm">{title || '無題'}</div>
-          <div className="text-xs text-muted-foreground">企画のタイトルを、原稿のタイトルに入れます。</div>
-        </div>
-        <div className="grid gap-1.5">
-          <label htmlFor="slug" className="text-sm font-medium">
-            slug
-          </label>
-          <Input id="slug" value={slug} onChange={(e) => setSlug(e.target.value.trim())} onKeyDown={(e) => e.key === 'Enter' && ok && create()} placeholder="例: line-api-expert-thanks" className="font-mono" />
-          <div className="text-xs text-muted-foreground">半角の英小文字・数字・ハイフンで入力します。原稿のフォルダ名と、公開後のアーカイブの名前になります。</div>
+        <div className="grid gap-1 text-sm">
+          <span className="text-xs text-muted-foreground">タイトル</span>
+          <span className={cn(!title && 'text-muted-foreground')}>{title || '無題（あとで変えられます）'}</span>
         </div>
         {error && <p className="text-sm text-destructive">{error}</p>}
-        <Button className="justify-self-start" disabled={!ok || busy} onClick={create}>
-          原稿を作成
-        </Button>
+        <div className="flex flex-wrap items-center gap-3">
+          <Button disabled={busy} onClick={create}>
+            原稿を作成
+          </Button>
+          <span className="text-xs text-muted-foreground">下書きは、企画の最後の「Claude Code に下書きを頼む」からも頼めます。</span>
+        </div>
       </div>
     </div>
   )

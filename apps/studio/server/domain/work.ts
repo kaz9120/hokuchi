@@ -1,15 +1,18 @@
 // 作品 (rebuild.md 4 章)。企画シート・中身 (トーク / 原稿)・アーカイブ・指摘・読みを、サーバの中で 1 つの実体にまとめる。
 // 作品は WorkKey で指す。企画シートがあればその id、無ければ talk:<slug>・note:<アーカイブ>・draft:<原稿の slug>。
 // どの key で指しても、同じ作品に解決する (企画シートが紐づいていれば、企画シートの id が本当の key)
-import { existsSync, readdirSync } from 'node:fs'
+import { existsSync, readdirSync, renameSync } from 'node:fs'
 import { join } from 'node:path'
-import type { Action, ActionResult, Anchor, Archive, Brief, HomeItem, Kind, ThreadOp, TitleEdit, WorkView } from '../../shared/api.ts'
+import type { Action, ActionResult, Anchor, Archive, AudiencePersona, Brief, HomeItem, Kind, Persona, ThreadOp, TitleEdit, WorkView } from '../../shared/api.ts'
 import { UNIT_KINDS } from '../../shared/api.ts'
 import { places } from '../infra/config.ts'
 import { conflict, invalid, notFound } from '../infra/errors.ts'
 import { theSite, type SiteTalk } from '../infra/site.ts'
 import { mediaOf } from '../media/index.ts'
-import { createDraft, draftDir, hasDraft, reviseFromArchive } from '../media/note.ts'
+import { createDraft, draftDir, hasDraft, reviseFromArchive, SLUG } from '../media/note.ts'
+import { shownDir } from '../infra/config.ts'
+import { briefFile } from './brief.ts'
+import { slugFromTitle } from './slug.ts'
 import { archiveDir, archiveOfSlug, listArchives, readArchive, slugOfArchive } from './archive.ts'
 import { briefDir, createBrief, isBriefId, listBriefs, readBrief, writeBrief } from './brief.ts'
 import { listPersonas, listReads, readReaders, readings } from './reads.ts'
@@ -167,15 +170,63 @@ export function folderOf(ref: WorkRef): string {
 
 // ---------------------------------------------------------------- 中身を作る・直す
 
-/** 記事の原稿を作る。slug を決めて index.md を作り、企画シートの note に書く (ADR-0046) */
-export function createBody(ref: WorkRef, slug: string) {
+const slugTaken = (s: string) => existsSync(draftDir(s)) || !!archiveOfSlug(s)
+
+/**
+ * 記事の原稿を作る。index.md を作り、企画シートの note に書く (ADR-0046)。
+ * slug を渡さなければ、企画のタイトルから決める (話者に聞かない。直したいときは renameBody)
+ */
+export function createBody(ref: WorkRef, slug?: string) {
   if (ref.kind !== 'note') throw invalid('原稿を作れるのは記事だけです。発表の絵コンテは Claude Code に頼んでください')
   if (!ref.brief) throw invalid('企画シートの無い記事には、原稿を作れません')
   if (ref.draft) throw invalid(`この記事には原稿（${ref.draft}）があります`)
   if (ref.archive) throw invalid('公開済みの記事は「改稿する」で直します')
-  const s = String(slug ?? '').trim()
+  const s = String(slug ?? '').trim() || slugFromTitle(ref.brief.title, slugTaken)
   createDraft(s, ref.brief.title)
   writeBrief(ref.brief.id, { note: s })
+  return s
+}
+
+/** 原稿の置き場の名前 (slug) を変える。公開前の原稿だけ (改稿中の原稿の名前は、公開済みの記事と同じでないといけない) */
+export function renameBody(ref: WorkRef, slug: string) {
+  const s = String(slug ?? '').trim()
+  if (ref.kind !== 'note' || !ref.brief || !ref.draft) throw invalid('名前を変えられるのは、公開前の記事の原稿だけです')
+  if (ref.archive) throw invalid('改稿中の原稿は、公開済みの記事と同じ名前のままにします')
+  if (s === ref.draft) return s
+  if (!SLUG.test(s)) throw invalid('名前は半角の英小文字・数字・ハイフンにしてください')
+  if (slugTaken(s)) throw invalid(`「${s}」はほかの原稿か公開済みの記事で使っています`)
+  renameSync(draftDir(ref.draft), draftDir(s))
+  writeBrief(ref.brief.id, { note: s })
+  return s
+}
+
+/**
+ * 企画の段階 2 で描いた人を、聴衆役のペルソナの形にする (rebuild.md 4.2: 聴衆の正は企画)。
+ * id は brief:<名前>。readers.yaml の形は変えず、persona にこの id を書く
+ */
+export function briefPersonas(ref: WorkRef): Persona[] {
+  const f = ref.brief?.fields
+  if (!f) return []
+  if (ref.kind === 'talk')
+    return ((f.personas ?? []) as AudiencePersona[])
+      .filter((p) => p.name || p.who)
+      .map((p, i) => {
+        // 「高橋さん（中堅・6 年目のバックエンドエンジニア）」は、名前と肩書きに分ける
+        const [, base, note] = (p.name || `${i + 1} 人目`).match(/^([^（(]+)[（(]?([^）)]*)/) ?? []
+        const name = base.trim()
+        return { id: `brief:${name}`, name, label: note?.trim() || '企画で描いた聴衆', who: p.who ?? '', troubles: p.trouble ?? '', knows: '', pushback: p.pushback ?? '', why: p.why ?? '', tags: ['企画'] } as Persona & { why: string }
+      })
+  if (!String(f.readerWho ?? '').trim()) return []
+  return [{ id: 'brief:読者', name: '企画で描いた読者', label: String(f.readerWho).split('\n')[0].slice(0, 40), who: String(f.readerWho), troubles: String(f.readerTrouble ?? ''), knows: String(f.readerKnows ?? ''), pushback: '', tags: ['企画'] }]
+}
+
+/** 中身を Claude Code に頼む依頼文 (企画の最後に置く)。発表は絵コンテ、記事は下書き。記事は原稿があるときだけ */
+function bodyRequest(ref: WorkRef): string | null {
+  if (!ref.brief) return null
+  const brief = shownDir(briefFile(ref.brief.id))
+  if (ref.kind === 'talk') return ref.talk ? null : [`企画シート ${brief} をもとに、絵コンテを作ってください。`, 'crafting-presentation skill の Phase 3 から始めてください (企画の段階 1〜4 が Phase 0〜2 に当たります)。トークができたら、企画シートの talk に slug を書いて紐づけてください。'].join('\n')
+  if (!ref.draft) return null
+  return [`企画シート ${brief} をもとに、原稿 ${shownDir(draftDir(ref.draft))}/index.md の下書きを書いてください。`, 'writing-note skill の Phase 3 から始めてください (企画の段階 1〜4 が Phase 0〜2 に当たります)。'].join('\n')
 }
 
 /** タイトルを直す。正は中身 (発表は talk.tsx、記事は原稿)。中身が無ければ企画シート。企画シートの title にも写す (rebuild.md 4.2) */
@@ -232,7 +283,8 @@ export async function viewOf(ref: WorkRef, ctx: { thumbsVersion: number } = { th
   syncTitle(ref)
   const home = media.home(ref)
   const threads = home ? readThreads(join(home, 'feedback.yaml')) : { items: [], error: null }
-  const { readers, version: readersVersion } = readReaders(home)
+  const audiencePersonas = briefPersonas(ref)
+  const { readers, version: readersVersion } = readReaders(home, audiencePersonas)
   const summary = media.summary(ref)
   const forClaude = threads.items.filter((t) => t.ball === 'Claude')
   return {
@@ -253,6 +305,8 @@ export async function viewOf(ref: WorkRef, ctx: { thumbsVersion: number } = { th
     readers,
     readersVersion,
     personas: listPersonas(),
+    audiencePersonas,
+    bodyRequest: bodyRequest(ref),
     survey: media.survey,
     unitKinds: UNIT_KINDS,
     handoff: { count: forClaude.length, own: forClaude.filter((t) => t.by !== '聴衆役').length, text: media.handoff(ref, threads.items) },

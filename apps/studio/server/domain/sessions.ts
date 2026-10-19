@@ -12,7 +12,7 @@ import { refreshTalkInfo } from '../media/talk.ts'
 import { importRead } from './threads.ts'
 import { readReaders, readings, runRead } from './reads.ts'
 import { briefDir } from './brief.ts'
-import { resolve, viewOf, type WorkRef } from './work.ts'
+import { briefPersonas, resolve, viewOf, type WorkRef } from './work.ts'
 
 type Session = { key: string; dirs: string; watches: Watch[]; shooter: Shooter | null; closing: NodeJS.Timeout | null }
 const sessions = new Map<string, Session>()
@@ -119,8 +119,8 @@ export async function viewNow(key: string) {
 export function startRead(ref: WorkRef) {
   if (readings.has(ref.key)) return
   const media = mediaOf(ref.kind)
-  const plan = media.readPlan(ref)
-  const total = readReaders(plan.dir).readers.length
+  const plan = { ...media.readPlan(ref), extra: briefPersonas(ref) }
+  const total = readReaders(plan.dir, plan.extra).readers.length
   if (total === 0) throw invalid('読み手が決まっていません。読み手を選んでください')
   const topic = topicOf(ref.key)
   const progress = (p: { done: number; total: number; failed: string[]; error?: string }) => {

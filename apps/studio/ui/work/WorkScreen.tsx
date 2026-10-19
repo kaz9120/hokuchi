@@ -23,6 +23,7 @@ import { OutlineView } from '../note/OutlineView'
 import { defaultFace, facesOf } from './faces'
 import { FaceFrame } from './FaceBar'
 import { PlanFace } from './Plan'
+import { ReadersPicker } from './Readers'
 import { Rail } from './Rail'
 import { StateMenu } from './StateMenu'
 import { Inbox, openInbox } from './Inbox'
@@ -181,8 +182,8 @@ function FaceBody({ data, view, face, place, seq }: { data: WorkData; view: Work
   if (view.kind === 'talk') {
     if (!talk) return <Empty title="絵コンテはまだありません" text="企画で伝えたいことが決まったら、Claude Code に絵コンテを頼んでください。絵コンテができると、流れ・コマ・読み・公開が使えます。" />
     if (face === 'flow') return <FlowView data={talk} thumbs={data.thumbs} api={tApi} onOpen={(scene) => go('koma', scene)} />
-    if (face === 'reads') return <ReadsView data={talk} api={tApi} reading={data.reading} onJump={(scene) => go('koma', scene)} />
-    if (face === 'publish') return <PublishView data={talk} />
+    if (face === 'reads') return <ReadsView data={talk} api={tApi} reading={data.reading} picker={<ReadersPicker view={view} />} />
+    if (face === 'publish') return <PublishView data={talk} view={view} />
     return <KomaView data={talk} thumbs={data.thumbs} api={tApi} focus={place} seq={seq} />
   }
 
@@ -194,8 +195,8 @@ function FaceBody({ data, view, face, place, seq }: { data: WorkData; view: Work
     return (
       <CreateDraft
         title={view.title}
-        onCreate={async (slug) => {
-          await send(view.key, '/body', 'POST', { slug }, { quiet: true })
+        onCreate={async () => {
+          await send(view.key, '/body', 'POST', {}, { quiet: true })
         }}
       />
     )
@@ -203,6 +204,6 @@ function FaceBody({ data, view, face, place, seq }: { data: WorkData; view: Work
   if (face === 'publish' && !draft && archive) return <ArchivePublished archive={archive} />
   if (!draft) return <Empty title={archive ? '公開済みの記事です' : '原稿はまだありません'} text={archive ? '構成と読みは、「改稿する」と使えます。原稿の面で記事を読めます。' : '原稿の面で原稿を作ると、構成・読み・公開が使えます。'} />
   if (face === 'outline') return <OutlineView data={draft} onOpen={(n) => go('draft', n ? String(n) : null)} />
-  if (face === 'reads') return <NoteReadsView data={draft} reading={data.reading} onJump={(n) => go('draft', n ? String(n) : null)} />
+  if (face === 'reads') return <NoteReadsView data={draft} reading={data.reading} picker={<ReadersPicker view={view} />} />
   return <NotePublishView data={draft} />
 }

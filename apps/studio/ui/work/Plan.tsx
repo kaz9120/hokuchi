@@ -2,7 +2,8 @@
 // 欄は直すとすぐ手元に映り、少し待ってから企画シートに保存する (works.ts の editBrief)。
 // 企画シートの無い作品 (企画を作らずに公開した発表・記事) は「企画シートはありません」と出す
 import { useEffect, useState } from 'react'
-import { Check, Info, Loader2, Plus, Sparkles, Trash2 } from 'lucide-react'
+import { Check, Copy, Info, Loader2, Plus, Sparkles, Trash2 } from 'lucide-react'
+import { notify } from '@/lib/notice'
 import type { WorkView } from '../../shared/api'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -11,7 +12,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { KIND_LABEL, PERSONA_FIELDS, emptyPersona, stageStatus, type Brief, type Field, type Persona, type Stage } from '@/lib/stages'
 import { cn } from '@/lib/utils'
-import { call, editBrief, send, useSaving } from '@/lib/works'
+import { call, editBrief, reload, send, useSaving } from '@/lib/works'
 import { PLAN_STAGES, planOf } from './faces'
 import { BarActions, BarSummary } from './FaceBar'
 
@@ -78,7 +79,7 @@ export function PlanFace({ view, place }: { view: WorkView; place: string | null
           </span>
         </BarActions>
         <StagePanel key={stage.key} workKey={view.key} brief={brief} stage={stage} setField={setField} update={update} />
-        {brief.kind === 'talk' && !view.body && stage.key === 'oneLiner' && <p className="mt-10 text-sm text-muted-foreground">伝えたいことが決まったら、Claude Code に絵コンテを頼んでください。絵コンテができると、流れ・コマ・読み・公開が使えます。</p>}
+        {stage.key === 'oneLiner' && <BodyRequest view={view} />}
         {next && (
           <div className="mt-10 flex justify-end border-t pt-4">
             <Button variant="ghost" size="sm" asChild>
@@ -302,3 +303,47 @@ function AiTasks({ workKey, brief, stage, update }: { workKey: string; brief: Br
   )
 }
 
+
+/**
+ * 企画の最後に置く、中身を Claude Code に頼む依頼文 (段 4)。発表は絵コンテ、記事は下書き。発表と記事で同じ場所・同じ形にする。
+ * 記事で原稿がまだ無ければ、先に原稿を作ってから依頼文をコピーする (依頼文に原稿の場所が入るため)
+ */
+function BodyRequest({ view }: { view: WorkView }) {
+  const [busy, setBusy] = useState(false)
+  const what = view.kind === 'talk' ? '絵コンテ' : '下書き'
+  const hasBody = view.kind === 'talk' ? !!view.body : view.body?.kind === 'note' && view.body.blocks.length > 0
+  const copy = async () => {
+    setBusy(true)
+    try {
+      let text = view.bodyRequest
+      if (!text && view.kind === 'note' && !view.body) {
+        await send(view.key, '/body', 'POST', {}, { quiet: true })
+        text = (await reload(view.key)).bodyRequest
+      }
+      if (!text) return
+      await navigator.clipboard.writeText(text)
+      notify(`${what}の依頼文をコピーしました。ターミナルの Claude Code に貼ってください。`)
+    } catch (e) {
+      notify(`依頼文を作れませんでした: ${(e as Error).message}`, 'error')
+    } finally {
+      setBusy(false)
+    }
+  }
+  return (
+    <div className="mt-10 grid gap-3 rounded-lg border bg-background p-5">
+      <div>
+        <h2 className="font-semibold">Claude Code に{what}を頼む</h2>
+        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+          {hasBody
+            ? `${what}はできています。${view.kind === 'talk' ? '流れとコマ' : '構成と原稿'}で読んで直してください。`
+            : `伝えたいことが決まったら、依頼文をコピーしてターミナルの Claude Code に貼ります。${view.kind === 'talk' ? '絵コンテができると、流れ・コマ・読み・公開が使えます。' : '原稿の置き場はタイトルから決めて作ります。'}`}
+        </p>
+      </div>
+      {!hasBody && (
+        <Button className="justify-self-start" disabled={busy} onClick={copy}>
+          {busy ? <Loader2 className="animate-spin" /> : <Copy />} 依頼文をコピー
+        </Button>
+      )}
+    </div>
+  )
+}

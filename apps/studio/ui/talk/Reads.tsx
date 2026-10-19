@@ -13,7 +13,7 @@ const mean = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.l
 const tone = (score: number) => (score <= 2 ? 'bg-red-100 text-red-900' : score < 3.5 ? 'bg-amber-100 text-amber-900' : score < 4.5 ? 'bg-emerald-50 text-emerald-900' : 'bg-emerald-200 text-emerald-950')
 const when = (iso: string) => new Date(iso).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })
 
-export function ReadsView({ data, api, reading, onJump }: { data: Talk; api: TalkApi; reading: Reading | null; onJump: (scene: string) => void }) {
+export function ReadsView({ data, api, reading, picker }: { data: Talk; api: TalkApi; reading: Reading | null; picker: React.ReactNode }) {
   const [picked, setPicked] = useState<number | null>(null)
   const read = data.reads.find((r) => r.id === picked) ?? data.reads.at(-1) ?? null
   const prev = read ? (data.reads.filter((r) => r.id < read.id).at(-1) ?? null) : null
@@ -23,7 +23,7 @@ export function ReadsView({ data, api, reading, onJump }: { data: Talk; api: Tal
       <div className="mx-auto grid max-w-[1400px] gap-8 py-5">
         <section className="grid gap-4">
           <BarSummary>
-            <span>AI が演じる聴衆 {data.readers.length} 人が、絵コンテの画面と話すことだけを読んだ結果です。</span>
+            <span>AI が演じる {data.readers.length} 人が、絵コンテの画面と話すことだけを読みます。</span>
           </BarSummary>
           <BarActions>
               {data.reads.length > 1 &&
@@ -37,6 +37,7 @@ export function ReadsView({ data, api, reading, onJump }: { data: Talk; api: Tal
                 {reading ? `読んでもらっています… ${reading.done} / ${reading.total} 人` : read ? 'もう一度読んでもらう' : '読んでもらう'}
               </Button>
           </BarActions>
+          {picker}
           {reading?.error && <p className="text-sm text-destructive">{reading.error}</p>}
 
           {read ? <Survey survey={data.survey} oneLiner={data.oneLiner} read={read} prev={prev} /> : <p className="rounded-lg border border-dashed bg-background p-8 text-center text-muted-foreground">まだ読んでもらっていません。「読んでもらう」を押すと、聴衆役が絵コンテを読み、アンケートとコマへの感想を返します。</p>}

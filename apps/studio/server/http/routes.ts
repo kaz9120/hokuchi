@@ -11,7 +11,7 @@ import { createBrief, patchBrief } from '../domain/brief.ts'
 import { saveReaders } from '../domain/reads.ts'
 import { addSeed, listSeeds } from '../domain/seeds.ts'
 import { changed, openSession, startRead, thumb, topicOf, viewNow } from '../domain/sessions.ts'
-import { act, createBody, folderOf, homeItems, openThreadOn, operateThread, resolve, setTitle } from '../domain/work.ts'
+import { act, briefPersonas, createBody, folderOf, renameBody, homeItems, openThreadOn, operateThread, resolve, setTitle } from '../domain/work.ts'
 import { reveal } from '../infra/reveal.ts'
 import { createRouter, HANDLED, sendFile } from './router.ts'
 
@@ -86,6 +86,11 @@ export function routes() {
     return viewNow(params.key)
   })
 
+  r.put('/api/works/:key/slug', async ({ params, body }) => {
+    const { slug } = await body<{ slug: string }>()
+    return { slug: await mutate(params.key, (ref) => renameBody(ref, slug)) }
+  })
+
   r.put('/api/works/:key/units/*unit', async ({ params, body }) => {
     const edit = await body<UnitEdit>()
     if (typeof edit.orig !== 'string') throw invalid('orig (読んだときの中身) が要ります')
@@ -113,7 +118,7 @@ export function routes() {
       const media = mediaOf(ref.kind)
       const home = media.home(ref)
       if (!home) throw invalid('中身がまだ無いので、読み手を決められません')
-      saveReaders(home, media.readersHeader, readers, base)
+      saveReaders(home, media.readersHeader, readers, base, briefPersonas(ref))
     })
   })
 

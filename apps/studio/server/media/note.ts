@@ -276,7 +276,7 @@ export const note: Media = {
   kind: 'note',
   words: { work: 'note の記事', oneLiner: '芯', audience: '読者' },
   threadsHeader: THREADS_HEAD,
-  readersHeader: '# 聴衆役の読み手 (ADR-0039・ADR-0046)。persona は personas/ の id。why は、なぜこの記事を読みに来たか\n',
+  readersHeader: '# 聴衆役の読み手 (ADR-0039・ADR-0046)。persona は personas/ の id か、企画で描いた人 (brief:読者)。why は、なぜこの記事を読みに来たか\n',
   survey: SURVEY,
 
   home: (ref) => (hasDraft(ref.draft) ? draftDir(ref.draft) : null),

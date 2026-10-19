@@ -21,26 +21,27 @@ export function listPersonas(): Persona[] {
 const readersFile = (dir: string) => join(dir, 'readers.yaml')
 
 /** 読み手 (どのペルソナが、なぜ来たか)。<中身>/readers.yaml */
-export function readReaders(dir: string | null): { readers: ReaderChoice[]; version: string } {
+/** extra は、プリセットのほかに読み手にできる人 (企画で描いた聴衆。work.ts の briefPersonas) */
+export function readReaders(dir: string | null, extra: Persona[] = []): { readers: ReaderChoice[]; version: string } {
   if (!dir) return { readers: [], version: 'none' }
   const { text, version } = readVersioned(readersFile(dir))
   const list: { persona: string; why?: string }[] = text ? (readYaml(readersFile(dir)).readers ?? []) : []
-  const personas = listPersonas()
+  const personas = [...extra, ...listPersonas()]
   return {
     version,
     readers: list
       .map((r) => {
         const p = personas.find((x) => x.id === r.persona)
-        return p ? { ...p, why: r.why ?? '' } : null
+        return p ? { ...p, why: r.why ?? (p as Persona & { why?: string }).why ?? '' } : null
       })
       .filter((x): x is ReaderChoice => !!x),
   }
 }
 
 /** 読み手を決める。head は readers.yaml の頭書き */
-export function saveReaders(dir: string, head: string, readers: { persona: string; why?: string }[], base?: string) {
+export function saveReaders(dir: string, head: string, readers: { persona: string; why?: string }[], base?: string, extra: Persona[] = []) {
   if (!Array.isArray(readers)) throw invalid('readers は配列にしてください')
-  const known = new Set(listPersonas().map((p) => p.id))
+  const known = new Set([...extra, ...listPersonas()].map((p) => p.id))
   for (const r of readers) if (!known.has(r.persona)) throw invalid(`ペルソナ「${r.persona}」はありません`)
   writeText(readersFile(dir), head + yamlText({ readers: readers.map((r) => ({ persona: r.persona, ...(r.why ? { why: r.why } : {}) })) }), base)
 }
@@ -75,6 +76,8 @@ export type ReadPlan = {
   notes: (raw: any[]) => ReaderNote[]
   /** 読みの記録に残す、中身の大きさ (発表は scenes・states、記事は paragraphs) */
   meta: Record<string, number>
+  /** プリセットのほかの読み手 (企画で描いた聴衆) */
+  extra?: Persona[]
 }
 
 /**
@@ -82,7 +85,7 @@ export type ReadPlan = {
  * onProgress には、読み終えた人数と全体の人数、失敗した人の名前が届く
  */
 export async function runRead(plan: ReadPlan, onProgress: (p: Reading) => void): Promise<Read> {
-  const { readers } = readReaders(plan.dir)
+  const { readers } = readReaders(plan.dir, plan.extra)
   if (readers.length === 0) throw invalid('読み手が決まっていません。読み手を選んでください')
   let done = 0
   const failed: string[] = []

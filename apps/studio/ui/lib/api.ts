@@ -7,10 +7,12 @@ export type TalkInfo = TalkItem & { mine: number; claude: number; reads: number 
 export type NoteItem = { dir: string; title: string; publishedAt: string; url: string | null; eyecatch: string | null; tags: string[]; chars: number }
 export type Seed = { id: string; createdAt: string; happening: string; why?: string; workIds?: string[] }
 export type WorkItem = Brief & { talkInfo?: TalkInfo }
-/** 作品の状態。公開は実物 (サイトに載る発表・note のアーカイブの記事) から決まる (ADR-0043) */
-export type Status = 'draft' | 'private' | 'public'
+/** 進み具合。完成は、企画シートの finishedAt か、公開したもの (ADR-0045) */
+export type Progress = 'draft' | 'finished'
+/** 公開範囲。公開は実物 (サイトに載る発表・note のアーカイブの記事) から決まる (ADR-0043・ADR-0045) */
+export type Visibility = 'private' | 'public'
 /** ホームの一覧の 1 枚。企画シート・トーク・記事のどれか (紐づいていれば複数) を持つ */
-export type Item = { key: string; kind: Kind; status: Status; title: string; date: string | null; event: string | null; tags: string[]; work: WorkItem | null; talk: TalkItem | null; note: NoteItem | null }
+export type Item = { key: string; kind: Kind; progress: Progress; visibility: Visibility; title: string; date: string | null; event: string | null; tags: string[]; work: WorkItem | null; talk: TalkItem | null; note: NoteItem | null }
 export type HomeData = { items: Item[]; seeds: Seed[]; tasks: Record<string, string>; siteUrl: string; privateDir: string }
 /** 作品の画面で読む企画シート。published はサーバが実物から決めた値で、保存はしない */
 export type WorkView = Brief & {
@@ -38,7 +40,8 @@ export const api = {
   home: () => call<HomeData>('/api/home'),
   createWork: (kind: Kind, seedId?: string) => call<Brief>('/api/works', { method: 'POST', body: { kind, seedId } }),
   work: (id: string) => call<WorkView>(`/api/works/${encodeURIComponent(id)}`),
-  saveWork: (id: string, brief: Partial<Brief>) => call<WorkView>(`/api/works/${encodeURIComponent(id)}`, { method: 'PUT', body: brief }),
+  /** finishedAt に null を渡すと、下書きに戻す */
+  saveWork: (id: string, brief: Partial<Omit<Brief, 'finishedAt'>> & { finishedAt?: string | null }) => call<WorkView>(`/api/works/${encodeURIComponent(id)}`, { method: 'PUT', body: brief }),
   /** 下書きを削除する。企画シートと、リポジトリの外のトークをごみ箱に移す (ADR-0044) */
   deleteWork: (id: string) => call<{ trash: string }>(`/api/works/${encodeURIComponent(id)}`, { method: 'DELETE' }),
   ask: (id: string, task: string) => call<{ items: Candidate[] }>(`/api/works/${encodeURIComponent(id)}/ask`, { method: 'POST', body: { task } }),

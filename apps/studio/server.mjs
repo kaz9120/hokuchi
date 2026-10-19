@@ -240,13 +240,14 @@ function home() {
   })
 
   // 発表と記事を 1 つの一覧にする (ADR-0043)。企画シートが公開物に紐づいていれば 1 枚にまとめる。
-  // 公開は実物から決める。企画シートに書くのは、非公開にしたこと (status: private) だけ
+  // 状態は 2 つの軸で持つ (ADR-0045)。公開範囲は実物から決め、進み具合は企画シートの finishedAt で決める。公開したものは完成として扱う
   const item = ({ work = null, talk = null, note = null, kind }) => {
-    const status = talk?.public || note ? 'public' : work?.status === 'private' ? 'private' : 'draft'
+    const visibility = talk?.public || note ? 'public' : 'private'
     return {
       key: work ? `work:${work.id}` : talk ? `talk:${talk.slug}` : `note:${note.dir}`,
       kind,
-      status,
+      progress: visibility === 'public' || work?.finishedAt ? 'finished' : 'draft',
+      visibility,
       title: work?.title || talk?.title || note?.title || '',
       date: talk?.date ?? note?.publishedAt ?? work?.fields?.date ?? null,
       event: talk?.event ?? work?.fields?.event ?? null,
@@ -267,10 +268,10 @@ function home() {
   })
   for (const t of talks) if (!usedTalks.has(t.slug)) items.push(item({ talk: t, kind: 'talk' }))
   for (const n of notes) if (!usedNotes.has(n.dir)) items.push(item({ note: n, kind: 'note' }))
-  // 下書きを上に (触った順)。そのあとに非公開と公開を、日付の新しい順に
+  // 下書きを上に (触った順)。そのあとに完成したものを、日付の新しい順に
   items.sort((a, b) => {
-    if ((a.status === 'draft') !== (b.status === 'draft')) return a.status === 'draft' ? -1 : 1
-    const [x, y] = a.status === 'draft' ? [a.updatedAt, b.updatedAt] : [a.date, b.date]
+    if ((a.progress === 'draft') !== (b.progress === 'draft')) return a.progress === 'draft' ? -1 : 1
+    const [x, y] = a.progress === 'draft' ? [a.updatedAt, b.updatedAt] : [a.date, b.date]
     return (x ?? '') < (y ?? '') ? 1 : -1
   })
   // 「サイトを開く」は本番を開く。サイトに載っているものだけが見える (ADR-0044)
@@ -293,9 +294,9 @@ function repoFilesOf(w) {
 /** 作品の画面に渡す企画シート。published と repoFiles はサーバが実物から決めた値で、企画シートには書かない */
 const workView = (w) => ({ ...w, published: isPublished(w), repoFiles: repoFilesOf(w), trashDir: join(PRIVATE, 'trash') })
 
-/** 下書きを削除する。企画シートと、リポジトリの外のトークをごみ箱に移す。非公開と公開は削除できない (ADR-0044) */
+/** 下書きを削除する。企画シートと、リポジトリの外のトークをごみ箱に移す。完成した作品と公開した作品は削除できない (ADR-0044・ADR-0045) */
 async function deleteWork(w) {
-  if (isPublished(w) || w.status === 'private') throw new Error('削除できるのは下書きだけです')
+  if (isPublished(w) || w.finishedAt) throw new Error('削除できるのは下書きだけです')
   const t = w.talk ? site.talks.get(w.talk) : null
   const outside = t?.outside ? t : null
   // 動いているトークの作業場とサーバを止めてから移す

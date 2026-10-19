@@ -18,8 +18,8 @@ export type Brief = {
   talk?: string
   /** 紐づく記事の slug (articles/note/drafts/<slug>/。公開すると articles/note/<公開日>-<slug>/ になる) */
   note?: string
-  /** 「非公開にする」を押した作品だけが持つ。公開かどうかは実物から決めるので書かない (ADR-0043) */
-  status?: 'private'
+  /** 「完成にする」を押した日時。「下書きに戻す」で消える。公開かどうかは実物から決めるので書かない (ADR-0045) */
+  finishedAt?: string
   id: string
   kind: Kind
   title: string

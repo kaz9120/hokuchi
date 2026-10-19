@@ -1,7 +1,7 @@
 // 作品の企画シートとネタ帳の置き場。公開リポジトリの外 (既定は ~/Hobby/hokuchi-private) に置く (ADR-0036)。
 // 環境変数 HOKUCHI_PRIVATE で場所を変えられる。中身は人が読めて、AI も直せるように YAML にする。
 //
-//   <置き場>/works/<id>/brief.yaml   作品 1 本の企画シート (段階ごとの欄・関門・AI の候補・非公開にしたか status)
+//   <置き場>/works/<id>/brief.yaml   作品 1 本の企画シート (段階ごとの欄・関門・AI の候補・完成にした日時 finishedAt)
 //   <置き場>/talks/<トーク>/          非公開 (社内向け) の発表。studio は読むが、サイトには載せない (ADR-0041・ADR-0043)
 //   <置き場>/seeds/<id>.yaml         ネタ 1 件
 //   <置き場>/trash/<日時>-<id>/       削除した下書き。元の置き場と同じ形 (works/<id>/・talks/<トーク>/) で残す (ADR-0044)
@@ -52,11 +52,12 @@ export function createWork(kind, seedId) {
   return brief
 }
 
-/** 画面から来た企画シートで置き換える。id・種類・作成日時は変えさせない */
+/** 画面から来た企画シートで置き換える。id・種類・作成日時は変えさせない。finishedAt に null が来たら、下書きに戻す (ADR-0045) */
 export function saveWork(id, next) {
   const prev = readWork(id)
   if (!prev) throw new Error(`作品 ${id} がありません`)
   const brief = { ...prev, ...next, id: prev.id, kind: prev.kind, createdAt: prev.createdAt, updatedAt: now() }
+  if (brief.finishedAt == null) delete brief.finishedAt
   writeYaml(join(worksDir, id, 'brief.yaml'), brief)
   return brief
 }

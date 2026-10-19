@@ -1,6 +1,6 @@
-// studio のホーム (ADR-0040・ADR-0043)。ネタ帳と、発表と記事の一覧を並べ、新しく始める。
+// studio のホーム (ADR-0040・ADR-0043・ADR-0045)。ネタ帳と、発表と記事の一覧を並べ、新しく始める。
 // 一覧は、企画シートのある作品と、企画シートの無い公開物 (note の記事・サイトに載る発表) を 1 つにまとめる。
-// 状態は 下書き・非公開・公開 の 3 つで、下書きは「次にやること」のカード、非公開と公開は表紙の絵のカードで見せる
+// 状態は 進み具合 (下書き・完成) と公開範囲 (非公開・公開) の 2 つの軸。下書きは「次にやること」のカード、完成は表紙の絵のカードで見せる
 import { useEffect, useMemo, useState } from 'react'
 import { Lightbulb, Plus, Search } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
@@ -9,10 +9,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
-import { api, go, type HomeData, type Item, type Status, type TalkItem, type WorkItem } from '@/lib/api'
+import { api, go, type HomeData, type Item, type Progress, type TalkItem, type Visibility, type WorkItem } from '@/lib/api'
 import { KIND_LABEL, STAGES, stageStatus, type Kind } from '@/lib/stages'
 import { CreateMenu } from './CreateMenu'
-import { STATUS_LABEL, StatusBadge } from './status'
+import { PROGRESS_OPTIONS, StateBadges, VISIBILITY_OPTIONS } from './status'
 
 export function Home() {
   const [data, setData] = useState<HomeData | null>(null)
@@ -80,8 +80,8 @@ function WorkCard({ work }: { work: WorkItem }) {
     <Card className="h-full gap-3 py-4">
       <CardHeader className="px-4">
         <div className="flex items-center gap-2">
-          <StatusBadge status="draft" />
           <Badge variant="secondary">{KIND_LABEL[work.kind]}</Badge>
+          <StateBadges progress="draft" visibility="private" />
           {/* 項目の途中で折り返さない (「あと / 12 日」のように割れないように) */}
           <span className="flex min-w-0 flex-wrap text-xs text-muted-foreground">
             {meta.length
@@ -128,8 +128,8 @@ function DraftTalkCard({ talk }: { talk: TalkItem }) {
     <Card className="h-full gap-3 py-4">
       <CardHeader className="px-4">
         <div className="flex items-center gap-2">
-          <StatusBadge status="draft" />
           <Badge variant="secondary">発表</Badge>
+          <StateBadges progress="draft" visibility="private" />
           <span className="text-xs text-muted-foreground">{[talk.event, talk.date].filter(Boolean).join('・')}</span>
         </div>
         <CardTitle className="text-base">{talk.title}</CardTitle>
@@ -218,38 +218,48 @@ const KIND_FILTERS: { value: 'all' | Kind; label: string }[] = [
   { value: 'talk', label: '発表' },
   { value: 'note', label: '記事' },
 ]
-const STATUS_FILTERS: ('all' | Status)[] = ['all', 'draft', 'private', 'public']
+type Filter = { kind: 'all' | Kind; progress: 'all' | Progress; visibility: 'all' | Visibility }
 
-/** 発表と記事の一覧。種類と状態で絞り込み、タイトル・タグ・イベントで探せる。並びはサーバが決める (下書きが上、そのあとは日付の新しい順) */
+/**
+ * 発表と記事の一覧。種類・進み具合・公開範囲で絞り込み、タイトル・タグ・イベントで探せる。
+ * 並びはサーバが決める (下書きが上、そのあとは日付の新しい順)
+ */
 function Works({ items }: { items: Item[] }) {
-  const [kind, setKind] = useState<'all' | Kind>('all')
-  const [status, setStatus] = useState<'all' | Status>('all')
+  const [filter, setFilter] = useState<Filter>({ kind: 'all', progress: 'all', visibility: 'all' })
   const [q, setQ] = useState('')
   const hit = (i: Item) => !q || i.title.includes(q) || (i.event ?? '').includes(q) || i.tags.some((t: string) => t.includes(q))
-  const byKind = (i: Item, k: 'all' | Kind) => k === 'all' || i.kind === k
-  const byStatus = (i: Item, s: 'all' | Status) => s === 'all' || i.status === s
-  const shown = useMemo(() => items.filter((i: Item) => hit(i) && byKind(i, kind) && byStatus(i, status)), [items, q, kind, status])
-  // 絞り込みの数は、もう一方の絞り込みと検索を効かせた数にする
-  const kindCount = (k: 'all' | Kind) => items.filter((i: Item) => hit(i) && byStatus(i, status) && byKind(i, k)).length
-  const statusCount = (s: 'all' | Status) => items.filter((i: Item) => hit(i) && byKind(i, kind) && byStatus(i, s)).length
+  const fits = (i: Item, f: Filter) => (f.kind === 'all' || i.kind === f.kind) && (f.progress === 'all' || i.progress === f.progress) && (f.visibility === 'all' || i.visibility === f.visibility)
+  const shown = useMemo(() => items.filter((i: Item) => hit(i) && fits(i, filter)), [items, q, filter])
+  // 絞り込みの数は、ほかの絞り込みと検索を効かせたうえで、その値を選んだときの数にする
+  const count = (change: Partial<Filter>) => items.filter((i: Item) => hit(i) && fits(i, { ...filter, ...change })).length
+  const set = (change: Partial<Filter>) => setFilter((f: Filter) => ({ ...f, ...change }))
   return (
     <section>
       <SectionTitle>発表と記事</SectionTitle>
       <div className="mb-3 flex flex-wrap items-center gap-3">
-        <Tabs value={kind} onValueChange={(v: string) => setKind(v as 'all' | Kind)}>
+        <Tabs value={filter.kind} onValueChange={(v: string) => set({ kind: v as 'all' | Kind })}>
           <TabsList>
             {KIND_FILTERS.map((f) => (
               <TabsTrigger key={f.value} value={f.value}>
-                {f.label} ({kindCount(f.value)})
+                {f.label} ({count({ kind: f.value })})
               </TabsTrigger>
             ))}
           </TabsList>
         </Tabs>
-        <Tabs value={status} onValueChange={(v: string) => setStatus(v as 'all' | Status)}>
+        <Tabs value={filter.progress} onValueChange={(v: string) => set({ progress: v as 'all' | Progress })}>
           <TabsList>
-            {STATUS_FILTERS.map((s: 'all' | Status) => (
-              <TabsTrigger key={s} value={s}>
-                {s === 'all' ? 'すべて' : STATUS_LABEL[s]} ({statusCount(s)})
+            {PROGRESS_OPTIONS.map((o) => (
+              <TabsTrigger key={o.value} value={o.value}>
+                {o.label} ({count({ progress: o.value })})
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+        <Tabs value={filter.visibility} onValueChange={(v: string) => set({ visibility: v as 'all' | Visibility })}>
+          <TabsList>
+            {VISIBILITY_OPTIONS.map((o) => (
+              <TabsTrigger key={o.value} value={o.value}>
+                {o.label} ({count({ visibility: o.value })})
               </TabsTrigger>
             ))}
           </TabsList>
@@ -260,11 +270,11 @@ function Works({ items }: { items: Item[] }) {
         </div>
       </div>
       {shown.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{items.length === 0 ? 'まだ発表も記事もありません。右上の「発表を作成」「記事を作成」か、ネタ帳から始めましょう。' : '条件に合う作品はありません。'}</p>
+        <p className="text-sm text-muted-foreground">{items.length === 0 ? 'まだ発表も記事もありません。右上の「作成」か、ネタ帳から始めましょう。' : '条件に合う作品はありません。'}</p>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {shown.map((i: Item) =>
-            i.status === 'draft' && i.work ? <WorkCard key={i.key} work={i.work} /> : i.status === 'draft' && i.talk ? <DraftTalkCard key={i.key} talk={i.talk} /> : <CoverCard key={i.key} item={i} />,
+            i.progress === 'draft' && i.work ? <WorkCard key={i.key} work={i.work} /> : i.progress === 'draft' && i.talk ? <DraftTalkCard key={i.key} talk={i.talk} /> : <CoverCard key={i.key} item={i} />,
           )}
         </div>
       )}
@@ -272,7 +282,7 @@ function Works({ items }: { items: Item[] }) {
   )
 }
 
-/** 非公開と公開の 1 枚。表紙の絵 (発表は表紙のスライド、記事は見出し画像) を出す */
+/** 完成した作品の 1 枚。表紙の絵 (発表は表紙のスライド、記事は見出し画像) を出す */
 function CoverCard({ item }: { item: Item }) {
   const { work, talk, note } = item
   // 発表は作品の画面 (無ければトークの画面)、公開した記事は読む画面、記事の作品は企画の画面を開く
@@ -284,8 +294,8 @@ function CoverCard({ item }: { item: Item }) {
         {image ? <img src={image} alt="" loading="lazy" className="aspect-video w-full object-cover" /> : <div className="aspect-video bg-muted" />}
         <div className="grid gap-1.5 px-3 pb-3">
           <div className="flex items-center gap-1.5">
-            <StatusBadge status={item.status} />
             <Badge variant="secondary">{KIND_LABEL[item.kind]}</Badge>
+            <StateBadges progress={item.progress} visibility={item.visibility} />
             <span className="truncate text-xs text-muted-foreground">{[item.date, item.event].filter(Boolean).join('・')}</span>
           </div>
           <div className="line-clamp-2 text-sm font-medium">{item.title || '無題'}</div>

@@ -1,9 +1,9 @@
 // 作品の画面 (ADR-0040)。発表 1 本・記事 1 本を、企画から公開までタブで進める。
 // 企画 (段階 1〜4) は、左に段階、右にその段階の欄。発表は、絵コンテができたら 流れ・コマ・読み・公開 のタブが使える。
 // 伝えたいことと聴衆は、どのタブでも上に出し続ける (slide:ology p.36-37, p.39)。
-// 状態は 下書き → 非公開 → 公開 の一方通行。下書きは「非公開にする」、非公開は公開の頼み方を出す (ADR-0043)
+// 状態は 進み具合 (下書き・完成) と公開範囲 (非公開・公開) の 2 つの軸。右上に、進み具合の操作と公開の手順を置く (ADR-0045)
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { ArrowLeft, Check, Circle, CircleDot, Info, Loader2, Lock, Plus, Sparkles, Trash2 } from 'lucide-react'
+import { ArrowLeft, Check, Circle, CircleDot, Info, Loader2, Plus, Sparkles, Trash2, Undo2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -14,8 +14,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { api, type Candidate, type WorkView } from '@/lib/api'
 import { cn } from '@/lib/utils'
 import { KIND_LABEL, PERSONA_FIELDS, STAGES, audienceSummary, emptyPersona, stageStatus, type Brief, type Field, type Persona, type Stage } from '@/lib/stages'
-import { talkApi, useTalk, type Talk } from '@/lib/talk'
-import { StatusBadge } from './status'
+import { talkApi, useTalk } from '@/lib/talk'
+import { StateBadges } from './status'
 import { Compass, Handoff, TALK_TABS, TabBar, TalkPane, yoursCount, type TalkTab } from './talk/TalkTabs'
 
 /** 企画シートを読み、直すたびに少し待ってから保存する */
@@ -86,7 +86,7 @@ export function Work({ id }: { id: string }) {
           </a>
         </Button>
         <Badge variant="secondary">{KIND_LABEL[brief.kind]}</Badge>
-        <StatusBadge status={brief.published ? 'public' : brief.status === 'private' ? 'private' : 'draft'} />
+        <StateBadges progress={brief.published || brief.finishedAt ? 'finished' : 'draft'} visibility={brief.published ? 'public' : 'private'} />
         <Input
           value={brief.title}
           onChange={(e) => update((b) => ({ ...b, title: e.target.value }))}
@@ -103,8 +103,8 @@ export function Work({ id }: { id: string }) {
           <TabBar tabs={tabs} current={tab} onPick={(t) => (brief.talk || t === 'plan' ? go(t) : undefined)} badge={data ? { reads: yoursCount(data) } : undefined} />
           {!brief.published && (
             <div className="flex items-center gap-1 border-l pl-3">
-              <NextStatus brief={brief} talk={data} setBrief={setBrief} />
-              {brief.status !== 'private' && <DeleteDraft brief={brief} />}
+              <Progress brief={brief} setBrief={setBrief} />
+              {brief.finishedAt ? <PublishHowTo brief={brief} /> : <DeleteDraft brief={brief} />}
             </div>
           )}
         </div>
@@ -128,48 +128,44 @@ export function Work({ id }: { id: string }) {
 }
 
 /**
- * 下書きなら「非公開にする」(押すと status: private)。非公開なら、公開の頼み方を出す。
- * 公開は手作業とデプロイの確認が要るので、画面からはしない。どちらも戻す操作は置かない (ADR-0043)
+ * 進み具合の操作 (ADR-0045)。下書きは「完成にする」(企画シートに finishedAt を書く)、完成は「下書きに戻す」(消す)。
+ * 完成しても編集はできる。公開した作品には出さない (呼ぶ側で外す)
  */
-function NextStatus({ brief, talk, setBrief }: { brief: WorkView; talk: Talk | null; setBrief: React.Dispatch<React.SetStateAction<WorkView | null>> }) {
+function Progress({ brief, setBrief }: { brief: WorkView; setBrief: React.Dispatch<React.SetStateAction<WorkView | null>> }) {
   const [busy, setBusy] = useState(false)
-  if (brief.status === 'private')
-    return (
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="ghost" size="sm">
-            <Info /> 公開の手順
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent align="end" className="w-96 text-sm leading-relaxed">
-          {brief.kind === 'talk'
-            ? 'Claude Code に公開を頼んでください。発表をリポジトリの talks/ に移して public: true にし、デプロイします。一度公開すると、非公開には戻せません。'
-            : 'note に投稿してから、Claude Code にアーカイブへの取り込みを頼んでください。一度公開すると、非公開には戻せません。'}
-        </PopoverContent>
-      </Popover>
-    )
-  const finish = async () => {
+  const toggle = async () => {
     setBusy(true)
     try {
-      const saved = await api.saveWork(brief.id, { status: 'private' })
-      setBrief((b: WorkView | null) => b && { ...b, status: saved.status })
+      const saved = await api.saveWork(brief.id, { finishedAt: brief.finishedAt ? null : new Date().toISOString() })
+      setBrief((b: WorkView | null) => b && { ...b, finishedAt: saved.finishedAt })
     } finally {
       setBusy(false)
     }
   }
+  return brief.finishedAt ? (
+    <Button variant="ghost" size="sm" disabled={busy} onClick={toggle}>
+      <Undo2 /> 下書きに戻す
+    </Button>
+  ) : (
+    <Button variant="outline" size="sm" disabled={busy} onClick={toggle}>
+      <Check /> 完成にする
+    </Button>
+  )
+}
+
+/** 完成した非公開の作品に出す、公開の頼み方。公開は手作業とデプロイの確認が要るので、画面からはしない (ADR-0043) */
+function PublishHowTo({ brief }: { brief: WorkView }) {
   return (
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm">
-          <Lock /> 非公開にする
+          <Info /> 公開の手順
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="grid w-96 gap-3 text-sm leading-relaxed">
-        <p>非公開にすると、下書きには戻せません。あとから公開できます。</p>
-        {talk && !talk.talk.outside && <p className="text-amber-800">この発表はリポジトリの talks/ にあります。非公開の発表はリポジトリの外に置くため、Claude Code に移動を頼んでください。</p>}
-        <Button size="sm" className="justify-self-start" disabled={busy} onClick={finish}>
-          <Check /> 非公開にする
-        </Button>
+      <PopoverContent align="end" className="w-96 text-sm leading-relaxed">
+        {brief.kind === 'talk'
+          ? 'Claude Code に公開を頼んでください。発表をリポジトリの talks/ に移して public: true にし、デプロイします。一度公開すると、非公開には戻せません。'
+          : 'note に投稿してから、Claude Code にアーカイブへの取り込みを頼んでください。一度公開すると、非公開には戻せません。'}
       </PopoverContent>
     </Popover>
   )

@@ -7,6 +7,7 @@ import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { cn } from '../lib/utils'
 import { setReading } from '../lib/router'
+import { BarSummary } from '../work/FaceBar'
 import { draftApi, headingLevel, tocOf, type Block, type Draft, type DraftApi, type Finding } from '../lib/note'
 import type { Thread } from '../lib/talk'
 import { Margin } from '../talk/Koma'
@@ -70,11 +71,13 @@ export function DraftView({ data, focus, seq }: { data: Draft; focus: string | n
       <div className="mx-auto max-w-[1180px]">
         <section id="draft-top" className="grid scroll-mt-2 grid-cols-[minmax(0,1fr)_300px] gap-6 border-b py-6 min-[1400px]:grid-cols-[minmax(0,1fr)_340px] min-[1400px]:gap-8">
           <div>
+            <BarSummary>
+              <span>
+                {data.stats.chars.toLocaleString()} 字・{data.stats.paragraphs} 段落・文の長さの中央値 {data.stats.medianSentence} 字
+              </span>
+              {data.tags.length > 0 && <span>{data.tags.map((t) => `#${t}`).join(' ')}</span>}
+            </BarSummary>
             <h1 className="text-2xl font-semibold leading-snug">{data.title || '無題'}</h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {data.stats.chars.toLocaleString()} 字・{data.stats.paragraphs} 段落・文の長さの中央値 {data.stats.medianSentence} 字
-              {data.tags.length > 0 && <span className="ml-3">{data.tags.map((t) => `#${t}`).join(' ')}</span>}
-            </p>
           </div>
           <div className="grid content-start gap-3">
             <Checks findings={lintBy.get(null) ?? []} title="記事全体の検査" />

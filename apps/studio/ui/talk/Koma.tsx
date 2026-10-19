@@ -6,6 +6,7 @@ import { Play, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { setReading } from '@/lib/router'
+import { BarActions, BarSummary } from '../work/FaceBar'
 import { author, mine, mmss, sceneSeconds, type Scene, type Talk, type TalkApi, type Thread, type ThreadApi } from '@/lib/talk'
 import { NewThread, ThreadCard } from './Threads'
 
@@ -71,11 +72,16 @@ export function KomaView({ data, thumbs, api, focus, seq }: { data: Talk; thumbs
   return (
     <div ref={scroller} className="min-h-0 flex-1 overflow-y-auto px-6 pb-40">
       <div className="mx-auto max-w-[1340px]">
-        <div className="flex justify-end pt-3">
-          <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground" title="Claude 向けに書いた、絵の作り方の指示です">
-            <input type="checkbox" checked={showHow} onChange={(e) => setShowHow(e.target.checked)} /> 絵の作り方を表示
-          </label>
-        </div>
+        <BarSummary>
+          <span>
+            {board.scenes.length} シーン・{order.length} コマ
+          </span>
+        </BarSummary>
+        <BarActions>
+          <Button size="sm" variant={showHow ? 'secondary' : 'ghost'} aria-pressed={showHow} onClick={() => setShowHow((v) => !v)} title="Claude 向けに書いた、絵の作り方の指示を、コマごとに出します">
+            {showHow ? '絵の作り方を隠す' : '絵の作り方を表示'}
+          </Button>
+        </BarActions>
         {board.scenes.map((s) => (
           <SceneSheet key={s.id} scene={s} data={data} thumbs={thumbs} api={api} showHow={showHow} threads={byScene.get(s.id) ?? []} onPlay={(state) => setPlaying({ scene: s.id, state })} />
         ))}

@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import { Loader2, Users } from 'lucide-react'
 import { Button } from '../components/ui/button'
+import { BarActions, BarSummary } from '../work/FaceBar'
 import { cn } from '../lib/utils'
 import { draftApi, placeOf, type Draft } from '../lib/note'
 import { forClaude, mine, type Reading, type Thread } from '../lib/talk'
@@ -28,10 +29,10 @@ export function NoteReadsView({ data, reading, onJump }: { data: Draft; reading:
     <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-32">
       <div className="mx-auto grid max-w-[1400px] gap-8 py-5">
         <section className="grid gap-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <h2 className="text-lg font-semibold">聴衆役の読み</h2>
-            <span className="text-sm text-muted-foreground">AI が演じる読み手 {data.readers.length} 人が、note で見つけた記事として原稿を読んだ結果です。</span>
-            <div className="ml-auto flex items-center gap-2">
+          <BarSummary>
+            <span>AI が演じる読み手 {data.readers.length} 人が、note で見つけた記事として原稿を読んだ結果です。</span>
+          </BarSummary>
+          <BarActions>
               {data.reads.length > 1 &&
                 data.reads.map((r) => (
                   <Button key={r.id} size="xs" variant={r.id === read?.id ? 'default' : 'outline'} onClick={() => setPicked(r.id)}>
@@ -47,8 +48,7 @@ export function NoteReadsView({ data, reading, onJump }: { data: Draft; reading:
                 {reading ? <Loader2 className="animate-spin" /> : <Users />}
                 {reading ? `読んでもらっています… ${reading.done} / ${reading.total} 人` : read ? 'もう一度読んでもらう' : '読んでもらう'}
               </Button>
-            </div>
-          </div>
+          </BarActions>
 
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <span className="text-muted-foreground">読み手</span>

@@ -5,6 +5,7 @@
 import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { BarSummary } from '../work/FaceBar'
 import { formatGrain, mine, mmss, parseGrain, sceneSeconds, spokenSeconds, toSeconds, type Scene, type Talk, type TalkApi } from '@/lib/talk'
 
 export function FlowView({ data, thumbs, api, onOpen }: { data: Talk; thumbs: number; api: TalkApi; onOpen: (scene: string) => void }) {
@@ -16,20 +17,20 @@ export function FlowView({ data, thumbs, api, onOpen }: { data: Talk; thumbs: nu
   return (
     <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-32">
       <div className="mx-auto max-w-[1560px]">
-        <div className="sticky top-0 z-10 -mx-6 border-b bg-muted/95 px-6 pt-3 pb-2 backdrop-blur">
-          <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
-            <span className="text-2xl font-semibold tabular-nums">{mmss(total)}</span>
-            {limit && (
-              <span className="text-sm">
-                <span className="text-muted-foreground">持ち時間 {mmss(limit)} に対して </span>
-                <span className={cn('font-semibold', over > 0 ? 'text-destructive' : 'text-emerald-700')}>{over > 0 ? `${mmss(over)} 超過` : `${mmss(-over)} 余り`}</span>
-              </span>
-            )}
-            <span className="text-sm text-muted-foreground">
-              {board.scenes.length} シーン・{board.scenes.reduce((n, s) => n + s.states.length, 0)} コマ
+        <BarSummary>
+          <span className="text-lg font-semibold text-foreground tabular-nums" title="時間は話すことの字数から見積もっています（1 分 300 字）。カードの時間は書き換えられます">
+            {mmss(total)}
+          </span>
+          {limit && (
+            <span>
+              持ち時間 {mmss(limit)} に対して <span className={cn('font-semibold', over > 0 ? 'text-destructive' : 'text-emerald-700')}>{over > 0 ? `${mmss(over)} 超過` : `${mmss(-over)} 余り`}</span>
             </span>
-            <span className="ml-auto text-xs text-muted-foreground">時間は話すことの字数から見積もっています（1 分 300 字）。カードの時間は書き換えられます。</span>
-          </div>
+          )}
+          <span>
+            {board.scenes.length} シーン・{board.scenes.reduce((n, s) => n + s.states.length, 0)} コマ
+          </span>
+        </BarSummary>
+        <div className="sticky top-0 z-10 -mx-6 border-b bg-muted/95 px-6 pt-1 pb-2 backdrop-blur">
           <TimeBar data={data} total={total} limit={limit} />
         </div>
 

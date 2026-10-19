@@ -4,6 +4,7 @@
 import { useMemo, useState } from 'react'
 import { Loader2, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { BarActions, BarSummary } from '../work/FaceBar'
 import { cn } from '@/lib/utils'
 import { forClaude, mine, where, type Read, type Reading, type Talk, type TalkApi, type Thread } from '@/lib/talk'
 import { ThreadCard } from './Threads'
@@ -27,10 +28,10 @@ export function ReadsView({ data, api, reading, onJump }: { data: Talk; api: Tal
     <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-32">
       <div className="mx-auto grid max-w-[1400px] gap-8 py-5">
         <section className="grid gap-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <h2 className="text-lg font-semibold">聴衆役の読み</h2>
-            <span className="text-sm text-muted-foreground">AI が演じる聴衆 {data.readers.length} 人が、絵コンテの画面と話すことだけを読んだ結果です。</span>
-            <div className="ml-auto flex items-center gap-2">
+          <BarSummary>
+            <span>AI が演じる聴衆 {data.readers.length} 人が、絵コンテの画面と話すことだけを読んだ結果です。</span>
+          </BarSummary>
+          <BarActions>
               {data.reads.length > 1 &&
                 data.reads.map((r) => (
                   <Button key={r.id} size="xs" variant={r.id === read?.id ? 'default' : 'outline'} onClick={() => setPicked(r.id)}>
@@ -46,8 +47,7 @@ export function ReadsView({ data, api, reading, onJump }: { data: Talk; api: Tal
                 {reading ? <Loader2 className="animate-spin" /> : <Users />}
                 {reading ? `読んでもらっています… ${reading.done} / ${reading.total} 人` : read ? 'もう一度読んでもらう' : '読んでもらう'}
               </Button>
-            </div>
-          </div>
+          </BarActions>
           {reading?.error && <p className="text-sm text-destructive">{reading.error}</p>}
 
           {read ? <Survey survey={data.survey} oneLiner={data.oneLiner} read={read} prev={prev} /> : <p className="rounded-lg border border-dashed bg-background p-8 text-center text-muted-foreground">まだ読んでもらっていません。「読んでもらう」を押すと、聴衆役が絵コンテを読み、アンケートとコマへの感想を返します。</p>}

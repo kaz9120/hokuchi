@@ -5,6 +5,7 @@ import { ExternalLink, Loader2, PenLine } from 'lucide-react'
 import type { Archive, WorkView } from '../../shared/api'
 import { Button } from '../components/ui/button'
 import { setReading } from '../lib/router'
+import { BarActions, BarSummary } from '../work/FaceBar'
 import { workPath } from '../lib/works'
 import { runAction } from '../work/StateMenu'
 import { archiveHeadings } from '../work/faces'
@@ -48,9 +49,11 @@ export function ArchiveView({ view, archive, focus, seq }: { view: WorkView; arc
 
   return (
     <div ref={scroller} className="min-h-0 flex-1 overflow-y-auto px-6 pb-32">
-      <div className="sticky top-0 z-10 -mx-6 mb-6 flex items-center gap-3 border-b bg-muted/95 px-6 py-2.5 text-sm backdrop-blur">
-        <span className="text-muted-foreground">公開済みの記事です。読むだけで、ここでは直せません。</span>
-        <div className="ml-auto flex gap-2">
+      <BarSummary>
+        <span>公開済みの記事です。読むだけで、ここでは直せません。</span>
+      </BarSummary>
+      <BarActions>
+        <>
           {archive.url && (
             <Button variant="ghost" size="sm" asChild>
               <a href={archive.url} target="_blank" rel="noreferrer">
@@ -63,9 +66,9 @@ export function ArchiveView({ view, archive, focus, seq }: { view: WorkView; arc
               {busy ? <Loader2 className="animate-spin" /> : <PenLine />} 改稿する
             </Button>
           )}
-        </div>
-      </div>
-      <article className="mx-auto max-w-[720px] rounded-xl border bg-background px-10 py-10">
+        </>
+      </BarActions>
+      <article className="mx-auto mt-8 max-w-[720px] rounded-xl border bg-background px-10 py-10">
         {archive.eyecatch && <img src={`${workPath(view.key)}/${archive.eyecatch}`} alt="" className="mb-8 w-full rounded-lg" />}
         <h1 className="text-2xl leading-snug font-bold">{archive.title}</h1>
         <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">

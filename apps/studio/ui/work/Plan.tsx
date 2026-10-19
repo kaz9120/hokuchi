@@ -12,7 +12,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { KIND_LABEL, PERSONA_FIELDS, emptyPersona, stageStatus, type Brief, type Field, type Persona, type Stage } from '@/lib/stages'
 import { cn } from '@/lib/utils'
 import { call, editBrief, send, useSaving } from '@/lib/works'
-import { PLAN_STAGES } from './faces'
+import { PLAN_STAGES, planOf } from './faces'
+import { BarActions, BarSummary } from './FaceBar'
 
 type Candidate = { text: string; note: string }
 
@@ -37,12 +38,22 @@ function changed(prev: Record<string, unknown>, next: Record<string, unknown>) {
 export function PlanFace({ view, place }: { view: WorkView; place: string | null }) {
   const saving = useSaving(view.key)
   const brief = view.brief
-  if (!brief)
+  // 公開済み・改稿中で、まだ何も書いていない企画シートは、企画シートの無い作品と同じに見せる。書きたいときは「企画を書く」で開く
+  const [write, setWrite] = useState(false)
+  if (!brief || (!planOf(view) && !write))
     return (
       <div className="min-h-0 flex-1 overflow-y-auto px-8 py-10">
-        <div className="mx-auto grid max-w-xl gap-2 rounded-lg border border-dashed bg-background p-8 text-center">
+        <div className="mx-auto grid max-w-xl justify-items-center gap-2 rounded-lg border border-dashed bg-background p-8 text-center">
           <h1 className="text-lg font-semibold">企画シートはありません</h1>
-          <p className="text-sm leading-relaxed text-muted-foreground">この{KIND_LABEL[view.kind]}は、企画シートを作らずに作りました。{view.kind === 'talk' && view.oneLiner ? '伝えたいことは、絵コンテから読んで出しています。' : ''}</p>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            {brief ? `この${KIND_LABEL[view.kind]}は、企画を書かずに公開しました。` : `この${KIND_LABEL[view.kind]}は、企画シートを作らずに作りました。`}
+            {view.kind === 'talk' && view.oneLiner ? '伝えたいことは、絵コンテから読んで出しています。' : ''}
+          </p>
+          {brief && (
+            <Button variant="outline" size="sm" className="mt-2" onClick={() => setWrite(true)}>
+              企画を書く
+            </Button>
+          )}
         </div>
       </div>
     )
@@ -56,9 +67,16 @@ export function PlanFace({ view, place }: { view: WorkView; place: string | null
   return (
     <div className="min-h-0 flex-1 overflow-y-auto px-8 py-8">
       <div className="mx-auto max-w-3xl">
-        <div className="mb-1 h-5 text-right text-xs text-muted-foreground" aria-live="polite">
-          {saving === 'pending' ? '保存中…' : saving === 'saved' ? '保存しました' : ''}
-        </div>
+        <BarSummary>
+          <span>
+            段階 {stage.n} / {PLAN_STAGES.length}・{stage.title[brief.kind]}
+          </span>
+        </BarSummary>
+        <BarActions>
+          <span className="text-xs text-muted-foreground" aria-live="polite">
+            {saving === 'pending' ? '保存中…' : saving === 'saved' ? '保存しました' : ''}
+          </span>
+        </BarActions>
         <StagePanel key={stage.key} workKey={view.key} brief={brief} stage={stage} setField={setField} update={update} />
         {brief.kind === 'talk' && !view.body && stage.key === 'oneLiner' && <p className="mt-10 text-sm text-muted-foreground">伝えたいことが決まったら、Claude Code に絵コンテを頼んでください。絵コンテができると、流れ・コマ・読み・公開が使えます。</p>}
         {next && (
@@ -77,7 +95,6 @@ function StagePanel({ workKey, brief, stage, setField, update }: { workKey: stri
   return (
     <div className="mx-auto grid max-w-3xl gap-6">
       <div>
-        <div className="text-sm text-muted-foreground">企画 {stage.n} / {PLAN_STAGES.length}</div>
         <h1 className="text-2xl font-semibold">{stage.title[brief.kind]}</h1>
         <p className="mt-2 text-base">{stage.lead[brief.kind]}</p>
       </div>

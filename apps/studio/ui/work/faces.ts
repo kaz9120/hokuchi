@@ -34,9 +34,21 @@ export function archiveHeadings(html: string) {
   return out
 }
 
+/**
+ * 企画として見せる企画シート。公開済み・改稿中の作品で、欄が 1 つも書かれていない企画シート (改稿のときに作ったもの) は、
+ * 企画シートの無い作品と同じに見せる (公開したものに企画が未定なのは当たり前で、「未定」「0/4」は的外れなため)
+ */
+export function planOf(v: WorkView) {
+  const b = v.brief
+  if (!b) return null
+  if (v.state.word !== '公開' && v.state.word !== '改稿中') return b
+  const filled = Object.values(b.fields ?? {}).some((x) => (Array.isArray(x) ? x.some((p) => Object.values(p ?? {}).some(Boolean)) : !!String(x ?? '').trim())) || Object.keys(b.gates ?? {}).length > 0
+  return filled ? b : null
+}
+
 export function facesOf(v: WorkView): FaceItem[] {
   const plan: FaceItem = (() => {
-    const b = v.brief
+    const b = planOf(v)
     if (!b) return { face: 'plan', label: '企画', count: 'なし', disabled: null, children: [] }
     const st = PLAN_STAGES.map((s) => stageStatus(s, b))
     const done = st.filter((x) => x === 'done').length
@@ -91,7 +103,8 @@ export function facesOf(v: WorkView): FaceItem[] {
 /** URL に面が無いときに開く面。下書きで企画が残っていれば企画、それ以外は読む面 (コマ・原稿)。発表で絵コンテが無ければ企画 */
 export function defaultFace(v: WorkView): Face {
   const read: Face = v.kind === 'talk' ? 'koma' : 'draft'
-  const planLeft = !!v.brief && PLAN_STAGES.some((s) => stageStatus(s, v.brief!) !== 'done')
+  const b = planOf(v)
+  const planLeft = !!b && PLAN_STAGES.some((s) => stageStatus(s, b) !== 'done')
   if (v.state.word === '下書き' && planLeft) return 'plan'
   if (v.kind === 'talk' && !v.body) return 'plan'
   return read

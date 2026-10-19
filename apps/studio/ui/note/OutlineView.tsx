@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { ChevronLeft, ChevronRight, Plus, Trash2 } from 'lucide-react'
 import { Button } from '../components/ui/button'
 import { cn } from '../lib/utils'
+import { BarSummary } from '../work/FaceBar'
 import { draftApi, type Draft, type Section, type SectionChars } from '../lib/note'
 
 /** 粗のブロックの字数の目安 (somitsu.md)。超えたら、粗になっていない */
@@ -115,9 +116,9 @@ function Band({ data, sections, actual }: { data: Draft; sections: Section[]; ac
   const denseShare = total ? denseChars / total : 0
   const scale = Math.max(total, budget, 1)
   return (
-    <div className="sticky top-0 z-10 -mx-6 border-b bg-muted/95 px-6 pt-3 pb-3 backdrop-blur">
-      <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
-        <span className="text-2xl font-semibold tabular-nums">{total.toLocaleString()} 字</span>
+    <div className="sticky top-0 z-10 -mx-6 border-b bg-muted/95 px-6 pt-1 pb-3 backdrop-blur">
+      <BarSummary>
+        <span className="text-lg font-semibold text-foreground tabular-nums">{total.toLocaleString()} 字</span>
         <span className="text-sm">
           <span className="text-muted-foreground">予算 {budget.toLocaleString()} 字に対して </span>
           <span className={cn('font-semibold', diff > budget * 0.15 ? 'text-destructive' : 'text-emerald-700')}>{diff >= 0 ? `${diff.toLocaleString()} 字多い` : `${(-diff).toLocaleString()} 字少ない`}</span>
@@ -130,9 +131,9 @@ function Band({ data, sections, actual }: { data: Draft; sections: Section[]; ac
             </span>
           )}
         </span>
-        <span className="ml-auto text-xs text-muted-foreground">字数は原稿の地の文（空白を除く）。見出し・画像・埋め込みは数えません。</span>
-      </div>
-      <div className="mt-3 grid grid-cols-[3.5em_1fr] items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+        <span className="text-xs">字数は原稿の地の文（空白を除く）。見出し・画像・埋め込みは数えません。</span>
+      </BarSummary>
+      <div className="mt-2 grid grid-cols-[3.5em_1fr] items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
         <span>実際</span>
         <Bar sections={sections} value={(s) => actual(s.title)?.chars ?? 0} scale={scale} />
         <span>予算</span>

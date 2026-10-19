@@ -20,7 +20,8 @@ import { CreateDraft, DraftView } from '../note/DraftView'
 import { NotePublishView } from '../note/NotePublish'
 import { NoteReadsView } from '../note/NoteReads'
 import { OutlineView } from '../note/OutlineView'
-import { defaultFace } from './faces'
+import { defaultFace, facesOf } from './faces'
+import { FaceFrame } from './FaceBar'
 import { PlanFace } from './Plan'
 import { Rail } from './Rail'
 import { StateMenu } from './StateMenu'
@@ -38,6 +39,15 @@ export function WorkScreen({ routeKey, face, place, seq }: { routeKey: string; f
   useEffect(() => {
     if (view && view.key !== routeKey) navigate(workHref(view.key, face, place), { replace: true })
   }, [view?.key])
+  // 面の無い URL と、使えない面への URL は、開ける面の URL に置き換える (面がいつも URL に載るように)
+  useEffect(() => {
+    if (!view || view.key !== routeKey) return
+    const items = facesOf(view)
+    const want = face ? (SAME[view.kind][face] ?? face) : null
+    const ok = want && items.some((x) => x.face === want && !x.disabled)
+    if (!ok) navigate(workHref(view.key, defaultFace(view), null), { replace: true })
+    else if (want !== face) navigate(workHref(view.key, want, place), { replace: true })
+  }, [view?.key, view?.state.word, !!view?.body, face])
   useEffect(() => {
     if (!gone) return
     notify('この作品は、ごみ箱に移されました。')
@@ -85,7 +95,9 @@ export function WorkScreen({ routeKey, face, place, seq }: { routeKey: string; f
       <div className={cn('grid min-h-0', RAIL)}>
         <Rail view={view} face={f} place={place} />
         <main key={f} className="flex min-h-0 animate-in flex-col duration-200 fade-in-0">
-          <FaceBody data={data} view={view} face={f} place={place} seq={seq} />
+          <FaceFrame label={facesOf(view).find((x) => x.face === f)?.label ?? ''}>
+            <FaceBody data={data} view={view} face={f} place={place} seq={seq} />
+          </FaceFrame>
         </main>
       </div>
     </div>

@@ -93,8 +93,8 @@ export function KomaView({ data, thumbs, api, focus, seq }: { data: Talk; thumbs
           </span>
         </BarSummary>
         <BarActions>
-          <Button size="sm" variant={showHow ? 'secondary' : 'ghost'} aria-pressed={showHow} onClick={() => setShowHow((v) => !v)} title="Claude 向けに書いた、絵の作り方の指示を、コマごとに出します">
-            {showHow ? '絵の作り方を隠す' : '絵の作り方を表示'}
+          <Button size="sm" variant={showHow ? 'secondary' : 'ghost'} aria-pressed={showHow} onClick={() => setShowHow((v) => !v)} title="Claude 向けに書いた絵の指示を、コマごとに表示します">
+            {showHow ? '絵の指示を隠す' : '絵の指示を表示'}
           </Button>
         </BarActions>
         {board.scenes.map((s) => (
@@ -183,7 +183,7 @@ function KomaRow({ scene, index, api, showHow, thumb, shooting, onWrite, onPlay 
         <div className="px-2 text-xs text-muted-foreground">{notes !== saved ? '未保存です。欄の外を押すと保存します' : null}</div>
         {(showHow || (!thumb && !shooting)) && (
           <p className="mt-1 border-l-2 px-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mr-2 font-medium">絵の作り方</span>
+            <span className="mr-2 font-medium">Claude への絵の指示</span>
             {state.screen}
           </p>
         )}

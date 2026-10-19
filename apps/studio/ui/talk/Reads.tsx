@@ -23,7 +23,7 @@ export function ReadsView({ data, api, reading, picker }: { data: Talk; api: Tal
       <div className="mx-auto grid max-w-[1400px] gap-8 py-5">
         <section className="grid gap-4">
           <BarSummary>
-            <span>AI が演じる {data.readers.length} 人が、絵コンテの画面と話すことだけを読みます。</span>
+            <span>聴衆役 {data.readers.length} 人が、絵コンテの画面と話すことだけを読みます。</span>
           </BarSummary>
           <BarActions>
               {data.reads.length > 1 &&
@@ -32,7 +32,7 @@ export function ReadsView({ data, api, reading, picker }: { data: Talk; api: Tal
                     {r.id} 回目・{when(r.at)}
                   </Button>
                 ))}
-              <Button size="sm" disabled={!!reading || data.readers.length === 0} onClick={() => api.read()} title="いまの絵コンテを、まっさらな聴衆役に読んでもらいます。数分かかります">
+              <Button size="sm" disabled={!!reading || data.readers.length === 0} onClick={() => api.read()} title="初見の聴衆役に、いまの絵コンテを読んでもらいます。数分かかります">
                 {reading ? <Loader2 className="animate-spin" /> : <Users />}
                 {reading ? `読んでもらっています… ${reading.done} / ${reading.total} 人` : read ? 'もう一度読んでもらう' : '読んでもらう'}
               </Button>

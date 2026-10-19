@@ -35,7 +35,7 @@ export function DraftView({ data, focus, seq }: { data: Draft; focus: string | n
   const [composing, setComposing] = useComposing()
   const marginItems = useMemo<MarginItem[]>(
     () => [
-      { id: 'p:*', threads: byPara.get('*') ?? [], extra: <Checks findings={lintBy.get(null) ?? []} title="記事全体の検査" />, onSend: (text: string) => void api.open('*', text) },
+      { id: 'p:*', threads: byPara.get('*') ?? [], extra: data.blocks.length ? <Checks findings={lintBy.get(null) ?? []} title="記事全体の検査" /> : <p className="text-xs text-muted-foreground">本文を書くと、記事全体を検査します。</p>, onSend: (text: string) => void api.open('*', text) },
       ...data.blocks.map((b) => {
         const f = lintBy.get(b.n) ?? []
         return { id: `p:${b.n}`, threads: byPara.get(b.n) ?? [], extra: f.length ? <Checks findings={f} /> : undefined, onSend: (text: string) => void api.open(b.n, text) }
@@ -159,7 +159,7 @@ function ImagePreview({ block, api }: { block: Block; api: DraftApi }) {
 }
 
 const SEVERITY = {
-  error: { label: '要修正', tone: 'bg-red-500' },
+  error: { label: '直す', tone: 'bg-red-500' },
   warn: { label: '注意', tone: 'bg-amber-500' },
   info: { label: '参考', tone: 'bg-slate-400' },
 }
@@ -247,7 +247,7 @@ export function CreateDraft({ title, onCreate }: { title: string; onCreate: () =
       <div className="mx-auto grid max-w-xl gap-4 rounded-lg border bg-background p-6">
         <div>
           <h2 className="text-lg font-semibold">原稿はまだありません</h2>
-          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">原稿を作ると、段落ごとに読んで直し、指摘を書けるようになります。原稿は公開リポジトリの外に保存します。</p>
+          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">原稿を作成すると、段落ごとに直したり、指摘を書いたりできます。原稿は公開リポジトリの外に保存します。</p>
         </div>
         <div className="grid gap-1 text-sm">
           <span className="text-xs text-muted-foreground">タイトル</span>

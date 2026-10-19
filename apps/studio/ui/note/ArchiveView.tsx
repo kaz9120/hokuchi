@@ -50,7 +50,7 @@ export function ArchiveView({ view, archive, focus, seq }: { view: WorkView; arc
   return (
     <div ref={scroller} className="min-h-0 flex-1 overflow-y-auto px-6 pb-32">
       <BarSummary>
-        <span>公開済みの記事です。読むだけで、ここでは直せません。</span>
+        <span>公開済みの記事です。直すときは「改稿する」を押します。</span>
       </BarSummary>
       <BarActions>
         <>
@@ -62,7 +62,7 @@ export function ArchiveView({ view, archive, focus, seq }: { view: WorkView; arc
             </Button>
           )}
           {canRevise && (
-            <Button size="sm" disabled={busy} onClick={revise} title="この記事を原稿に写して、この面で直せるようにします。note の記事は、公開の面から更新します">
+            <Button size="sm" disabled={busy} onClick={revise} title="この記事を原稿に写して、この画面で直せるようにします。note の記事は、公開の画面から更新します">
               {busy ? <Loader2 className="animate-spin" /> : <PenLine />} 改稿する
             </Button>
           )}
@@ -91,7 +91,7 @@ export function ArchivePublished({ archive }: { archive: Archive }) {
     <div className="min-h-0 flex-1 overflow-y-auto px-6 py-8">
       <div className="mx-auto grid max-w-3xl gap-3 rounded-lg border bg-background p-5">
         <h2 className="font-semibold">note で公開しています</h2>
-        <p className="text-sm text-muted-foreground">{archive.publishedAt} に公開しました。直すときは、原稿の面の「改稿する」から始めます。</p>
+        <p className="text-sm text-muted-foreground">{archive.publishedAt} に公開しました。直すときは、原稿の画面の「改稿する」から始めます。</p>
         {archive.url && (
           <Button variant="outline" size="sm" className="justify-self-start" asChild>
             <a href={archive.url} target="_blank" rel="noreferrer">

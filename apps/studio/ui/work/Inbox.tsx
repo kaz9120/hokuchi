@@ -214,7 +214,7 @@ export function Inbox({ view }: { view: WorkView }) {
         {others.length > 0 && (
           <div className="border-t px-4 py-3">
             <button className="text-xs text-muted-foreground hover:text-foreground" onClick={() => setShowOthers((v) => !v)}>
-              {showOthers ? '閉じる' : `Claude の番と済んだ指摘 ${others.length} 件を見る`}
+              {showOthers ? '閉じる' : `Claude 宛てと解決済みの指摘 ${others.length} 件を表示`}
             </button>
             {showOthers && (
               <div className="mt-2 grid min-w-0 grid-cols-[minmax(0,1fr)] gap-2">

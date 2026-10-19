@@ -21,7 +21,7 @@ export function NoteReadsView({ data, reading, picker }: { data: Draft; reading:
       <div className="mx-auto grid max-w-[1400px] gap-8 py-5">
         <section className="grid gap-4">
           <BarSummary>
-            <span>AI が演じる {data.readers.length} 人が、note で見つけた記事として原稿を読みます。</span>
+            <span>聴衆役 {data.readers.length} 人が、note で見つけた記事として原稿を読みます。</span>
           </BarSummary>
           <BarActions>
               {data.reads.length > 1 &&
@@ -30,7 +30,7 @@ export function NoteReadsView({ data, reading, picker }: { data: Draft; reading:
                     {r.id} 回目・{when(r.at)}
                   </Button>
                 ))}
-              <Button size="sm" disabled={!!reading || data.readers.length === 0} onClick={() => api.read()} title="いまの原稿を、まっさらな読み手に読んでもらいます。数分かかります">
+              <Button size="sm" disabled={!!reading || data.readers.length === 0} onClick={() => api.read()} title="初見の聴衆役に、いまの原稿を読んでもらいます。数分かかります">
                 {reading ? <Loader2 className="animate-spin" /> : <Users />}
                 {reading ? `読んでもらっています… ${reading.done} / ${reading.total} 人` : read ? 'もう一度読んでもらう' : '読んでもらう'}
               </Button>
@@ -42,7 +42,7 @@ export function NoteReadsView({ data, reading, picker }: { data: Draft; reading:
           {read ? (
             <Survey survey={data.survey} oneLiner={data.oneLiner} read={read} prev={prev} />
           ) : (
-            <p className="rounded-lg border border-dashed bg-background p-8 text-center text-muted-foreground">まだ読んでもらっていません。読み手を選んで「読んでもらう」を押すと、読み手が原稿を読み、アンケートと段落への感想を返します。</p>
+            <p className="rounded-lg border border-dashed bg-background p-8 text-center text-muted-foreground">まだ読んでもらっていません。聴衆役を選んで「読んでもらう」を押すと、聴衆役が原稿を読み、アンケートと段落への感想を返します。</p>
           )}
         </section>
 

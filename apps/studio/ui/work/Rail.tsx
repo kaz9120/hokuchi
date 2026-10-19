@@ -250,7 +250,7 @@ function Handoff({ view }: { view: WorkView }) {
           <span className="font-semibold tabular-nums">{fresh.notes.length}</span>
         </button>
       )}
-      <button onClick={toggleInbox} aria-expanded={inbox} className={cn('flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-accent', inbox && 'bg-accent font-medium')} title="あなたの返事や判断を待っている指摘を、受信箱で 1 件ずつ見ます">
+      <button onClick={toggleInbox} aria-expanded={inbox} className={cn('flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-accent', inbox && 'bg-accent font-medium')} title="あなたの返事や判断を待っている指摘を、受信箱で 1 件ずつ確認します">
         <span className="flex-1">あなた宛て</span>
         <span className={cn('min-w-6 rounded-full px-1.5 text-center text-xs font-semibold tabular-nums', yours ? 'bg-amber-500 text-white' : 'text-muted-foreground')}>{yours}</span>
       </button>
@@ -281,7 +281,7 @@ function Place({ view }: { view: WorkView }) {
     <div className="grid gap-1 border-t px-4 py-3 text-sm">
       {view.event && <div className="font-medium leading-snug">{view.event}</div>}
       {lines.length > 0 && <div className="text-xs text-muted-foreground">{lines.join('・')}</div>}
-      {days !== null && <div className={cn('text-xs', days >= 0 ? 'font-medium text-foreground' : 'text-muted-foreground')}>{days > 0 ? `あと ${days} 日` : days === 0 ? '今日' : '終わりました'}</div>}
+      {days !== null && <div className={cn('text-xs', days >= 0 ? 'font-medium text-foreground' : 'text-muted-foreground')}>{days > 0 ? `あと ${days} 日` : days === 0 ? '今日' : `${view.date} に発表`}</div>}
       {view.state.notices.map((n) => (
         <p key={n} className="mt-1 text-xs leading-relaxed text-amber-800">
           {n}

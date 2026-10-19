@@ -202,7 +202,7 @@ function FaceBody({ data, view, face, place, seq }: { data: WorkData; view: Work
     )
   }
   if (face === 'publish' && !draft && archive) return <ArchivePublished archive={archive} />
-  if (!draft) return <Empty title={archive ? '公開済みの記事です' : '原稿はまだありません'} text={archive ? '構成と読みは、「改稿する」と使えます。原稿の面で記事を読めます。' : '原稿の面で原稿を作ると、構成・読み・公開が使えます。'} />
+  if (!draft) return <Empty title={archive ? '公開済みの記事です' : '原稿はまだありません'} text={archive ? '構成と読みは、改稿すると使えます。原稿の画面で記事を確認できます。' : '原稿の画面で原稿を作成すると、構成・読み・公開が使えます。'} />
   if (face === 'outline') return <OutlineView data={draft} onOpen={(n) => go('draft', n ? String(n) : null)} />
   if (face === 'reads') return <NoteReadsView data={draft} reading={data.reading} picker={<ReadersPicker view={view} />} />
   return <NotePublishView data={draft} />

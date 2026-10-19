@@ -53,7 +53,7 @@ function TitleCard({ data }: { data: Draft }) {
     }
   }
   return (
-    <Step n={1} title="タイトル" state={title.trim() && title.trim() !== '無題' ? 'done' : 'todo'} note={title.trim() && title.trim() !== '無題' ? undefined : 'まだ決めていません'} help="何が書いてあるかが 1 秒で分かるようにします。SNS では 25 字より後ろが省略されるので、先頭に核を置きます。">
+    <Step n={1} title="タイトル" state={title.trim() && title.trim() !== '無題' ? 'done' : 'todo'} note={title.trim() && title.trim() !== '無題' ? undefined : '未定'} help="何が書いてあるかが 1 秒で分かるようにします。SNS では 25 字より後ろが省略されるため、先頭に要点を置きます。">
       <Input value={title} onChange={(e) => setTitle(e.target.value)} onBlur={() => title.trim() !== data.title && dapi.setMeta({ title: title.trim() })} className="text-base font-semibold" />
       <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
         <span className={cn(len > 40 && 'text-amber-700')}>
@@ -96,7 +96,7 @@ function TagsCard({ data, save }: { data: Draft; save: (tags: string[]) => void 
   }
   const ok = tags.length >= 3 && tags.length <= 5
   return (
-    <Step n={2} title="タグ" state={ok ? 'done' : tags.length > 5 ? 'warn' : 'todo'} note={ok ? `${tags.length} 個` : tags.length > 5 ? `${tags.length} 個。5 個までにします` : `${tags.length} 個（3〜5 個）`} help="3〜5 個にします。記事のテーマ（主題）・形式（エッセイ・イベントレポートなど）・note のお題、の 3 種類から選びます。">
+    <Step n={2} title="タグ" state={ok ? 'done' : tags.length > 5 ? 'warn' : 'todo'} note={ok ? `${tags.length} 個` : tags.length > 5 ? `${tags.length} 個。5 個までにします` : `${tags.length} 個（3〜5 個）`} help="3〜5 個にします。記事のテーマ（主題）・形式（エッセイ・イベントレポートなど）・note のお題の 3 種類から選びます。">
       <div className="flex flex-wrap items-center gap-2">
         {tags.map((t) => (
           <span key={t} className="flex items-center gap-1 rounded-full border bg-muted/50 py-0.5 pr-1 pl-2.5 text-sm">
@@ -119,7 +119,7 @@ function EyecatchCard({ data }: { data: Draft }) {
   useEffect(() => setSize(null), [data.eyecatch])
   const right = size && size.w === 1280 && size.h === 670
   return (
-    <Step n={3} title="見出し画像" state={data.eyecatch ? (size && !right ? 'warn' : 'done') : 'todo'} note={data.eyecatch ? (size && !right ? '1280×670 ではありません' : undefined) : 'まだありません'} help="1280×670 の画像を、原稿の assets フォルダに置いてください。置いた画像はここに並び、選ぶと見出し画像になります。">
+    <Step n={3} title="見出し画像" state={data.eyecatch ? (size && !right ? 'warn' : 'done') : 'todo'} note={data.eyecatch ? (size && !right ? '1280×670 ではありません' : undefined) : '未設定'} help="1280×670 の画像を、原稿の assets フォルダに置いてください。置いた画像はここに並び、選ぶと見出し画像になります。">
       {data.eyecatch ? (
         <div className="grid gap-1.5">
           <img src={dapi.asset(data.eyecatch)} alt="" onLoad={(e) => setSize({ w: e.currentTarget.naturalWidth, h: e.currentTarget.naturalHeight })} className="w-full max-w-sm rounded-md border" />
@@ -130,7 +130,7 @@ function EyecatchCard({ data }: { data: Draft }) {
           </p>
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">まだ選んでいません。</p>
+        <p className="text-sm text-muted-foreground">未設定です。</p>
       )}
       <div className="flex flex-wrap items-start gap-2">
         {data.assets

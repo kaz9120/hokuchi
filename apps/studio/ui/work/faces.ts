@@ -85,7 +85,7 @@ export function facesOf(v: WorkView): FaceItem[] {
 
   const draft = toDraft(v)
   const archive = v.archive
-  const none = draft ? null : archive ? '「改稿する」と使えます' : '原稿を作ると使えます'
+  const none = draft ? null : archive ? '改稿すると使えます' : '原稿を作ると使えます'
   const draftChildren: Child[] = draft
     ? tocOf(draft).map((h) => ({ place: String(h.n), label: h.text, level: h.level, mine: h.mine }))
     : archive?.html

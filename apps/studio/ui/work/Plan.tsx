@@ -47,8 +47,8 @@ export function PlanFace({ view, place }: { view: WorkView; place: string | null
         <div className="mx-auto grid max-w-xl justify-items-center gap-2 rounded-lg border border-dashed bg-background p-8 text-center">
           <h1 className="text-lg font-semibold">企画シートはありません</h1>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            {brief ? `この${KIND_LABEL[view.kind]}は、企画を書かずに公開しました。` : `この${KIND_LABEL[view.kind]}は、企画シートを作らずに作りました。`}
-            {view.kind === 'talk' && view.oneLiner ? '伝えたいことは、絵コンテから読んで出しています。' : ''}
+            {brief ? `この${KIND_LABEL[view.kind]}は、企画を書かずに公開しました。` : `この${KIND_LABEL[view.kind]}は、企画シートを用意せずに作りました。`}
+            {view.kind === 'talk' && view.oneLiner ? '伝えたいことは、絵コンテから読み取って表示しています。' : ''}
           </p>
           {brief && (
             <Button variant="outline" size="sm" className="mt-2" onClick={() => setWrite(true)}>
@@ -75,7 +75,7 @@ export function PlanFace({ view, place }: { view: WorkView; place: string | null
         </BarSummary>
         <BarActions>
           <span className="text-xs text-muted-foreground" aria-live="polite">
-            {saving === 'pending' ? '保存中…' : saving === 'saved' ? '保存しました' : ''}
+            {saving === 'pending' ? '保存中…' : saving === 'saved' ? '保存済み' : ''}
           </span>
         </BarActions>
         <StagePanel key={stage.key} workKey={view.key} brief={brief} stage={stage} setField={setField} update={update} />
@@ -336,7 +336,7 @@ function BodyRequest({ view }: { view: WorkView }) {
         <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
           {hasBody
             ? `${what}はできています。${view.kind === 'talk' ? '流れとコマ' : '構成と原稿'}で読んで直してください。`
-            : `伝えたいことが決まったら、依頼文をコピーしてターミナルの Claude Code に貼ります。${view.kind === 'talk' ? '絵コンテができると、流れ・コマ・読み・公開が使えます。' : '原稿の置き場はタイトルから決めて作ります。'}`}
+            : `伝えたいことが決まったら、依頼文をコピーしてターミナルの Claude Code に貼ります。${view.kind === 'talk' ? '絵コンテができると、流れ・コマ・読み・公開が使えます。' : '原稿がまだ無ければ、先に作ってから依頼文をコピーします。'}`}
         </p>
       </div>
       {!hasBody && (

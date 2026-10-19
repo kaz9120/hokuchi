@@ -144,7 +144,7 @@ function SceneCard({ scene, api, thumb, shooting, yours, first, last, onOpen }: 
             onChange={(e) => setTime(e.target.value)}
             onBlur={saveTime}
             onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
-            title={`このシーンにかける時間（見積もり ${mmss(spoken)}）。空にすると見積もりに戻ります`}
+            title={`このシーンにかける時間（見積もり ${mmss(spoken)}）。空欄にすると見積もりに戻ります`}
             className={cn('w-14 shrink-0 rounded border border-transparent bg-transparent px-1 text-right text-xs tabular-nums outline-none placeholder:text-muted-foreground hover:border-border focus:border-ring', seconds && 'font-semibold')}
           />
         </div>
@@ -157,7 +157,7 @@ function SceneCard({ scene, api, thumb, shooting, yours, first, last, onOpen }: 
         />
         <div className="flex items-center gap-2 px-1 text-xs text-muted-foreground">
           <span>{scene.states.length} コマ</span>
-          {seconds && Math.abs(gap) >= 15 ? <span className={cn('ml-auto', gap > 0 && 'text-destructive')}>{gap > 0 ? `見積もりが ${mmss(gap)} 長い` : `見積もりが ${mmss(-gap)} 短い`}</span> : null}
+          {seconds && Math.abs(gap) >= 15 ? <span className={cn('ml-auto', gap > 0 && 'text-amber-700')}>{gap > 0 ? `見積もりが ${mmss(gap)} 長い` : `見積もりが ${mmss(-gap)} 短い`}</span> : null}
         </div>
       </div>
       <div className="absolute top-1.5 left-1.5 hidden gap-1 group-hover:flex">

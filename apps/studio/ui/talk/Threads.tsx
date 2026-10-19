@@ -121,7 +121,7 @@ export function ThreadCard({ thread, api, kinds, place, onJump, quiet = false }:
             </Button>
           )}
           {mine && (
-            <Button size="xs" variant="outline" onClick={() => api.close(t.id, '直した')} title="この内容で良ければ、解決にして閉じます">
+            <Button size="xs" variant="outline" onClick={() => api.close(t.id, '直した')} title="この内容でよければ、解決済みにして閉じます">
               <Check /> 解決
             </Button>
           )}

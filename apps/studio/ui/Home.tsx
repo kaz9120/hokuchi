@@ -108,7 +108,7 @@ function SeedInput({ onSaved }: { onSaved: () => void }) {
     if (!t) return
     await api.saveSeed({ happening: t })
     setText('')
-    notify('ネタを書き留めました。「いま」の下のネタから、発表か記事にできます。')
+    notify('ネタを書き留めました。「いま」の下にあるネタから、発表や記事を作成できます。')
     onSaved()
   }
   return (
@@ -261,7 +261,7 @@ function WorkCard({ item: i, compact = false }: { item: HomeItem; compact?: bool
         ) : (
           // 表紙の無いものは、伝えたいことを表紙の代わりに大きく出す
           <div className={cn('flex size-full items-center p-5', compact ? 'text-sm' : 'text-lg', 'leading-snug font-semibold text-foreground/80')}>
-            <span className={cn(compact ? 'line-clamp-4' : 'line-clamp-4', !i.oneLiner && 'font-normal text-muted-foreground')}>{i.oneLiner || (published ? i.title : '伝えたいことは、まだ決めていません')}</span>
+            <span className={cn(compact ? 'line-clamp-4' : 'line-clamp-4', !i.oneLiner && 'font-normal text-muted-foreground')}>{i.oneLiner || (published ? i.title : '伝えたいことは未定')}</span>
           </div>
         )}
       </div>

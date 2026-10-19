@@ -145,7 +145,7 @@ export const mine = (t: Thread) => t.ball === '話者'
 export const forClaude = (t: Thread) => t.ball === 'Claude'
 export const done = (t: Thread) => t.ball === 'none'
 /** 閉じた指摘の終わり方を、画面の言葉にする。ファイルの値 (closed) は変えない */
-export const CLOSED_LABEL: Record<string, string> = { 直した: '解決', そのままにした: '見送り', 読み直した: '再読済み', 良かった点: '良かった点' }
+export const CLOSED_LABEL: Record<string, string> = { 直した: '解決', そのままにした: '見送り', 読み直した: '再読で終了', 良かった点: '良かった点' }
 export const where = (t: Thread, board: Board) => {
   const scene = board.scenes.find((s) => s.id === t.scene)
   return scene ? `${scene.title}${t.state ? `・コマ ${t.state}` : ''}` : '発表全体'

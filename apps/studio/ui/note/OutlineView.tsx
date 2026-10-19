@@ -32,7 +32,7 @@ export function OutlineView({ data, onOpen }: { data: Draft; onOpen: (n: number 
         <div className="mx-auto grid max-w-xl gap-4 rounded-lg border bg-background p-6">
           <h2 className="text-lg font-semibold">構成はまだありません</h2>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            本文を書く前に、見出しの並びと、どこを密にするかを決めます。密にするのは、伝えたいことを読者が信じる根拠になる場面で、1 つ (長い記事でも 2 つまで) です。ほかは粗にして、短く通り過ぎます。
+            本文を書く前に、見出しの並びと、どこを厚く書くかを決めます。厚く書くのは、伝えたいことを読者が信じる根拠になる場面で、1 つ（長い記事でも 2 つまで）です。ほかは短く通り過ぎます。
           </p>
           <div className="flex gap-2">
             {data.sections.length > 1 && <Button onClick={fromDraft}>原稿の見出しから作成</Button>}
@@ -61,7 +61,7 @@ export function OutlineView({ data, onOpen }: { data: Draft; onOpen: (n: number 
 
         {(missingInDraft.length > 0 || missingInOutline.length > 0 || dense.length > DENSE_MAX) && (
           <div className="mt-4 grid gap-1.5 rounded-md border border-amber-300 bg-amber-50/70 px-4 py-3 text-sm">
-            {dense.length > DENSE_MAX && <p>密が {dense.length} つあります。密は 2 つまでにします。いちばん伝えたいことの根拠になる場面だけを残してください。</p>}
+            {dense.length > DENSE_MAX && <p>厚く書く見出しが {dense.length} つあります。2 つまでにします。いちばん伝えたいことの根拠になる場面だけを残してください。</p>}
             {missingInDraft.length > 0 && <p>原稿に無い見出し: {missingInDraft.map((s) => `「${s.title}」`).join(' ')}</p>}
             {missingInOutline.length > 0 && (
               <div className="flex flex-wrap items-center gap-2">
@@ -120,14 +120,14 @@ function Band({ data, sections, actual }: { data: Draft; sections: Section[]; ac
       <BarSummary>
         <span className="text-lg font-semibold text-foreground tabular-nums">{total.toLocaleString()} 字</span>
         <span className="text-sm">
-          <span className="text-muted-foreground">予算 {budget.toLocaleString()} 字に対して </span>
-          <span className={cn('font-semibold', diff > budget * 0.15 ? 'text-destructive' : 'text-emerald-700')}>{diff >= 0 ? `${diff.toLocaleString()} 字多い` : `${(-diff).toLocaleString()} 字少ない`}</span>
+          <span className="text-muted-foreground">目安 {budget.toLocaleString()} 字に対して </span>
+          <span className={cn('font-semibold', diff > budget * 0.15 ? 'text-amber-700' : 'text-emerald-700')}>{diff >= 0 ? `${diff.toLocaleString()} 字多い` : `${(-diff).toLocaleString()} 字少ない`}</span>
         </span>
         <span className="text-sm text-muted-foreground">
-          {sections.length} 見出し・密 {sections.filter((s) => s.grain === '密').length} つ
+          {sections.length} 見出し・厚く書く {sections.filter((s) => s.grain === '密').length} つ
           {total > 0 && sections.some((s) => s.grain === '密') && (
             <span className={cn('ml-2', denseShare < 0.3 && 'text-amber-700')}>
-              密が本文の {Math.round(denseShare * 100)}%{denseShare < 0.3 ? '（3 割に届いていません）' : ''}
+              厚く書く見出しが本文の {Math.round(denseShare * 100)}%{denseShare < 0.3 ? '（3 割に届いていません）' : ''}
             </span>
           )}
         </span>
@@ -136,7 +136,7 @@ function Band({ data, sections, actual }: { data: Draft; sections: Section[]; ac
       <div className="mt-2 grid grid-cols-[3.5em_1fr] items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
         <span>実際</span>
         <Bar sections={sections} value={(s) => actual(s.title)?.chars ?? 0} scale={scale} />
-        <span>予算</span>
+        <span>目安</span>
         <Bar sections={sections} value={(s) => s.budget} scale={scale} faint />
       </div>
     </div>
@@ -152,7 +152,7 @@ function Bar({ sections, value, scale, faint = false }: { sections: Section[]; v
         return (
           <span
             key={i}
-            title={`${s.title || '（見出し未定）'}・${s.grain}・${v.toLocaleString()} 字`}
+            title={`${s.title || '（見出し未定）'}・${s.grain === '密' ? '厚く書く' : '短く通る'}・${v.toLocaleString()} 字`}
             style={{ width: `${(v / scale) * 100}%` }}
             className={cn('border-r border-background/80', s.grain === '密' ? (faint ? 'bg-foreground/35' : 'bg-foreground/70') : faint ? 'bg-foreground/12' : 'bg-foreground/25')}
           />
@@ -173,15 +173,15 @@ function SectionCard({ index, section, actual, last, onChange, onMove, onRemove,
   useEffect(() => setBudget(String(section.budget || '')), [section.budget])
   const chars = actual?.chars ?? null
   // 粗なのに太っている・予算を大きく超えている、を知らせる
-  const warn = chars === null ? null : section.grain === '粗' && chars > ROUGH_MAX ? `粗なのに ${chars} 字あります（目安 ${ROUGH_MAX} 字まで）` : section.budget && chars > section.budget * 1.3 ? `予算より ${chars - section.budget} 字多い` : null
+  const warn = chars === null ? null : section.grain === '粗' && chars > ROUGH_MAX ? `短く通る見出しですが、${chars} 字あります（${ROUGH_MAX} 字までが目安）` : section.budget && chars > section.budget * 1.3 ? `目安より ${chars - section.budget} 字多い` : null
   return (
     <div className={cn('group grid gap-2 rounded-lg border bg-background p-3', section.grain === '密' && 'border-foreground/40 shadow-sm')}>
       <div className="flex items-center gap-2">
         <span className="text-xs text-muted-foreground tabular-nums">{lead ? 'フック' : `見出し ${index}`}</span>
         <div className="ml-auto flex rounded-md border p-0.5 text-xs">
           {(['密', '粗'] as const).map((g) => (
-            <button key={g} onClick={() => g !== section.grain && onChange({ grain: g })} className={cn('rounded px-2 py-0.5', section.grain === g ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground')} title={g === '密' ? 'その場にカメラを置いたように、場面を描き切る' : '1〜2 文で通り過ぎる。論点は 1 つだけ'}>
-              {g}
+            <button key={g} onClick={() => g !== section.grain && onChange({ grain: g })} className={cn('rounded px-2 py-0.5', section.grain === g ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground')} title={g === '密' ? '厚く書く: その場にカメラを置いたように、場面を描き切る' : '短く通る: 1〜2 文で通り過ぎる。論点は 1 つだけ'}>
+              {g === '密' ? '厚く' : '短く'}
             </button>
           ))}
         </div>
@@ -208,7 +208,7 @@ function SectionCard({ index, section, actual, last, onChange, onMove, onRemove,
       />
       <div className="flex items-center gap-2 px-1 text-xs">
         <label className="flex shrink-0 items-center gap-1 whitespace-nowrap text-muted-foreground">
-          予算
+          目安
           <input
             value={budget}
             inputMode="numeric"
@@ -227,7 +227,7 @@ function SectionCard({ index, section, actual, last, onChange, onMove, onRemove,
           <span className="ml-auto whitespace-nowrap text-amber-700">原稿に無い</span>
         )}
       </div>
-      {warn && <p className="px-1 text-xs text-destructive">{warn}</p>}
+      {warn && <p className="px-1 text-xs text-amber-700">{warn}</p>}
       {!lead && (
         <div className="hidden items-center gap-1 group-hover:flex">
           <button disabled={index <= 1} onClick={() => onMove(-1)} title="前へ移動" className="rounded p-1 text-muted-foreground hover:bg-accent disabled:opacity-30">

@@ -40,7 +40,7 @@ export function PublishView({ data, view }: { data: Talk; view: WorkView }) {
             </Button>
           </div>
         </Step>
-        <Step n={2} title="表紙の絵（OGP）" state={cover === 'ok' ? 'done' : 'todo'} note={cover === 'none' ? 'まだありません' : undefined} help="SNS やサイトの一覧に出る絵です。表紙のスライドから撮ります。">
+        <Step n={2} title="表紙の絵（OGP）" state={cover === 'ok' ? 'done' : 'todo'} note={cover === 'none' ? '未設定' : undefined} help="SNS やサイトの一覧に出る絵です。表紙のスライドから撮ります。">
           {cover !== 'none' ? (
             <img src={`${data.stageUrl}og.png`} alt="表紙の絵" onLoad={() => setCover('ok')} onError={() => setCover('none')} className="w-full max-w-md rounded-md border" />
           ) : (

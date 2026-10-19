@@ -1,6 +1,6 @@
 // serve.mjs — 原稿のフィードバックループ (ADR-0022)。
 //
-// 原稿 (drafts/<slug>/index.md) を note 風に描画してブラウザで見せる。読み手は
+// 原稿 (<HOKUCHI_PRIVATE>/notes/<slug>/index.md。ADR-0046) を note 風に描画してブラウザで見せる。読み手は
 // 文を選んでコメントを付け、送ると <原稿dir>/feedback.md に追記される。Claude は
 // それを読んで原稿を直し、反映した節を消す。ファイルが変われば画面も追従する。
 // 依存はゼロ。描画は render.mjs、検査は lint.mjs、貼り付け用の本文は paste.mjs。
@@ -10,6 +10,7 @@ import path from 'node:path';
 import http from 'node:http';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { resolveDraft } from './drafts.mjs';
 import { splitFrontMatter, lintDraft, draftStats } from './lint.mjs';
 import { renderBody } from './render.mjs';
 import { toPasteText } from './paste.mjs';
@@ -97,11 +98,7 @@ const json = (res, status, data) => {
 };
 
 /** 引数 (ディレクトリか index.md) から原稿のパスを決める。 */
-export function resolveDraft(target) {
-  const abs = path.resolve(target);
-  if (fs.existsSync(abs) && fs.statSync(abs).isDirectory()) return path.join(abs, 'index.md');
-  return abs;
-}
+export { resolveDraft };
 
 /**
  * 原稿のフィードバックサーバを立てる。

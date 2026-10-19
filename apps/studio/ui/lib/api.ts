@@ -6,7 +6,9 @@ export type TalkItem = { slug: string; name: string; title: string; date: string
 export type TalkInfo = TalkItem & { mine: number; claude: number; reads: number }
 export type NoteItem = { dir: string; title: string; publishedAt: string; url: string | null; eyecatch: string | null; tags: string[]; chars: number }
 export type Seed = { id: string; createdAt: string; happening: string; why?: string; workIds?: string[] }
-export type WorkItem = Brief & { talkInfo?: TalkInfo }
+/** 記事の作品に紐づく原稿の様子 (ADR-0046)。mine は、あなた宛ての指摘の数 */
+export type DraftInfo = { slug: string; chars: number; paragraphs: number; mine: number; claude: number }
+export type WorkItem = Brief & { talkInfo?: TalkInfo; draftInfo?: DraftInfo }
 /** 進み具合。完成は、企画シートの finishedAt か、公開したもの (ADR-0045) */
 export type Progress = 'draft' | 'finished'
 /** 公開範囲。公開は実物 (サイトに載る発表・note のアーカイブの記事) から決まる (ADR-0043・ADR-0045) */
@@ -42,6 +44,8 @@ export const api = {
   work: (id: string) => call<WorkView>(`/api/works/${encodeURIComponent(id)}`),
   /** finishedAt に null を渡すと、下書きに戻す */
   saveWork: (id: string, brief: Partial<Omit<Brief, 'finishedAt'>> & { finishedAt?: string | null }) => call<WorkView>(`/api/works/${encodeURIComponent(id)}`, { method: 'PUT', body: brief }),
+  /** 記事の原稿を作る。slug を決めて index.md を作り、企画シートの note に書く (ADR-0046) */
+  createDraft: (id: string, slug: string) => call<WorkView>(`/api/works/${encodeURIComponent(id)}/draft`, { method: 'POST', body: { slug } }),
   /** 下書きを削除する。企画シートと、リポジトリの外のトークをごみ箱に移す (ADR-0044) */
   deleteWork: (id: string) => call<{ trash: string }>(`/api/works/${encodeURIComponent(id)}`, { method: 'DELETE' }),
   ask: (id: string, task: string) => call<{ items: Candidate[] }>(`/api/works/${encodeURIComponent(id)}/ask`, { method: 'POST', body: { task } }),

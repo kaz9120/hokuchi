@@ -65,11 +65,19 @@ function WorkCard({ work }: { work: WorkItem }) {
   const next = STAGES.find((s) => !s.later && stageStatus(s, work) !== 'done')
   const t = work.talkInfo
   const days = daysTo(t?.date ?? (work.fields.date as string | undefined) ?? null)
-  // 次にやること。企画が残っていれば企画、絵コンテがあれば、答える指摘 → 読んでもらう → コマを読む の順
+  const d = work.draftInfo
+  // 次にやること。企画が残っていれば企画、絵コンテがあれば、答える指摘 → 読んでもらう → コマを読む の順。
+  // 記事は、原稿が無ければ原稿を作る、あれば答える指摘 → 原稿を読んで直す (ADR-0046)
   const todo = next
     ? { text: `企画の「${next.title[work.kind]}」を書く`, href: `/works/${work.id}#${next.key}`, label: '企画を開く' }
+    : work.kind === 'note'
+      ? !d
+        ? { text: '原稿を作成する', href: `/works/${work.id}#draft`, label: '原稿を開く' }
+        : d.mine > 0
+          ? { text: `あなた宛ての指摘が ${d.mine} 件`, href: `/works/${work.id}#draft`, label: '返信する' }
+          : { text: '原稿を読んで、段落ごとに直す', href: `/works/${work.id}#draft`, label: '原稿を開く' }
     : !t
-      ? { text: work.kind === 'talk' ? 'Claude Code に絵コンテを頼む' : '構成と本文の画面は準備中です', href: `/works/${work.id}`, label: '企画を開く' }
+      ? { text: 'Claude Code に絵コンテを頼む', href: `/works/${work.id}`, label: '企画を開く' }
       : t.mine > 0
         ? { text: `あなた宛ての指摘が ${t.mine} 件`, href: `/works/${work.id}#reads`, label: '返信する' }
         : t.reads === 0
@@ -101,6 +109,11 @@ function WorkCard({ work }: { work: WorkItem }) {
         {t && (
           <div className="text-xs text-muted-foreground">
             {t.scenes} シーン・{t.states} コマ・聴衆役の読み {t.reads} 回
+          </div>
+        )}
+        {d && (
+          <div className="text-xs text-muted-foreground">
+            {d.chars.toLocaleString()} 字・{d.paragraphs} 段落
           </div>
         )}
         <div className="text-sm">

@@ -5,9 +5,12 @@
 //   hokuchi-note build   [<記事ディレクトリ>...]             source.json から index.md を作り直す
 //   hokuchi-note verify  [<記事ディレクトリ>...]             取り込みの忠実さを検査する
 //   hokuchi-note index                                      articles/note/README.md を作り直す
-//   hokuchi-note lint    [<原稿.md>...]                      原稿の文体を検査する
-//   hokuchi-note paste   <原稿.md> [--stdout]                原稿を note に貼れる形でクリップボードへ
-//   hokuchi-note serve   <原稿dir|index.md> [--port <n>]     原稿をブラウザで見せ、フィードバックを受ける
+//   hokuchi-note lint    [<原稿>...]                         原稿の文体を検査する
+//   hokuchi-note paste   <原稿> [--stdout]                   原稿を note に貼れる形でクリップボードへ
+//   hokuchi-note serve   <原稿> [--port <n>]                 原稿をブラウザで見せ、フィードバックを受ける
+//
+// <原稿> は index.md・原稿のディレクトリ・slug のどれでもよい。slug は
+// <HOKUCHI_PRIVATE>/notes/<slug>/ (公開リポジトリの外の原稿の置き場。ADR-0046) を指す。
 //
 // npm link (tools/notes で一度実行) で hokuchi-note コマンドとして使う。
 
@@ -21,7 +24,8 @@ import { buildArticle, articleIndex, listArticleDirs, readSource, SOURCE, INDEX 
 import { lintDraft, draftStats } from './src/lint.mjs';
 import { verifyArticle } from './src/verify.mjs';
 import { toPasteText } from './src/paste.mjs';
-import { serve, resolveDraft, FEEDBACK } from './src/serve.mjs';
+import { serve, FEEDBACK } from './src/serve.mjs';
+import { resolveDraft } from './src/drafts.mjs';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const DEFAULT_ROOT = path.join(REPO_ROOT, 'articles/note');
@@ -38,9 +42,12 @@ usage:
   hokuchi-note sync   [--user <urlname>] [--only <key>] [--root <dir>]
   hokuchi-note build  [<記事ディレクトリ>...]
   hokuchi-note verify [<記事ディレクトリ>...]
-  hokuchi-note lint   [<原稿.md>...]        note の原稿を文体で検査する
-  hokuchi-note paste  <原稿.md> [--stdout]  原稿を note に貼れる形でクリップボードに入れる
-  hokuchi-note serve  <原稿dir|index.md> [--port <n>]  原稿をブラウザで見せ、コメントを feedback.md に受ける
+  hokuchi-note lint   [<原稿>...]        note の原稿を文体で検査する
+  hokuchi-note paste  <原稿> [--stdout]  原稿を note に貼れる形でクリップボードに入れる
+  hokuchi-note serve  <原稿> [--port <n>]  原稿をブラウザで見せ、コメントを feedback.md に受ける
+
+  <原稿> は index.md・原稿のディレクトリ・slug のどれでもよい。
+  slug は <HOKUCHI_PRIVATE>/notes/<slug>/ (既定は ~/Hobby/hokuchi-private/notes/) を指す。
   hokuchi-note index  [--root <dir>]
 `);
   process.exit(code);
@@ -183,7 +190,7 @@ function cmdVerify(opts) {
 // 確かめられる (校正用)。
 function cmdLint(opts) {
   const files = opts.rest.length
-    ? opts.rest.map((p) => path.resolve(p))
+    ? opts.rest.map(resolveDraft)
     : listArticleDirs(opts.root).map((d) => path.join(d, INDEX));
   const SEV_ORDER = { error: 0, warn: 1, info: 2 };
   const SEV_LABEL = { error: 'ERROR', warn: 'WARN ', info: 'INFO ' };
@@ -209,7 +216,7 @@ function cmdLint(opts) {
 // 入れるしかないので、番号付きの一覧を出し、assets/ を Finder で開く。
 function cmdPaste(opts) {
   if (opts.rest.length !== 1) usage();
-  const file = path.resolve(opts.rest[0]);
+  const file = resolveDraft(opts.rest[0]);
   const { text, images, eyecatch } = toPasteText(fs.readFileSync(file, 'utf8'));
 
   if (opts.stdout) {

@@ -1,5 +1,6 @@
 // 作品の画面 (ADR-0040)。発表 1 本・記事 1 本を、企画から公開までタブで進める。
 // 企画 (段階 1〜4) は、左に段階、右にその段階の欄。発表は、絵コンテができたら 流れ・コマ・読み・公開 のタブが使える。
+// 記事は 企画・原稿 のタブ。構成・読み・公開は ADR-0046 の 2 段目で作るので、まだ出さない
 // 伝えたいことと聴衆は、どのタブでも上に出し続ける (slide:ology p.36-37, p.39)。
 // 状態は 進み具合 (下書き・完成) と公開範囲 (非公開・公開) の 2 つの軸。右上に、進み具合の操作と公開の手順を置く (ADR-0045)
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -17,6 +18,10 @@ import { KIND_LABEL, PERSONA_FIELDS, STAGES, audienceSummary, emptyPersona, stag
 import { talkApi, useTalk } from '@/lib/talk'
 import { StateBadges } from './status'
 import { Compass, Handoff, TALK_TABS, TabBar, TalkPane, yoursCount, type TalkTab } from './talk/TalkTabs'
+import { HandoffButton } from './talk/Handoff'
+import { draftHandoffText, useDraft } from './lib/note'
+import { mine } from './lib/talk'
+import { CreateDraft, DraftView } from './note/DraftView'
 
 /** 企画シートを読み、直すたびに少し待ってから保存する */
 function useBrief(id: string) {
@@ -47,13 +52,14 @@ function useBrief(id: string) {
 
 /** 企画の段階 (1〜4)。5 から先は、絵コンテのタブで進める */
 const PLAN = STAGES.filter((s) => !s.later)
-type Tab = 'plan' | TalkTab
+type Tab = 'plan' | TalkTab | 'draft'
+const NOTE_TABS: { key: Tab; label: string; hint: string }[] = [{ key: 'draft', label: '原稿', hint: '段落ごとに読んで直し、指摘を書く' }]
 
 /** URL のハッシュから、タブと、その中の場所を読む。企画は段階の key、コマは koma/<シーン> */
 function readHash(): { tab: Tab; stage: string; scene: string | null } {
   const h = decodeURIComponent(location.hash.slice(1))
   const [head, rest] = h.split('/')
-  if (head === 'flow' || head === 'koma' || head === 'reads' || head === 'publish') return { tab: head, stage: PLAN[0].key, scene: rest ?? null }
+  if (head === 'flow' || head === 'koma' || head === 'reads' || head === 'publish' || head === 'draft') return { tab: head, stage: PLAN[0].key, scene: rest ?? null }
   return { tab: 'plan', stage: PLAN.some((s) => s.key === head) ? head : PLAN[0].key, scene: null }
 }
 
@@ -70,12 +76,18 @@ export function Work({ id }: { id: string }) {
     location.hash = tab === 'plan' ? (where ?? at.stage) : where ? `${tab}/${where}` : tab
   }
   const { data, thumbs, reading } = useTalk(brief?.talk)
+  const { data: draft, missing: noDraft } = useDraft(brief?.kind === 'note' ? brief.note : undefined)
 
   if (!brief) return <div className="p-10 text-muted-foreground">読み込み中…</div>
   const stage = PLAN.find((s) => s.key === at.stage) ?? PLAN[0]
   const setField = (key: string, value: unknown) => update((b) => ({ ...b, fields: { ...b.fields, [key]: value } }))
-  const tabs = [{ key: 'plan' as Tab, label: '企画', hint: '場・聴衆・聞き終えたあと・伝えたいことを決める' }, ...(brief.kind === 'talk' ? TALK_TABS : [])]
-  const tab: Tab = at.tab !== 'plan' && !data ? 'plan' : at.tab
+  const tabs = [{ key: 'plan' as Tab, label: '企画', hint: '場・聴衆・聞き終えたあと・伝えたいことを決める' }, ...(brief.kind === 'talk' ? TALK_TABS : NOTE_TABS)]
+  // 記事は原稿のタブだけ、発表は絵コンテがあるときだけ、企画のほかのタブを開ける
+  const tab: Tab = brief.kind === 'note' ? (at.tab === 'draft' ? 'draft' : 'plan') : at.tab !== 'plan' && at.tab !== 'draft' && data ? at.tab : 'plan'
+  const createDraft = async (slug: string) => {
+    const saved = await api.createDraft(brief.id, slug)
+    setBrief((cur: WorkView | null) => cur && { ...cur, note: saved.note })
+  }
 
   return (
     <div className="flex h-screen flex-col bg-muted/40">
@@ -100,7 +112,12 @@ export function Work({ id }: { id: string }) {
         )}
         <span className="shrink-0 text-xs text-muted-foreground">{saving === 'pending' ? '保存中…' : saving === 'saved' ? '保存済み' : ''}</span>
         <div className="ml-auto flex shrink-0 items-center gap-3 whitespace-nowrap">
-          <TabBar tabs={tabs} current={tab} onPick={(t) => (brief.talk || t === 'plan' ? go(t) : undefined)} badge={data ? { reads: yoursCount(data) } : undefined} />
+          <TabBar
+            tabs={tabs}
+            current={tab}
+            onPick={(t) => (brief.talk || t === 'plan' || t === 'draft' ? go(t) : undefined)}
+            badge={data ? { reads: yoursCount(data) } : draft ? { draft: draft.threads.filter(mine).length } : undefined}
+          />
           {!brief.published && (
             <div className="flex items-center gap-1 border-l pl-3">
               <Progress brief={brief} setBrief={setBrief} />
@@ -110,9 +127,11 @@ export function Work({ id }: { id: string }) {
         </div>
       </header>
 
-      <Compass oneLiner={(brief.fields.oneLiner as string | undefined) ?? ''} readers={data?.readers ?? []} right={data ? <Handoff data={data} /> : <span className="max-w-xs truncate text-xs text-muted-foreground">{audienceSummary(brief)}</span>} />
+      <Compass oneLiner={(brief.fields.oneLiner as string | undefined) ?? ''} readers={data?.readers ?? []} right={data ? <Handoff data={data} /> : draft ? <HandoffButton threads={draft.threads} text={draftHandoffText(draft)} /> : <span className="max-w-xs truncate text-xs text-muted-foreground">{audienceSummary(brief)}</span>} />
 
-      {tab === 'plan' || !data || !brief.talk ? (
+      {tab === 'draft' ? (
+        draft ? <DraftView data={draft} focus={at.scene} /> : brief.note && !noDraft ? <div className="p-10 text-muted-foreground">読み込み中…</div> : <CreateDraft title={brief.title} onCreate={createDraft} />
+      ) : tab === 'plan' || !data || !brief.talk ? (
         <div className="grid min-h-0 flex-1 grid-cols-[260px_minmax(0,1fr)]">
           <StageNav brief={brief} current={stage.key} onPick={(k) => go('plan', k)} />
           <main className="min-h-0 overflow-y-auto px-8 py-6">

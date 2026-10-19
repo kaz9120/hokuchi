@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
-import { author, CLOSED_LABEL, type TalkApi, type Thread } from '@/lib/talk'
+import { author, CLOSED_LABEL, type Thread, type ThreadApi } from '@/lib/talk'
 
 /** 聴衆役の感想の種類の色。良かった点だけ、別の色にする */
 const kindTone = (kind?: string) => (kind === 'good' ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : 'border-border bg-muted text-muted-foreground')
@@ -51,7 +51,7 @@ export function Compose({ placeholder, onSend, onCancel, autoFocus = false }: { 
 }
 
 /** 指摘を書く入口。押すと欄が開く。何件でも書ける */
-export function NewThread({ label, onSend }: { label: string; onSend: (text: string) => void }) {
+export function NewThread({ label, placeholder = '話す内容でも見た目でも、気になったことを自由に入力', onSend }: { label: string; placeholder?: string; onSend: (text: string) => void }) {
   const [open, setOpen] = useState(false)
   if (!open)
     return (
@@ -62,7 +62,7 @@ export function NewThread({ label, onSend }: { label: string; onSend: (text: str
   return (
     <Compose
       autoFocus
-      placeholder="話す内容でも見た目でも、気になったことを自由に入力"
+      placeholder={placeholder}
       onCancel={() => setOpen(false)}
       onSend={(t) => {
         onSend(t)
@@ -73,7 +73,7 @@ export function NewThread({ label, onSend }: { label: string; onSend: (text: str
 }
 
 /** スレッド 1 件。place を渡すと、どのコマへの指摘かを頭に出す (一覧で使う) */
-export function ThreadCard({ thread, api, kinds, place, onJump, quiet = false }: { thread: Thread; api: TalkApi; kinds: Record<string, string>; place?: string; onJump?: () => void; quiet?: boolean }) {
+export function ThreadCard({ thread, api, kinds, place, onJump, quiet = false }: { thread: Thread; api: ThreadApi; kinds: Record<string, string>; place?: string; onJump?: () => void; quiet?: boolean }) {
   const [replying, setReplying] = useState(false)
   const t = thread
   const mine = t.ball === '話者'

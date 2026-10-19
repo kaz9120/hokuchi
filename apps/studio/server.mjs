@@ -19,7 +19,8 @@ import { moveScene, parseStoryboard, replaceNotes, replaceSceneMeta, seconds } f
 import { SITE, loadTalk, waitReady } from '../../packages/stage/node/talk.mjs'
 import { startSite } from '../slides/site-server.mjs'
 import { NOTE_KINDS, SURVEY, listPersonas, listReaders, listReads, runRead } from './readers.mjs'
-import { closeThread, importRead, openThread, readThreads, reopenThread, replyThread } from './threads.mjs'
+import { closeThread, importRead, openThread, readThreads, reopenThread, replyThread, retargetThreads } from './threads.mjs'
+import { SLUG, appendBlock, createDraft, draftDir, draftFile, hasDraft, readDraft, reanchor, replaceBlock } from './draft.mjs'
 import { PRIVATE, createWork, listSeeds, listWorks, readWork, saveSeed, saveWork, trashWork, workOfTalk } from './store.mjs'
 import { listNotes, noteAsset, readNote } from './notes.mjs'
 import { TASKS, ask } from './ai.mjs'
@@ -237,7 +238,7 @@ function home() {
     const item = talks.find((x) => x.slug === w.talk)
     const { threads } = readThreads(join(t.dir, 'feedback.yaml'))
     return { ...w, talkInfo: { ...item, mine: threads.filter((x) => x.ball === '話者').length, claude: threads.filter((x) => x.ball === 'Claude').length, reads: listReads(t.dir).length } }
-  })
+  }).map((w) => (w.kind === 'note' && hasDraft(w.note) ? { ...w, draftInfo: draftInfo(w.note) } : w))
 
   // 発表と記事を 1 つの一覧にする (ADR-0043)。企画シートが公開物に紐づいていれば 1 枚にまとめる。
   // 状態は 2 つの軸で持つ (ADR-0045)。公開範囲は実物から決め、進み具合は企画シートの finishedAt で決める。公開したものは完成として扱う
@@ -287,8 +288,7 @@ const isPublished = (w) => (w.kind === 'talk' ? site.talks.get(w.talk ?? '')?.in
 /** 作品に紐づく、リポジトリの中のファイル (talks/ のトーク・記事の原稿)。削除しても残す (ADR-0044) */
 function repoFilesOf(w) {
   const t = w.talk ? site.talks.get(w.talk) : null
-  const draft = w.note ? join(repoRoot, 'articles/note/drafts', w.note) : null
-  return [t && !t.outside ? shownDir(t.dir) : null, draft && existsSync(draft) ? shownDir(draft) : null].filter(Boolean)
+  return t && !t.outside ? [shownDir(t.dir)] : []
 }
 
 /** 作品の画面に渡す企画シート。published と repoFiles はサーバが実物から決めた値で、企画シートには書かない */
@@ -306,7 +306,54 @@ async function deleteWork(w) {
     await outside.vite.close()
     site.talks.delete(w.talk)
   }
-  return trashWork(w.id, { talkDir: outside?.dir ?? null })
+  const note = w.kind === 'note' && hasDraft(w.note) ? w.note : null
+  if (note) {
+    draftWatchers.get(note)?.close()
+    draftWatchers.delete(note)
+  }
+  return trashWork(w.id, { talkDir: outside?.dir ?? null, noteDir: note ? draftDir(note) : null })
+}
+
+// ---------------------------------------------------------------- 記事の原稿 (ADR-0046)
+// 原稿は <HOKUCHI_PRIVATE>/notes/<slug>/。画面への通知は、発表と同じ仕組みに "note:<slug>" の名前で乗せる
+const draftWatchers = new Map()
+function watchDraft(slug) {
+  if (draftWatchers.has(slug) || !hasDraft(slug)) return
+  let timer = null
+  const w = watch(draftDir(slug), { recursive: true }, () => {
+    clearTimeout(timer)
+    timer = setTimeout(() => {
+      try {
+        broadcast(`note:${slug}`, 'draft', draftState(slug))
+      } catch {}
+    }, 150)
+  })
+  draftWatchers.set(slug, w)
+}
+
+const feedbackOf = (slug) => join(draftDir(slug), 'feedback.yaml')
+
+/** 原稿の画面に渡すもの。Claude Code が本文を直して段落の番号がずれていたら、指摘を書き出しで付け直してから渡す */
+function draftState(slug) {
+  const d = readDraft(slug)
+  retargetThreads(feedbackOf(slug), reanchor(d.blocks))
+  const w = listWorks().find((x) => x.note === slug)
+  return {
+    slug,
+    dir: shownDir(draftDir(slug)),
+    file: shownDir(draftFile(slug)),
+    ...d,
+    ...readThreads(feedbackOf(slug)),
+    noteKinds: NOTE_KINDS,
+    work: w ? { id: w.id, oneLiner: w.fields?.oneLiner ?? '' } : null,
+  }
+}
+
+/** ホームのカードに出す、原稿の様子 */
+function draftInfo(slug) {
+  const { threads } = readThreads(feedbackOf(slug))
+  const { stats } = readDraft(slug)
+  return { slug, chars: stats.chars, paragraphs: stats.paragraphs, mine: threads.filter((x) => x.ball === '話者').length, claude: threads.filter((x) => x.ball === 'Claude').length }
 }
 
 // ---------------------------------------------------------------- UI と API
@@ -338,8 +385,10 @@ server.on('request', async (req, res) => {
   try {
     if (url.pathname === '/api/home') return json(res, home())
     if (url.pathname === '/api/events') {
-      const slug = url.searchParams.get('talk')
-      const ws = slug ? workspace(slug) : null
+      const note = url.searchParams.get('note')
+      if (note) watchDraft(note)
+      const slug = note ? `note:${note}` : url.searchParams.get('talk')
+      const ws = slug && !note ? workspace(slug) : null
       res.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-cache', connection: 'keep-alive' })
       const c = { res, slug }
       clients.add(c)
@@ -351,7 +400,7 @@ server.on('request', async (req, res) => {
       const { kind, seedId } = await body(req)
       return json(res, createWork(kind === 'talk' ? 'talk' : 'note', seedId))
     }
-    const w = url.pathname.match(/^\/api\/works\/([^/]+)(?:\/(ask))?$/)
+    const w = url.pathname.match(/^\/api\/works\/([^/]+)(?:\/(ask|draft))?$/)
     if (w) {
       const id = decodeURIComponent(w[1])
       const brief = readWork(id)
@@ -369,6 +418,20 @@ server.on('request', async (req, res) => {
           return json(res, { error: String(e.message ?? e) }, 400)
         }
       }
+      // 記事の原稿を作る。slug を決めて index.md を作り、企画シートの note に書く (ADR-0046)
+      if (w[2] === 'draft' && req.method === 'POST') {
+        const { slug } = await body(req)
+        const s = String(slug ?? '').trim()
+        try {
+          if (brief.kind !== 'note') throw new Error('原稿を作れるのは記事だけです')
+          if (brief.note && hasDraft(brief.note)) throw new Error(`この記事には原稿（${brief.note}）があります`)
+          if (listNotes(repoRoot).some((n) => n.dir.slice(11) === s)) throw new Error(`「${s}」は公開済みの記事で使っています。別の slug にしてください`)
+          createDraft(s, brief.title)
+        } catch (e) {
+          return json(res, { error: String(e.message ?? e) }, 400)
+        }
+        return json(res, workView(saveWork(id, { note: s })))
+      }
       if (w[2] === 'ask' && req.method === 'POST') {
         const { task } = await body(req)
         const items = await ask(brief, task, { cwd: repoRoot })
@@ -379,6 +442,62 @@ server.on('request', async (req, res) => {
       }
     }
     if (url.pathname === '/api/seeds' && req.method === 'POST') return json(res, saveSeed(await body(req)))
+    // 記事の原稿 (ADR-0046)。/api/drafts/<slug>/<操作>
+    const dr = url.pathname.match(/^\/api\/drafts\/([^/]+)\/(.+)$/)
+    if (dr) {
+      const slug = decodeURIComponent(dr[1])
+      if (!SLUG.test(slug) || !hasDraft(slug)) return json(res, { error: `原稿（${slug}）が見つかりません` }, 404)
+      const op = dr[2]
+      if (op === 'state') {
+        watchDraft(slug)
+        return json(res, draftState(slug))
+      }
+      // 本文の画像 (assets/…)
+      if (op.startsWith('assets/') && !op.includes('..')) {
+        const file = join(draftDir(slug), decodeURIComponent(op))
+        if (!existsSync(file)) return json(res, { error: 'not found' }, 404)
+        const ext = op.split('.').pop().toLowerCase()
+        res.writeHead(200, { 'content-type': { png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif', webp: 'image/webp', svg: 'image/svg+xml' }[ext] ?? 'application/octet-stream' })
+        return res.end(readFileSync(file))
+      }
+      // 段落を直す。画面で直した段落の指摘は、新しい書き出しで持ち直す。ほかは書き出しで付け直す
+      if (op === 'block' && req.method === 'PUT') {
+        const { n, orig, text } = await body(req)
+        try {
+          const { after } = replaceBlock(slug, Number(n), String(orig ?? ''), String(text ?? ''))
+          const gone = !String(text ?? '').trim()
+          const rest = reanchor(after)
+          retargetThreads(feedbackOf(slug), (t) => (t.para === Number(n) ? (gone || !after[t.para - 1] ? { para: '*' } : { para: t.para, head: after[t.para - 1].head }) : rest(t)))
+        } catch (e) {
+          return json(res, { error: String(e.message ?? e) }, 409)
+        }
+        return json(res, { ok: true })
+      }
+      if (op === 'append' && req.method === 'POST') {
+        appendBlock(slug, String((await body(req)).text ?? ''))
+        return json(res, { ok: true })
+      }
+      // 指摘のスレッド。位置は段落の番号と書き出し。記事全体は "*"
+      if (op === 'threads' && req.method === 'POST') {
+        const { para, text } = await body(req)
+        if (!String(text ?? '').trim()) return json(res, { error: 'text が要ります' }, 400)
+        const blocks = readDraft(slug).blocks
+        const b = para === '*' ? null : blocks[Number(para) - 1]
+        return json(res, { id: openThread(feedbackOf(slug), { para: b ? b.n : '*', head: b?.head, text: String(text).trim() }) })
+      }
+      const th = op.match(/^threads\/([^/]+)\/(reply|close|reopen)$/)
+      if (th && req.method === 'POST') {
+        const { text, how } = await body(req)
+        if (th[2] === 'reply') {
+          if (!String(text ?? '').trim()) return json(res, { error: 'text が要ります' }, 400)
+          replyThread(feedbackOf(slug), th[1], String(text).trim())
+        }
+        if (th[2] === 'close') closeThread(feedbackOf(slug), th[1], how)
+        if (th[2] === 'reopen') reopenThread(feedbackOf(slug), th[1])
+        return json(res, { ok: true })
+      }
+      return json(res, { error: 'not found' }, 404)
+    }
     // 公開済みの note の記事。/api/notes/<dir> が本文、/api/notes/<dir>/assets/… が画像
     const n = url.pathname.match(/^\/api\/notes\/([^/]+)(?:\/(.+))?$/)
     if (n) {

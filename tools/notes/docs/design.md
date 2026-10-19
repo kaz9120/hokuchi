@@ -85,7 +85,7 @@ note の body HTML が使う語彙は有限で、次の対応で Markdown にす
 閾値は公開済み 44 本の実測から引いている。理想値ではなく「自分が実際に書けている水準」を基準にするためで、**公開済み記事が error を出さず、warn が改善余地として出る位置**に合わせてある。記事が増えたら測り直す。
 
 ```
-hokuchi-note lint articles/note/drafts/<slug>/index.md   # 原稿を検査する
+hokuchi-note lint <slug>                                 # 原稿 (<HOKUCHI_PRIVATE>/notes/<slug>/) を検査する
 hokuchi-note lint                                        # 公開済み全部 (閾値の校正用)
 ```
 
@@ -106,7 +106,7 @@ note のエディタは Markdown を貼ると見出しや強調を解釈する�
 [ADR-0022](../../../docs/adr/0022-note-serve-feedback-loop.md)。`serve` は原稿を note 風に描画して `http://localhost:4647/` で見せる。依存はゼロで、描画は `render.mjs` (原稿で使う記法だけの最小レンダラ。各ブロックに `data-block` の通し番号を付ける)、画面は `serve.html` 1 枚。
 
 ```
-articles/note/drafts/<slug>/
+<HOKUCHI_PRIVATE>/notes/<slug>/   (ADR-0046 で articles/note/drafts/ から移した。既定は ~/Hobby/hokuchi-private)
   index.md       原稿。Claude が書き換えると画面が追従する (1.5 秒ごとに mtime を見る)
   assets/        画像。画面に出す
   feedback.md    ブラウザで付けたコメント。Claude が読んで反映し、反映した節を消す

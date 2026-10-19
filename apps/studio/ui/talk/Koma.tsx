@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Play, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { author, mine, mmss, sceneSeconds, type Scene, type Talk, type TalkApi, type Thread } from '@/lib/talk'
+import { author, mine, mmss, sceneSeconds, type Scene, type Talk, type TalkApi, type Thread, type ThreadApi } from '@/lib/talk'
 import { NewThread, ThreadCard } from './Threads'
 
 type Pick = { scene: string; state: number }
@@ -191,8 +191,8 @@ function KomaRow({ scene, index, api, kinds, showHow, thumb, threads, onPlay }: 
   )
 }
 
-/** 右の余白。あなたが答える件を先頭に、聴衆役の感想は詰めて、済んだ件は畳む */
-function Margin({ threads, api, kinds, label, onSend }: { threads: Thread[]; api: TalkApi; kinds: Record<string, string>; label: string; onSend: (text: string) => void }) {
+/** 右の余白。あなたが答える件を先頭に、聴衆役の感想は詰めて、済んだ件は畳む。記事の原稿の面 (ADR-0046) でも使う */
+export function Margin({ threads, api, kinds, label, placeholder, onSend }: { threads: Thread[]; api: ThreadApi; kinds: Record<string, string>; label: string; placeholder?: string; onSend: (text: string) => void }) {
   const [showDone, setShowDone] = useState(false)
   const yours = threads.filter(mine)
   const own = threads.filter((t) => t.ball === 'Claude' && t.by !== '聴衆役')
@@ -219,13 +219,13 @@ function Margin({ threads, api, kinds, label, onSend }: { threads: Thread[]; api
         </button>
       )}
       {showDone && finished.map((t) => <ThreadCard key={t.id} thread={t} api={api} kinds={kinds} />)}
-      <NewThread label={label} onSend={onSend} />
+      <NewThread label={label} placeholder={placeholder} onSend={onSend} />
     </div>
   )
 }
 
 /** 聴衆役の感想。数が多いので 1 件を小さく見せ、押すと開く */
-function ReaderNote({ thread, api, kinds }: { thread: Thread; api: TalkApi; kinds: Record<string, string> }) {
+function ReaderNote({ thread, api, kinds }: { thread: Thread; api: ThreadApi; kinds: Record<string, string> }) {
   const [open, setOpen] = useState(false)
   const good = thread.kind === 'good'
   if (open)

@@ -1,16 +1,21 @@
 // Claude に渡す (ADR-0040)。Claude の番の指摘が何件あるかを見せ、ターミナルの Claude Code に貼る依頼文を出す。
-// 指摘そのものは feedback.yaml にあるので、依頼文は「ファイルを読んで直して」と頼むだけの短い文にする
+// 指摘そのものは feedback.yaml にあるので、依頼文は「ファイルを読んで直して」と頼むだけの短い文にする。
+// 記事の原稿 (ADR-0046) も同じボタンを使い、依頼文だけを変える
 import { useState } from 'react'
 import { Check, Copy, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { forClaude, handoffText, type Talk } from '@/lib/talk'
+import { forClaude, handoffText, type Talk, type Thread } from '@/lib/talk'
 
 export function Handoff({ data }: { data: Talk }) {
+  return <HandoffButton threads={data.threads} text={handoffText(data)} />
+}
+
+/** 指摘の一覧と依頼文から、「Claude に渡す指摘 n 件」のボタンを作る */
+export function HandoffButton({ threads, text }: { threads: Thread[]; text: string }) {
   const [copied, setCopied] = useState(false)
-  const list = data.threads.filter(forClaude)
-  const own = list.filter((t) => t.by !== '聴衆役').length
-  const text = handoffText(data)
+  const list = threads.filter(forClaude)
+  const own = list.filter((t: Thread) => t.by !== '聴衆役').length
   return (
     <Popover>
       <PopoverTrigger asChild>

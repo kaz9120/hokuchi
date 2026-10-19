@@ -5,7 +5,7 @@ description: 山本一将の note 記事を書く。壁打ちで芯を1文に絞
 
 # note を研ぎ澄まして書く
 
-このスキルは、題材から公開までを一本で通します。完成の姿は 2 つです。`articles/note/drafts/<slug>/index.md` に置いた原稿と、そこから note に貼って公開した記事です。
+このスキルは、題材から公開までを一本で通します。完成の姿は 2 つです。`~/Hobby/hokuchi-private/notes/<slug>/index.md` (公開リポジトリの外。ADR-0046) に置いた原稿と、そこから note に貼って公開した記事です。
 
 書くのは Claude で、決めるのは人間です。Claude が担うのは 4 つです。芯を 1 文に絞る手伝い、フックの発見、密にする場所の選択、そして削ることです。
 
@@ -128,7 +128,7 @@ Phase 5 (削る) は独立した工程です。書きながら削るのではな
 
 ## Phase 4 — 書く
 
-`references/voice.md` を開いてから書きます。出力先は `articles/note/drafts/<slug>/index.md` です。front matter は公開済み記事と同じ形にします。
+`references/voice.md` を開いてから書きます。出力先は `~/Hobby/hokuchi-private/notes/<slug>/index.md` です (公開リポジトリの外。ADR-0046)。studio で書くときは、記事の作品の原稿タブの「原稿を作成」で作り、企画シートの `note` に slug が入ります。front matter は公開済み記事と同じ形にします。
 
 ```yaml
 ---
@@ -169,12 +169,12 @@ hashtags:
 ここから先の往復は、ターミナルではなく `serve` で受けます (ADR-0022)。書き上げたら立てて、URL を伝えます。
 
 ```
-hokuchi-note serve articles/note/drafts/<slug>/
+hokuchi-note serve <slug>
 ```
 
 `hokuchi-note` が見つからないときは、リポジトリのルートから `node tools/notes/cli.mjs <サブコマンド> ...` で同じように動きます。このスキルの `hokuchi-note` コマンドは、すべてこの形に読み替えられます。
 
-ユーザーはブラウザで文を選び、その場の入力欄に一言書いて Enter で送ります。コメントは `drafts/<slug>/feedback.md` に節ごと追記されます。ユーザーが「ターミナルに貼る」でまとめて貼ってきたときや、「フィードバック見て」と言ってきたときは、次を回します。
+ユーザーはブラウザで文を選び、その場の入力欄に一言書いて Enter で送ります。コメントは `~/Hobby/hokuchi-private/notes/<slug>/feedback.md` に節ごと追記されます。ユーザーが「ターミナルに貼る」でまとめて貼ってきたときや、「フィードバック見て」と言ってきたときは、次を回します。
 
 1. `feedback.md` を読みます (貼られた本文と同じ内容です)。節ごとに、段落番号・見出し・引用した本文・コメントが入っています
 2. 原稿を直します。画面は原稿の変更に追従するので、直したら報告するだけで大丈夫です
@@ -189,7 +189,7 @@ hokuchi-note serve articles/note/drafts/<slug>/
 ### 機械で検査する
 
 ```
-hokuchi-note lint articles/note/drafts/<slug>/index.md
+hokuchi-note lint <slug>
 ```
 
 lint が見るのは、文の長さ、段落の長さ、ぼかし表現の密度、型どおりの言い回し、共感を求める表現、結びの重さ、漢字率です。閾値は公開済み 44 本の実測から決めています。そのため、警告は「自分の水準から外れている」という意味になります。`serve` を立てていれば、同じ指摘がサイドバーに出ます。クリックすると該当段落に飛べます。
@@ -221,7 +221,7 @@ warn はすべて潰すつもりで直します。潰せないなら、その理
 本文は `serve` の画面の「note に貼る本文をコピー」か、`paste` でクリップボードに入れて、note のエディタに貼ります。見出し・強調・埋め込みの URL 行はそのまま入ります。画像行は `（画像 n/N: ファイル名 ｜ キャプション: …）` に置き換わります。note 側でその行を消して、画像を入れてください (「assets を開く」で Finder が開きます)。
 
 ```
-hokuchi-note paste articles/note/drafts/<slug>/index.md
+hokuchi-note paste <slug>
 ```
 
 公開したら、次を回してアーカイブに凍結します。
@@ -230,7 +230,7 @@ hokuchi-note paste articles/note/drafts/<slug>/index.md
 hokuchi-note sync
 ```
 
-公開日と note key が入った `articles/note/<公開日>-<slug>/` ができます。`articles/note/slugs.json` に slug を足しておくと、ディレクトリ名が読める形になります。凍結を確認したら、`drafts/<slug>/` は消してかまいません。
+公開日と note key が入った `articles/note/<公開日>-<slug>/` ができます。`articles/note/slugs.json` に slug を足しておくと、ディレクトリ名が読める形になります。凍結を確認したら、`~/Hobby/hokuchi-private/notes/<slug>/` は消さずに `~/Hobby/hokuchi-private/trash/<日時>-notes-<slug>/` に移します。
 
 ---
 

@@ -26,7 +26,6 @@ parts/             トークをまたいで使い回す中身（自己紹介・�
 personas/          聴衆役のペルソナのプリセット。発表でも記事でも使い回す（ADR-0039）
 articles/
   note/            note.com の記事アーカイブ（原本 + Markdown の 2 層。ADR-0019）
-    drafts/        執筆中の原稿（<slug>/index.md。公開したら sync が凍結する）
     slugs.json     note key → slug。ディレクトリ名の唯一の真実
     <YYYY-MM-DD-slug>/
       source.json  原本。note API の不変フィールドを凍結したもの
@@ -48,13 +47,13 @@ tools/
   writing-note/           note の記事を書く skill（Phase 0〜7。ADR-0020）
 ```
 
-作品の企画シートとネタ帳は、公開リポジトリの外の `~/Hobby/hokuchi-private` に置きます（ADR-0036）。
+作品の企画シートとネタ帳、記事の原稿（`notes/<slug>/`）は、公開リポジトリの外の `~/Hobby/hokuchi-private` に置きます（ADR-0036・ADR-0046）。
 
 依存はルートの bun ワークスペース（`packages/*`・`apps/*`、hoisted）で管理します。`bun install` はルートで実行します。`tools/notes` は対象外です。
 
 ## note の記事
 
-記事を書く依頼は、writing-note skill に従ってください。原稿は `articles/note/drafts/<slug>/` に置き、`hokuchi-note lint` で文体を検査します。文体の規範は、公開済み記事の実測（2026-09 時点で 44 本）から引いています。記事が増えたら測り直してください（ADR-0020）。
+記事を書く依頼は、writing-note skill に従ってください。原稿は公開リポジトリの外の `~/Hobby/hokuchi-private/notes/<slug>/` に置き、studio の原稿タブで段落ごとに直します。文体は `hokuchi-note lint <slug>` で検査します（ADR-0046）。文体の規範は、公開済み記事の実測（2026-09 時点で 44 本）から引いています。記事が増えたら測り直してください（ADR-0020）。
 
 公開済みの記事は、`hokuchi-note sync` で取り込みます。`index.md` は生成物なので、手では直しません。直したいときは変換規則を直して、`build` を回します。取り込みの欠落は `verify` が検査するので、記事を足したら必ず通してください（ADR-0019）。
 

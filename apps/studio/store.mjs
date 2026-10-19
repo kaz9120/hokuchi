@@ -4,7 +4,8 @@
 //   <置き場>/works/<id>/brief.yaml   作品 1 本の企画シート (段階ごとの欄・関門・AI の候補・完成にした日時 finishedAt)
 //   <置き場>/talks/<トーク>/          非公開 (社内向け) の発表。studio は読むが、サイトには載せない (ADR-0041・ADR-0043)
 //   <置き場>/seeds/<id>.yaml         ネタ 1 件
-//   <置き場>/trash/<日時>-<id>/       削除した下書き。元の置き場と同じ形 (works/<id>/・talks/<トーク>/) で残す (ADR-0044)
+//   <置き場>/notes/<slug>/           記事の原稿。中身は apps/studio/draft.mjs と tools/notes/src/drafts.mjs (ADR-0046)
+//   <置き場>/trash/<日時>-<id>/       削除した下書き。元の置き場と同じ形 (works/<id>/・talks/<トーク>/・notes/<slug>/) で残す (ADR-0044)
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { basename, join } from 'node:path'
@@ -64,10 +65,10 @@ export function saveWork(id, next) {
 
 /**
  * 下書きを削除する。消さずに、ごみ箱 (<置き場>/trash/<日時>-<id>/) に移す (ADR-0044)。
- * talkDir は、リポジトリの外に置いた紐づくトーク。リポジトリの中のファイルは呼ぶ側が渡さない (git の操作が要るので触らない)。
+ * talkDir は、リポジトリの外に置いた紐づくトーク。noteDir は、紐づく記事の原稿 (いつもリポジトリの外。ADR-0046)。リポジトリの中のファイルは呼ぶ側が渡さない (git の操作が要るので触らない)。
  * ネタの workIds からも外す。戻り値は、移した先のディレクトリ
  */
-export function trashWork(id, { talkDir = null } = {}) {
+export function trashWork(id, { talkDir = null, noteDir = null } = {}) {
   if (!readWork(id)) throw new Error(`作品 ${id} がありません`)
   const to = join(PRIVATE, 'trash', `${now().slice(0, 19).replace(/:/g, '-')}-${id}`)
   mkdirSync(join(to, 'works'), { recursive: true })
@@ -75,6 +76,10 @@ export function trashWork(id, { talkDir = null } = {}) {
   if (talkDir) {
     mkdirSync(join(to, 'talks'), { recursive: true })
     renameSync(talkDir, join(to, 'talks', basename(talkDir)))
+  }
+  if (noteDir) {
+    mkdirSync(join(to, 'notes'), { recursive: true })
+    renameSync(noteDir, join(to, 'notes', basename(noteDir)))
   }
   for (const seed of listSeeds()) if (seed.workIds?.includes(id)) saveSeed({ ...seed, workIds: seed.workIds.filter((w) => w !== id) })
   return to

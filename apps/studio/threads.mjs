@@ -1,4 +1,5 @@
 // 指摘のスレッド (ADR-0040)。talks/<トーク>/feedback.yaml に、1 件の指摘とその往復を 1 本として残す。
+// 記事の原稿 (<HOKUCHI_PRIVATE>/notes/<slug>/feedback.yaml) も同じ形で、位置だけが段落になる (ADR-0046)。
 // 見るのは「いま誰が動く番か (ball)」と「どう終わったか (closed)」の 2 つ。
 //   ball: 話者 (あなたが答える) / Claude (Claude が直す) / none (済んだ)
 //   closed: 直した / そのままにした / 良かった点 / 読み直した
@@ -14,6 +15,15 @@ const HEAD = [
   '',
 ].join('\n')
 
+/** 記事の原稿の feedback.yaml を作るときの頭書き */
+export const NOTE_HEAD = [
+  '# 指摘のスレッド (ADR-0040・ADR-0046)。記事の原稿への指摘と、その往復を 1 本にまとめる。studio の画面が読み書きし、Claude Code も直接直す。',
+  '#   para: 段落の番号 (本文の頭から 1 始まり。見出し・画像も 1 つと数える)。記事全体への指摘は "*"',
+  '#   head: 段落の書き出し (空白を除いた先頭 20 字)。本文を直して番号がずれたら、これで付け直す',
+  '#   by・replies・ball・closed は発表と同じ',
+  '',
+].join('\n')
+
 export function readThreads(file) {
   if (!existsSync(file)) return { threads: [], error: null }
   try {
@@ -24,8 +34,8 @@ export function readThreads(file) {
 }
 
 /** 文書のまま開いて直し、書き戻す。コメントと並びを保つ */
-function edit(file, fn) {
-  const doc = YAML.parseDocument(existsSync(file) ? readFileSync(file, 'utf8') : `${HEAD}threads: []\n`)
+function edit(file, fn, head = HEAD) {
+  const doc = YAML.parseDocument(existsSync(file) ? readFileSync(file, 'utf8') : `${head}threads: []\n`)
   if (!YAML.isSeq(doc.get('threads'))) doc.set('threads', doc.createNode([]))
   const result = fn(doc.get('threads'), doc)
   // 人が読めるよう、1 件を 1 行に詰めず、項目ごとに行を分けて書く
@@ -50,13 +60,47 @@ const find = (seq, id) => {
 }
 const now = () => new Date().toISOString()
 
-/** 話者が指摘を書く。次に動くのは Claude */
-export function openThread(file, { scene, state, text }) {
-  return edit(file, (seq, doc) => {
-    const id = nextId(seq)
-    seq.add(doc.createNode({ id, scene, ...(state ? { state } : {}), by: '話者', text, at: now(), ball: 'Claude' }))
-    return id
+/**
+ * 話者が指摘を書く。次に動くのは Claude。
+ * 位置は、発表なら scene と state (無ければシーン全体)、記事なら para と head (ADR-0046)
+ */
+export function openThread(file, { scene, state, para, head, text }) {
+  const where = para !== undefined ? { para, ...(para !== '*' && head ? { head } : {}) } : { scene, ...(state ? { state } : {}) }
+  return edit(
+    file,
+    (seq, doc) => {
+      const id = nextId(seq)
+      seq.add(doc.createNode({ id, ...where, by: '話者', text, at: now(), ball: 'Claude' }))
+      return id
+    },
+    para !== undefined ? NOTE_HEAD : HEAD,
+  )
+}
+
+/**
+ * 記事の指摘の位置を付け直す (ADR-0046)。fn は { para, head } を受け取り、新しい { para, head } を返す。
+ * 位置が変わった件だけを書き換え、変えた数を返す。ファイルが無ければ何もしない
+ */
+export function retargetThreads(file, fn) {
+  if (!existsSync(file)) return 0
+  const { threads } = readThreads(file)
+  const moves = new Map()
+  for (const t of threads) {
+    if (t.para === undefined || t.para === '*') continue
+    const next = fn({ para: t.para, head: t.head })
+    if (next.para !== t.para || next.head !== t.head) moves.set(t.id, next)
+  }
+  if (moves.size === 0) return 0
+  edit(file, (seq) => {
+    for (const t of seq.items) {
+      const next = moves.get(t.get('id'))
+      if (!next) continue
+      t.set('para', next.para)
+      if (next.para === '*') t.delete('head')
+      else t.set('head', next.head)
+    }
   })
+  return moves.size
 }
 
 /** 話者が答える。次に動くのは Claude */

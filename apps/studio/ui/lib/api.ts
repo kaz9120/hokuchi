@@ -13,7 +13,13 @@ export type Status = 'draft' | 'private' | 'public'
 export type Item = { key: string; kind: Kind; status: Status; title: string; date: string | null; event: string | null; tags: string[]; work: WorkItem | null; talk: TalkItem | null; note: NoteItem | null }
 export type HomeData = { items: Item[]; seeds: Seed[]; tasks: Record<string, string>; siteUrl: string; privateDir: string }
 /** 作品の画面で読む企画シート。published はサーバが実物から決めた値で、保存はしない */
-export type WorkView = Brief & { published: boolean }
+export type WorkView = Brief & {
+  published: boolean
+  /** 紐づくリポジトリの中のファイル (talks/ のトーク・記事の原稿)。削除しても残る */
+  repoFiles: string[]
+  /** 削除した下書きの移し先 (ごみ箱) */
+  trashDir: string
+}
 export type NoteView = { dir: string; title: string; publishedAt: string; url: string | null; eyecatch: string | null; tags: string[]; html: string }
 export type Candidate = { text: string; note: string }
 
@@ -33,6 +39,8 @@ export const api = {
   createWork: (kind: Kind, seedId?: string) => call<Brief>('/api/works', { method: 'POST', body: { kind, seedId } }),
   work: (id: string) => call<WorkView>(`/api/works/${encodeURIComponent(id)}`),
   saveWork: (id: string, brief: Partial<Brief>) => call<WorkView>(`/api/works/${encodeURIComponent(id)}`, { method: 'PUT', body: brief }),
+  /** 下書きを削除する。企画シートと、リポジトリの外のトークをごみ箱に移す (ADR-0044) */
+  deleteWork: (id: string) => call<{ trash: string }>(`/api/works/${encodeURIComponent(id)}`, { method: 'DELETE' }),
   ask: (id: string, task: string) => call<{ items: Candidate[] }>(`/api/works/${encodeURIComponent(id)}/ask`, { method: 'POST', body: { task } }),
   saveSeed: (seed: Partial<Seed>) => call<Seed>('/api/seeds', { method: 'POST', body: seed }),
   note: (dir: string) => call<NoteView>(`/api/notes/${encodeURIComponent(dir)}`),

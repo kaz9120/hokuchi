@@ -30,7 +30,7 @@ function useBrief(id: string) {
     (fn: (b: Brief) => Brief) => {
       setBrief((b) => {
         if (!b) return b
-        const next = { ...fn(b), published: b.published }
+        const next = { ...b, ...fn(b) }
         setSaving('pending')
         clearTimeout(timer.current)
         timer.current = window.setTimeout(async () => {
@@ -102,8 +102,9 @@ export function Work({ id }: { id: string }) {
         <div className="ml-auto flex shrink-0 items-center gap-3 whitespace-nowrap">
           <TabBar tabs={tabs} current={tab} onPick={(t) => (brief.talk || t === 'plan' ? go(t) : undefined)} badge={data ? { reads: yoursCount(data) } : undefined} />
           {!brief.published && (
-            <div className="border-l pl-3">
+            <div className="flex items-center gap-1 border-l pl-3">
               <NextStatus brief={brief} talk={data} setBrief={setBrief} />
+              {brief.status !== 'private' && <DeleteDraft brief={brief} />}
             </div>
           )}
         </div>
@@ -115,7 +116,7 @@ export function Work({ id }: { id: string }) {
         <div className="grid min-h-0 flex-1 grid-cols-[260px_minmax(0,1fr)]">
           <StageNav brief={brief} current={stage.key} onPick={(k) => go('plan', k)} />
           <main className="min-h-0 overflow-y-auto px-8 py-6">
-            <StagePanel brief={brief} stage={stage} setField={setField} update={update} setBrief={(b: Brief) => setBrief((cur: WorkView | null) => cur && { ...b, published: cur.published })} />
+            <StagePanel brief={brief} stage={stage} setField={setField} update={update} setBrief={(b: Brief) => setBrief((cur: WorkView | null) => cur && { ...cur, ...b })} />
             {brief.kind === 'talk' && !brief.talk && <p className="mx-auto mt-10 max-w-3xl text-sm text-muted-foreground">伝えたいことが決まったら、Claude Code に絵コンテを頼んでください。絵コンテができると、流れ・コマ・読みのタブが使えます。</p>}
           </main>
         </div>
@@ -168,6 +169,45 @@ function NextStatus({ brief, talk, setBrief }: { brief: WorkView; talk: Talk | n
         {talk && !talk.talk.outside && <p className="text-amber-800">この発表はリポジトリの talks/ にあります。非公開の発表はリポジトリの外に置くため、Claude Code に移動を頼んでください。</p>}
         <Button size="sm" className="justify-self-start" disabled={busy} onClick={finish}>
           <Check /> 非公開にする
+        </Button>
+      </PopoverContent>
+    </Popover>
+  )
+}
+
+/** 下書きの削除 (ADR-0044)。消さずにごみ箱へ移す。リポジトリの中のファイルは残し、消し方を案内する */
+function DeleteDraft({ brief }: { brief: WorkView }) {
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const remove = async () => {
+    setBusy(true)
+    setError(null)
+    try {
+      await api.deleteWork(brief.id)
+      location.href = '/'
+    } catch (e) {
+      setError(String((e as Error).message))
+      setBusy(false)
+    }
+  }
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="ghost" size="sm" className="text-muted-foreground">
+          <Trash2 /> 削除
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="grid w-96 gap-3 text-sm leading-relaxed">
+        <p className="font-medium">この下書きを削除しますか？</p>
+        <p>企画シート{brief.talk && brief.repoFiles.length === 0 ? 'と発表のファイル' : ''}を、ごみ箱（{brief.trashDir}）に移します。</p>
+        {brief.repoFiles.length > 0 && (
+          <p className="text-amber-800">
+            リポジトリのファイル（{brief.repoFiles.join('、')}）は残ります。消すときは Claude Code に頼んでください。
+          </p>
+        )}
+        {error && <p className="text-destructive">{error}</p>}
+        <Button size="sm" variant="destructive" className="justify-self-start" disabled={busy} onClick={remove}>
+          <Trash2 /> 削除する
         </Button>
       </PopoverContent>
     </Popover>

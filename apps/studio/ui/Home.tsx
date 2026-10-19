@@ -2,7 +2,7 @@
 // 一覧は、企画シートのある作品と、企画シートの無い公開物 (note の記事・サイトに載る発表) を 1 つにまとめる。
 // 状態は 下書き・非公開・公開 の 3 つで、下書きは「次にやること」のカード、非公開と公開は表紙の絵のカードで見せる
 import { useEffect, useMemo, useState } from 'react'
-import { FileText, Lightbulb, Plus, Presentation, Search } from 'lucide-react'
+import { Lightbulb, Plus, Search } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -11,6 +11,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { api, go, type HomeData, type Item, type Status, type TalkItem, type WorkItem } from '@/lib/api'
 import { KIND_LABEL, STAGES, stageStatus, type Kind } from '@/lib/stages'
+import { CreateMenu } from './CreateMenu'
 import { STATUS_LABEL, StatusBadge } from './status'
 
 export function Home() {
@@ -37,12 +38,7 @@ export function Home() {
                 サイトを開く
               </a>
             </Button>
-            <Button size="sm" variant="outline" onClick={() => start('talk')}>
-              <Presentation /> 発表を作成
-            </Button>
-            <Button size="sm" onClick={() => start('note')}>
-              <FileText /> 記事を作成
-            </Button>
+            <CreateMenu onPick={start} />
           </div>
         </div>
       </header>

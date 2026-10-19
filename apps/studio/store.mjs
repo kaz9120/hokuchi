@@ -4,9 +4,10 @@
 //   <置き場>/works/<id>/brief.yaml   作品 1 本の企画シート (段階ごとの欄・関門・AI の候補・非公開にしたか status)
 //   <置き場>/talks/<トーク>/          非公開 (社内向け) の発表。studio は読むが、サイトには載せない (ADR-0041・ADR-0043)
 //   <置き場>/seeds/<id>.yaml         ネタ 1 件
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
+//   <置き場>/trash/<日時>-<id>/       削除した下書き。元の置き場と同じ形 (works/<id>/・talks/<トーク>/) で残す (ADR-0044)
+import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
-import { join } from 'node:path'
+import { basename, join } from 'node:path'
 import YAML from 'yaml'
 
 export const PRIVATE = process.env.HOKUCHI_PRIVATE ?? join(homedir(), 'Hobby', 'hokuchi-private')
@@ -58,6 +59,24 @@ export function saveWork(id, next) {
   const brief = { ...prev, ...next, id: prev.id, kind: prev.kind, createdAt: prev.createdAt, updatedAt: now() }
   writeYaml(join(worksDir, id, 'brief.yaml'), brief)
   return brief
+}
+
+/**
+ * 下書きを削除する。消さずに、ごみ箱 (<置き場>/trash/<日時>-<id>/) に移す (ADR-0044)。
+ * talkDir は、リポジトリの外に置いた紐づくトーク。リポジトリの中のファイルは呼ぶ側が渡さない (git の操作が要るので触らない)。
+ * ネタの workIds からも外す。戻り値は、移した先のディレクトリ
+ */
+export function trashWork(id, { talkDir = null } = {}) {
+  if (!readWork(id)) throw new Error(`作品 ${id} がありません`)
+  const to = join(PRIVATE, 'trash', `${now().slice(0, 19).replace(/:/g, '-')}-${id}`)
+  mkdirSync(join(to, 'works'), { recursive: true })
+  renameSync(join(worksDir, id), join(to, 'works', id))
+  if (talkDir) {
+    mkdirSync(join(to, 'talks'), { recursive: true })
+    renameSync(talkDir, join(to, 'talks', basename(talkDir)))
+  }
+  for (const seed of listSeeds()) if (seed.workIds?.includes(id)) saveSeed({ ...seed, workIds: seed.workIds.filter((w) => w !== id) })
+  return to
 }
 
 // ---------------------------------------------------------------- ネタ

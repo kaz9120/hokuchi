@@ -16,11 +16,11 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { chromium } from 'playwright'
 import { moveScene, parseStoryboard, replaceNotes, replaceSceneMeta, seconds } from '../../packages/stage/node/storyboard.mjs'
-import { loadTalk, waitReady } from '../../packages/stage/node/talk.mjs'
+import { SITE, loadTalk, waitReady } from '../../packages/stage/node/talk.mjs'
 import { startSite } from '../slides/site-server.mjs'
 import { NOTE_KINDS, SURVEY, listPersonas, listReaders, listReads, runRead } from './readers.mjs'
 import { closeThread, importRead, openThread, readThreads, reopenThread, replyThread } from './threads.mjs'
-import { PRIVATE, createWork, listSeeds, listWorks, readWork, saveSeed, saveWork, workOfTalk } from './store.mjs'
+import { PRIVATE, createWork, listSeeds, listWorks, readWork, saveSeed, saveWork, trashWork, workOfTalk } from './store.mjs'
 import { listNotes, noteAsset, readNote } from './notes.mjs'
 import { TASKS, ask } from './ai.mjs'
 
@@ -273,7 +273,8 @@ function home() {
     const [x, y] = a.status === 'draft' ? [a.updatedAt, b.updatedAt] : [a.date, b.date]
     return (x ?? '') < (y ?? '') ? 1 : -1
   })
-  return { items, seeds: listSeeds(), tasks, siteUrl: `${site.url}/`, privateDir: PRIVATE }
+  // 「サイトを開く」は本番を開く。サイトに載っているものだけが見える (ADR-0044)
+  return { items, seeds: listSeeds(), tasks, siteUrl: `${SITE}/`, privateDir: PRIVATE }
 }
 
 /** 記事の作品に紐づく、アーカイブの記事。企画シートの note は記事の slug (articles/note/<公開日>-<slug>/ の slug) */
@@ -281,6 +282,31 @@ const noteOfWork = (w, notes = listNotes(repoRoot)) => (w.note ? (notes.find((n)
 
 /** 作品が公開されているか。発表はサイトに載るトーク、記事は note のアーカイブにあるもの (ADR-0043) */
 const isPublished = (w) => (w.kind === 'talk' ? site.talks.get(w.talk ?? '')?.info.public === true : !!noteOfWork(w))
+
+/** 作品に紐づく、リポジトリの中のファイル (talks/ のトーク・記事の原稿)。削除しても残す (ADR-0044) */
+function repoFilesOf(w) {
+  const t = w.talk ? site.talks.get(w.talk) : null
+  const draft = w.note ? join(repoRoot, 'articles/note/drafts', w.note) : null
+  return [t && !t.outside ? shownDir(t.dir) : null, draft && existsSync(draft) ? shownDir(draft) : null].filter(Boolean)
+}
+
+/** 作品の画面に渡す企画シート。published と repoFiles はサーバが実物から決めた値で、企画シートには書かない */
+const workView = (w) => ({ ...w, published: isPublished(w), repoFiles: repoFilesOf(w), trashDir: join(PRIVATE, 'trash') })
+
+/** 下書きを削除する。企画シートと、リポジトリの外のトークをごみ箱に移す。非公開と公開は削除できない (ADR-0044) */
+async function deleteWork(w) {
+  if (isPublished(w) || w.status === 'private') throw new Error('削除できるのは下書きだけです')
+  const t = w.talk ? site.talks.get(w.talk) : null
+  const outside = t?.outside ? t : null
+  // 動いているトークの作業場とサーバを止めてから移す
+  if (outside) {
+    await workspaces.get(w.talk)?.close()
+    workspaces.delete(w.talk)
+    await outside.vite.close()
+    site.talks.delete(w.talk)
+  }
+  return trashWork(w.id, { talkDir: outside?.dir ?? null })
+}
 
 // ---------------------------------------------------------------- UI と API
 const server = createHttpServer()
@@ -330,11 +356,17 @@ server.on('request', async (req, res) => {
       const brief = readWork(id)
       if (!brief) return json(res, { error: `作品（${id}）が見つかりません` }, 404)
       // published は実物から決めた値で、企画シートには書かない
-      if (!w[2] && req.method === 'GET') return json(res, { ...brief, published: isPublished(brief) })
+      if (!w[2] && req.method === 'GET') return json(res, workView(brief))
       if (!w[2] && req.method === 'PUT') {
-        const { published, ...next } = await body(req)
-        const saved = saveWork(id, next)
-        return json(res, { ...saved, published: isPublished(saved) })
+        const { published, repoFiles, trashDir, ...next } = await body(req)
+        return json(res, workView(saveWork(id, next)))
+      }
+      if (!w[2] && req.method === 'DELETE') {
+        try {
+          return json(res, { trash: await deleteWork(brief) })
+        } catch (e) {
+          return json(res, { error: String(e.message ?? e) }, 400)
+        }
       }
       if (w[2] === 'ask' && req.method === 'POST') {
         const { task } = await body(req)

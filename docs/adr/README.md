@@ -91,3 +91,4 @@ hokuchi における意思決定の記録。決定に至る過程（選択肢・
 | [0041](0041-studio-private-talks-and-finished-works.md) | studio は公開リポジトリの外のトークも扱い、作品に「終わった」を持たせる | 承認 (「終わった」は → ADR-0043 で置き換え) | apps/studio / apps/slides |
 | [0042](0042-public-view-and-text-export.md) | 発表用の画面と公開用の画面を分け、公開用ではノートの代わりにテキストと PDF を渡す | 承認 | packages/stage / apps/slides / skills |
 | [0043](0043-one-list-with-three-statuses.md) | studio のホームは、発表と記事を 1 つの一覧にし、下書き・非公開・公開の 3 つの状態で見せる | 承認 | apps/studio |
+| [0044](0044-create-menu-delete-drafts-and-site-link.md) | 作成は 1 つのボタンにまとめ、下書きは削除できるようにし、「サイトを開く」は本番を開く | 承認 | apps/studio |

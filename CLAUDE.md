@@ -1,6 +1,6 @@
 # hokuchi（火口）
 
-発信に関するツールとドキュメントを置くリポジトリです。ブランド定義は `BRAND.md` にあります（ビジュアルの一次ソースです。実装トークンは hidoko の `packages/ui/src/tokens.css` にあります）。
+発信に関するツールとドキュメントを置くリポジトリです。hokuchi が何を目指し、機能や画面を迷ったときに何で決めるかは `docs/vision.md` にあります。ブランド定義は `BRAND.md` にあります（ビジュアルの一次ソースです。実装トークンは hidoko の `packages/ui/src/tokens.css` にあります）。
 
 ## 意思決定の記録
 

@@ -30,7 +30,7 @@ export function ReadsView({ data, api, reading, onJump }: { data: Talk; api: Tal
         <section className="grid gap-4">
           <div className="flex flex-wrap items-center gap-3">
             <h2 className="text-lg font-semibold">聴衆役の読み</h2>
-            <span className="text-sm text-muted-foreground">AI が演じる聴衆 {data.readers.length} 人に、絵コンテの画面と話すことだけを渡して、読んでもらった結果です。</span>
+            <span className="text-sm text-muted-foreground">AI が演じる聴衆 {data.readers.length} 人が、絵コンテの画面と話すことだけを読んだ結果です。</span>
             <div className="ml-auto flex items-center gap-2">
               {data.reads.length > 1 &&
                 data.reads.map((r) => (
@@ -40,10 +40,10 @@ export function ReadsView({ data, api, reading, onJump }: { data: Talk; api: Tal
                 ))}
               {yours.length > 0 && (
                 <Button size="sm" variant="outline" onClick={() => document.getElementById('yours')?.scrollIntoView({ behavior: 'smooth' })}>
-                  あなたが答える指摘 {yours.length} 件へ ↓
+                  あなた宛て {yours.length} 件へ ↓
                 </Button>
               )}
-              <Button size="sm" disabled={!!reading || data.readers.length === 0} onClick={() => api.read()} title="いまの絵コンテを、まっさらな読み手に読んでもらいます。数分かかります">
+              <Button size="sm" disabled={!!reading || data.readers.length === 0} onClick={() => api.read()} title="いまの絵コンテを、まっさらな聴衆役に読んでもらいます。数分かかります">
                 {reading ? <Loader2 className="animate-spin" /> : <Users />}
                 {reading ? `読んでもらっています… ${reading.done} / ${reading.total} 人` : read ? 'もう一度読んでもらう' : '読んでもらう'}
               </Button>
@@ -51,19 +51,19 @@ export function ReadsView({ data, api, reading, onJump }: { data: Talk; api: Tal
           </div>
           {reading?.error && <p className="text-sm text-destructive">{reading.error}</p>}
 
-          {read ? <Survey data={data} read={read} prev={prev} /> : <p className="rounded-lg border border-dashed bg-background p-8 text-center text-muted-foreground">まだ読んでもらっていません。「読んでもらう」を押すと、読み手が絵コンテを読んで、アンケートとコマへの感想を返します。</p>}
+          {read ? <Survey data={data} read={read} prev={prev} /> : <p className="rounded-lg border border-dashed bg-background p-8 text-center text-muted-foreground">まだ読んでもらっていません。「読んでもらう」を押すと、聴衆役が絵コンテを読み、アンケートとコマへの感想を返します。</p>}
         </section>
 
         <section id="yours" className="grid scroll-mt-4 gap-3">
           <div className="flex flex-wrap items-center gap-3">
-            <h2 className="text-lg font-semibold">あなたが答える指摘</h2>
+            <h2 className="text-lg font-semibold">あなた宛ての指摘</h2>
             <span className="rounded-full bg-amber-500 px-2 text-sm font-semibold text-white">{yours.length}</span>
-            <span className="text-sm text-muted-foreground">Claude が確かめたいことと、あなたの判断が要る指摘です。答えると、Claude の番になります。</span>
+            <span className="text-sm text-muted-foreground">Claude からの確認と、あなたの判断が要る指摘です。返信すると Claude 宛てになります。</span>
             <div className="ml-auto">
               <Handoff data={data} />
             </div>
           </div>
-          {yours.length === 0 && <p className="text-sm text-muted-foreground">いま、あなたが答える指摘はありません。</p>}
+          {yours.length === 0 && <p className="text-sm text-muted-foreground">あなた宛ての指摘はありません。</p>}
           <div className="grid items-start gap-2 lg:grid-cols-2">
             {order(yours).map((t) => (
               <ThreadCard key={t.id} quiet thread={t} api={api} kinds={data.noteKinds} place={where(t, data.board)} onJump={() => onJump(t.scene)} />
@@ -73,7 +73,7 @@ export function ReadsView({ data, api, reading, onJump }: { data: Talk; api: Tal
 
         <section className="grid gap-3">
           <button className="justify-self-start text-sm text-muted-foreground hover:text-foreground" onClick={() => setShowDone((v) => !v)}>
-            Claude が直す指摘 {claude.length} 件と、済んだ件 {finished.length} 件{showDone ? 'を畳む' : 'を見る'}
+            Claude 宛て {claude.length} 件と解決済み {finished.length} 件を{showDone ? '隠す' : '表示'}
           </button>
           {showDone && (
             <div className="grid gap-2 lg:grid-cols-2">
@@ -140,7 +140,7 @@ function Survey({ data, read, prev }: { data: Talk; read: Read; prev: Read | nul
         </table>
         {row && (
           <div className="grid gap-1.5 border-t bg-muted/40 p-3 text-sm">
-            <div className="text-xs font-medium text-muted-foreground">「{row.label}」に付けた理由</div>
+            <div className="text-xs font-medium text-muted-foreground">「{row.label}」の理由</div>
             {read.readers.map((r) => (
               <div key={r.persona} className="grid grid-cols-[5.5em_2em_1fr] gap-2 leading-relaxed">
                 <span className="text-muted-foreground">{r.name}</span>
@@ -154,7 +154,7 @@ function Survey({ data, read, prev }: { data: Talk; read: Read; prev: Read | nul
 
       <div className="grid content-start gap-4">
         <div className="rounded-lg border bg-background p-3 text-sm">
-          <div className="mb-2 text-xs font-medium text-muted-foreground">いちばん伝えたかったことは、何だと思ったか</div>
+          <div className="mb-2 text-xs font-medium text-muted-foreground">いちばん伝えたいことは何だと思ったか</div>
           <div className="mb-2 rounded-md bg-muted px-2.5 py-1.5 leading-relaxed">
             <span className="mr-2 text-xs text-muted-foreground">あなたが伝えたいこと</span>
             {data.work?.oneLiner || data.board.meta['中核メッセージ']}
@@ -179,7 +179,7 @@ function Survey({ data, read, prev }: { data: Talk; read: Read; prev: Read | nul
             ))}
           </div>
         </div>
-        {read.failed.length > 0 && <p className="text-xs text-destructive">読めなかった人がいます: {read.failed.join(' / ')}</p>}
+        {read.failed.length > 0 && <p className="text-xs text-destructive">回答できなかった聴衆役: {read.failed.join(' / ')}</p>}
       </div>
     </div>
   )

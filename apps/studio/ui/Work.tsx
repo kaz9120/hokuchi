@@ -1,7 +1,7 @@
 // 作品の画面 (ADR-0040)。発表 1 本・記事 1 本を、企画から公開までタブで進める。
 // 企画 (段階 1〜4) は、左に段階、右にその段階の欄。発表は、絵コンテができたら 流れ・コマ・読み・公開 のタブが使える。
 // 伝えたいことと聴衆は、どのタブでも上に出し続ける (slide:ology p.36-37, p.39)。
-// 状態は 下書き → 非公開 → 公開 の一方通行。下書きは「非公開で終える」、非公開は公開の頼み方を出す (ADR-0043)
+// 状態は 下書き → 非公開 → 公開 の一方通行。下書きは「非公開にする」、非公開は公開の頼み方を出す (ADR-0043)
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ArrowLeft, Check, Circle, CircleDot, Info, Loader2, Lock, Plus, Sparkles, Trash2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
@@ -82,7 +82,7 @@ export function Work({ id }: { id: string }) {
       <header className="flex items-center gap-3 border-b bg-background px-4 py-2">
         <Button variant="ghost" size="sm" asChild>
           <a href="/">
-            <ArrowLeft /> 一覧
+            <ArrowLeft /> ホーム
           </a>
         </Button>
         <Badge variant="secondary">{KIND_LABEL[brief.kind]}</Badge>
@@ -90,7 +90,7 @@ export function Work({ id }: { id: string }) {
         <Input
           value={brief.title}
           onChange={(e) => update((b) => ({ ...b, title: e.target.value }))}
-          placeholder="仮のタイトル (あとで何度でも変えられます)"
+          placeholder="タイトル（仮でかまいません）"
           className="h-8 max-w-md border-transparent font-semibold shadow-none hover:border-input focus-visible:border-input"
         />
         {data && (
@@ -98,7 +98,7 @@ export function Work({ id }: { id: string }) {
             {[data.talk.event, data.talk.date, data.board.meta['持ち時間']].filter(Boolean).join('・')}
           </span>
         )}
-        <span className="shrink-0 text-xs text-muted-foreground">{saving === 'pending' ? '保存中…' : saving === 'saved' ? '保存しました' : ''}</span>
+        <span className="shrink-0 text-xs text-muted-foreground">{saving === 'pending' ? '保存中…' : saving === 'saved' ? '保存済み' : ''}</span>
         <div className="ml-auto flex shrink-0 items-center gap-3 whitespace-nowrap">
           <TabBar tabs={tabs} current={tab} onPick={(t) => (brief.talk || t === 'plan' ? go(t) : undefined)} badge={data ? { reads: yoursCount(data) } : undefined} />
           {!brief.published && (
@@ -116,7 +116,7 @@ export function Work({ id }: { id: string }) {
           <StageNav brief={brief} current={stage.key} onPick={(k) => go('plan', k)} />
           <main className="min-h-0 overflow-y-auto px-8 py-6">
             <StagePanel brief={brief} stage={stage} setField={setField} update={update} setBrief={(b: Brief) => setBrief((cur: WorkView | null) => cur && { ...b, published: cur.published })} />
-            {brief.kind === 'talk' && !brief.talk && <p className="mx-auto mt-10 max-w-3xl text-sm text-muted-foreground">伝えたいことが決まったら、ターミナルの Claude Code に絵コンテを頼みます。絵コンテができると、流れ・コマ・読みのタブが使えるようになります。</p>}
+            {brief.kind === 'talk' && !brief.talk && <p className="mx-auto mt-10 max-w-3xl text-sm text-muted-foreground">伝えたいことが決まったら、Claude Code に絵コンテを頼んでください。絵コンテができると、流れ・コマ・読みのタブが使えます。</p>}
           </main>
         </div>
       ) : (
@@ -127,7 +127,7 @@ export function Work({ id }: { id: string }) {
 }
 
 /**
- * 下書きなら「非公開で終える」(押すと status: private)。非公開なら、公開の頼み方を出す。
+ * 下書きなら「非公開にする」(押すと status: private)。非公開なら、公開の頼み方を出す。
  * 公開は手作業とデプロイの確認が要るので、画面からはしない。どちらも戻す操作は置かない (ADR-0043)
  */
 function NextStatus({ brief, talk, setBrief }: { brief: WorkView; talk: Talk | null; setBrief: React.Dispatch<React.SetStateAction<WorkView | null>> }) {
@@ -137,13 +137,13 @@ function NextStatus({ brief, talk, setBrief }: { brief: WorkView; talk: Talk | n
       <Popover>
         <PopoverTrigger asChild>
           <Button variant="ghost" size="sm">
-            <Info /> 公開するには
+            <Info /> 公開の手順
           </Button>
         </PopoverTrigger>
         <PopoverContent align="end" className="w-96 text-sm leading-relaxed">
           {brief.kind === 'talk'
-            ? '公開するときは、ターミナルの Claude Code に頼んでください。トークをリポジトリの talks/ に移して public: true にし、デプロイします。公開したあとは、非公開に戻せません。'
-            : '公開するときは、note に投稿してから、ターミナルの Claude Code にアーカイブへの取り込みを頼んでください。公開したあとは、非公開に戻せません。'}
+            ? 'Claude Code に公開を頼んでください。発表をリポジトリの talks/ に移して public: true にし、デプロイします。一度公開すると、非公開には戻せません。'
+            : 'note に投稿してから、Claude Code にアーカイブへの取り込みを頼んでください。一度公開すると、非公開には戻せません。'}
         </PopoverContent>
       </Popover>
     )
@@ -160,14 +160,14 @@ function NextStatus({ brief, talk, setBrief }: { brief: WorkView; talk: Talk | n
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm">
-          <Lock /> 非公開で終える
+          <Lock /> 非公開にする
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="grid w-96 gap-3 text-sm leading-relaxed">
-        <p>非公開で終えると、この作品は「非公開」になります。下書きに戻す操作はありません。あとから公開にはできます。</p>
-        {talk && !talk.talk.outside && <p className="text-amber-800">トークがリポジトリの talks/ にあります。非公開のトークはリポジトリの外に置くので、Claude Code に移してもらってください。</p>}
+        <p>非公開にすると、下書きには戻せません。あとから公開できます。</p>
+        {talk && !talk.talk.outside && <p className="text-amber-800">この発表はリポジトリの talks/ にあります。非公開の発表はリポジトリの外に置くため、Claude Code に移動を頼んでください。</p>}
         <Button size="sm" className="justify-self-start" disabled={busy} onClick={finish}>
-          <Check /> 非公開で終える
+          <Check /> 非公開にする
         </Button>
       </PopoverContent>
     </Popover>
@@ -278,9 +278,9 @@ function Personas({ personas, onChange }: { personas: Persona[]; onChange: (p: P
       {list.map((p, i) => (
         <Card key={i} className="gap-4">
           <CardHeader className="flex flex-row items-center gap-2">
-            <Input value={p.name} onChange={(e) => set(i, 'name', e.target.value)} placeholder={`${i + 1} 人目の名前 (例: 佐藤さん)`} className="max-w-72 bg-background" />
+            <Input value={p.name} onChange={(e) => set(i, 'name', e.target.value)} placeholder={`${i + 1} 人目の名前（例: 佐藤さん）`} className="max-w-72 bg-background" />
             {list.length > 1 && (
-              <Button variant="ghost" size="icon-sm" className="ml-auto" onClick={() => onChange(list.filter((_, j) => j !== i))} aria-label="この人を消す">
+              <Button variant="ghost" size="icon-sm" className="ml-auto" onClick={() => onChange(list.filter((_, j) => j !== i))} aria-label="この聴衆を削除">
                 <Trash2 />
               </Button>
             )}
@@ -300,13 +300,13 @@ function Personas({ personas, onChange }: { personas: Persona[]; onChange: (p: P
         </Card>
       ))}
       <Button variant="outline" size="sm" className="justify-self-start" onClick={() => onChange([...list, emptyPersona()])}>
-        <Plus /> 別の層の聴衆を描く
+        <Plus /> 聴衆を追加
       </Button>
     </div>
   )
 }
 
-/** 確定。人が「この内容で確定する」を押して進む。確定したあとに中身を変えると、未確定に戻る */
+/** 確定。人が「確定する」を押して進む。確定したあとに中身を変えると、未確定に戻る */
 function Confirm({ brief, stage, update }: { brief: Brief; stage: Stage; update: (fn: (b: Brief) => Brief) => void }) {
   const value = (brief.fields[stage.key] as string | undefined) ?? ''
   const st = stageStatus(stage, brief)
@@ -314,15 +314,15 @@ function Confirm({ brief, stage, update }: { brief: Brief; stage: Stage; update:
   if (st === 'done')
     return (
       <div className="flex items-center gap-2 text-sm text-emerald-700">
-        <Check className="size-4" /> {g.passedAt.slice(0, 10)} に確定しました。書き直すと、もう一度確定が必要になります。
+        <Check className="size-4" /> {g.passedAt.slice(0, 10)} に確定済み。書き換えたら、もう一度確定してください。
       </div>
     )
   return (
     <div className="flex items-center gap-3">
       <Button disabled={!value.trim()} onClick={() => update((b) => ({ ...b, gates: { ...b.gates, [stage.key]: { passedAt: new Date().toISOString(), value } } }))}>
-        <Check /> この内容で確定する
+        <Check /> 確定する
       </Button>
-      {g && <span className="text-sm text-muted-foreground">前に確定した内容から変わっています</span>}
+      {g && <span className="text-sm text-muted-foreground">確定した内容から変わっています</span>}
     </div>
   )
 }
@@ -368,14 +368,14 @@ function AiTasks({ brief, stage, setBrief, update }: { brief: Brief; stage: Stag
   return (
     <div className="mt-4 border-t pt-4">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs text-muted-foreground">行き詰まったら</span>
+        <span className="text-xs text-muted-foreground">Claude に頼む</span>
         {tasks.map((t) => (
           <Button key={t} variant="outline" size="sm" disabled={!!running} onClick={() => run(t)}>
             {running === t ? <Loader2 className="animate-spin" /> : <Sparkles />} {labels[t] ?? t}
           </Button>
         ))}
       </div>
-      {running && <p className="mt-2 text-sm text-muted-foreground">Claude に聞いています。20 秒ほどかかります。案や意見が出るだけで、欄は書き換わりません。</p>}
+      {running && <p className="mt-2 text-sm text-muted-foreground">Claude が考えています（20 秒ほど）。欄は書き換わりません。</p>}
       {error && <p className="mt-2 text-xs text-destructive">{error}</p>}
 
       {tasks.map((t) => {

@@ -328,7 +328,7 @@ server.on('request', async (req, res) => {
     if (w) {
       const id = decodeURIComponent(w[1])
       const brief = readWork(id)
-      if (!brief) return json(res, { error: `作品 ${id} がありません` }, 404)
+      if (!brief) return json(res, { error: `作品（${id}）が見つかりません` }, 404)
       // published は実物から決めた値で、企画シートには書かない
       if (!w[2] && req.method === 'GET') return json(res, { ...brief, published: isPublished(brief) })
       if (!w[2] && req.method === 'PUT') {
@@ -364,7 +364,7 @@ server.on('request', async (req, res) => {
     const m = url.pathname.match(/^\/api\/talks\/([^/]+)\/(.+)$/)
     if (m) {
       const ws = workspace(decodeURIComponent(m[1]))
-      if (!ws) return json(res, { error: `トーク「${m[1]}」がありません` }, 404)
+      if (!ws) return json(res, { error: `発表（${m[1]}）が見つかりません` }, 404)
       const op = m[2]
       if (op === 'state') return json(res, await ws.state())
       if (op.startsWith('thumb/')) {

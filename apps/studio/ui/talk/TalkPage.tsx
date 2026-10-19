@@ -32,7 +32,7 @@ export function TalkPage({ slug }: { slug: string }) {
       <header className="flex items-center gap-3 border-b bg-background px-4 py-2">
         <Button variant="ghost" size="sm" asChild>
           <a href="/">
-            <ArrowLeft /> 一覧
+            <ArrowLeft /> ホーム
           </a>
         </Button>
         <Badge variant="secondary">発表</Badge>

@@ -155,7 +155,7 @@ export async function runRead({ repoRoot, talkDir, onProgress = () => {} }) {
   const readers = listReaders(talkDir)
     .map((r) => ({ persona: personas.find((p) => p.id === r.persona), why: r.why ?? '' }))
     .filter((r) => r.persona)
-  if (readers.length === 0) throw new Error('読み手が決まっていません。readers.yaml に、読んでもらうペルソナを書いてください')
+  if (readers.length === 0) throw new Error('聴衆役が決まっていません。readers.yaml にペルソナを書いてください')
   let done = 0
   const failed = []
   onProgress({ done, total: readers.length, failed })

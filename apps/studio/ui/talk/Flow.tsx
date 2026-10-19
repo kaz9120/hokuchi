@@ -22,13 +22,13 @@ export function FlowView({ data, thumbs, api, onOpen }: { data: Talk; thumbs: nu
             {limit && (
               <span className="text-sm">
                 <span className="text-muted-foreground">持ち時間 {mmss(limit)} に対して </span>
-                <span className={cn('font-semibold', over > 0 ? 'text-destructive' : 'text-emerald-700')}>{over > 0 ? `${mmss(over)} 超えています` : `${mmss(-over)} 余っています`}</span>
+                <span className={cn('font-semibold', over > 0 ? 'text-destructive' : 'text-emerald-700')}>{over > 0 ? `${mmss(over)} 超過` : `${mmss(-over)} 余り`}</span>
               </span>
             )}
             <span className="text-sm text-muted-foreground">
-              {board.scenes.length} 場面・{board.scenes.reduce((n, s) => n + s.states.length, 0)} コマ
+              {board.scenes.length} シーン・{board.scenes.reduce((n, s) => n + s.states.length, 0)} コマ
             </span>
-            <span className="ml-auto text-xs text-muted-foreground">時間は、話すことの字数から見積もっています（1 分 300 字）。カードの時間を書き換えると、自分で決められます。</span>
+            <span className="ml-auto text-xs text-muted-foreground">時間は話すことの字数から見積もっています（1 分 300 字）。カードの時間は書き換えられます。</span>
           </div>
           <TimeBar data={data} total={total} limit={limit} />
         </div>
@@ -91,7 +91,7 @@ function TimeBar({ data, total, limit }: { data: Talk; total: number; limit: num
       </div>
       {limit && limit < total && (
         <div className="absolute -top-4 h-9 border-l-2 border-destructive" style={{ left: `${(limit / total) * 100}%` }}>
-          <span className="absolute -top-0.5 left-1 text-xs leading-none whitespace-nowrap text-destructive">持ち時間 {mmss(limit)} はここまで</span>
+          <span className="absolute -top-0.5 left-1 text-xs leading-none whitespace-nowrap text-destructive">持ち時間 {mmss(limit)}</span>
         </div>
       )}
       <div className="mt-1 flex text-xs text-muted-foreground">
@@ -125,11 +125,11 @@ function SceneCard({ scene, api, thumb, yours, first, last, onOpen }: { scene: S
   const gap = seconds ? spoken - seconds : 0
   return (
     <div id={`card-${scene.id}`} className="group relative flex flex-col overflow-hidden rounded-lg border bg-background">
-      <button onClick={onOpen} className="relative block bg-muted" title="この場面のコマを開く">
-        {thumb ? <img src={thumb} alt="" loading="lazy" className="aspect-video w-full object-cover" /> : <div className="grid aspect-video place-items-center text-xs text-muted-foreground">絵はまだ</div>}
+      <button onClick={onOpen} className="relative block bg-muted" title="このシーンのコマを開く">
+        {thumb ? <img src={thumb} alt="" loading="lazy" className="aspect-video w-full object-cover" /> : <div className="grid aspect-video place-items-center text-xs text-muted-foreground">絵はまだありません</div>}
         {yours > 0 && (
-          <span className="absolute top-1.5 right-1.5 rounded-full bg-amber-500 px-2 text-xs font-semibold leading-5 text-white" title={`あなたが答える指摘が ${yours} 件`}>
-            答える {yours}
+          <span className="absolute top-1.5 right-1.5 rounded-full bg-amber-500 px-2 text-xs font-semibold leading-5 text-white" title={`あなた宛ての指摘が ${yours} 件`}>
+            あなた宛て {yours} 件
           </span>
         )}
       </button>
@@ -142,27 +142,27 @@ function SceneCard({ scene, api, thumb, yours, first, last, onOpen }: { scene: S
             onChange={(e) => setTime(e.target.value)}
             onBlur={saveTime}
             onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
-            title={`この場面にかける時間。話すことの字数からの見積もりは ${mmss(spoken)}。空にすると見積もりに戻ります`}
+            title={`このシーンにかける時間（見積もり ${mmss(spoken)}）。空にすると見積もりに戻ります`}
             className={cn('w-14 shrink-0 rounded border border-transparent bg-transparent px-1 text-right text-xs tabular-nums outline-none placeholder:text-muted-foreground hover:border-border focus:border-ring', seconds && 'font-semibold')}
           />
         </div>
         <textarea
           value={tell}
-          placeholder="この場面で伝えること（1 行）"
+          placeholder="このシーンで伝えること"
           onChange={(e) => setTell(e.target.value)}
           onBlur={() => tell.trim() !== tellNow && api.saveMeta(scene.id, '伝えること', tell)}
           className="field-sizing-content w-full resize-none rounded border border-transparent bg-transparent px-1 py-0.5 text-xs leading-relaxed text-muted-foreground outline-none hover:border-border focus:border-ring focus:text-foreground"
         />
         <div className="flex items-center gap-2 px-1 text-xs text-muted-foreground">
           <span>{scene.states.length} コマ</span>
-          {seconds && Math.abs(gap) >= 15 ? <span className={cn('ml-auto', gap > 0 && 'text-destructive')}>{gap > 0 ? `話すことが ${mmss(gap)} ぶん多い` : `話すことが ${mmss(-gap)} ぶん少ない`}</span> : null}
+          {seconds && Math.abs(gap) >= 15 ? <span className={cn('ml-auto', gap > 0 && 'text-destructive')}>{gap > 0 ? `見積もりが ${mmss(gap)} 長い` : `見積もりが ${mmss(-gap)} 短い`}</span> : null}
         </div>
       </div>
       <div className="absolute top-1.5 left-1.5 hidden gap-1 group-hover:flex">
-        <button disabled={first} onClick={() => api.move(scene.id, -1)} title="章の中で、1 つ前へ動かす" className="rounded bg-background/90 p-1 shadow disabled:opacity-30">
+        <button disabled={first} onClick={() => api.move(scene.id, -1)} title="前へ移動" className="rounded bg-background/90 p-1 shadow disabled:opacity-30">
           <ChevronLeft className="size-3.5" />
         </button>
-        <button disabled={last} onClick={() => api.move(scene.id, 1)} title="章の中で、1 つ後ろへ動かす" className="rounded bg-background/90 p-1 shadow disabled:opacity-30">
+        <button disabled={last} onClick={() => api.move(scene.id, 1)} title="後ろへ移動" className="rounded bg-background/90 p-1 shadow disabled:opacity-30">
           <ChevronRight className="size-3.5" />
         </button>
       </div>

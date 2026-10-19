@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
-import { author, type TalkApi, type Thread } from '@/lib/talk'
+import { author, CLOSED_LABEL, type TalkApi, type Thread } from '@/lib/talk'
 
 /** 聴衆役の感想の種類の色。良かった点だけ、別の色にする */
 const kindTone = (kind?: string) => (kind === 'good' ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : 'border-border bg-muted text-muted-foreground')
@@ -37,14 +37,14 @@ export function Compose({ placeholder, onSend, onCancel, autoFocus = false }: { 
       />
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <Button size="xs" disabled={!text.trim()} onClick={submit}>
-          送る
+          送信
         </Button>
         {onCancel && (
           <Button size="xs" variant="ghost" onClick={onCancel}>
-            やめる
+            キャンセル
           </Button>
         )}
-        <span>Enter で送る・Shift+Enter で改行</span>
+        <span>Enter で送信・Shift+Enter で改行</span>
       </div>
     </div>
   )
@@ -62,7 +62,7 @@ export function NewThread({ label, onSend }: { label: string; onSend: (text: str
   return (
     <Compose
       autoFocus
-      placeholder="話す内容でも、スライドの見た目でも。気になったことをそのまま"
+      placeholder="話す内容でも見た目でも、気になったことを自由に入力"
       onCancel={() => setOpen(false)}
       onSend={(t) => {
         onSend(t)
@@ -88,15 +88,15 @@ export function ThreadCard({ thread, api, kinds, place, onJump, quiet = false }:
         )}
         <span className={cn('font-medium', place && 'text-muted-foreground')}>{author(t)}</span>
         {t.kind && <span className={cn('rounded-full border px-2 py-px text-xs', kindTone(t.kind))}>{kinds[t.kind] ?? t.kind}</span>}
-        {mine && !quiet && <Badge className="ml-auto bg-amber-500 text-white">あなたが答える</Badge>}
+        {mine && !quiet && <Badge className="ml-auto bg-amber-500 text-white">あなた宛て</Badge>}
         {t.ball === 'Claude' && (
           <Badge variant="outline" className="ml-auto">
-            Claude が直す
+            Claude 宛て
           </Badge>
         )}
         {closed && t.closed && t.closed !== '良かった点' && (
           <Badge variant="outline" className="ml-auto">
-            {t.closed}
+            {CLOSED_LABEL[t.closed] ?? t.closed}
           </Badge>
         )}
       </div>
@@ -127,7 +127,7 @@ export function ThreadCard({ thread, api, kinds, place, onJump, quiet = false }:
       {replying ? (
         <Compose
           autoFocus
-          placeholder={mine ? '返事を書く' : '補足を書く'}
+          placeholder={mine ? '返信を入力' : '追記を入力'}
           onCancel={() => setReplying(false)}
           onSend={(text) => {
             api.reply(t.id, text)
@@ -139,29 +139,29 @@ export function ThreadCard({ thread, api, kinds, place, onJump, quiet = false }:
           {mine && (
             <>
               <Button size="xs" onClick={() => setReplying(true)}>
-                答える
+                返信する
               </Button>
-              <Button size="xs" variant="outline" onClick={() => api.close(t.id, '直した')} title="この内容で良ければ、これで閉じます">
-                <Check /> これでいい
+              <Button size="xs" variant="outline" onClick={() => api.close(t.id, '直した')} title="この内容で良ければ、解決にして閉じます">
+                <Check /> 解決する
               </Button>
-              <Button size="xs" variant="ghost" onClick={() => api.close(t.id, 'そのままにした')} title="直さずに、このままにします">
-                直さなくていい
+              <Button size="xs" variant="ghost" onClick={() => api.close(t.id, 'そのままにした')} title="直さずに閉じます">
+                見送る
               </Button>
             </>
           )}
           {t.ball === 'Claude' && (
             <>
               <Button size="xs" variant="ghost" className="text-muted-foreground" onClick={() => setReplying(true)}>
-                補足する
+                追記する
               </Button>
-              <Button size="xs" variant="ghost" className="text-muted-foreground" onClick={() => api.close(t.id, 'そのままにした')} title={t.by === '話者' ? 'この指摘を取り下げます' : '直さずに、このままにします'}>
-                {t.by === '話者' ? '取り下げる' : '直さなくていい'}
+              <Button size="xs" variant="ghost" className="text-muted-foreground" onClick={() => api.close(t.id, 'そのままにした')} title={t.by === '話者' ? 'この指摘を取り下げます' : '直さずに閉じます'}>
+                {t.by === '話者' ? '取り下げる' : '見送る'}
               </Button>
             </>
           )}
           {closed && (
             <Button size="xs" variant="ghost" className="text-muted-foreground" onClick={() => api.reopen(t.id)}>
-              <RotateCcw /> もう一度開く
+              <RotateCcw /> 未解決に戻す
             </Button>
           )}
         </div>

@@ -18,7 +18,7 @@ export function NoteView({ dir }: { dir: string }) {
       <header className="sticky top-0 z-10 flex items-center gap-3 border-b bg-background px-4 py-2">
         <Button variant="ghost" size="sm" asChild>
           <a href="/">
-            <ArrowLeft /> 一覧
+            <ArrowLeft /> ホーム
           </a>
         </Button>
         <span className="truncate text-sm text-muted-foreground">{note.title}</span>
@@ -30,7 +30,7 @@ export function NoteView({ dir }: { dir: string }) {
               </a>
             </Button>
           )}
-          <Button size="sm" disabled title="次の段で作ります">
+          <Button size="sm" disabled title="準備中">
             改稿する
           </Button>
         </div>

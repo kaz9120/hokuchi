@@ -41,7 +41,7 @@ export function indexHtml(entries) {
           .map(
             (e) => `<a class="talk" href="./${esc(e.slug)}/">
           <img src="./${esc(e.slug)}/og.png" alt="" loading="lazy" />
-          <div class="meta"><span>${esc(e.date)}</span>${e.tag ? `<span class="tag">#${esc(e.tag)}</span>` : ''}${e.event?.name ? `<span>${esc(e.event.name)}</span>` : ''}${e.public === false ? '<span class="tag">非公開 (開発サーバだけに出る)</span>' : ''}</div>
+          <div class="meta"><span>${esc(e.date)}</span>${e.tag ? `<span class="tag">#${esc(e.tag)}</span>` : ''}${e.event?.name ? `<span>${esc(e.event.name)}</span>` : ''}${e.public === false ? '<span class="tag">非公開（開発サーバのみ）</span>' : ''}</div>
           <div class="title">${esc(e.title)}</div>
         </a>`,
           )
@@ -74,7 +74,7 @@ export function indexHtml(entries) {
         <h1>slides.y-kaz.com</h1>
         <p>${desc}</p>
       </header>
-      ${sections || '<p>まだ公開しているトークはありません。</p>'}
+      ${sections || '<p>公開中の発表はまだありません。</p>'}
       <footer>© 山本一将</footer>
     </div>
   </body>
@@ -84,7 +84,7 @@ export function indexHtml(entries) {
 
 export function notFoundHtml() {
   return `<!doctype html>
-<html lang="ja"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>見つかりません ・ slides.y-kaz.com</title><style>${PAGE_STYLE}</style></head>
-<body><div class="wrap"><header><h1>見つかりません</h1><p>このページはありません。<a href="/">トップページ</a>から探してみてください。</p></header></div></body></html>
+<html lang="ja"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>ページが見つかりません ・ slides.y-kaz.com</title><style>${PAGE_STYLE}</style></head>
+<body><div class="wrap"><header><h1>ページが見つかりません</h1><p><a href="/">トップページ</a>からお探しください。</p></header></div></body></html>
 `
 }

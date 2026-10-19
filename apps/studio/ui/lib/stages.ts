@@ -18,7 +18,7 @@ export type Brief = {
   talk?: string
   /** 紐づく記事の slug (articles/note/drafts/<slug>/。公開すると articles/note/<公開日>-<slug>/ になる) */
   note?: string
-  /** 「非公開で終える」を押した作品だけが持つ。公開かどうかは実物から決めるので書かない (ADR-0043) */
+  /** 「非公開にする」を押した作品だけが持つ。公開かどうかは実物から決めるので書かない (ADR-0043) */
   status?: 'private'
   id: string
   kind: Kind
@@ -50,7 +50,7 @@ export type Stage = {
   n: number
   /** 段階の名前。何をするかが分かる動詞で終える */
   title: Record<Kind, string>
-  /** 確定が必要な段階か。人が「この内容で確定する」を押して進む */
+  /** 確定が必要な段階か。人が「確定する」を押して進む */
   confirm?: boolean
   /** この段階でやること。最初に読まれるので、短く */
   lead: Record<Kind, string>
@@ -287,10 +287,10 @@ export const STAGES: Stage[] = [
     title: { talk: '構成を決める', note: '構成を決める' },
     confirm: true,
     later: true,
-    lead: { talk: '話の流れを決め、場面ごとの絵コンテにします。', note: 'いちばん面白いところを冒頭に置き、流れを箇条書きにします。' },
+    lead: { talk: '話の流れを決め、シーンごとの絵コンテにします。', note: 'いちばん面白いところを冒頭に置き、流れを箇条書きにします。' },
     source: 'slide:ology p.39, 48 / 村井弦',
   },
-  { key: 'make', n: 7, title: { talk: 'スライドを作る', note: '本文を書く' }, later: true, lead: { talk: '場面ごとにスライドを作ります。', note: '構成に沿って本文を書きます。' }, source: '' },
+  { key: 'make', n: 7, title: { talk: 'スライドを作る', note: '本文を書く' }, later: true, lead: { talk: 'シーンごとにスライドを作ります。', note: '構成に沿って本文を書きます。' }, source: '' },
   {
     key: 'review',
     n: 8,

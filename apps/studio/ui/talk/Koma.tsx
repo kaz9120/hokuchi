@@ -78,7 +78,7 @@ export function KomaView({ data, thumbs, api, focus }: { data: Talk; thumbs: num
                   <button key={s.id} onClick={() => jump(s.id)} className={cn('flex w-full items-center gap-2 px-4 py-1 text-left hover:bg-accent', current === s.id && 'bg-accent font-medium')}>
                     <span className="min-w-0 flex-1 truncate">{s.title}</span>
                     {n > 0 && (
-                      <span className="rounded-full bg-amber-500 px-1.5 text-xs font-semibold text-white" title={`あなたが答える指摘が ${n} 件`}>
+                      <span className="rounded-full bg-amber-500 px-1.5 text-xs font-semibold text-white" title={`あなた宛ての指摘が ${n} 件`}>
                         {n}
                       </span>
                     )}
@@ -88,8 +88,8 @@ export function KomaView({ data, thumbs, api, focus }: { data: Talk; thumbs: num
           </div>
         ))}
         </div>
-        <label className="flex cursor-pointer items-center gap-2 border-t px-4 py-2 text-xs text-muted-foreground" title="絵コンテには、絵をどう作るかの指示が Claude 向けに書いてあります">
-          <input type="checkbox" checked={showHow} onChange={(e) => setShowHow(e.target.checked)} /> 絵の作り方（Claude への指示）も見る
+        <label className="flex cursor-pointer items-center gap-2 border-t px-4 py-2 text-xs text-muted-foreground" title="Claude 向けに書いた、絵の作り方の指示です">
+          <input type="checkbox" checked={showHow} onChange={(e) => setShowHow(e.target.checked)} /> 絵の作り方を表示
         </label>
       </nav>
 
@@ -122,7 +122,7 @@ function SceneSheet({ scene, data, thumbs, api, showHow, threads, onPlay }: { sc
           </div>
           {scene.meta['伝えること'] && <p className="mt-1 text-sm text-muted-foreground">{scene.meta['伝えること']}</p>}
         </div>
-        <Margin threads={whole} api={api} kinds={data.noteKinds} label="このシーン全体に指摘を書く" onSend={(text) => api.open(scene.id, null, text)} />
+        <Margin threads={whole} api={api} kinds={data.noteKinds} label="シーンに指摘を追加" onSend={(text) => api.open(scene.id, null, text)} />
       </div>
       <div className="mt-4 grid gap-5">
         {scene.states.map((_, i) => (
@@ -159,12 +159,12 @@ function KomaRow({ scene, index, api, kinds, showHow, thumb, threads, onPlay }: 
   }
   return (
     <div className="grid grid-cols-[340px_minmax(0,1fr)_360px] gap-6">
-      <button onClick={onPlay} className="group relative block self-start overflow-hidden rounded-md border bg-muted" title="この絵に変わる動きを見る">
-        {thumb ? <img src={thumb} alt="" loading="lazy" className="aspect-video w-full object-cover" /> : <div className="grid aspect-video place-items-center text-sm text-muted-foreground">絵はまだ</div>}
+      <button onClick={onPlay} className="group relative block self-start overflow-hidden rounded-md border bg-muted" title="このコマの動きを再生">
+        {thumb ? <img src={thumb} alt="" loading="lazy" className="aspect-video w-full object-cover" /> : <div className="grid aspect-video place-items-center text-sm text-muted-foreground">絵はまだありません</div>}
         <span className="absolute bottom-1.5 left-1.5 rounded-full bg-foreground/85 px-2 text-xs font-semibold leading-5 text-background">{index + 1}</span>
         <span className="absolute inset-0 hidden place-items-center bg-foreground/25 text-background group-hover:grid">
           <span className="flex items-center gap-1 rounded-full bg-foreground/85 px-3 py-1 text-sm">
-            <Play className="size-3.5" /> 動きを見る
+            <Play className="size-3.5" /> 再生
           </span>
         </span>
       </button>
@@ -177,7 +177,7 @@ function KomaRow({ scene, index, api, kinds, showHow, thumb, threads, onPlay }: 
           onBlur={save}
           className="field-sizing-content min-h-16 w-full resize-none rounded-md border border-transparent bg-transparent px-2 py-1 text-[15px] leading-[1.85] outline-none hover:border-border focus:border-ring focus:bg-background"
         />
-        <div className="px-2 text-xs text-muted-foreground">{notes !== saved ? '書きかけです。欄の外を押すと保存します' : null}</div>
+        <div className="px-2 text-xs text-muted-foreground">{notes !== saved ? '未保存です。欄の外を押すと保存します' : null}</div>
         {(showHow || !thumb) && (
           <p className="mt-1 border-l-2 px-2 text-xs leading-relaxed text-muted-foreground">
             <span className="mr-2 font-medium">絵の作り方</span>
@@ -186,7 +186,7 @@ function KomaRow({ scene, index, api, kinds, showHow, thumb, threads, onPlay }: 
         )}
       </div>
 
-      <Margin threads={threads} api={api} kinds={kinds} label="このコマに指摘を書く" onSend={(text) => api.open(scene.id, index + 1, text)} />
+      <Margin threads={threads} api={api} kinds={kinds} label="コマに指摘を追加" onSend={(text) => api.open(scene.id, index + 1, text)} />
     </div>
   )
 }
@@ -215,7 +215,7 @@ function Margin({ threads, api, kinds, label, onSend }: { threads: Thread[]; api
       )}
       {finished.length > 0 && (
         <button className="justify-self-start text-xs text-muted-foreground hover:text-foreground" onClick={() => setShowDone((v) => !v)}>
-          済んだ件 {finished.length} {showDone ? 'を畳む' : 'を見る'}
+          解決済み {finished.length} 件を{showDone ? '隠す' : '表示'}
         </button>
       )}
       {showDone && finished.map((t) => <ThreadCard key={t.id} thread={t} api={api} kinds={kinds} />)}
@@ -232,7 +232,7 @@ function ReaderNote({ thread, api, kinds }: { thread: Thread; api: TalkApi; kind
     return (
       <div className="relative">
         <ThreadCard thread={thread} api={api} kinds={kinds} />
-        <button className="absolute top-1 right-1 rounded p-1 text-muted-foreground hover:bg-accent" onClick={() => setOpen(false)} aria-label="畳む">
+        <button className="absolute top-1 right-1 rounded p-1 text-muted-foreground hover:bg-accent" onClick={() => setOpen(false)} aria-label="閉じる">
           <X className="size-3" />
         </button>
       </div>
@@ -275,7 +275,7 @@ function Player({ data, pick, position, total, move, close }: { data: Talk; pick
             ← 前のコマ
           </Button>
           <Button variant="outline" size="sm" onClick={() => go(true)}>
-            <Play /> もう一度
+            <Play /> もう一度再生
           </Button>
           <Button variant="outline" size="sm" onClick={() => move(1)}>
             次のコマ →

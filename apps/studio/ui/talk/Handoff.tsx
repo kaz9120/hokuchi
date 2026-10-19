@@ -20,7 +20,7 @@ export function Handoff({ data }: { data: Talk }) {
       </PopoverTrigger>
       <PopoverContent align="end" className="grid w-[30rem] gap-3 text-sm">
         <p className="leading-relaxed">
-          Claude が直す番の指摘が {list.length} 件あります（あなたから {own} 件、聴衆役から {list.length - own} 件）。下の依頼文を、ターミナルの Claude Code に貼ってください。Claude は指摘を読んで直し、確かめたいことがあれば「あなたが答える指摘」に戻します。
+          Claude 宛ての指摘が {list.length} 件あります（あなたから {own} 件・聴衆役から {list.length - own} 件）。下の依頼文を Claude Code に貼ってください。確かめたいことがあれば、Claude は「あなた宛て」に戻します。
         </p>
         <pre className="max-h-40 overflow-auto rounded-md bg-muted p-2.5 text-xs leading-relaxed whitespace-pre-wrap">{text}</pre>
         <Button

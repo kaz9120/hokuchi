@@ -14,8 +14,8 @@ export type TalkTab = 'flow' | 'koma' | 'reads' | 'publish'
 export const TALK_TABS: { key: TalkTab; label: string; hint: string }[] = [
   { key: 'flow', label: '流れ', hint: '発表全体を見渡して、順序と時間を決める' },
   { key: 'koma', label: 'コマ', hint: '絵コンテを読んで、話すことを直し、指摘を書く' },
-  { key: 'reads', label: '読み', hint: '聴衆役に読んでもらい、指摘に答える' },
-  { key: 'publish', label: '公開', hint: '通しで見て、公開する' },
+  { key: 'reads', label: '読み', hint: '聴衆役に読んでもらい、指摘に返信する' },
+  { key: 'publish', label: '公開', hint: '通しで再生して、公開する' },
 ]
 
 /** タブの並び。企画のタブは、作品の画面が先頭に足す */
@@ -39,7 +39,7 @@ export function Compass({ oneLiner, readers, right }: { oneLiner: string; reader
       <div className="flex min-w-0 flex-1 items-baseline gap-2">
         <span className="shrink-0 text-xs text-muted-foreground">伝えたいこと</span>
         <span className={cn('truncate', !oneLiner && 'text-muted-foreground')} title={oneLiner}>
-          {oneLiner || 'まだ決めていません'}
+          {oneLiner || '未定'}
         </span>
       </div>
       {readers.length > 0 && (
@@ -92,22 +92,22 @@ function PublishView({ data }: { data: Talk }) {
     <div className="min-h-0 flex-1 overflow-y-auto px-6 py-8">
       <div className="mx-auto grid max-w-2xl gap-6">
         <div className="grid gap-3 rounded-lg border bg-background p-5">
-          <h2 className="font-semibold">通して見る</h2>
-          <p className="text-sm text-muted-foreground">発表を、本番と同じ動きで最初から見ます。別の窓が開きます。← → で前後に送れます。</p>
+          <h2 className="font-semibold">通しで再生</h2>
+          <p className="text-sm text-muted-foreground">本番と同じ動きで、最初から再生します。新しいタブで開きます。← → キーで前後に移動できます。</p>
           <div className="flex gap-2">
             <Button asChild>
               <a href={data.stageUrl} target="_blank" rel="noreferrer">
-                <ExternalLink /> 最初から通して見る
+                <ExternalLink /> 最初から再生
               </a>
             </Button>
             <Button variant="outline" asChild>
               <a href={`${data.stageUrl}?presenter`} target="_blank" rel="noreferrer">
-                <ExternalLink /> 発表者の画面（話すこと付き）
+                <ExternalLink /> 発表者ビュー
               </a>
             </Button>
           </div>
         </div>
-        <p className="text-sm text-muted-foreground">公開するかどうか、OGP の確認、リハーサルと当日の振り返りは、これから作ります。いまは、公開の作業をターミナルの Claude Code に頼んでください。</p>
+        <p className="text-sm text-muted-foreground">公開の設定・OGP の確認・振り返りは準備中です。いまは Claude Code に公開を頼んでください。</p>
       </div>
     </div>
   )

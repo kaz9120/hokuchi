@@ -113,7 +113,7 @@ export function PublicPlayer({ talk }: { talk: TalkDef }) {
               全画面
             </button>
             {exp.text && (
-              <button onClick={onCopy} title="口頭で補足した内容も含めて、資料の全文をコピーします。AI に読ませるときに使えます">
+              <button onClick={onCopy} title="口頭の補足も含めた全文をコピーします。AI に読み込ませるときに便利です">
                 {copied ? 'コピーしました' : 'テキストをコピー'}
               </button>
             )}

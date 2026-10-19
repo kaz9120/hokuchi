@@ -4,7 +4,8 @@
   "type": "module",
   "description": "発表資料と記事を、企画から公開まで作るローカルの制作アプリ (ADR-0036・ADR-0040)",
   "scripts": {
-    "start": "node server.mjs"
+    "start": "node server.mjs",
+    "test": "node --experimental-strip-types --disable-warning=ExperimentalWarning --test test/studio.test.ts"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",

@@ -141,9 +141,9 @@ export function Inbox({ view }: { view: WorkView }) {
         </Button>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto [overflow-wrap:anywhere]">
         {fresh && (
-          <div className="grid gap-2 border-b bg-muted/50 px-4 py-3 text-sm">
+          <div className="grid min-w-0 gap-2 border-b bg-muted/50 px-4 py-3 text-sm">
             <p className="leading-relaxed">
               聴衆役から感想が <span className="font-semibold">{fresh.notes.length} 件</span> 届きました（{fresh.read} 回目の読み）。目を通してから、まとめて扱えます。
             </p>
@@ -159,7 +159,7 @@ export function Inbox({ view }: { view: WorkView }) {
               </Button>
             </div>
             {peek && (
-              <ul className="grid max-h-72 gap-1 overflow-y-auto">
+              <ul className="grid max-h-72 min-w-0 gap-1 overflow-x-hidden overflow-y-auto">
                 {fresh.notes.map((t) => (
                   <li key={t.id}>
                     <button onClick={() => jump(t)} className={cn('w-full rounded-md border-l-2 px-2 py-1 text-left text-xs leading-relaxed hover:bg-accent', t.kind === 'good' ? 'border-emerald-400' : 'border-muted-foreground/40')}>
@@ -177,12 +177,12 @@ export function Inbox({ view }: { view: WorkView }) {
         )}
 
         {now ? (
-          <div className="grid gap-3 px-4 py-4">
-            <div className="flex items-center gap-2 text-sm">
-              <button onClick={() => jump(now)} className="min-w-0 truncate font-medium underline-offset-2 hover:underline" title="この場所を開く">
+          <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-3 px-4 py-4">
+            <div className="flex min-w-0 items-center gap-2 text-sm">
+              <button onClick={() => jump(now)} className="min-w-0 flex-1 truncate text-left font-medium underline-offset-2 hover:underline" title="この場所を開く">
                 {placeLabel(now)}
               </button>
-              <span className="ml-auto shrink-0 text-xs text-muted-foreground tabular-nums">
+              <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
                 {at + 1} / {yours.length}
               </span>
               <Button variant="ghost" size="icon-xs" disabled={at === 0} onClick={() => setIndex(at - 1)} aria-label="前の件">
@@ -194,13 +194,13 @@ export function Inbox({ view }: { view: WorkView }) {
             </div>
             <ThreadCard key={now.id} thread={now} api={api} kinds={view.unitKinds} quiet />
             {yours.length > 1 && (
-              <div className="grid gap-1">
+              <div className="grid min-w-0 gap-1">
                 <div className="text-xs text-muted-foreground">このあとの件</div>
                 {yours.map((t, i) =>
                   i === at ? null : (
-                    <button key={t.id} onClick={() => setIndex(i)} className="grid rounded-md px-2 py-1.5 text-left text-xs hover:bg-accent">
-                      <span className="font-medium">{placeLabel(t)}</span>
-                      <span className="line-clamp-1 text-muted-foreground">{t.replies?.at(-1)?.text ?? t.text}</span>
+                    <button key={t.id} onClick={() => setIndex(i)} className="grid min-w-0 rounded-md px-2 py-1.5 text-left text-xs hover:bg-accent">
+                      <span className="truncate font-medium">{placeLabel(t)}</span>
+                      <span className="truncate text-muted-foreground">{t.replies?.at(-1)?.text ?? t.text}</span>
                     </button>
                   ),
                 )}
@@ -217,9 +217,9 @@ export function Inbox({ view }: { view: WorkView }) {
               {showOthers ? '閉じる' : `Claude の番と済んだ指摘 ${others.length} 件を見る`}
             </button>
             {showOthers && (
-              <div className="mt-2 grid gap-2">
+              <div className="mt-2 grid min-w-0 grid-cols-[minmax(0,1fr)] gap-2">
                 {others.map((t) => (
-                  <div key={t.id} className="grid gap-1">
+                  <div key={t.id} className="grid min-w-0 gap-1">
                     <button onClick={() => jump(t)} className="justify-self-start text-xs font-medium hover:underline">
                       {placeLabel(t)}
                     </button>

@@ -57,7 +57,7 @@ export function ThreadCard({ thread, api, kinds, place, onJump, quiet = false }:
   const mine = t.ball === '話者'
   const closed = t.ball === 'none'
   return (
-    <div className={cn('grid gap-2 rounded-lg border bg-background p-3 text-sm', mine && 'border-amber-400 bg-amber-50/60', closed && 'bg-muted/40 text-muted-foreground')}>
+    <div className={cn('grid min-w-0 gap-2 rounded-lg border bg-background p-3 text-sm [overflow-wrap:anywhere]', mine && 'border-amber-400 bg-amber-50/60', closed && 'bg-muted/40 text-muted-foreground')}>
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
         {place && (
           <button className="font-medium underline-offset-2 hover:underline" onClick={onJump} title="このコマを開く">

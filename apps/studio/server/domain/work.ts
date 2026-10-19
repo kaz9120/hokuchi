@@ -12,7 +12,7 @@ import { mediaOf } from '../media/index.ts'
 import { createDraft, draftDir, hasDraft, reviseFromArchive, SLUG } from '../media/note.ts'
 import { shownDir } from '../infra/config.ts'
 import { briefFile } from './brief.ts'
-import { slugFromTitle } from './slug.ts'
+import { decideSlug } from './slug.ts'
 import { archiveDir, archiveOfSlug, listArchives, readArchive, slugOfArchive } from './archive.ts'
 import { briefDir, createBrief, isBriefId, listBriefs, readBrief, writeBrief } from './brief.ts'
 import { listPersonas, listReads, readReaders, readings } from './reads.ts'
@@ -174,14 +174,14 @@ const slugTaken = (s: string) => existsSync(draftDir(s)) || !!archiveOfSlug(s)
 
 /**
  * 記事の原稿を作る。index.md を作り、企画シートの note に書く (ADR-0046)。
- * slug を渡さなければ、企画のタイトルから決める (話者に聞かない。直したいときは renameBody)
+ * slug を渡さなければ、企画のタイトルと伝えたいことから Claude に決めてもらう (話者に聞かない。直したいときは renameBody)
  */
-export function createBody(ref: WorkRef, slug?: string) {
+export async function createBody(ref: WorkRef, slug?: string) {
   if (ref.kind !== 'note') throw invalid('原稿を作れるのは記事だけです。発表の絵コンテは Claude Code に頼んでください')
   if (!ref.brief) throw invalid('企画シートの無い記事には、原稿を作れません')
   if (ref.draft) throw invalid(`この記事には原稿（${ref.draft}）があります`)
   if (ref.archive) throw invalid('公開済みの記事は「改稿する」で直します')
-  const s = String(slug ?? '').trim() || slugFromTitle(ref.brief.title, slugTaken)
+  const s = String(slug ?? '').trim() || (await decideSlug(ref.brief.title, String(ref.brief.fields?.oneLiner ?? ''), slugTaken))
   createDraft(s, ref.brief.title)
   writeBrief(ref.brief.id, { note: s })
   return s

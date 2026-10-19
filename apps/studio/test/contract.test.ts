@@ -130,12 +130,18 @@ describe('ごみ箱と改稿', () => {
 })
 
 describe('原稿の名前と読み手 (段 4)', () => {
-  it('原稿は slug を渡さずに作れ、タイトルから名前を決める。空や日本語だけのタイトルでも作れる', async () => {
+  it('原稿は slug を渡さずに作れ、Claude が名前を付ける。Claude がだめならタイトルのローマ字、空や日本語だけのタイトルでも作れる', async () => {
     const id = await create('note')
     const v0 = await view(id)
     assert.equal((await call(`${w(id)}/title`, 'PUT', { orig: v0.title, title: 'ジャンプしよう' })).status, 200)
     assert.equal((await call(`${w(id)}/body`, 'POST', {})).status, 200)
-    assert.equal((await view(id)).brief!.note, 'janpushiyou')
+    assert.equal((await view(id)).brief!.note, 'jump-for-joy')
+    assert.ok(readFileSync(s.claudeLog, 'utf8').includes('原稿の置き場の名前 (slug)'))
+    const bad = await create('note')
+    const b0 = await view(bad)
+    await call(`${w(bad)}/title`, 'PUT', { orig: b0.title, title: 'ちょっと悪い名前' })
+    assert.equal((await call(`${w(bad)}/body`, 'POST', {})).status, 200)
+    assert.equal((await view(bad)).brief!.note, 'chotto-i')
     const empty = await create('note')
     assert.equal((await call(`${w(empty)}/body`, 'POST', {})).status, 200)
     assert.match((await view(empty)).brief!.note!, /^note-\d{4}-\d{2}-\d{2}(-\d+)?$/)

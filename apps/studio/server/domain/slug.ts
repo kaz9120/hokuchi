@@ -1,5 +1,12 @@
-// 原稿の置き場の名前 (slug) を、企画のタイトルから決める (rebuild.md 6 章。話者に slug を聞かない)。
-// かなはヘボン式のローマ字に、英数字はそのまま小文字にし、漢字などは落とす。短すぎれば日付の名前にする
+// 原稿の置き場の名前 (slug) を決める (rebuild.md 6 章。話者に slug を聞かない)。
+// まず Claude に、企画のタイトルと伝えたいことから短い英語の名前を 1 つ出してもらう (話者の決定 2026-10-20)。
+// Claude が失敗・時間切れ・決まりに合わない名前を返したときは、タイトルのかなをローマ字にした名前に落とす
+import { tmpdir } from 'node:os'
+import { askClaude } from '../infra/claude.ts'
+
+/** 原稿の名前の決まり (半角の英小文字・数字・ハイフン) */
+const SLUG = /^[a-z0-9][a-z0-9-]*$/
+
 const BASE: Record<string, string> = {
   あ: 'a', い: 'i', う: 'u', え: 'e', お: 'o', か: 'ka', き: 'ki', く: 'ku', け: 'ke', こ: 'ko', さ: 'sa', し: 'shi', す: 'su', せ: 'se', そ: 'so',
   た: 'ta', ち: 'chi', つ: 'tsu', て: 'te', と: 'to', な: 'na', に: 'ni', ぬ: 'nu', ね: 'ne', の: 'no', は: 'ha', ひ: 'hi', ふ: 'fu', へ: 'he', ほ: 'ho',
@@ -55,4 +62,31 @@ export function slugFromTitle(title: string, taken: (s: string) => boolean, now 
   let slug = base
   for (let n = 2; taken(slug); n++) slug = `${base}-${n}`
   return slug
+}
+
+/** Claude に名前を 1 つ出してもらう。使えない名前なら null */
+async function slugByClaude(title: string, oneLiner: string, taken: (s: string) => boolean, timeoutMs: number): Promise<string | null> {
+  if (!title.trim() && !oneLiner.trim()) return null
+  const prompt = [
+    'note の記事の原稿の置き場の名前 (slug) を 1 つ決めてください。公開したあとの URL とフォルダの名前になります。',
+    '決まり: 半角の英小文字・数字・ハイフンだけ。英単語 2〜5 語をハイフンでつなぐ。30 字以内。記事の中身が分かる短い英語にする。',
+    `タイトル: ${title.trim() || '(未定)'}`,
+    `伝えたいこと: ${oneLiner.trim() || '(未定)'}`,
+    '答えは JSON だけで {"slug": "..."} の形にしてください。',
+  ].join('\n')
+  try {
+    const raw = await askClaude(prompt, { cwd: tmpdir(), label: '原稿の名前', timeoutMs })
+    const s = String(raw?.slug ?? '').trim().toLowerCase()
+    if (!SLUG.test(s) || s.length > 48) return null
+    let slug = s
+    for (let n = 2; taken(slug); n++) slug = `${s}-${n}`
+    return slug
+  } catch {
+    return null
+  }
+}
+
+/** 原稿の名前を決める。Claude に頼み、だめならローマ字に落とす */
+export async function decideSlug(title: string, oneLiner: string, taken: (s: string) => boolean, { timeoutMs = 45_000 } = {}): Promise<string> {
+  return (await slugByClaude(title, oneLiner, taken, timeoutMs)) ?? slugFromTitle(title, taken)
 }

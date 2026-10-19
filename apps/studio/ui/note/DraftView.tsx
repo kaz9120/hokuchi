@@ -227,7 +227,7 @@ function AddParagraph({ api, open: initial }: { api: DraftApi; open: boolean }) 
   )
 }
 
-/** 原稿がまだ無い記事。置き場の名前 (slug) は聞かず、サーバが企画のタイトルから決める。名前は「⋯」から変えられる */
+/** 原稿がまだ無い記事。置き場の名前 (slug) は聞かず、Claude がタイトルと伝えたいことから付ける。名前は「⋯」から変えられる */
 export function CreateDraft({ title, onCreate }: { title: string; onCreate: () => Promise<void> }) {
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -256,7 +256,7 @@ export function CreateDraft({ title, onCreate }: { title: string; onCreate: () =
         {error && <p className="text-sm text-destructive">{error}</p>}
         <div className="flex flex-wrap items-center gap-3">
           <Button disabled={busy} onClick={create}>
-            原稿を作成
+            {busy ? '原稿の名前を付けています…' : '原稿を作成'}
           </Button>
           <span className="text-xs text-muted-foreground">下書きは、企画の最後の「Claude Code に下書きを頼む」からも頼めます。</span>
         </div>

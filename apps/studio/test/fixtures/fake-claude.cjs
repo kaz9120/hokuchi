@@ -53,6 +53,12 @@ function respond(prompt) {
       ],
     })
   }
+  // 原稿の名前 (slug)。タイトルで答えを変える (決まりに合わない名前・答えなし は、ローマ字に落ちる)
+  if (prompt.includes('原稿の置き場の名前 (slug)')) {
+    if (prompt.includes('ジャンプしよう')) return JSON.stringify({ slug: 'jump-for-joy' })
+    if (prompt.includes('悪い名前')) return JSON.stringify({ slug: 'Bad Name!' })
+    return '{}'
+  }
   // 企画の「Claude に頼む」
   if (prompt.includes('あなたは、書き手と一緒に')) {
     return JSON.stringify({ items: [1, 2, 3].map((n) => ({ text: `案 ${n}`, note: `補足 ${n}` })) })

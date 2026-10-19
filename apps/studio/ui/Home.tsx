@@ -1,35 +1,27 @@
-// studio のホーム (ADR-0040・ADR-0043・ADR-0045)。ネタ帳と、発表と記事の一覧を並べ、新しく始める。
-// 一覧は、企画シートのある作品と、企画シートの無い公開物 (note の記事・サイトに載る発表) を 1 つにまとめる。
-// 状態は 進み具合 (下書き・完成) と公開範囲 (非公開・公開) の 2 つの軸。下書きは「次にやること」のカード、完成は表紙の絵のカードで見せる
+// studio のホーム (段 5。rebuild.md 6 章・棚卸しの 3.7。話者の決定: 「いま・積み上げ」)。
+// 上が「いま」(下書き・完成・改稿中)、下が「積み上げ」(公開。月で区切る)。vision.md の「ネタ → … → 積み上げる」の両端を上下に置く。
+// カードは 1 種類: 表紙 (無ければ伝えたいことを大きく) + 種類 + 状態 1 語 + タイトル + 1 行 (下書きは次にやること、公開済みは日付とイベント)。
+// ネタは帯の 1 行で書き留め、一覧は「いま」の下に畳む。絞り込みは「すべて・発表・記事」と検索だけ
 import { useEffect, useMemo, useState } from 'react'
-import { Lightbulb, Plus, Search } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
+import { ChevronRight, ExternalLink, Lightbulb, Search } from 'lucide-react'
+import type { HomeData, HomeItem, Kind, Seed } from '../shared/api'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Textarea } from '@/components/ui/textarea'
-import { api, type HomeData, type Item, type Progress, type TalkItem, type Visibility, type WorkItem } from '@/lib/api'
-import { navigate, onLinkClick, workHref } from '@/lib/router'
-import type { WorkState } from '../shared/api'
-import { KIND_LABEL, STAGES, stageStatus, type Kind } from '@/lib/stages'
+import { api } from '@/lib/api'
+import { notify } from '@/lib/notice'
+import { navigate, onLinkClick, workHref, type Face } from '@/lib/router'
+import { KIND_LABEL, STAGES, stageStatus } from '@/lib/stages'
+import { cn } from '@/lib/utils'
 import { CreateMenu } from './CreateMenu'
 import { StateLabel } from './status'
 
-const PROGRESS_OPTIONS: { value: 'all' | Progress; label: string }[] = [{ value: 'all', label: 'すべて' }, { value: 'draft', label: '下書き' }, { value: 'finished', label: '完成' }]
-const VISIBILITY_OPTIONS: { value: 'all' | Visibility; label: string }[] = [{ value: 'all', label: 'すべて' }, { value: 'private', label: '非公開' }, { value: 'public', label: '公開' }]
-
-/** 読み込み直さずに作品の画面へ移るリンク */
-const Go = ({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) => (
-  <a href={href} onClick={(e) => onLinkClick(e, href)} className={className}>
-    {children}
-  </a>
-)
+const PLAN = STAGES.filter((s) => !s.later)
 
 export function Home() {
   const [data, setData] = useState<HomeData | null>(null)
   const reload = () => api.home().then(setData)
   useEffect(() => {
+    document.title = 'hokuchi studio'
     reload()
     // 置き場が変わったら (Claude Code が企画や原稿を直したときも) 読み直す
     let timer: number | undefined
@@ -40,312 +32,256 @@ export function Home() {
     })
     return () => es.close()
   }, [])
+  const start = async (kind: Kind, seedId?: string) => navigate(workHref(await api.createWork(kind, seedId)))
 
-  const start = async (kind: Kind, seedId?: string) => {
-    const brief = await api.createWork(kind, seedId)
-    navigate(workHref(brief.id))
-  }
+  // いま: 日が迫っている発表を先に (近い順)、次に作りかけを触った順、完成は最後
+  const now = useMemo(() => {
+    const list = data?.items.filter((i) => i.state.word !== '公開') ?? []
+    const rank = (i: HomeItem) => {
+      const d = i.kind === 'talk' ? daysTo(i.date) : null
+      return i.state.word === '完成' ? 2 : d !== null && d >= 0 ? 0 : 1
+    }
+    return [...list].sort((x, y) => rank(x) - rank(y) || (rank(x) === 0 ? (daysTo(x.date) ?? 0) - (daysTo(y.date) ?? 0) : (y.updatedAt ?? '').localeCompare(x.updatedAt ?? '')))
+  }, [data])
+  const done = useMemo(() => data?.items.filter((i) => i.state.word === '公開') ?? [], [data])
 
-  if (!data) return <div className="p-10 text-muted-foreground">読み込み中…</div>
   return (
     <div className="min-h-screen bg-muted/40">
-      <header className="sticky top-0 z-10 border-b bg-background">
-        <div className="mx-auto flex max-w-6xl items-center gap-3 px-6 py-3">
-          <div className="font-semibold">hokuchi studio</div>
-          <div className="ml-auto flex items-center gap-2">
-            <Button variant="ghost" size="sm" asChild>
-              <a href={data.siteUrl} target="_blank" rel="noreferrer">
-                サイトを開く
-              </a>
-            </Button>
+      <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center gap-4 px-6 py-3">
+          <div className="shrink-0 font-semibold">hokuchi studio</div>
+          <SeedInput onSaved={reload} />
+          <div className="flex shrink-0 items-center gap-2">
+            {data && (
+              <Button variant="ghost" size="sm" asChild>
+                <a href={data.siteUrl} target="_blank" rel="noreferrer" title="公開しているスライドのサイト (slides.y-kaz.com) を開きます">
+                  スライドのサイト <ExternalLink />
+                </a>
+              </Button>
+            )}
             <CreateMenu onPick={start} />
           </div>
         </div>
       </header>
 
-      {/* ネタ → 下書き → 非公開・公開 の順に、上から下へ。一覧は公開した記事で長くなるので、ネタ帳を上に置く */}
-      <main className="mx-auto grid max-w-6xl gap-10 px-6 py-8">
-        <Seeds data={data} onSaved={reload} onStart={start} />
-        <Works items={data.items} />
-        <p className="text-xs text-muted-foreground">企画シート・ネタ帳・非公開の発表は、公開リポジトリの外（{data.privateDir}）に保存しています。</p>
-      </main>
+      {!data ? (
+        <div className="p-10 text-muted-foreground">読み込み中…</div>
+      ) : (
+        <main className="mx-auto grid max-w-6xl gap-12 px-6 py-8">
+          <section className="grid gap-4">
+            <SectionHead title="いま" note={`${now.length} 本`} />
+            {now.length === 0 ? (
+              <p className="rounded-lg border border-dashed bg-background p-8 text-center text-sm text-muted-foreground">作っているものはありません。右上の「作成」か、ネタから始めます。</p>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {now.map((i) => (
+                  <WorkCard key={i.key} item={i} />
+                ))}
+              </div>
+            )}
+            <Seeds seeds={data.seeds} onStart={start} />
+          </section>
+          <Stack items={done} />
+        </main>
+      )}
     </div>
   )
 }
 
-function SectionTitle({ children }: { children: React.ReactNode }) {
-  return <h2 className="mb-3 text-sm font-semibold tracking-wide text-muted-foreground">{children}</h2>
-}
-
-/** 発表の日まで、あと何日か */
-const daysTo = (date: string | null) => (date ? Math.ceil((new Date(date).getTime() - Date.now()) / 86400000) : null)
-
-/**
- * 下書きの作品 1 枚。いまどこにいて、次に何をするかを言う。
- * 公開済みの記事を改稿しているとき (ADR-0047) は、公開のバッジのまま下書きのカードで見せ、企画と構成は飛ばす
- */
-function WorkCard({ work, state }: { work: WorkItem; state: WorkState }) {
-  const revising = state.word === '改稿中'
-  const next = STAGES.find((s) => !s.later && stageStatus(s, work) !== 'done')
-  const t = work.talkInfo
-  const days = daysTo(t?.date ?? (work.fields.date as string | undefined) ?? null)
-  const d = work.draftInfo
-  // 次にやること。企画が残っていれば企画、絵コンテがあれば、答える指摘 → 読んでもらう → コマを読む の順。
-  // 記事は、原稿が無ければ原稿を作る、あれば答える指摘 → 原稿を読んで直す (ADR-0046)
-  const at = (face: string) => workHref(work.id, face as never)
-  const todo = next && !revising
-    ? { text: `企画の「${next.title[work.kind]}」を書く`, href: at(next.key), label: '企画を開く' }
-    : work.kind === 'note'
-      ? !d
-        ? { text: '原稿を作成する', href: at('draft'), label: '原稿を開く' }
-        : d.outline === 0 && !revising
-          ? { text: '構成（見出しの並びと、密にする場所）を決める', href: at('outline'), label: '構成を開く' }
-          : d.blocks === 0
-            ? { text: '本文を書く（Claude Code に下書きを頼む）', href: at('draft'), label: '原稿を開く' }
-            : d.mine > 0
-              ? { text: `あなた宛ての指摘が ${d.mine} 件`, href: at('reads'), label: '返信する' }
-              : d.reads === 0
-                ? { text: '聴衆役に読んでもらう', href: at('reads'), label: '読みを開く' }
-                : { text: revising ? '直した記事で、note を更新する' : 'タイトル・タグ・見出し画像を決めて公開する', href: at('publish'), label: '公開を開く' }
-    : !t
-      ? { text: 'Claude Code に絵コンテを頼む', href: workHref(work.id), label: '企画を開く' }
-      : t.mine > 0
-        ? { text: `あなた宛ての指摘が ${t.mine} 件`, href: at('reads'), label: '返信する' }
-        : t.reads === 0
-          ? { text: '聴衆役に読んでもらう', href: at('reads'), label: '読みを開く' }
-          : { text: 'コマを読んで、話すことを直す', href: at('koma'), label: 'コマを開く' }
-  const meta = [t?.event ?? (work.fields.event as string | undefined), t?.date, days === 0 ? '今日' : days !== null && days > 0 ? `あと ${days} 日` : null].filter(Boolean) as string[]
+function SectionHead({ title, note, children }: { title: string; note?: string; children?: React.ReactNode }) {
   return (
-    <Card className="h-full gap-3 py-4">
-      <CardHeader className="px-4">
-        <div className="flex items-center gap-2">
-          <Badge variant="secondary">{KIND_LABEL[work.kind]}</Badge>
-          <StateLabel state={state} />
-          {/* 項目の途中で折り返さない (「あと / 12 日」のように割れないように) */}
-          <span className="flex min-w-0 flex-wrap text-xs text-muted-foreground">
-            {meta.length
-              ? meta.map((s, i) => (
-                  <span key={i} className="whitespace-nowrap">
-                    {i > 0 && '・'}
-                    {s}
-                  </span>
-                ))
-              : `${work.updatedAt.slice(0, 10)} 更新`}
-          </span>
-        </div>
-        <CardTitle className="text-base">{work.title || '無題'}</CardTitle>
-        <CardDescription className="line-clamp-2">{work.fields.oneLiner || '伝えたいことは未定'}</CardDescription>
-      </CardHeader>
-      <CardContent className="grid gap-3 px-4">
-        {t && (
-          <div className="text-xs text-muted-foreground">
-            {t.scenes} シーン・{t.states} コマ・聴衆役の読み {t.reads} 回
-          </div>
-        )}
-        {d && (
-          <div className="text-xs text-muted-foreground">
-            {d.chars.toLocaleString()} 字・{d.paragraphs} 段落
-          </div>
-        )}
-        <div className="text-sm">
-          <span className="mr-2 text-xs text-muted-foreground">次にやること</span>
-          {todo.text}
-        </div>
-        <div className="flex gap-2">
-          <Button size="sm" asChild>
-            <Go href={todo.href}>{todo.label}</Go>
-          </Button>
-          {t && (
-            <Button size="sm" variant="outline" asChild>
-              <Go href={at('flow')}>流れを見る</Go>
-            </Button>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+      <h2 className="text-lg font-semibold">{title}</h2>
+      {note && <span className="text-sm text-muted-foreground tabular-nums">{note}</span>}
+      {children}
+    </div>
   )
 }
 
-/** 企画を持たない、作りかけの発表 */
-function DraftTalkCard({ item, talk }: { item: Item; talk: TalkItem }) {
-  return (
-    <Card className="h-full gap-3 py-4">
-      <CardHeader className="px-4">
-        <div className="flex items-center gap-2">
-          <Badge variant="secondary">発表</Badge>
-          <StateLabel state={item.state} />
-          <span className="text-xs text-muted-foreground">{[talk.event, talk.date].filter(Boolean).join('・')}</span>
-        </div>
-        <CardTitle className="text-base">{talk.title}</CardTitle>
-        <CardDescription>
-          {talk.scenes} シーン・{talk.states} コマ
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="px-4">
-        <Button size="sm" asChild>
-          <Go href={workHref(item.key, 'koma')}>コマを開く</Go>
-        </Button>
-      </CardContent>
-    </Card>
-  )
-}
+// ---------------------------------------------------------------- ネタ
 
-/** ネタ帳。思いついたらすぐ書き、発表か記事にする */
-function Seeds({ data, onSaved, onStart }: { data: HomeData; onSaved: () => void; onStart: (kind: Kind, seedId: string) => void }) {
-  const [happening, setHappening] = useState('')
-  const [why, setWhy] = useState('')
+/** 帯の 1 行で、ネタを書き留める。Enter で追加 */
+function SeedInput({ onSaved }: { onSaved: () => void }) {
+  const [text, setText] = useState('')
   const add = async () => {
-    if (!happening.trim()) return
-    await api.saveSeed({ happening: happening.trim(), why: why.trim() })
-    setHappening('')
-    setWhy('')
+    const t = text.trim()
+    if (!t) return
+    await api.saveSeed({ happening: t })
+    setText('')
+    notify('ネタを書き留めました。「いま」の下のネタから、発表か記事にできます。')
     onSaved()
   }
-  // Enter で書き留める (Shift+Enter で改行。IME の確定の Enter は送らない)
-  const onKey = (e: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
-      e.preventDefault()
-      add()
-    }
-  }
-  // 毎日開く画面なので、書き留める欄は 1 行に収め、一覧を押し下げすぎないようにする
   return (
-    <section>
-      <SectionTitle>ネタ帳</SectionTitle>
-      <Card className="gap-2 py-3">
-        <CardContent className="grid gap-2 px-4">
-          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <span className="flex items-center gap-1.5 text-sm font-medium">
-              <Lightbulb className="size-4" /> ネタをメモする
-            </span>
-            <span className="text-xs text-muted-foreground">なぜそう感じたかも書くと、あとで発表や記事にしやすくなります。</span>
-          </div>
-          <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_minmax(0,18rem)_auto] md:items-start">
-            <Textarea value={happening} onChange={(e) => setHappening(e.target.value)} onKeyDown={onKey} placeholder="気になったこと" rows={1} className="min-h-9" />
-            <Input value={why} onChange={(e) => setWhy(e.target.value)} onKeyDown={onKey} placeholder="なぜそう感じたか（任意）" />
-            <Button onClick={add} disabled={!happening.trim()}>
-              <Plus /> 追加
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-      {data.seeds.length > 0 && (
-        <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {data.seeds.map((s) => (
-            <Card key={s.id} className="gap-2 py-3">
-              <CardContent className="grid gap-2 px-4">
-                <div className="text-sm whitespace-pre-wrap">{s.happening}</div>
-                {s.why && <div className="text-xs text-muted-foreground">なぜ: {s.why}</div>}
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">{s.createdAt.slice(0, 10)}</span>
-                  {(s.workIds?.length ?? 0) > 0 && <Badge variant="outline">作品 {s.workIds!.length} 本</Badge>}
-                  <div className="ml-auto flex gap-1">
-                    <Button size="xs" variant="ghost" onClick={() => onStart('talk', s.id)}>
-                      発表にする
-                    </Button>
-                    <Button size="xs" variant="ghost" onClick={() => onStart('note', s.id)}>
-                      記事にする
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+    <div className="relative min-w-0 flex-1">
+      <Lightbulb className="pointer-events-none absolute top-2.5 left-2.5 size-4 text-muted-foreground" />
+      <Input
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && void add()}
+        placeholder="気になったことを書き留める（Enter）"
+        aria-label="ネタを書き留める"
+        className="pl-8"
+      />
+    </div>
+  )
+}
+
+/** ネタの一覧。「いま」の下に畳んでおく */
+function Seeds({ seeds, onStart }: { seeds: Seed[]; onStart: (kind: Kind, seedId: string) => void }) {
+  const [open, setOpen] = useState(false)
+  if (seeds.length === 0) return null
+  return (
+    <div className="grid gap-2">
+      <button onClick={() => setOpen((v) => !v)} aria-expanded={open} className="flex w-fit items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+        <ChevronRight className={cn('size-4 transition-transform', open && 'rotate-90')} /> ネタ {seeds.length} 件
+      </button>
+      {open && (
+        <div className="grid animate-in gap-2 fade-in-0 sm:grid-cols-2 lg:grid-cols-3">
+          {seeds.map((s) => (
+            <div key={s.id} className="grid gap-2 rounded-lg border bg-background p-3 text-sm">
+              <p className="whitespace-pre-wrap">{s.happening}</p>
+              {s.why && <p className="text-xs text-muted-foreground">なぜ: {s.why}</p>}
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-muted-foreground">
+                  {s.createdAt.slice(0, 10)}
+                  {(s.workIds?.length ?? 0) > 0 && `・作品 ${s.workIds!.length} 本`}
+                </span>
+                <Button size="xs" variant="ghost" className="ml-auto" onClick={() => onStart('talk', s.id)}>
+                  発表にする
+                </Button>
+                <Button size="xs" variant="ghost" onClick={() => onStart('note', s.id)}>
+                  記事にする
+                </Button>
+              </div>
+            </div>
           ))}
         </div>
       )}
-    </section>
+    </div>
   )
 }
 
-const KIND_FILTERS: { value: 'all' | Kind; label: string }[] = [
+// ---------------------------------------------------------------- 積み上げ
+
+const FILTERS: { value: 'all' | Kind; label: string }[] = [
   { value: 'all', label: 'すべて' },
   { value: 'talk', label: '発表' },
   { value: 'note', label: '記事' },
 ]
-type Filter = { kind: 'all' | Kind; progress: 'all' | Progress; visibility: 'all' | Visibility }
 
-/**
- * 発表と記事の一覧。種類・進み具合・公開範囲で絞り込み、タイトル・タグ・イベントで探せる。
- * 並びはサーバが決める (下書きが上、そのあとは日付の新しい順)
- */
-function Works({ items }: { items: Item[] }) {
-  const [filter, setFilter] = useState<Filter>({ kind: 'all', progress: 'all', visibility: 'all' })
+/** 公開したもの。月で区切り、新しい月から並べる */
+function Stack({ items }: { items: HomeItem[] }) {
+  const [kind, setKind] = useState<'all' | Kind>('all')
   const [q, setQ] = useState('')
-  const hit = (i: Item) => !q || i.title.includes(q) || (i.event ?? '').includes(q) || i.tags.some((t: string) => t.includes(q))
-  const fits = (i: Item, f: Filter) => (f.kind === 'all' || i.kind === f.kind) && (f.progress === 'all' || i.progress === f.progress) && (f.visibility === 'all' || i.visibility === f.visibility)
-  const shown = useMemo(() => items.filter((i: Item) => hit(i) && fits(i, filter)), [items, q, filter])
-  // 絞り込みの数は、ほかの絞り込みと検索を効かせたうえで、その値を選んだときの数にする
-  const count = (change: Partial<Filter>) => items.filter((i: Item) => hit(i) && fits(i, { ...filter, ...change })).length
-  const set = (change: Partial<Filter>) => setFilter((f: Filter) => ({ ...f, ...change }))
+  const hit = (i: HomeItem) => !q || i.title.includes(q) || (i.event ?? '').includes(q) || i.tags.some((t) => t.includes(q))
+  const shown = items.filter((i) => hit(i) && (kind === 'all' || i.kind === kind))
+  const months = useMemo(() => {
+    const m = new Map<string, HomeItem[]>()
+    for (const i of shown) {
+      const key = (i.date ?? i.updatedAt ?? '').slice(0, 7) || '日付なし'
+      m.set(key, [...(m.get(key) ?? []), i])
+    }
+    return [...m.entries()].sort((a, b) => (a[0] < b[0] ? 1 : -1))
+  }, [shown])
   return (
-    <section>
-      <SectionTitle>発表と記事</SectionTitle>
-      <div className="mb-3 flex flex-wrap items-center gap-3">
-        <Tabs value={filter.kind} onValueChange={(v: string) => set({ kind: v as 'all' | Kind })}>
-          <TabsList>
-            {KIND_FILTERS.map((f) => (
-              <TabsTrigger key={f.value} value={f.value}>
-                {f.label} ({count({ kind: f.value })})
-              </TabsTrigger>
+    <section className="grid gap-4">
+      <SectionHead title="積み上げ" note={`${items.length} 本`}>
+        <div className="ml-auto flex flex-wrap items-center gap-2">
+          <div role="tablist" className="flex rounded-md bg-muted p-0.5">
+            {FILTERS.map((f) => (
+              <button key={f.value} role="tab" aria-selected={kind === f.value} onClick={() => setKind(f.value)} className={cn('rounded px-3 py-1 text-sm text-muted-foreground', kind === f.value && 'bg-background font-medium text-foreground shadow-sm')}>
+                {f.label} <span className="tabular-nums">{items.filter((i) => hit(i) && (f.value === 'all' || i.kind === f.value)).length}</span>
+              </button>
             ))}
-          </TabsList>
-        </Tabs>
-        <Tabs value={filter.progress} onValueChange={(v: string) => set({ progress: v as 'all' | Progress })}>
-          <TabsList>
-            {PROGRESS_OPTIONS.map((o) => (
-              <TabsTrigger key={o.value} value={o.value}>
-                {o.label} ({count({ progress: o.value })})
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
-        <Tabs value={filter.visibility} onValueChange={(v: string) => set({ visibility: v as 'all' | Visibility })}>
-          <TabsList>
-            {VISIBILITY_OPTIONS.map((o) => (
-              <TabsTrigger key={o.value} value={o.value}>
-                {o.label} ({count({ visibility: o.value })})
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
-        <div className="relative ml-auto w-64">
-          <Search className="absolute top-2.5 left-2.5 size-4 text-muted-foreground" />
-          <Input value={q} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQ(e.target.value)} placeholder="タイトル・タグ・イベントで検索" className="pl-8" />
+          </div>
+          <div className="relative w-64">
+            <Search className="pointer-events-none absolute top-2.5 left-2.5 size-4 text-muted-foreground" />
+            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="タイトル・タグ・イベントで探す" className="pl-8" />
+          </div>
         </div>
-      </div>
-      {shown.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{items.length === 0 ? 'まだ発表も記事もありません。右上の「作成」か、ネタ帳から始めましょう。' : '条件に合う作品はありません。'}</p>
-      ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {shown.map((i: Item) =>
-            i.progress === 'draft' && i.work ? <WorkCard key={i.key} work={i.work} state={i.state} /> : i.progress === 'draft' && i.talk ? <DraftTalkCard key={i.key} item={i} talk={i.talk} /> : <CoverCard key={i.key} item={i} />,
-          )}
+      </SectionHead>
+      {shown.length === 0 && <p className="text-sm text-muted-foreground">{items.length ? '条件に合うものはありません。' : 'まだ公開したものはありません。'}</p>}
+      {months.map(([month, list]) => (
+        <div key={month} className="grid gap-3">
+          <h3 className="flex items-baseline gap-2 border-b pb-1 text-sm font-medium">
+            {/^\d{4}-\d{2}$/.test(month) ? `${month.slice(0, 4)}年${Number(month.slice(5))}月` : month}
+            <span className="text-xs font-normal text-muted-foreground tabular-nums">{list.length} 本</span>
+          </h3>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {list.map((i) => (
+              <WorkCard key={i.key} item={i} compact />
+            ))}
+          </div>
         </div>
-      )}
+      ))}
     </section>
   )
 }
 
-/** 完成した作品の 1 枚。表紙の絵 (発表は表紙のスライド、記事は見出し画像) を出す */
-function CoverCard({ item }: { item: Item }) {
-  const { talk, note } = item
-  // どれも作品の画面を開く (公開した記事は、原稿の面で読む)
-  const href = workHref(item.key)
-  const image = talk ? `${talk.siteUrl}og.png` : note?.eyecatch
+// ---------------------------------------------------------------- カード
+
+/** 発表の日まで、あと何日か */
+const daysTo = (date: string | null) => (date && /^\d{4}-\d{2}-\d{2}/.test(date) ? Math.ceil((new Date(`${date.slice(0, 10)}T00:00:00`).getTime() - new Date(new Date().toDateString()).getTime()) / 86400000) : null)
+
+/** 下書きの、次にやることと、その面。改稿中は企画と構成を飛ばす */
+function nextOf(i: HomeItem): { text: string; face: Face; place?: string } {
+  const revising = i.state.word === '改稿中'
+  if (i.state.word === '完成') return { text: '公開の手順を確かめる', face: 'publish' }
+  const stage = i.brief && !revising ? PLAN.find((s) => stageStatus(s, i.brief!) !== 'done') : undefined
+  if (stage) return { text: `企画の「${stage.title[i.kind]}」を書く`, face: 'plan', place: stage.key }
+  const { mine, reads } = i.counts
+  if (i.kind === 'talk') {
+    if (!i.talk) return { text: 'Claude Code に絵コンテを頼む', face: 'plan', place: 'oneLiner' }
+    if (mine) return { text: `あなた宛ての指摘が ${mine} 件`, face: 'koma' }
+    if (!reads) return { text: '聴衆役に読んでもらう', face: 'reads' }
+    return { text: 'コマを読んで、話すことを直す', face: 'koma' }
+  }
+  const d = i.draft
+  if (!d) return { text: '原稿を作る', face: 'draft' }
+  if (!d.outline && !revising) return { text: '構成（見出しの並び）を決める', face: 'outline' }
+  if (!d.blocks) return { text: 'Claude Code に下書きを頼む', face: 'plan', place: 'oneLiner' }
+  if (mine) return { text: `あなた宛ての指摘が ${mine} 件`, face: 'draft' }
+  if (!reads) return { text: '聴衆役に読んでもらう', face: 'reads' }
+  return { text: revising ? '直した記事で、note を更新する' : 'タイトル・タグ・見出し画像を決めて公開する', face: 'publish' }
+}
+
+function WorkCard({ item: i, compact = false }: { item: HomeItem; compact?: boolean }) {
+  const [broken, setBroken] = useState(false)
+  const published = i.state.word === '公開'
+  const next = published ? null : nextOf(i)
+  const href = next ? workHref(i.key, next.face, next.place) : workHref(i.key)
+  const days = i.kind === 'talk' && !published ? daysTo(i.date) : null
+  const when = [i.date, i.event].filter(Boolean).join('・')
+  const cover = i.cover && !broken ? i.cover : null
   return (
-    <Go href={href} className="block">
-      <Card className="h-full gap-2 overflow-hidden py-0 transition-colors hover:border-foreground/30">
-        {image ? <img src={image} alt="" loading="lazy" className="aspect-video w-full object-cover" /> : <div className="aspect-video bg-muted" />}
-        <div className="grid gap-1.5 px-3 pb-3">
-          <div className="flex items-center gap-1.5">
-            <Badge variant="secondary">{KIND_LABEL[item.kind]}</Badge>
-            <StateLabel state={item.state} />
-            <span className="truncate text-xs text-muted-foreground">{[item.date, item.event].filter(Boolean).join('・')}</span>
+    <a href={href} onClick={(e) => onLinkClick(e, href)} className="group grid content-start overflow-hidden rounded-lg border bg-background transition-[border-color,box-shadow] hover:border-foreground/30 hover:shadow-sm">
+      <div className="relative aspect-video overflow-hidden border-b bg-muted">
+        {cover ? (
+          <img src={cover} alt="" loading="lazy" onError={() => setBroken(true)} className="size-full object-cover transition-transform duration-300 group-hover:scale-[1.02]" />
+        ) : (
+          // 表紙の無いものは、伝えたいことを表紙の代わりに大きく出す
+          <div className={cn('flex size-full items-center p-5', compact ? 'text-sm' : 'text-lg', 'leading-snug font-semibold text-foreground/80')}>
+            <span className={cn(compact ? 'line-clamp-4' : 'line-clamp-4', !i.oneLiner && 'font-normal text-muted-foreground')}>{i.oneLiner || (published ? i.title : '伝えたいことは、まだ決めていません')}</span>
           </div>
-          <div className="line-clamp-2 text-sm font-medium">{item.title || '無題'}</div>
-          <div className="text-xs text-muted-foreground">{talk ? `${talk.scenes} シーン・${talk.states} コマ` : note ? `${note.chars.toLocaleString()} 字` : ''}</div>
+        )}
+      </div>
+      <div className={cn('grid gap-1.5', compact ? 'p-3' : 'p-4')}>
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <span>{KIND_LABEL[i.kind]}</span>
+          {!published && <StateLabel state={i.state} />}
+          {days !== null && <span className={cn('ml-auto whitespace-nowrap', days >= 0 && days <= 14 && 'font-medium text-foreground')}>{days > 0 ? `あと ${days} 日` : days === 0 ? '今日' : `${i.date} に発表`}</span>}
         </div>
-      </Card>
-    </Go>
+        <div className={cn('line-clamp-2 font-medium', compact ? 'text-sm' : 'text-base')}>{i.title || '無題'}</div>
+        {next ? (
+          <div className="flex items-center gap-1 text-sm text-muted-foreground group-hover:text-foreground">
+            <span className="text-xs">次に:</span>
+            <span className="truncate">{next.text}</span>
+            <ChevronRight className="size-3.5 shrink-0" />
+          </div>
+        ) : (
+          <div className="truncate text-xs text-muted-foreground">{when}</div>
+        )}
+      </div>
+    </a>
   )
 }

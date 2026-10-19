@@ -2,7 +2,7 @@
 import { ChevronDown, FileText, Plus, Presentation } from 'lucide-react'
 import { Button } from './components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from './components/ui/popover'
-import type { Kind } from './lib/stages'
+import type { Kind } from '../shared/api'
 
 export function CreateMenu({ onPick }: { onPick: (kind: Kind) => void }) {
   const item = 'flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent [&_svg]:size-4 [&_svg]:text-muted-foreground'

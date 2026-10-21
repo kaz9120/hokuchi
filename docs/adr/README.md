@@ -97,4 +97,4 @@ hokuchi における意思決定の記録。決定に至る過程（選択肢・
 | [0047](0047-revise-published-articles.md) | 公開済みの記事は、原稿に写して原稿タブで直し、note を更新してから取り込み直す | 承認 | apps/studio / tools/notes |
 | [0048](0048-cancel-revision.md) | 公開済みの記事の改稿は、画面からやめられるようにする | 承認 | apps/studio |
 | [0049](0049-rebuild-studio.md) | studio を、作品を 1 つの実体にした骨組みで作り直す | 承認 | apps/studio |
-| [0050](0050-studio-rebuild-rules.md) | studio の作り直しで、値の正・名前・状態の見せ方の規則を決め直す | 提案 | apps/studio |
+| [0050](0050-studio-rebuild-rules.md) | studio の作り直しで、値の正・名前・状態の見せ方の規則を決め直す | 承認 | apps/studio |

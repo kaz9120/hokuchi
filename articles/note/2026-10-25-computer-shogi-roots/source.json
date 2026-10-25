@@ -1,0 +1,62 @@
+{
+  "id": 187457308,
+  "key": "n63d60ff7c053",
+  "slug": "slug-n63d60ff7c053",
+  "type": "TextNote",
+  "status": "published",
+  "format": "4.0",
+  "name": "小学5年生で出会ったコンピュータ将棋と、世界9位まで",
+  "description": "",
+  "body": "<p name=\"9994e6e4-7f90-4824-aac4-274bc3b0855e\" id=\"9994e6e4-7f90-4824-aac4-274bc3b0855e\">最弱にしても、勝てませんでした。</p><p name=\"6fd1a08a-fe0d-4755-bf92-a393a67a902d\" id=\"6fd1a08a-fe0d-4755-bf92-a393a67a902d\">小学5年生のとき、両親が仕事用に買ったパソコン（たしか NEC）に「AI将棋」というソフトが入っていました。それまで知っていたのはファミコンの森田将棋だけだったので、あまりの強さに驚きました。</p><p name=\"581ecfec-7b2d-45e4-96f9-a2c2d7720a3a\" id=\"581ecfec-7b2d-45e4-96f9-a2c2d7720a3a\">将棋は父に教わりましたが、父は普段家にいなかったので指す相手がいませんでした。そのため勝てなくても強い人と将棋できるのが割に楽しくて、そのままハマりました。</p><p name=\"206c79bc-58c7-4cab-a7f4-d32f9c16e762\" id=\"206c79bc-58c7-4cab-a7f4-d32f9c16e762\">世界コンピュータ将棋選手権を知ったのも、このソフトからです。AI将棋は、大会では「YSS」という名前で出ていました。</p><p name=\"6560f0f8-d45a-4800-8c80-8be69a475c38\" id=\"6560f0f8-d45a-4800-8c80-8be69a475c38\">最近の note では、Claude Code でコンピュータ将棋を作り直している話を書いています。</p><figure name=\"b5a36ffd-50ea-426c-a465-eca844d4b61f\" id=\"b5a36ffd-50ea-426c-a465-eca844d4b61f\" data-src=\"https://note.com/kyamamoto9120/n/n8e50f15a69e0\" data-identifier=\"n8e50f15a69e0\" embedded-service=\"note\" embedded-content-key=\"emb6c177aaf244e\">\n</figure><p name=\"7b7406c4-689a-4793-aed7-c17cf9a68bce\" id=\"7b7406c4-689a-4793-aed7-c17cf9a68bce\">今回はその根っこ、なぜコンピュータ将棋だったのかの話です。</p><h2 name=\"741c0c0f-92ef-40ae-890d-f295d37ab67b\" id=\"741c0c0f-92ef-40ae-890d-f295d37ab67b\">将棋が好きで作りたかった</h2><p name=\"b4bd2177-4d0d-4dbf-b130-f2cdc9581be7\" id=\"b4bd2177-4d0d-4dbf-b130-f2cdc9581be7\">当時は RPGツクールも流行っていて、「作りたい」と思うハードル自体は低かったんです。「プログラミング」という言葉も聞いたことがありました。将棋が好きで、プログラミングもやってみたい。だから作りたい。それくらいの気持ちでした。</p><p name=\"ed5998d0-e0ae-4a38-9f81-961ff0f5f22d\" id=\"ed5998d0-e0ae-4a38-9f81-961ff0f5f22d\">独学でプログラミングと機械学習を学び、大学を選ぶときに強化学習という分野を知りました。試行錯誤しながら自分で強くなっていく学習で、機械学習に詳しくなかった私には「The 人工知能」に見えたんです。これをやりたくて、芝浦工業大学に進みました。</p><h2 name=\"4fb47882-3bac-455c-ab61-f9d18bfd4cee\" id=\"4fb47882-3bac-455c-ab61-f9d18bfd4cee\">大学3年で選手権に初めて出た</h2><p name=\"072e06ed-a958-44d5-afd8-ba83d92d5d53\" id=\"072e06ed-a958-44d5-afd8-ba83d92d5d53\">入学してすぐ、学科の友人たちとコンピュータ将棋を作り始めました。強くはなかったのですが、その話が強化学習を研究している五十嵐先生の耳に届き、学部2年から一緒に研究させてもらえることになります。</p><p name=\"e4d33b46-6f77-46d8-822a-be9825e474ab\" id=\"e4d33b46-6f77-46d8-822a-be9825e474ab\">大学3年の5月、第20回世界コンピュータ将棋選手権に「芝浦将棋」のメンバーとして初参加し、7位入賞と新人賞をいただきました。</p><h2 name=\"08ced58e-be47-4293-a75d-9cb4c5db08fb\" id=\"08ced58e-be47-4293-a75d-9cb4c5db08fb\">一から作ったのが「ひまわり」</h2><p name=\"0463f1d5-a937-4dc4-8a10-8a5e64a2fef7\" id=\"0463f1d5-a937-4dc4-8a10-8a5e64a2fef7\">芝浦将棋のテーマは、強化学習で将棋が強くなるかでした。土台はソースコードが公開されている Bonanza で、ルールや、指し手を読む「探索」の部分は Bonanza のままです。</p><p name=\"8825e322-0bc1-4db2-82ef-8cd1338f4fdb\" id=\"8825e322-0bc1-4db2-82ef-8cd1338f4fdb\">私は全部を自分で書きたくて、大学卒業後は研究室を離れ、個人で「ひまわり」を一から開発しました。</p><p name=\"69ad59fa-7f00-44da-bb0c-e662e3b69fd8\" id=\"69ad59fa-7f00-44da-bb0c-e662e3b69fd8\">名前に深い意味はありません。当時「sunfish」というソフトがいたので、fish を flower に変えて「sunflower」。さすがに紛らわしいので、日本語にしました。</p><p name=\"0943648e-be80-4951-8845-ae1aa4e2a553\" id=\"0943648e-be80-4951-8845-ae1aa4e2a553\">後になって、棋士の窪田義行さんに「ひまわりは太陽を向いて咲くのが良いですね」と声をかけていただきました。それは良いと思い、以降は後付けでそれを由来として語ることもありました。</p><h2 name=\"520fc84c-bef0-422f-9265-f24bc0a176b0\" id=\"520fc84c-bef0-422f-9265-f24bc0a176b0\">2015年、YSS に勝って9位</h2><p name=\"c3bd647a-6800-4032-b6e1-7d5c5d0a095b\" id=\"c3bd647a-6800-4032-b6e1-7d5c5d0a095b\">ひまわりの最高成績は、2015年の第25回大会の9位です。この年は探索も学習もがんばれていて、自信がありました。</p><p name=\"59e6ddae-0074-4f5a-b57e-9b50c9c763c9\" id=\"59e6ddae-0074-4f5a-b57e-9b50c9c763c9\">選手権は3日制です。初日の一次予選、2日目の二次予選を経て、二次予選の上位8チームが最終日の決勝に進みます。</p><p name=\"2a49eb09-e295-440a-bc7e-e8abeba424ce\" id=\"2a49eb09-e295-440a-bc7e-e8abeba424ce\">二次予選では YSS に勝ちました。小学生のころ、最弱にしても勝てなかった AI将棋です。満足感がありました。</p><p name=\"62e988fb-5a61-45e7-80e3-ec08abdfc154\" id=\"62e988fb-5a61-45e7-80e3-ec08abdfc154\">ただ、決勝に残ったのは YSS のほうでした。ひまわりは勝ち数で並び、対戦相手の勝ち点の合計で比べるソルコフで 0.5 差の9位。あと一歩で決勝でした。悔しかったですね。</p><p name=\"98401096-f0be-4658-8df9-375f683dd02e\" id=\"98401096-f0be-4658-8df9-375f683dd02e\">その差を生んだのは、Selene というソフトに負けた1局です。</p><p name=\"dd12f692-ed12-48a9-aecb-eed6097e3fbf\" id=\"dd12f692-ed12-48a9-aecb-eed6097e3fbf\">玉が敵陣に入って条件を満たせば、宣言するだけで勝てる「入玉宣言法」というルールがあります。この対局は、選手権の歴史で初めて宣言による勝ちが出た将棋でした。負けた側が、ひまわりです。</p><p name=\"c1129b10-e0d6-4c6a-bef7-6f8b7190841f\" id=\"c1129b10-e0d6-4c6a-bef7-6f8b7190841f\">松本博文さんの『棋士とAIはどう戦ってきたか』には、こう書かれています。</p><figure name=\"b21a7a95-2fcd-4ab9-9934-ecb353cc0967\" id=\"b21a7a95-2fcd-4ab9-9934-ecb353cc0967\"><blockquote><p name=\"621ac149-11a8-416e-9432-32ae67ad2a5f\" id=\"621ac149-11a8-416e-9432-32ae67ad2a5f\">ひまわり開発者の山本一将さんは、感動していました。確かに痛い１敗を喫したことには違いありません。しかしSeleneの見事な宣言勝ちについては、称える以外に他はありませんでした。</p></blockquote><figcaption><a href=\"https://note.com/mtmt81/n/nacf0b2b2ca28\" target=\"_blank\" rel=\"nofollow noopener\">https://note.com/mtmt81/n/nacf0b2b2ca28</a></figcaption></figure><p name=\"9475dadb-6662-4c85-a687-2f0329e48572\" id=\"9475dadb-6662-4c85-a687-2f0329e48572\">グッドルーザーとして描いてもらっていますが、引き分けなら決勝に残っていたかもしれないと思うと、普通に悔しいです。</p><figure name=\"009d5fa7-ad8b-4e1b-8b3e-235d493fda4a\" id=\"009d5fa7-ad8b-4e1b-8b3e-235d493fda4a\" data-src=\"https://note.com/mtmt81/n/nacf0b2b2ca28\" data-identifier=\"nacf0b2b2ca28\" embedded-service=\"note\" embedded-content-key=\"emb170e98aba573\">\n</figure><h2 name=\"8aa11b71-2148-40d7-a705-e50efb4ee208\" id=\"8aa11b71-2148-40d7-a705-e50efb4ee208\">9位でやり切って、7年止まった</h2><p name=\"a1d7780e-736f-499c-9a14-78bbaab09a06\" id=\"a1d7780e-736f-499c-9a14-78bbaab09a06\">その後もコロナ前の2019年まで選手権には出ていました。ただ、途中からはソフトを改善せず、前年と同じもので参加するだけです。</p><p name=\"be7ee38b-bc88-444d-9785-5f8b0cbd3a42\" id=\"be7ee38b-bc88-444d-9785-5f8b0cbd3a42\">結婚して時間が取れなくなったのもありますが、何よりモチベーションが薄れていました。世界9位で、ちょっとやり切ってしまったのかもしれません。</p><p name=\"86e7a994-fd7c-4b2d-9806-dae9b5b07607\" id=\"86e7a994-fd7c-4b2d-9806-dae9b5b07607\">翌年の大会がコロナで中止になり、そのまま7年。やりたい気持ちはずっとありましたが、勝つための実装にかける時間を考えると、面倒のほうが勝っていました。</p><p name=\"65949ab4-fe59-4edf-9cad-5a022c0693ba\" id=\"65949ab4-fe59-4edf-9cad-5a022c0693ba\">それが今年、Claude Code を使っているうちに、これなら作れる気がしてきて、また一から開発を再開しています。</p><figure name=\"cd966263-108e-4bd2-bd01-e067579a768d\" id=\"cd966263-108e-4bd2-bd01-e067579a768d\" data-src=\"https://note.com/kyamamoto9120/n/n8e50f15a69e0\" data-identifier=\"n8e50f15a69e0\" embedded-service=\"note\" embedded-content-key=\"emb98190c4e8ddb\">\n</figure><p name=\"0e7a7509-6b2b-43b4-b0a7-519d08bccebd\" id=\"0e7a7509-6b2b-43b4-b0a7-519d08bccebd\">直近では世界将棋AI電竜戦の参加申し込みが始まっていますが、出るかはまだ決めていません。</p>",
+  "separator": null,
+  "publish_at": "2026-10-25T18:10:33.000+09:00",
+  "created_at": "2026-10-25T18:00:41.000+09:00",
+  "note_url": "https://note.com/kyamamoto9120/n/n63d60ff7c053",
+  "price": 0,
+  "is_limited": false,
+  "is_trial": false,
+  "eyecatch": "https://assets.st-note.com/production/uploads/images/328358115/rectangle_large_type_2_ce5e3aec499bbaa4a606fd4dfacd09ab.png?fit=bounds&quality=85&width=1280",
+  "eyecatch_alt": "見出し画像",
+  "eyecatch_width": 1920,
+  "eyecatch_height": 1005,
+  "hashtags": [
+    "#自己紹介",
+    "#エンジニア",
+    "#コンピュータ将棋"
+  ],
+  "pictures": [],
+  "embedded_contents": [
+    {
+      "key": "emb6c177aaf244e",
+      "url": "https://note.com/kyamamoto9120/n/n8e50f15a69e0",
+      "service": "note",
+      "identifier": "n8e50f15a69e0",
+      "caption": null,
+      "html_for_embed": "<iframe class=\"note-embed\" height=\"210\" scrolling=\"no\" src=\"https://note.com/embed/notes/n8e50f15a69e0\" style=\"border: 0; display: block; max-width: 99%; width: 494px; padding: 0px; margin: 10px 0px; position: static; visibility: visible;\"></iframe>\n",
+      "html_for_display": null
+    },
+    {
+      "key": "emb170e98aba573",
+      "url": "https://note.com/mtmt81/n/nacf0b2b2ca28",
+      "service": "note",
+      "identifier": "nacf0b2b2ca28",
+      "caption": null,
+      "html_for_embed": "<iframe class=\"note-embed\" height=\"210\" scrolling=\"no\" src=\"https://note.com/embed/notes/nacf0b2b2ca28\" style=\"border: 0; display: block; max-width: 99%; width: 494px; padding: 0px; margin: 10px 0px; position: static; visibility: visible;\"></iframe>\n",
+      "html_for_display": null
+    },
+    {
+      "key": "emb98190c4e8ddb",
+      "url": "https://note.com/kyamamoto9120/n/n8e50f15a69e0",
+      "service": "note",
+      "identifier": "n8e50f15a69e0",
+      "caption": null,
+      "html_for_embed": "<iframe class=\"note-embed\" height=\"210\" scrolling=\"no\" src=\"https://note.com/embed/notes/n8e50f15a69e0\" style=\"border: 0; display: block; max-width: 99%; width: 494px; padding: 0px; margin: 10px 0px; position: static; visibility: visible;\"></iframe>\n",
+      "html_for_display": null
+    }
+  ],
+  "user": {
+    "urlname": "kyamamoto9120",
+    "nickname": "山本一将｜焚き火を愛するエンジニア"
+  },
+  "_fetched_at": "2026-10-25T09:11:47.145Z"
+}

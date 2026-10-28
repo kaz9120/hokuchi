@@ -6,6 +6,7 @@
 // (4) place: 紙の色は生成画像の紙に関わらず台紙の色に揃い、枠線は消える。
 //     四隅の紙のムラの点に引っぱられず、モチーフは指定の位置に来る
 // (5) sheet: 3 列で並ぶ
+// (6) build: eyecatch.json から、要るものだけを作る
 
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -16,6 +17,7 @@ import { parsePosition, PAPER, WIDTH, HEIGHT } from '../src/paper.mjs';
 import { buildPrompt } from '../src/prompt.mjs';
 import { place } from '../src/place.mjs';
 import { sheet } from '../src/sheet.mjs';
+import { buildOne, readPlan } from '../src/build.mjs';
 
 let passed = 0;
 const ok = (name) => { console.log(`  ok  ${name}`); passed++; };
@@ -92,6 +94,20 @@ far = far.map((v) => v / fn);
 far.forEach((v, c) => assert.ok(Math.abs(v - PAPER[c]) < 3, `紙の色が台紙に揃う (${far.map(Math.round)})`));
 assert.equal(bright, 0, '枠線が残らない');
 ok('紙の色を揃え、枠線を消す');
+
+// (6) build: motif.jpg があれば生成せずに置き、新しければ作り直さない。計画が欠けていれば止める
+const dir = path.join(tmp, 'article');
+fs.mkdirSync(dir);
+fs.copyFileSync(src, path.join(dir, 'motif.jpg'));
+fs.writeFileSync(path.join(dir, 'eyecatch.json'), JSON.stringify({ scene: 's', light: 'l', at: 'upper-right' }));
+assert.deepEqual(await buildOne(dir), ['placed']);
+assert.ok(fs.existsSync(path.join(dir, 'eyecatch.jpg')));
+assert.deepEqual(await buildOne(dir), ['fresh']);
+fs.writeFileSync(path.join(dir, 'eyecatch.json'), JSON.stringify({ scene: 's', at: 'upper-right' }));
+assert.throws(() => readPlan(dir), /light/);
+fs.writeFileSync(path.join(dir, 'eyecatch.json'), JSON.stringify({ scene: 's', light: 'l', at: 'middle' }));
+assert.throws(() => readPlan(dir), /置き場所/);
+ok('eyecatch.json から作る');
 
 // (5)
 const out = path.join(tmp, 'sheet.png');

@@ -52,11 +52,11 @@
 
 ## 作る
 
-ルートで実行します。
+下地は `~/Hobby/hokuchi-private/eyecatch/<記事のディレクトリ名>/` に置きます。記事のディレクトリ名は公開日と slug をつないだ `articles/note/` と同じ形です。ルートで実行します。
 
-1. `bun run eyecatch generate --scene "<場面>" --light "<季節の光>" --out <作業場所>/motif.jpg`
-2. `bun run eyecatch place <作業場所>/motif.jpg <原稿>/assets/eyecatch.jpg --at <置き場所>`
-3. `bun run eyecatch sheet <作業場所>/sheet.png <直近の見出し画像>... <原稿>/assets/eyecatch.jpg` で並べて見る
+1. そのディレクトリに `eyecatch.json` を書く。タイトル・場面・季節の光・置き場所を入れる (形は `tools/eyecatch/docs/design.md`)
+2. `bun run eyecatch build <ディレクトリ>` で `motif.jpg` を生成し、`eyecatch.jpg` に置く
+3. `bun run eyecatch sheet <出力.png> <直近の記事の eyecatch.jpg>...` で並べて見る
 4. note-ogp に `eyecatch.jpg` を入れて、タイトル・号数・日付を入れる
 
-頼んでいない物が描き足されるなどして気に入らなければ、1 からやり直します。生成の上限に当たったら、時間をおいて試します。
+頼んでいない物が描き足されるなどして気に入らなければ、`motif.jpg` を消して 2 からやり直します。置き場所だけを変えるなら、`at` を直して 2 を回せば、生成せずに置き直します。生成の上限に当たったら、時間をおいて試します。

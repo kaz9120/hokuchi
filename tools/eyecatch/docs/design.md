@@ -2,6 +2,31 @@
 
 note の見出し画像の下地を作る。nano banana に暗い紙の手描きのモチーフを描かせ、作り直した紙の指定位置に置く。タイトル・号数・日付は hidoko の note-ogp で入れる。決定の経緯は [ADR-0051](../../../docs/adr/0051-eyecatch-generated-motif.md)。
 
+## 置き場所
+
+作った下地は公開リポジトリの外の `~/Hobby/hokuchi-private/eyecatch/<記事のディレクトリ名>/` に置く。記事のディレクトリ名は `articles/note/` と同じ (例: `2026-10-25-computer-shogi-roots`)。公開リポジトリが画像で重くならず、note から取り込んだアーカイブ (ADR-0019) にも、note に無いものが混ざらない。
+
+```
+~/Hobby/hokuchi-private/eyecatch/
+  sheet.png                  全記事を新しい順に並べた見本
+  <記事のディレクトリ名>/
+    eyecatch.json            タイトル・場面・季節の光・置き場所。人か Claude が書く
+    motif.jpg                生成した画像
+    eyecatch.jpg             1280×670 の下地。note-ogp に入れる
+```
+
+`eyecatch.json` の形は次のとおり。`ink` は省ける。
+
+```json
+{
+  "title": "なぜEMはまた「余白」に帰ってくるのか",
+  "at": "upper-right",
+  "scene": "A small wooden bench under the shade of a single young tree, ...",
+  "light": "Early summer, just after the rainy season: ...",
+  "ink": 0.03
+}
+```
+
 ## 流れ
 
 1. 記事からモチーフ (場面) と季節の光を決める。決め方は `.claude/skills/writing-note/references/eyecatch.md`
@@ -20,6 +45,9 @@ note の見出し画像の下地を作る。nano banana に暗い紙の手描き
 | `generate --scene <場面> --light <季節の光> --out <画像>` | agy の `image-generator` で 1 枚生成し、`--out` に写す |
 | `place <生成画像> <出力> --at <置き場所> [--ink <量>]` | モチーフを切り出し、台紙の指定位置に置く |
 | `sheet <出力.png> <画像>...` | 白地に 3 列で並べた見本を作る |
+| `build <ディレクトリ>...` | `eyecatch.json` から、無い `motif.jpg` を生成し、古い `eyecatch.jpg` を置き直す。生成の上限に当たったらそこで止め、終了コード 75 を返す |
+
+モチーフを作り直すときは `motif.jpg` を消して `build` を回す。置き場所だけを変えるときは `eyecatch.json` の `at` を直して回せば、生成せずに置き直す。
 
 `bun run test:eyecatch` は、置き場所の読み取り・プロンプト・配置・並べ方を、生成画像の代わりの合成画像で検査する。
 
@@ -79,5 +107,5 @@ note の見出し画像の下地を作る。nano banana に暗い紙の手描き
 `src/generate.mjs` が `agy -p` で `image-generator` を呼ぶ。agy は保存先の指定を聞かず、`~/.gemini/antigravity-cli/brain/<会話 ID>/` に画像を置く。応答に出たパスを拾い、拾えなければ起動後に増えた画像の中で最も新しいものを `--out` に写す。
 
 - agy にはシェルを使わせない。print モードではシェルの許可を求められず、自動で拒否されて止まるからだ
-- 生成の上限 (`429 RESOURCE_EXHAUSTED`) に当たると、画像は保存されない。そのときは時間をおいて試す
-- 使われたのが nano banana Pro か無印かは確かめられていない。Pro はユーザーごとに順に提供されている
+- 生成の上限 (`429 RESOURCE_EXHAUSTED`) に当たると、画像は保存されない。そのときは時間をおいて試す。2026-10-28 には 31 分で 15 枚生成して上限に当たり、最初の 1 枚のちょうど 5 時間後に戻ると知らされた。5 時間ごとに 15 枚ほどの枠と見ているが、公式の資料では確かめていない
+- 生成に使われたモデルは `gemini-3.1-flash-image` (無印の nano banana) だった。上限のエラーの詳細に書いてあった

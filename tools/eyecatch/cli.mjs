@@ -5,7 +5,9 @@
 //   hokuchi-eyecatch generate --scene <場面> --light <季節の光> --out <画像>  agy の nano banana で生成する
 //   hokuchi-eyecatch place    <生成画像> <出力> --at <置き場所> [--ink <量>]  モチーフを台紙に置き直す
 //   hokuchi-eyecatch sheet    <出力> <画像>...                               3 列に並べた見本を作る
+//   hokuchi-eyecatch build    <ディレクトリ>...                              eyecatch.json から下地を作る
 //
+// build は生成の上限に当たると、そこで止まって終了コード 75 を返す。
 // ルートの package.json から bun run eyecatch <サブコマンド> で使う。モチーフの選び方は
 // .claude/skills/writing-note/references/eyecatch.md にある (ADR-0051)。
 
@@ -13,6 +15,7 @@ import { buildPrompt } from './src/prompt.mjs';
 import { generate } from './src/generate.mjs';
 import { place } from './src/place.mjs';
 import { sheet } from './src/sheet.mjs';
+import { buildOne, QuotaError } from './src/build.mjs';
 import { POSITIONS, INK, parsePosition } from './src/paper.mjs';
 
 const out = (s) => process.stdout.write(`${s}\n`);
@@ -25,6 +28,7 @@ usage:
   hokuchi-eyecatch generate --scene <場面> --light <季節の光> --out <画像>
   hokuchi-eyecatch place    <生成画像> <出力> --at <置き場所> [--ink <量>]
   hokuchi-eyecatch sheet    <出力.png> <画像>...
+  hokuchi-eyecatch build    <ディレクトリ>...  eyecatch.json から motif.jpg と eyecatch.jpg を作る
 
   置き場所: ${Object.keys(POSITIONS).join(' / ')}、または x,y (左上 0、右下 1)
   量: モチーフのインクの量。画面の面積に対する割合 (既定 ${INK})
@@ -72,6 +76,23 @@ async function main() {
       await sheet(rest.slice(1), rest[0]);
       out(rest[0]);
       break;
+    case 'build': {
+      if (rest.length === 0) usage();
+      for (const dir of rest) {
+        try {
+          const did = await buildOne(dir, out);
+          if (did[0] === 'fresh') out(`そのまま: ${dir}`);
+        } catch (e) {
+          if (e instanceof QuotaError) {
+            process.stderr.write(`${e.message}\n止めた: ${dir} から先は作っていない\n`);
+            process.exit(75);
+          }
+          process.stderr.write(`失敗: ${dir}: ${e.message}\n`);
+          process.exitCode = 1;
+        }
+      }
+      break;
+    }
     default:
       usage(cmd === undefined || cmd === '--help' || cmd === '-h' ? 0 : 1);
   }

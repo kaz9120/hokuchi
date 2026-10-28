@@ -42,6 +42,8 @@ archive/talks/     旧方式（意図宣言型 YAML）の deck.yaml と写真。
 tools/
   notes/           note の CLI（sync / build / verify / lint / index）
     docs/design.md 生きた設計書
+  eyecatch/        note の見出し画像の下地を作る CLI（prompt / generate / place / sheet。ADR-0051）
+    docs/design.md 生きた設計書
 .claude/skills/
   crafting-presentation/  対話から発表資料を作る skill（Phase 0〜8。ADR-0024・ADR-0028）
   writing-note/           note の記事を書く skill（Phase 0〜7。ADR-0020・ADR-0046。studio の記事の作品の画面と同じ流れ）
@@ -49,7 +51,7 @@ tools/
 
 作品の企画シートとネタ帳、記事の原稿（`notes/<slug>/`）は、公開リポジトリの外の `~/Hobby/hokuchi-private` に置きます（ADR-0036・ADR-0046）。
 
-依存はルートの bun ワークスペース（`packages/*`・`apps/*`、hoisted）で管理します。`bun install` はルートで実行します。`tools/notes` は対象外です。
+依存はルートの bun ワークスペース（`packages/*`・`apps/*`・`tools/eyecatch`、hoisted）で管理します。`bun install` はルートで実行します。`tools/notes` は対象外です。
 
 ## note の記事
 
@@ -58,6 +60,8 @@ tools/
 公開済みの記事は、`hokuchi-note sync` で取り込みます。`index.md` は生成物なので、手では直しません。直したいときは変換規則を直して、`build` を回します。取り込みの欠落は `verify` が検査するので、記事を足したら必ず通してください（ADR-0019）。
 
 `hokuchi-note` が PATH に無いときは、リポジトリのルートから `node tools/notes/cli.mjs <サブコマンド>` で同じように動きます。
+
+見出し画像の下地は、`bun run eyecatch` で作ります。nano banana に暗い紙の手描きのモチーフを描かせ、作り直した紙の指定位置に置きます。モチーフと置き場所の決め方は writing-note skill の `references/eyecatch.md` にあります（ADR-0051）。
 
 ## スライド
 

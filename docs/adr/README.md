@@ -98,3 +98,4 @@ hokuchi における意思決定の記録。決定に至る過程（選択肢・
 | [0048](0048-cancel-revision.md) | 公開済みの記事の改稿は、画面からやめられるようにする | 承認 | apps/studio |
 | [0049](0049-rebuild-studio.md) | studio を、作品を 1 つの実体にした骨組みで作り直す | 承認 | apps/studio |
 | [0050](0050-studio-rebuild-rules.md) | studio の作り直しで、値の正・名前・状態の見せ方の規則を決め直す | 承認 | apps/studio |
+| [0051](0051-eyecatch-generated-motif.md) | note の見出し画像の下地は、nano banana に描かせたモチーフを、作り直した暗い紙に置いて作る | 提案 | tools/eyecatch / skills |

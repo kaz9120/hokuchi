@@ -5,6 +5,7 @@
 // (3) place: 出力は 1280×670 で、モチーフは指定の位置に来る
 // (4) place: 紙の色は生成画像の紙に関わらず台紙の色に揃い、枠線は消える。
 //     四隅の紙のムラの点に引っぱられず、モチーフは指定の位置に来る
+//     紙を白い地に置いた絵でも、紙の外を切り落として同じように置ける
 // (5) sheet: 3 列で並ぶ
 // (6) build: eyecatch.json から、要るものだけを作る
 
@@ -94,6 +95,15 @@ far = far.map((v) => v / fn);
 far.forEach((v, c) => assert.ok(Math.abs(v - PAPER[c]) < 3, `紙の色が台紙に揃う (${far.map(Math.round)})`));
 assert.equal(bright, 0, '枠線が残らない');
 ok('紙の色を揃え、枠線を消す');
+
+// 紙を白い地に置いた絵: 白い地を紙の色と測らずに置ける
+const mat = path.join(tmp, 'mat.jpg');
+await sharp(src).extend({ top: 60, bottom: 60, left: 60, right: 60, background: '#fafafa' }).jpeg({ quality: 95 }).toFile(mat);
+const matOut = path.join(tmp, 'mat-placed.jpg');
+const r = await place(mat, matOut, { at: [0.74, 0.34] });
+r.paper.forEach((v) => assert.ok(v < 100, `紙の色を白い地から測らない (${r.paper})`));
+assert.ok(Math.abs(r.center[0] - 0.74) < 0.02 && Math.abs(r.center[1] - 0.34) < 0.04, `指定の位置 (${r.center})`);
+ok('白い地の上の紙を切り出す');
 
 // (6) build: motif.jpg があれば生成せずに置き、新しければ作り直さない。計画が欠けていれば止める
 const dir = path.join(tmp, 'article');

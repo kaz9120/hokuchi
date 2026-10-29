@@ -1,6 +1,6 @@
 // place.mjs — 生成画像からモチーフを切り出し、作り直した台紙の指定位置に載せる
 //
-// 1. 画像の縁の帯から、紙の色とムラを測る
+// 1. 紙を白い地に置いた絵なら、紙の外を切り落とす。そのうえで縁の帯から、紙の色とムラを測る
 // 2. 紙の色からの差で、モチーフの不透明度を作る。画面を横切る直線は枠線とみなして消す
 // 3. モチーフの色を紙の色の差だけずらし、台紙の色に揃える (明暗の関係は保つ)
 // 4. インクの量で大きさを揃え、指定の位置に置く
@@ -17,6 +17,36 @@ async function readRGB(file) {
 function median(values) {
   const s = Float64Array.from(values).sort();
   return s[s.length >> 1];
+}
+
+/**
+ * 紙を一枚の紙片として白い地に描いた画像なら、紙の外を切り落とす。
+ * 画像全体の中央値 (ほぼ紙の色) に近い画素が半分に満たない行と列を外側から捨て、
+ * ちぎれた紙の縁の揺れを避けるため、さらに少し内側で切る。
+ */
+export function trimToPaper(img) {
+  const { data, w, h } = img;
+  const all = [];
+  for (let i = 0; i < w * h; i += 7) all.push(i * 3);
+  const color = [0, 1, 2].map((c) => median(all.map((i) => data[i + c])));
+  const near = (x, y) => {
+    const i = (y * w + x) * 3;
+    return Math.max(...[0, 1, 2].map((c) => Math.abs(data[i + c] - color[c]))) < 40;
+  };
+  const rowOk = (y) => { let n = 0; for (let x = 0; x < w; x++) if (near(x, y)) n++; return n / w >= 0.5; };
+  const colOk = (x) => { let n = 0; for (let y = 0; y < h; y++) if (near(x, y)) n++; return n / h >= 0.5; };
+  let y0 = 0, y1 = h, x0 = 0, x1 = w;
+  while (y0 < h / 3 && !rowOk(y0)) y0++;
+  while (y1 > (h * 2) / 3 && !rowOk(y1 - 1)) y1--;
+  while (x0 < w / 3 && !colOk(x0)) x0++;
+  while (x1 > (w * 2) / 3 && !colOk(x1 - 1)) x1--;
+  if (y0 === 0 && x0 === 0 && y1 === h && x1 === w) return img;
+  const inset = Math.floor(Math.min(w, h) * 0.02);
+  y0 += inset; x0 += inset; y1 -= inset; x1 -= inset;
+  const nw = x1 - x0, nh = y1 - y0;
+  const out = Buffer.alloc(nw * nh * 3);
+  for (let y = 0; y < nh; y++) data.copy(out, y * nw * 3, ((y + y0) * w + x0) * 3, ((y + y0) * w + x1) * 3);
+  return { data: out, w: nw, h: nh };
 }
 
 /** 縁の帯から紙の色 (中央値) とムラ (差の 90 パーセンタイル) を測る */
@@ -188,7 +218,7 @@ async function resizeRaw(data, w, h, channels, nw, nh) {
  * at はモチーフの中心 [x, y] (割合)。ink はインクの量 (画面の面積に対する割合)。
  */
 export async function place(input, output, { at, ink = INK } = {}) {
-  const img = await readRGB(input);
+  const img = trimToPaper(await readRGB(input));
   const paper = measurePaper(img);
   const { alpha: mask, core } = await motifMask(img, paper);
   const pad = 24;

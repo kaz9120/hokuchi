@@ -4,7 +4,7 @@
 // (2) プロンプトに場面と季節の光が入り、空なら止める
 // (3) place: 出力は 1280×670 で、モチーフは指定の位置に来る
 // (4) place: 紙の色は生成画像の紙に関わらず台紙の色に揃い、枠線は消える。
-//     四隅の紙のムラの点に引っぱられず、モチーフは指定の位置に来る
+//     四隅の紙のムラの点に引っぱられず、モチーフは指定の位置に来る。太く長いモチーフは消さない
 //     紙を白い地に置いた絵でも、紙の外を切り落として同じように置ける
 // (5) sheet: 3 列で並ぶ
 // (6) build: eyecatch.json から、要るものだけを作る
@@ -47,6 +47,7 @@ async function fakeGenerated(file, paper) {
     <rect x="50" y="50" width="${s - 100}" height="${s - 100}" fill="none" stroke="#d8d0c0" stroke-width="3"/>
     <rect x="380" y="400" width="260" height="200" fill="none" stroke="#ebe5d8" stroke-width="6"/>
     <circle cx="512" cy="500" r="30" fill="#f47d3a"/>
+    <rect x="330" y="200" width="40" height="600" fill="#7c8590"/><rect x="654" y="200" width="40" height="600" fill="#7c8590"/>
     <g fill="rgb(${paper.map((v) => v + 18).join(',')})">
       <circle cx="90" cy="90" r="6"/><circle cx="930" cy="110" r="6"/><circle cx="100" cy="930" r="6"/><circle cx="920" cy="920" r="6"/>
     </g>
@@ -94,6 +95,13 @@ for (let y = 10; y < 200; y++) {
 far = far.map((v) => v / fn);
 far.forEach((v, c) => assert.ok(Math.abs(v - PAPER[c]) < 3, `紙の色が台紙に揃う (${far.map(Math.round)})`));
 assert.equal(bright, 0, '枠線が残らない');
+// 縦に長い太い柱 (モチーフの一部) は枠線とみなさず残る
+let pillar = 0;
+for (let y = 0; y < img.h; y++) for (let x = 0; x < img.w; x++) {
+  const i = (y * img.w + x) * 3;
+  if (img.data[i + 2] > img.data[i] + 6 && img.data[i + 2] > 90) pillar++;
+}
+assert.ok(pillar > 300, `太い柱が残る (${pillar})`);
 ok('紙の色を揃え、枠線を消す');
 
 // 紙を白い地に置いた絵: 白い地を紙の色と測らずに置ける

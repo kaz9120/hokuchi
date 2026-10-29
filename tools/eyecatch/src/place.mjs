@@ -123,19 +123,25 @@ export async function motifMask(img, paper) {
       if (y < e || y >= h - e || x < e || x >= w - e) m[y * w + x] = 0;
     }
   }
-  // 画面を横切る縦横の直線も枠線とみなして消す
-  const wipeRows = [];
-  for (let y = 0; y < h; y++) {
-    let n = 0;
-    for (let x = 0; x < w; x++) if (m[y * w + x] > 0.15) n++;
-    if (n / w > 0.5) wipeRows.push(y);
-  }
-  const wipeCols = [];
-  for (let x = 0; x < w; x++) {
-    let n = 0;
-    for (let y = 0; y < h; y++) if (m[y * w + x] > 0.15) n++;
-    if (n / h > 0.5) wipeCols.push(x);
-  }
+  // 画面を横切る縦横の直線も枠線とみなして消す。枠線は細く、縁に近い。
+  // 太いもの (机の脚・椅子の背) や画面の中ほどの線はモチーフなので残す
+  const frameLines = (len, cross, covered) => {
+    const hit = [];
+    for (let i = 0; i < len; i++) if (covered(i) / cross > 0.5) hit.push(i);
+    const lines = [];
+    for (let k = 0; k < hit.length; ) {
+      let j = k;
+      while (j + 1 < hit.length && hit[j + 1] === hit[j] + 1) j++;
+      const [a, b] = [hit[k], hit[j]];
+      const thin = b - a + 1 <= Math.max(4, len * 0.012);
+      const nearEdge = b < len * 0.15 || a >= len * 0.85;
+      if (thin && nearEdge) for (let i = a; i <= b; i++) lines.push(i);
+      k = j + 1;
+    }
+    return lines;
+  };
+  const wipeRows = frameLines(h, w, (y) => { let n = 0; for (let x = 0; x < w; x++) if (m[y * w + x] > 0.15) n++; return n; });
+  const wipeCols = frameLines(w, h, (x) => { let n = 0; for (let y = 0; y < h; y++) if (m[y * w + x] > 0.15) n++; return n; });
   for (const r of wipeRows) for (let y = Math.max(0, r - 3); y <= Math.min(h - 1, r + 3); y++) m.fill(0, y * w, (y + 1) * w);
   for (const c of wipeCols) for (let y = 0; y < h; y++) for (let x = Math.max(0, c - 3); x <= Math.min(w - 1, c + 3); x++) m[y * w + x] = 0;
   for (let i = 0; i < w * h; i++) if (m[i] === 0) core[i] = 0;

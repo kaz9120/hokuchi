@@ -74,7 +74,7 @@ export default defineTalk({
   event: { name: 'KomeKaigi 2026', url: 'https://komekaigi.dev/' },
   speaker: '山本 一将',
   affiliation: 'MOSH株式会社',
-  public: false,
+  public: true,
   theme,
   // 話者のリハーサルで、めくりが遅いと言われた (2026-10-24)。動きの時間を 3 割縮める
   tempo: 0.7,

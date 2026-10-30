@@ -1,0 +1,480 @@
+id: 3
+at: 2026-10-26T01:27:37.708Z
+scenes: 28
+states: 86
+readers:
+  - persona: mid-backend
+    name: 高橋さん
+    label: 中堅のバックエンドエンジニア（6 年目）
+    scores:
+      got:
+        score: 4
+        reason: AI に任せきった人が「3200 点前後で止まった」という具体的な壁と、そこで人が足したものが聞けて、来た目的には合っていた
+      trouble:
+        score: 4
+        reason: 「積んできた経験に価値はあるか」をそのまま問いに立てていて、自分の悩みの中心に触れていた
+      insight:
+        score: 4
+        reason: 差は知識の有無ではなく「その場面で使うと判断できるか」だという切り分けと、AI は書き直しの大きい案を外しがちだという指摘が新しかった
+      follow:
+        score: 4
+        reason: 左下の現在地表示と 7 月・10 月の 2 場面に絞った構成で、将棋を知らなくても追えた。ただ後半の専門性と個性の話で軸が少し変わった
+      glance:
+        score: 3
+        reason: 多くは見出し 1 行でつかめたが、先読みの部品 4 つの図や盤の図は、3 秒では文字を読み切れなかった
+      convinced:
+        score: 3
+        reason: 将棋の 2 場面は納得できた。ただ、10 年作ってきた人だから判断できた話にも聞こえ、6 年目の自分にも同じ判断の種があるとは言い切れなかった
+      action:
+        score: 2
+        reason: 「好きなことを本気でやる」は正しいと思うが広すぎて、明日どの場面で何をすればいいかには落ちなかった
+      recommend:
+        score: 4
+        reason: 手法紹介ではなく、任せきった結果の壁を数字で見せてくれるので、同じ悩みを持つ同僚に勧めたい
+    message: AI に任せるほど、AI が止まる「決め方が問われる所」で差が付き、その決め方は自分で作って結果を受け止めた経験からしか出てこないので、経験の価値は下がっていない。
+    wish: in-your-work の仕事への置き換えのあとに、10 年の専門分野を持たない 6 年目のエンジニアが、いまの実務のどこで「AI が止まった所」に気づき、決め方を磨けばいいのかを具体例で 1 つ示してほしかった。
+    notes:
+      - scene: knowledge
+        state: 2
+        kind: good
+        text: 「AI も知識としては知っていた、差は使うと判断できたか」で、AI の出力を判定できない自分のもやもやに名前が付いた
+      - scene: result
+        state: 4
+        kind: good
+        text: AI だけでは 3200 点前後で止まったと正直に出していて、任せきった人の話として信用できた
+      - scene: try-mailbox
+        state: 4
+        kind: good
+        text: AI は書き直しが大きい案を手作業時代の常識で外すが、人は逆に判断した、という対比が実務にもそのまま効く
+      - scene: in-your-work
+        state: 0
+        kind: good
+        text: 一部だけ移す、素直なコードが本番で遅い、の 2 例は自分の現場でも見覚えがあった
+      - scene: practice
+        state: 0
+        kind: unconvinced
+        text: 「好きなことをたくさんやる」はそれまでの具体的な話に比べて急に抽象的になり、明日の行動につながらなかった
+      - scene: ai-stops
+        state: 3
+        kind: unconvinced
+        text: 決め方が経験から出るのは分かる。でも、その決め方もいずれ AI ができるようになるのでは、という疑問には触れていなかった
+      - scene: stride16
+        state: 3
+        kind: unconvinced
+        text: 16 升の一言は 10 年作ってきた人だから出たもので、自分には同じ深さで判断できる領域が思い当たらない
+      - scene: individuality
+        state: 0
+        kind: jump
+        text: 「決め方」の話から「個性」へ移ったとき、個性が決め方とどうつながるのかが見えず、話が一段飛んだ感じがした
+      - scene: expertise
+        state: 3
+        kind: word
+        text: NNUE と Word2Vec の説明がなく、例としての意味が取れなかった
+      - scene: six-losses
+        state: 2
+        kind: unreadable
+        text: 部品 4 つの説明文がそれぞれ長く、3 秒では読み切れなかった
+      - scene: why-restart
+        state: 0
+        kind: good
+        text: 仕事では手法の良し悪しを測れないから将棋で確かめる、という理由づけで、「数字で測れる題材だから言えた」という引っかかりが先回りして解かれた
+      - scene: goal
+        state: 1
+        kind: word
+        text: floodgate の点数の仕組みは 1 度聞いただけでは追いきれなかったが、200 点差で 4 回に 3 回勝つという換算があって助かった
+  - persona: junior-web
+    name: 中村さん
+    label: 若手の Web エンジニア（新卒 2 年目）
+    scores:
+      got:
+        score: 3
+        reason: 先輩世代が経験をどう見ているかは分かったが、2年目の自分が仕事の中で何を積めばいいかは「好きなことをやる」以上の具体策がなかった。
+      trouble:
+        score: 3
+        reason: 「AIが書いた素直なコードが本番で遅い」はレビューで指摘される場面に近かったが、指摘が腹落ちしない悩みそのものには触れていなかった。
+      insight:
+        score: 4
+        reason: 同じAIは同じ所で止まり、差が付くのは止まったあとだという見方は新しかった。人に残るのは作業ではなく決め方の場面だ、という整理も新しかった。
+      follow:
+        score: 4
+        reason: 将棋の話から仕事の話へ移る区切りが分かりやすく、最後まで追えた。ただ、先読みの部品や11×13の盤の細部は流して聞いた。
+      glance:
+        score: 3
+        reason: 見出しは短く読めた。ただ、部品4つの図や3か所の印のように、3秒では拾い切れない画面がいくつかあった。
+      convinced:
+        score: 3
+        reason: 主張の筋は分かる。でも、判断できたのは10年自分で作ってきたからだという話で、結局は経験を積めた世代だから言えることにも聞こえた。
+      action:
+        score: 3
+        reason: AIに試させた結果を自分で受け止めて次の問いを立てる、くらいならできそうだが、何を題材にするかは決まっていない。
+      recommend:
+        score: 3
+        reason: AIだけでは止まる、という話は同期にも聞かせたい。ただ、若手向けの答えとしては物足りない。
+    message: AIに任せる範囲が広がるほど、差は人の経験から出る決め方で付くので、好きなことに自分の問いで取り組み、結果を自分で受け止めて磨き続けてほしい、ということ。
+    wish: 話し手の判断の元は10年の手作業だったので、いまAIと一緒に始める若手がその「決め方」をどう積めるかを、仕事の中の具体例で1つ見せてほしかった。たとえば、レビューで指摘されたAIの出力をどう受け止め直すか。
+    notes:
+      - scene: knowledge
+        state: 3
+        kind: unconvinced
+        text: 判断できたのは自分で作って結果を見てきたから、と言われると、一から書いた経験が少ない自分はどうすればいいのかが残る。いちばん聞きたかった所だった。
+      - scene: baseline
+        state: 2
+        kind: unconvinced
+        text: 10年前の私が見たら絶望していた、の気持ちはいまの自分に近い。でも、話し手はそこから10年分の蓄えで抜け出しているので、自分には当てはまらない気がした。
+      - scene: practice
+        state: 3
+        kind: unconvinced
+        text: 取り掛かるコストは言い訳にならない、と言われても、悩みは時間と題材がないことなので、行動力の話で片付けられた感じがした。
+      - scene: not-ai-alone
+        state: 2
+        kind: good
+        text: 自分の問いを立てる→行動する→結果を受け止める、の輪は、AIの出力をそのまま通している自分に刺さった。いちばん持ち帰れる部分。
+      - scene: same-ai
+        state: 0
+        kind: good
+        text: 誰でも同じAIを使えるから、AIだけで届く所は差にならない、という図が一目で分かり、納得した。
+      - scene: in-your-work
+        state: 2
+        kind: good
+        text: テストは通るし読みやすいのに本番で遅い、はレビューで言われることに近く、何がまずいのかの見え方が少し変わった。
+      - scene: in-your-work
+        state: 1
+        kind: unconvinced
+        text: どこまでを一組で移すかは元のシステムを知っている人にしか見えない、と言われると、知らない側の自分はどうすればいいのかの答えがない。
+      - scene: six-losses
+        state: 2
+        kind: unreadable
+        text: 中央の説明と部品4つのラベルがどれも長く、3秒では読み切れなかった。
+      - scene: result
+        state: 5
+        kind: unreadable
+        text: 「7/30 進め方」「8月 学習データ」「10/18 盤」の印が小さく、何を指すのかもその場では分からなかった。
+      - scene: expertise
+        state: 3
+        kind: word
+        text: NNUEもWord2Vecも知らないので、引き出しの例として響かなかった。
+      - scene: goal
+        state: 1
+        kind: word
+        text: floodgateの点数の説明は分かったが、200点差で4回に3回勝つという話を、あとのグラフと結びつけるのに少し時間がかかった。
+      - scene: answer
+        state: 2
+        kind: unconvinced
+        text: 差は人の経験で付きます、で締めくくられると、経験の少ない自分はもう差を付けられている側だと感じてしまった。
+  - persona: veteran-lead
+    name: 斎藤さん
+    label: ベテランのテックリード（15 年目）
+    scores:
+      got:
+        score: 4
+        reason: 経験が効くのは作業ではなく「どこまでを一組で扱うか」「何を良しとするか」を決める場面だと、具体例で確かめられた
+      trouble:
+        score: 3
+        reason: 経験の価値には正面から触れていた。ただ、測れない仕事で「好みの問題では」と返されたときにどう言い返すか、時間と体力の制約をどうするかには触れていなかった
+      insight:
+        score: 4
+        reason: AI は手作業の時代の常識で書き直しの大きい案を外す、だからその案を試すと決めるのが人の役目だ、という見方は新しかった
+      follow:
+        score: 4
+        reason: 左下の現在地と問い→結果→2つの場面→仕事への置き換えの流れで迷わなかった。専門性と個性の節から少し散った
+      glance:
+        score: 4
+        reason: ほとんどは見出し1行で足りた。グラフに印が3つ付く所と速さの数値が並ぶ所は3秒では読み切れなかった
+      convinced:
+        score: 3
+        reason: 16升の一言の話は納得した。ただ、800点がすべて人の判断の分なのか、AI だけで続けていたら伸びなかったのかは確かめられていない
+      action:
+        score: 3
+        reason: レビューで違和感を覚えたとき、AI が外した書き直しの大きい案を試すかを自分で決め直す、くらいは明日から意識できる
+      recommend:
+        score: 4
+        reason: 同じ焦りを持つベテランには、気休めではなく実験の数字で話している点を勧められる
+    message: AI に任せるほど作業では差が付かなくなり、止まった所で決め方を選べる人の経験が差になる。
+    wish: 仕事は将棋と違って結果が測れないと自分で言っているのだから、その仕事の場で経験からの判断を「好みの問題」で終わらせず、どう確かめてどう通すかを一例でいいから示してほしかった。
+    notes:
+      - scene: stride16
+        state: 3
+        kind: good
+        text: 昔から知られた工夫を、いま使うと判断できたのが経験だった。自分の経験は古い種類のものではと思っていたので、この例は効いた
+      - scene: try-mailbox
+        state: 4
+        kind: good
+        text: AI が書き直す範囲の大きさを理由に見送り、人が逆を選んだ対比が分かりやすい。レビューで自分が言えることのヒントになった
+      - scene: why-restart
+        state: 5
+        kind: unconvinced
+        text: 仕事では価値が測れないと認めたまま話が終わっている。現場で経験からの判断を通す方法が、いちばん聞きたかった所だった
+      - scene: result
+        state: 5
+        kind: unconvinced
+        text: 800点が人の判断の分だという切り分けが、この説明だけでは確かめられない。AI だけで続けた比べる対象がない
+      - scene: six-losses
+        state: 1
+        kind: unconvinced
+        text: 不採用が6件続いただけで「止まった」とするのは早い気がした。始めて2週間の時点だった
+      - scene: same-ai
+        state: 2
+        kind: good
+        text: 誰でも届く線があって、差は止まったあとに付くという図は、若手が AI で速いことの説明として腑に落ちた
+      - scene: in-your-work
+        state: 1
+        kind: good
+        text: 認証やキャッシュの一部だけを移す例は、まさに業務で見る失敗で、自分の経験と結び付いた
+      - scene: practice
+        state: 3
+        kind: unconvinced
+        text: 「取り掛かるコストはもう言い訳にならない」「差は行動力」は、時間と体力が限られる立場には突き放されたように聞こえた
+      - scene: expertise
+        state: 3
+        kind: word
+        text: NNUE と Word2Vec の説明がなく、例として入ってこなかった
+      - scene: result
+        state: 5
+        kind: unreadable
+        text: 帯のラベルと印3つ（7/30 進め方、8月 学習データ、10/18 盤）が一度に出て、3秒では読み切れなかった。学習データの話はそのあと出てこない
+      - scene: try-mailbox
+        state: 3
+        kind: unreadable
+        text: −4.3%、−3.4%、−1.0% まで、という数字の並びを読み解く前に次の画面へ移った
+      - scene: individuality
+        state: 0
+        kind: jump
+        text: 決め方の話から、専門性と個性、好きなことをやろう、へ広がり、話の焦点がぼやけた
+  - persona: student-cs
+    name: 小林さん
+    label: 情報系の学生（学部 3 年）
+    scores:
+      got:
+        score: 4
+        reason: 「AI 時代でも経験に価値はあるか」への現場のエンジニアの本音は持ち帰れたが、就活や進路の話は出なかった
+      trouble:
+        score: 4
+        reason: 「AI があればエンジニアは要らない」「自分の実力が分からない」という悩みに正面から答えていた
+      insight:
+        score: 4
+        reason: 誰でも同じ AI を使えるから AI だけで届く所では差が付かず、差は止まったあとに付く、という見方は初めてだった
+      follow:
+        score: 4
+        reason: 左下の現在地表示と数字のおかげで筋は追えたが、7 月の先読みの部品の話は中身が分からないまま進んだ
+      glance:
+        score: 3
+        reason: 見出しは短くて読めたが、先読みの部品 4 つや利きの数の図は 3 秒では読み切れなかった
+      convinced:
+        score: 3
+        reason: 将棋の話には納得したが、判断の元が 10 年分の積み上げなので、学生の自分がこれから間に合うのかは腑に落ちていない
+      action:
+        score: 3
+        reason: 好きなことを AI と一緒に本気でやってみようとは思ったが、明日なにをするかまでは決まっていない
+      recommend:
+        score: 4
+        reason: AI で課題を済ませて不安になっている同期には、聞いてほしい内容だった
+    message: AI に任せるほど、差は自分で作って結果を受け止めてきた人の経験で付くので、好きなことを本気でやって磨き続けよう、ということ。
+    wish: 学生や経験の浅い人が、10 年の積み上げがなくても最初の 1〜2 年でどう『決め方』を育てられるかの具体例が 1 つ欲しかった。
+    notes:
+      - scene: knowledge
+        state: 3
+        kind: unconvinced
+        text: 判断できたのは 10 年作ってきたからだと聞いて、今からでは間に合わないのではと不安になった
+      - scene: same-ai
+        state: 2
+        kind: good
+        text: 月 20 ドルの同じ AI なら止まる所も同じ、という話で、課題が AI で作れてしまうモヤモヤの理由が分かった
+      - scene: in-your-work
+        state: 1
+        kind: unconvinced
+        text: 認証の流れやキャッシュの一部だけを移す場面は、働いたことがないので実感がわかなかった
+      - scene: stride16
+        state: 3
+        kind: good
+        text: 11 で割るのがビットをずらすだけになる話は、授業で習った知識とつながって分かりやすかった
+      - scene: baseline
+        state: 2
+        kind: good
+        text: 10 年前の自分が見たら絶望する、という本音が聞けて、来た甲斐があった
+      - scene: not-ai-alone
+        state: 2
+        kind: good
+        text: 自分で問いを立て、結果を受け止める輪は、学生でもすぐ回せそうだと思えた
+      - scene: expertise
+        state: 3
+        kind: word
+        text: NNUE と Word2Vec が分からず、たとえ話としても伝わらなかった
+      - scene: six-losses
+        state: 2
+        kind: unreadable
+        text: 部品 4 つの文が長く、読み終わる前に話が進んだ
+      - scene: goal
+        state: 1
+        kind: word
+        text: floodgate は初めて聞いた。200 点差なら 4 回に 3 回勝つという説明で、点数の感覚はつかめた
+      - scene: expertise
+        state: 4
+        kind: good
+        text: 引き出しの数も専門性になるという話で、いろいろ手を出してきた自分にも強みがあるかもと思えた
+      - scene: practice
+        state: 3
+        kind: unconvinced
+        text: 差が付くのは行動力と言われても、それが就活でどう評価されるのかは分からなかった
+      - scene: try-mailbox
+        state: 4
+        kind: good
+        text: AI は書き直す範囲が大きいので見送り、人は AI がいるから試せると判断した、という対比が分かりやすかった
+  - persona: eng-manager
+    name: 佐々木さん
+    label: エンジニアリングマネージャー（メンバー 8 人）
+    scores:
+      got:
+        score: 3
+        reason: 任せきった人が突き当たった所が「決め方の場面」だとは持ち帰れたが、チームへの入れ方は話の外だった
+      trouble:
+        score: 3
+        reason: ベテランを活かす場面の話には触れていたが、人数の問い・使い方のばらつき・若手の育て方には答えがなかった
+      insight:
+        score: 4
+        reason: AI に任せきれるかは機械で良し悪しを判定できるかで決まり、人が要るのは決め方の場面だ、という切り分けは新しかった
+      follow:
+        score: 4
+        reason: 左下の現在地と問いの立て方のおかげで、将棋の細部が分からなくても筋は追えた
+      glance:
+        score: 4
+        reason: 見出しが短く結論になっていた。先読みの部品 4 つと、グラフに付いた 3 つの印は 3 秒では読み切れなかった
+      convinced:
+        score: 3
+        reason: 1 人・1 分野・3 か月の話で、800 点がすべて人の判断の分なのか、仕事の全分野で 10 年前の最先端に届くのかは、言い切りに見えた
+      action:
+        score: 3
+        reason: 設計の記録を AI に残させる、良し悪しを自動で判定する場所を探す、くらいは思い付くが、話し手が勧めたわけではない
+      recommend:
+        score: 3
+        reason: エンジニア個人には勧めたい。EM には、組織の話が無いことを先に伝えてからにしたい
+    message: AI に任せるほど、AI が止まる「決め方の場面」で差が付き、その差は自分で作って結果を受け止めてきた経験から生まれるので、経験の価値は下がらない。
+    wish: 後半の「皆さんの仕事」に、チームで AI を使う場合の置き換え（誰が決め方の場面を担うのか、若手はどこで経験を積むのか、人数の話はどうなるのか）が 1 枚でもあれば、そのまま持ち帰れた。
+    notes:
+      - scene: setup
+        state: 4
+        kind: good
+        text: 機械が判定できるから人の承認を外せる、仕事で手法を確かめにくいのは判定が無いから、という話は、チームに入れるときの判断基準として使える
+      - scene: six-losses
+        state: 4
+        kind: good
+        text: コードを読まなくても、設計の記録を読めば原因が分かった。コードを書かない EM として、いちばん持ち帰りたい点
+      - scene: in-your-work
+        state: 0
+        kind: good
+        text: 認証やキャッシュの一部だけを移す例は具体的で、ベテランをどこに置けばよいかがイメージできた
+      - scene: same-ai
+        state: 3
+        kind: unconvinced
+        text: 800 点がすべて人の判断の分だと言えるのか。AI だけで続けていたらどうなったかの比較が無い
+      - scene: baseline
+        state: 3
+        kind: unconvinced
+        text: 将棋 1 分野の結果から、ソフトウェア開発のどの分野でも 10 年前の最先端が作れると広げるのは飛躍に感じた
+      - scene: practice
+        state: 0
+        kind: unconvinced
+        text: 「好きなことをたくさんやってみる」は個人への助言で、業務時間の中で若手をどう育てるかには答えていない
+      - scene: not-ai-alone
+        state: 1
+        kind: good
+        text: 試すのが AI だけでは誰の基準も育たない、という点は、若手に丸投げで使わせることの危うさとして刺さった
+      - scene: expertise
+        state: 3
+        kind: word
+        text: NNUE と Word2Vec が説明なしで出てきて、例が分からなかった
+      - scene: six-losses
+        state: 2
+        kind: unreadable
+        text: 中央の説明と部品 4 つの文が長く、3 秒では読み切れなかった
+      - scene: result
+        state: 5
+        kind: unreadable
+        text: 帯のラベルと 3 つの印が同時に出て、どこを見ればよいか迷った
+      - scene: why-restart
+        state: 3
+        kind: good
+        text: 作ったものの価値が測れないから手法の良し悪しも測れない、という説明は、経営への説明の難しさそのもので共感した
+      - scene: goal
+        state: 4
+        kind: jump
+        text: 「仕事を辞めて全力で開発したら届く上限」が 4000 点だという根拠は、聞き手には確かめようがなかった
+  - persona: ai-heavy-cto
+    name: 吉田さん
+    label: AI を使い倒しているスタートアップの CTO
+    scores:
+      got:
+        score: 3
+        reason: 任せきった結果の実測（採用 58/246 件、3200 点前後で頭打ち、人の介入後に 4000 点）は得られたが、頭打ちの原因が AI にあるのか仕組みにあるのかを切り分けた実測はなかった
+      trouble:
+        score: 4
+        reason: 「任せきった先で何が頭打ちになるか」「同じ道具で何が差になるか」という自分の悩みのど真ん中を扱っていた
+      insight:
+        score: 3
+        reason: 「AI は書き直しの大きい案を手作業時代の常識で外す」は使える見方だった。一方で「決め方は人に残る」「差は専門性」は聞き慣れた結論だった
+      follow:
+        score: 5
+        reason: 左下の現在地表示と、問い→実験→2 場面→仕事への置き換えの流れが明快で、迷わなかった
+      glance:
+        score: 4
+        reason: 見出し 1 文と図の切り替えでほぼひと目で読めた。部品 4 つの図と仕事への置き換え表は、3 秒では文字が多かった
+      convinced:
+        score: 2
+        reason: n=1 で対照群がない。AI だけの期間は約 2 週間しかなく、仕組み（失敗記録を AI 自身に横断分析させるなど）や後のモデルで 3200 点を越えられたかは確かめていないので、800 点を人の経験の分とは言い切れない
+      action:
+        score: 3
+        reason: 不採用が続いた設計の記録を束ねて共通原因を探すことと、AI が見送った大規模な書き直し案をあえて試させることは、明日やってみる
+      recommend:
+        score: 3
+        reason: 測れる砂場で手法を検証するという設計と具体例は勧められる。ただ後半の「好きなことをやろう」は、同業の CTO には薄い
+    message: 同じ AI に任せれば誰でも同じ線で止まり、その先へ AI を進ませる方向の決め方は、人が自分で作って確かめてきた経験からしか出てこない。
+    wish: AI だけの期間を長く取るか、失敗の記録を AI 自身に横断分析させる仕組みを入れた対照を走らせて、それでも 3200 点前後で止まるのかを見せてほしかった。そうすれば「人の経験の 800 点」が、仕組みやモデルの改良で消える差なのかを判断できた。
+    notes:
+      - scene: result
+        state: 4
+        kind: unconvinced
+        text: AI だけで回したのは 7/17〜7/30 の約 2 週間だけ。不採用 6 件で「止まった」と判断するのは早く、放っておけば伸びたかもしれない
+      - scene: six-losses
+        state: 4
+        kind: unconvinced
+        text: 設計の記録を読んで「単位が小さすぎた」と見抜く作業は、AI に記録を横断して読ませればできた可能性がある。人でなければできなかった根拠が示されていない
+      - scene: same-ai
+        state: 2
+        kind: unconvinced
+        text: 「同じ AI は同じ所で止まる」は、モデルが 1 つ進めば線自体が上がる話。ここで言う止まる所が、モデルの限界なのか、自分のハーネスの限界なのかが分からない
+      - scene: try-mailbox
+        state: 4
+        kind: good
+        text: AI が書き直しの大きい案を手作業時代の常識で外し、人がそれを覆したという具体例は新しかった。自分のチームでもすぐ確かめたい
+      - scene: stride16
+        state: 0
+        kind: good
+        text: 1.20 倍から 1.10 倍へ、合格の線と数字で人の一言の効果を示していて説得力があった
+      - scene: result
+        state: 3
+        kind: good
+        text: 設計の記録 246 本に対して採用 58 件という採用率は、他の人の実測として欲しかった数字だった
+      - scene: why-restart
+        state: 4
+        kind: good
+        text: 成果を測れる砂場で手法を検証してから仕事に持ち帰るという設計には納得した
+      - scene: result
+        state: 2
+        kind: unconvinced
+        text: 4013 点の後に 3961 点と、floodgate の点数は数十点揺れる。数点ずつの改善や配列盤の「5 点上」がノイズの幅に収まっていないかを示してほしい
+      - scene: mailbox-done
+        state: 2
+        kind: unconvinced
+        text: 8,904 局で 5 点上は、信頼区間が分からないと誤差の範囲に見える
+      - scene: practice
+        state: 0
+        kind: unconvinced
+        text: 「好きなことをたくさんやる」「行動力」は一般論で、競合との差を考えている立場には持ち帰るものがない
+      - scene: expertise
+        state: 3
+        kind: jump
+        text: NNUE と Word2Vec の例は説明なしに出てきた。この翻訳が実際に点数につながったのかも語られていない
+      - scene: six-losses
+        state: 2
+        kind: unreadable
+        text: 部品 4 つの説明文が長く、3 秒では読み切れなかった
+failed: []

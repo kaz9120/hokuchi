@@ -28,7 +28,7 @@
       "service": "external-article",
       "identifier": null,
       "caption": null,
-      "html_for_embed": "<span><div class=\"external-article-widget\">\n<a href=\"https://developers.line.biz/ja/news/2026/10/15/line-api-expert-program-in-japan-will-be-discontinued/\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong class=\"external-article-widget-title\">\n日本におけるLINE API Expert制度終了のお知らせ\n</strong>\n<em class=\"external-article-widget-description\">\n日本におけるLINE API Expert、およびLINE API Platform Evangelistの制度は、現在任\n</em>\n<em class=\"external-article-widget-url\">\ndevelopers.line.biz\n</em>\n</a><a class=\"external-article-widget-image\" href=\"https://developers.line.biz/ja/news/2026/10/15/line-api-expert-program-in-japan-will-be-discontinued/\" rel=\"nofollow noopener\" style=\"background-image: url('https://assets.st-note.com/production/uploads/ext/6e19d15d124925ba4e4463ee4f80abea4b25f9cbac1cae801086862f57b6.jpeg?x-type=ogp');\" target=\"_blank\"></a>\n\n</div>\n</span>",
+      "html_for_embed": "<span><div class=\"external-article-widget\">\n<a href=\"https://developers.line.biz/ja/news/2026/10/15/line-api-expert-program-in-japan-will-be-discontinued/\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong class=\"external-article-widget-title\">\n日本におけるLINE API Expert制度終了のお知らせ\n</strong>\n<em class=\"external-article-widget-description\">\n日本におけるLINE API Expert、およびLINE API Platform Evangelistの制度は、現在任\n</em>\n<em class=\"external-article-widget-url\">\ndevelopers.line.biz\n</em>\n</a><a class=\"external-article-widget-image\" href=\"https://developers.line.biz/ja/news/2026/10/15/line-api-expert-program-in-japan-will-be-discontinued/\" rel=\"nofollow noopener\" style=\"background-image: url('https://assets.st-note.com/production/uploads/ext/c4dc4535dbf923f68c623f96a0d1afd1a9dc1dcdbce2aada1fc20c88732c.jpeg?x-type=ogp');\" target=\"_blank\"></a>\n\n</div>\n</span>",
       "html_for_display": null
     },
     {
@@ -45,5 +45,5 @@
     "urlname": "kyamamoto9120",
     "nickname": "山本一将｜焚き火を愛するエンジニア"
   },
-  "_fetched_at": "2026-10-18T03:49:16.619Z"
+  "_fetched_at": "2026-11-01T11:48:34.295Z"
 }

@@ -78,7 +78,7 @@
       "service": "external-article",
       "identifier": null,
       "caption": null,
-      "html_for_embed": "<span><div class=\"external-article-widget\">\n<a href=\"https://komekaigi.dev/\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong class=\"external-article-widget-title\">\nKomeKaigi 2026 — 2026.10.31 SAT / NINNO3 NIIGATA\n</strong>\n<em class=\"external-article-widget-description\">\nKomeKaigi 2026 は 2026年10月31日(土) 新潟・NINNO3 で開催。新潟の美味しいお米・お酒を楽し\n</em>\n<em class=\"external-article-widget-url\">\nkomekaigi.dev\n</em>\n</a><a class=\"external-article-widget-image\" href=\"https://komekaigi.dev/\" rel=\"nofollow noopener\" style=\"background-image: url('https://assets.st-note.com/production/uploads/ext/c3a49481a55705e0fe3887f66b96e063e2fd666d7b69610f155ec5806edd.jpeg?x-type=ogp');\" target=\"_blank\"></a>\n\n</div>\n</span>",
+      "html_for_embed": "<span><div class=\"external-article-widget\">\n<a href=\"https://komekaigi.dev/\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong class=\"external-article-widget-title\">\nKomeKaigi 2026 — 2026.10.31 SAT / NINNO3 NIIGATA\n</strong>\n<em class=\"external-article-widget-description\">\nKomeKaigi 2026 は 2026年10月31日(土) 新潟・NINNO3 で開催。新潟の美味しいお米・お酒を楽し\n</em>\n<em class=\"external-article-widget-url\">\nkomekaigi.dev\n</em>\n</a><a class=\"external-article-widget-image\" href=\"https://komekaigi.dev/\" rel=\"nofollow noopener\" style=\"background-image: url('https://assets.st-note.com/production/uploads/ext/389bc9f128f431803313202f45ea11ef27182968d442f302ef27762acc8d.jpeg?x-type=ogp');\" target=\"_blank\"></a>\n\n</div>\n</span>",
       "html_for_display": null
     },
     {
@@ -95,5 +95,5 @@
     "urlname": "kyamamoto9120",
     "nickname": "山本一将｜焚き火を愛するエンジニア"
   },
-  "_fetched_at": "2026-11-01T11:48:27.402Z"
+  "_fetched_at": "2026-11-08T03:24:37.618Z"
 }

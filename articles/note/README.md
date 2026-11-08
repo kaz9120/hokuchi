@@ -4,10 +4,11 @@
 読む用の Markdown (`index.md`) の 2 層でアーカイブしています。取り込みと検査は
 `tools/notes` の `hokuchi-note` が行います。詳しくは [ADR-0019](../../docs/adr/0019-note-archive-two-layer.md)。
 
-全 53 本。
+全 54 本。
 
 | 公開日 | タイトル | 原文 |
 |---|---|---|
+| 2026-11-08 | [地方カンファレンスは、ご当地まで味わって完成する。KomeKaigi 2026 参加レポート](2026-11-08-komekaigi-2026/) | [note](https://note.com/kyamamoto9120/n/nc87ef9fa41b6) |
 | 2026-11-01 | [2026年10月の活動振り返り](2026-11-01-monthly-review/) | [note](https://note.com/kyamamoto9120/n/ne4e46269210a) |
 | 2026-10-25 | [小学5年生で出会ったコンピュータ将棋と、世界9位まで](2026-10-25-computer-shogi-roots/) | [note](https://note.com/kyamamoto9120/n/n63d60ff7c053) |
 | 2026-10-18 | [LINE API Expert制度への感謝](2026-10-18-line-api-expert-thanks/) | [note](https://note.com/kyamamoto9120/n/n4bbb17a0a6ed) |

@@ -1,0 +1,120 @@
+{
+  "id": 189938770,
+  "key": "nc87ef9fa41b6",
+  "slug": "slug-nc87ef9fa41b6",
+  "type": "TextNote",
+  "status": "published",
+  "format": "4.0",
+  "name": "地方カンファレンスは、ご当地まで味わって完成する。KomeKaigi 2026 参加レポート",
+  "description": "",
+  "body": "<p name=\"99225c9f-4184-4985-862d-6ce1150d03e5\" id=\"99225c9f-4184-4985-862d-6ce1150d03e5\">発表は1分オーバーしました。</p><p name=\"22d3ab7c-62c5-44de-9066-2b434825bea0\" id=\"22d3ab7c-62c5-44de-9066-2b434825bea0\">新潟で開かれた KomeKaigi 2026 で、レギュラートークとして登壇してきました。時間オーバーにもかかわらず、温かくフォローしていただけたカンファレンスでした。</p><figure name=\"54f29ab0-761b-4085-8fa7-2d1e27aef11a\" id=\"54f29ab0-761b-4085-8fa7-2d1e27aef11a\" data-src=\"https://komekaigi.dev/\" data-identifier=\"null\" embedded-service=\"external-article\" embedded-content-key=\"emb00c29b6b9c71\"> \n<a href=\"https://komekaigi.dev/\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong>\nKomeKaigi 2026 — 2026.10.31 SAT / NINNO3 NIIGATA\n</strong>\n<em>\nKomeKaigi 2026 は 2026年10月31日(土) 新潟・NINNO3 で開催。新潟の美味しいお米・お酒を楽し\n</em>\n<em>\nkomekaigi.dev\n</em>\n</a><a href=\"https://komekaigi.dev/\" rel=\"nofollow noopener\" target=\"_blank\"></a>\n\n \n</figure><h2 name=\"d3c5e17f-3bbf-429a-b51e-ec0dd32aebce\" id=\"d3c5e17f-3bbf-429a-b51e-ec0dd32aebce\">会場を見て、緊張した</h2><p name=\"6f464dc4-ea70-4c71-850b-315c88f2d0bc\" id=\"6f464dc4-ea70-4c71-850b-315c88f2d0bc\">メインホールに入って、会場が思ったよりずっときれいなことに驚きました。狭いビルの一室を勝手に想像していたのですが、ちゃんとしたイベント会場でした。</p><p name=\"d0ef35fb-7c16-49df-90f7-22bc9587673f\" id=\"d0ef35fb-7c16-49df-90f7-22bc9587673f\">久々のカンファレンス登壇ですが、経験もあるし緊張はしないと思っていました。でも会場をみて、運営の方々が力を入れて準備してきた場だと感じて、ここで話すのだと思うと緊張してきました。</p><h2 name=\"909149d6-9940-49bc-99f9-3d91929eef34\" id=\"909149d6-9940-49bc-99f9-3d91929eef34\">時間配分は大失敗、それでも救われた</h2><p name=\"c5aa2a3a-5d27-44c8-b504-d7a5989d4af6\" id=\"c5aa2a3a-5d27-44c8-b504-d7a5989d4af6\">話したのは、7年ぶりに再開した将棋 AI の開発を AI に任せきってみた話です。</p><figure name=\"4707c85a-d166-4af8-9e55-8bcfce3973a0\" id=\"4707c85a-d166-4af8-9e55-8bcfce3973a0\" data-src=\"https://slides.y-kaz.com/2026-10-31-komekaigi/\" data-identifier=\"null\" embedded-service=\"external-article\" embedded-content-key=\"emb5ffcde29ed3b\"> \n<a href=\"https://slides.y-kaz.com/2026-10-31-komekaigi/\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong>\nAIに任せられるのは、磨いてきたものだけ\n</strong>\n<em>\n将棋 AI の開発を AI に任せきって分かったのは、AI に任せるほど差は人の経験で付くということでした。その経験の元に\n</em>\n<em>\nslides.y-kaz.com\n</em>\n</a><a href=\"https://slides.y-kaz.com/2026-10-31-komekaigi/\" rel=\"nofollow noopener\" target=\"_blank\"></a>\n\n \n</figure><p name=\"d3789442-2b7b-477f-ad4d-ca6e00af3921\" id=\"d3789442-2b7b-477f-ad4d-ca6e00af3921\">伝えたいことが多すぎて、何を話す・何を話さないかの取捨選択に多くの時間をかけました。</p><p name=\"89658a68-d87e-4084-aaed-d023c6d82a00\" id=\"89658a68-d87e-4084-aaed-d023c6d82a00\">それでも本番では前半の説明から時間を使いすぎてしまい、このままでは足りないと気づき、細かな話を飛ばしながら進めました。</p><p name=\"8f9b60db-f0a1-48eb-beb5-88445cf54057\" id=\"8f9b60db-f0a1-48eb-beb5-88445cf54057\">ビットボードと配列方式の比較といった実装の詳細は、ほとんどスキップしました。話の道筋に必要なところだけは落とさないように、その場で選びながらつないでいきました。</p><p name=\"ac26f432-1613-4daf-b21f-4d4b444a3463\" id=\"ac26f432-1613-4daf-b21f-4d4b444a3463\">最後まで話しきったものの、結果は1分オーバーです。運営の皆さまにはご迷惑をおかけしました。私の中では大失敗でした。</p><p name=\"bdee5985-249c-4a5d-aabf-e73321d94bdf\" id=\"bdee5985-249c-4a5d-aabf-e73321d94bdf\">それでも、発表後の Ask the Speaker や懇親会には、たくさんの方が話を聞きに来てくださいました。</p><p name=\"b3786196-36a7-4d43-a263-2021f788906f\" id=\"b3786196-36a7-4d43-a263-2021f788906f\">「自分も将棋が好きなんです」と声をかけてくれた方が多く、10年前といまの将棋界の変化や、AI を使いこなす若手とベテラン棋士の話で盛り上がりました。</p><figure name=\"fc774e78-8560-4e42-94fa-7ae7babe8348\" id=\"fc774e78-8560-4e42-94fa-7ae7babe8348\"><img src=\"https://assets.st-note.com/img/1794107766-luS8fENwRjytThnWiXZGJvqI.png\" alt=\"\" width=\"620\" height=\"465\"><figcaption>登壇前の様子。緊張でいっぱいです＞＜</figcaption></figure><p name=\"65fac72c-0da5-4cb2-be02-7f2261e641ab\" id=\"65fac72c-0da5-4cb2-be02-7f2261e641ab\">自律的に開発を回すハーネスの仕組みや、AI だけでうまくいった部分について、深く質問してくださる方もいました。</p><p name=\"1480529b-6494-4a32-b364-f8a5a47f0c57\" id=\"1480529b-6494-4a32-b364-f8a5a47f0c57\">「飛ばしていたけど、違和感なく最後まで聞けた」と言ってくれた方もいました。お世辞もあるだろうと思います。それでも、飛ばす場所をその場で選べたのは準備のおかげだったと、少し前向きに受け止めています。</p><p name=\"cefbaeb5-4926-46eb-a674-8acbd657cc2b\" id=\"cefbaeb5-4926-46eb-a674-8acbd657cc2b\">時間をオーバーしたにもかかわらず温かい反応をたくさんいただき、本当に救われた気持ちになりました。いつか焼き直して、またこの話をしたいです。</p><h2 name=\"d55d37b7-5d17-4022-a86c-c63df05a4a08\" id=\"d55d37b7-5d17-4022-a86c-c63df05a4a08\">終わってからは、お祭りだった</h2><p name=\"a7ee3e48-a0db-43d6-8699-7466c12b445c\" id=\"a7ee3e48-a0db-43d6-8699-7466c12b445c\">発表を終えて肩の荷が下りてからは、まるでお祭りでした。セッションを詰め込むより、ハンズオンに参加したり、人と話したりして過ごしました。</p><p name=\"60e0e46f-a3d5-4f3d-8af9-80f491d63808\" id=\"60e0e46f-a3d5-4f3d-8af9-80f491d63808\">久しぶりにお会いして近況を語り合えた方も、初めましての方もたくさんいて、この場所だからこその出会いを楽しめました。</p><h2 name=\"42d979c9-2e88-4115-96b9-220a318ee465\" id=\"42d979c9-2e88-4115-96b9-220a318ee465\">心に残った2本</h2><p name=\"3313c886-4622-418e-b550-3f3dcc990da2\" id=\"3313c886-4622-418e-b550-3f3dcc990da2\">1本目は、ベネフィット・ワンの小林 逸斗さんによるスポンサーセッションです。新潟拠点で1人から内製チームを立ち上げ、テスト自動生成やコードレビューに生成 AI を組み込んでやりきった事例でした。話の流れもきれいで、とても印象に残りました。</p><figure name=\"4ff2f3a5-6990-43de-88a6-fa971f4a0921\" id=\"4ff2f3a5-6990-43de-88a6-fa971f4a0921\" data-src=\"https://fortee.jp/komekaigi-2026/proposal/4f90a8a5-407c-4f30-b847-934dd565e654\" data-identifier=\"null\" embedded-service=\"external-article\" embedded-content-key=\"emb007dcd94331b\"> \n<a href=\"https://fortee.jp/komekaigi-2026/proposal/4f90a8a5-407c-4f30-b847-934dd565e654\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong>\n「社員は誰も知らない」を終わらせる 新潟から育てるAI時代の内製開発チーム！　外注依存から、自分たちで価値を届ける組織へ。\n</strong>\n<em>\nベネフィット・ワンでは、外部ベンダーへの依存によりシステムの知識や責任が社内に蓄積されにくいという課題を抱えていました。\n</em>\n<em>\nfortee.jp\n</em>\n</a><a href=\"https://fortee.jp/komekaigi-2026/proposal/4f90a8a5-407c-4f30-b847-934dd565e654\" rel=\"nofollow noopener\" target=\"_blank\"></a>\n\n \n</figure><p name=\"da21c93b-6092-430f-a055-4bf3d8235f33\" id=\"da21c93b-6092-430f-a055-4bf3d8235f33\">2本目は、fubuky35 さんの LT です。世界えだまめ早食い選手権を攻略するために、Meta Quest 3 とエッジ AI で枝豆を検出する MR アプリを作った話でした。登壇は初めてとのことでしたが、LT に慣れきった人のような面白さでした。</p><figure name=\"38fd65e7-dec4-466e-83fa-3f1ce3ffd2a9\" id=\"38fd65e7-dec4-466e-83fa-3f1ce3ffd2a9\" data-src=\"https://fortee.jp/komekaigi-2026/proposal/3f87bcb8-2c2d-451d-9178-7e7f8a6883b8\" data-identifier=\"null\" embedded-service=\"external-article\" embedded-content-key=\"embb7d63fce1a5e\"> \n<a href=\"https://fortee.jp/komekaigi-2026/proposal/3f87bcb8-2c2d-451d-9178-7e7f8a6883b8\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong>\nXR × AIで描く新潟の未来図！　えだまめ早食いMRアプリから始める地域課題解決\n</strong>\n<em>\n【概要】 「ばらばらな知見を結び、未来を創る」—— KomeKaigi 2026のテーマのもと、一見かけ離れた「エンタメ（\n</em>\n<em>\nfortee.jp\n</em>\n</a><a href=\"https://fortee.jp/komekaigi-2026/proposal/3f87bcb8-2c2d-451d-9178-7e7f8a6883b8\" rel=\"nofollow noopener\" target=\"_blank\"></a>\n\n \n</figure><p name=\"9877f010-49ac-4af1-a2b9-8d5795670849\" id=\"9877f010-49ac-4af1-a2b9-8d5795670849\">MOSH からも、新潟出身の同僚が LT に出ていました。こちらもとても良い LT でした。</p><figure name=\"af0fd781-f381-452f-b4eb-1d4165a13eea\" id=\"af0fd781-f381-452f-b4eb-1d4165a13eea\" data-src=\"https://fortee.jp/komekaigi-2026/proposal/1f2037b8-cf02-42ad-99ab-8d0c7e3096d1\" data-identifier=\"null\" embedded-service=\"external-article\" embedded-content-key=\"emb18f6ecfcb1db\"> \n<a href=\"https://fortee.jp/komekaigi-2026/proposal/1f2037b8-cf02-42ad-99ab-8d0c7e3096d1\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong>\nエンジニアとして地域貢献のために何をすべきか\n</strong>\n<em>\nエンジニアとして働くために新潟の実家を離れ、気づけば15年が経っていました。 いつからかぼんやりと「Uターンするかは分から\n</em>\n<em>\nfortee.jp\n</em>\n</a><a href=\"https://fortee.jp/komekaigi-2026/proposal/1f2037b8-cf02-42ad-99ab-8d0c7e3096d1\" rel=\"nofollow noopener\" target=\"_blank\"></a>\n\n \n</figure><h2 name=\"b201e3e9-ba46-4050-b982-e5d33d04245e\" id=\"b201e3e9-ba46-4050-b982-e5d33d04245e\">翌日からは、新潟を旅した</h2><p name=\"b35e804f-2509-483e-87fe-8bfb0c86a7e7\" id=\"b35e804f-2509-483e-87fe-8bfb0c86a7e7\">カンファレンスの翌日からは、妻と2泊3日で新潟を旅しました。1日目は新潟市内を観光し、水族館の「マリンピア日本海」へ行きました。</p><figure name=\"984af40c-0d85-42a6-987a-b0723b248ccc\" id=\"984af40c-0d85-42a6-987a-b0723b248ccc\"><img src=\"https://assets.st-note.com/img/1794107578-tWBISd1DgrC2imy75P3kEAq0.png\" alt=\"\" width=\"620\" height=\"350\"><figcaption></figcaption></figure><p name=\"133af548-7ce2-4488-b929-2a8774e52f37\" id=\"133af548-7ce2-4488-b929-2a8774e52f37\">ここで見たイルカショーが印象的でした。大きなジャンプのような派手な見せ場だけでなく、オスとメスの見分け方や水中で出す声など、イルカの生態に興味を持たせる工夫があって面白かったです。</p><p name=\"8f7ca2fb-389a-42b1-95dc-45a892b58b10\" id=\"8f7ca2fb-389a-42b1-95dc-45a892b58b10\">翌朝は8時ごろのジェットフォイルで佐渡へ渡りました。あいにくの強い雨でしたが、佐渡金山で見た「道遊の割戸」は衝撃でした。露天掘りで、山が割れるほど掘り進めた跡です。</p><figure name=\"9b2bc444-2ae1-49a0-b4c9-c6dfad67c918\" id=\"9b2bc444-2ae1-49a0-b4c9-c6dfad67c918\"><img src=\"https://assets.st-note.com/img/1794107619-6R3bs45oYpkyHKPQ19cAOfe7.png\" alt=\"\" width=\"620\" height=\"350\"><figcaption></figcaption></figure><p name=\"db837b57-9506-454b-a2d7-e97f7611e3cc\" id=\"db837b57-9506-454b-a2d7-e97f7611e3cc\">マインクラフトでもここまでは掘らないだろうと思いました。力強さを感じました。ライトアップされた坑道も心に残っています。</p><p name=\"a8563183-7a55-4b26-99e7-b2d6d38961a8\" id=\"a8563183-7a55-4b26-99e7-b2d6d38961a8\">佐渡で1泊して、ブリカツ丼や海鮮など、おいしいものをたくさん食べました。ずっと雨が続いていましたが、最終日はすっきり晴れて、気持ちよくフェリーで帰ってくることができました。</p><figure name=\"44d08423-797a-4608-81a1-b1fb26cfcb56\" id=\"44d08423-797a-4608-81a1-b1fb26cfcb56\"><img src=\"https://assets.st-note.com/img/1794107702-k1dIvCp80a26HqyLnXisJ7WA.png\" alt=\"\" width=\"620\" height=\"350\"><figcaption></figcaption></figure><p name=\"97774f0f-0051-4bd1-9017-6eca8ccd3bfe\" id=\"97774f0f-0051-4bd1-9017-6eca8ccd3bfe\">せっかく地方カンファレンスに行くなら、その土地まで楽しまないともったいないと思います。地方カンファレンスは、ご当地まで味わって完成するものだと感じています。少しは新潟に貢献できていたら嬉しいです。</p><p name=\"c02bb8f6-7238-4208-8acc-003f13f5af1d\" id=\"c02bb8f6-7238-4208-8acc-003f13f5af1d\">素敵なカンファレンスを準備・運営してくださったスタッフの皆さま、本当にありがとうございました。</p>",
+  "separator": null,
+  "publish_at": "2026-11-08T12:23:16.000+09:00",
+  "created_at": "2026-11-08T11:42:12.000+09:00",
+  "note_url": "https://note.com/kyamamoto9120/n/nc87ef9fa41b6",
+  "price": 0,
+  "is_limited": false,
+  "is_trial": false,
+  "eyecatch": "https://assets.st-note.com/production/uploads/images/333593340/rectangle_large_type_2_a19f9d9c2121afad1ff970233ee12d7c.png?fit=bounds&quality=85&width=1280",
+  "eyecatch_alt": "見出し画像",
+  "eyecatch_width": 1920,
+  "eyecatch_height": 1005,
+  "hashtags": [
+    "#イベントレポート",
+    "#komekaigi"
+  ],
+  "pictures": [
+    {
+      "caption": null,
+      "key": "1794107766-luS8fENwRjytThnWiXZGJvqI",
+      "url": "https://assets.st-note.com/img/1794107766-luS8fENwRjytThnWiXZGJvqI.png",
+      "thumbnail_url": "https://assets.st-note.com/img/1794107766-luS8fENwRjytThnWiXZGJvqI.png",
+      "alt": "画像1",
+      "width": null,
+      "height": null,
+      "index": 0
+    },
+    {
+      "caption": null,
+      "key": "1794107578-tWBISd1DgrC2imy75P3kEAq0",
+      "url": "https://assets.st-note.com/img/1794107578-tWBISd1DgrC2imy75P3kEAq0.png",
+      "thumbnail_url": "https://assets.st-note.com/img/1794107578-tWBISd1DgrC2imy75P3kEAq0.png",
+      "alt": "画像2",
+      "width": null,
+      "height": null,
+      "index": 1
+    },
+    {
+      "caption": null,
+      "key": "1794107619-6R3bs45oYpkyHKPQ19cAOfe7",
+      "url": "https://assets.st-note.com/img/1794107619-6R3bs45oYpkyHKPQ19cAOfe7.png",
+      "thumbnail_url": "https://assets.st-note.com/img/1794107619-6R3bs45oYpkyHKPQ19cAOfe7.png",
+      "alt": "画像3",
+      "width": null,
+      "height": null,
+      "index": 2
+    },
+    {
+      "caption": null,
+      "key": "1794107702-k1dIvCp80a26HqyLnXisJ7WA",
+      "url": "https://assets.st-note.com/img/1794107702-k1dIvCp80a26HqyLnXisJ7WA.png",
+      "thumbnail_url": "https://assets.st-note.com/img/1794107702-k1dIvCp80a26HqyLnXisJ7WA.png",
+      "alt": "画像4",
+      "width": null,
+      "height": null,
+      "index": 3
+    }
+  ],
+  "embedded_contents": [
+    {
+      "key": "emb00c29b6b9c71",
+      "url": "https://komekaigi.dev/",
+      "service": "external-article",
+      "identifier": null,
+      "caption": null,
+      "html_for_embed": "<span><div class=\"external-article-widget\">\n<a href=\"https://komekaigi.dev/\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong class=\"external-article-widget-title\">\nKomeKaigi 2026 — 2026.10.31 SAT / NINNO3 NIIGATA\n</strong>\n<em class=\"external-article-widget-description\">\nKomeKaigi 2026 は 2026年10月31日(土) 新潟・NINNO3 で開催。新潟の美味しいお米・お酒を楽し\n</em>\n<em class=\"external-article-widget-url\">\nkomekaigi.dev\n</em>\n</a><a class=\"external-article-widget-image\" href=\"https://komekaigi.dev/\" rel=\"nofollow noopener\" style=\"background-image: url('https://assets.st-note.com/production/uploads/ext/389bc9f128f431803313202f45ea11ef27182968d442f302ef27762acc8d.jpeg?x-type=ogp');\" target=\"_blank\"></a>\n\n</div>\n</span>",
+      "html_for_display": null
+    },
+    {
+      "key": "emb5ffcde29ed3b",
+      "url": "https://slides.y-kaz.com/2026-10-31-komekaigi/",
+      "service": "external-article",
+      "identifier": null,
+      "caption": null,
+      "html_for_embed": "<span><div class=\"external-article-widget\">\n<a href=\"https://slides.y-kaz.com/2026-10-31-komekaigi/\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong class=\"external-article-widget-title\">\nAIに任せられるのは、磨いてきたものだけ\n</strong>\n<em class=\"external-article-widget-description\">\n将棋 AI の開発を AI に任せきって分かったのは、AI に任せるほど差は人の経験で付くということでした。その経験の元に\n</em>\n<em class=\"external-article-widget-url\">\nslides.y-kaz.com\n</em>\n</a><a class=\"external-article-widget-image\" href=\"https://slides.y-kaz.com/2026-10-31-komekaigi/\" rel=\"nofollow noopener\" style=\"background-image: url('https://assets.st-note.com/production/uploads/ext/d5e49fc5371b4a9ef124f7af6a5b1864535ce63b775a4217b07e007ecace.png?x-type=ogp');\" target=\"_blank\"></a>\n\n</div>\n</span>",
+      "html_for_display": null
+    },
+    {
+      "key": "emb007dcd94331b",
+      "url": "https://fortee.jp/komekaigi-2026/proposal/4f90a8a5-407c-4f30-b847-934dd565e654",
+      "service": "external-article",
+      "identifier": null,
+      "caption": null,
+      "html_for_embed": "<span><div class=\"external-article-widget\">\n<a href=\"https://fortee.jp/komekaigi-2026/proposal/4f90a8a5-407c-4f30-b847-934dd565e654\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong class=\"external-article-widget-title\">\n「社員は誰も知らない」を終わらせる 新潟から育てるAI時代の内製開発チーム！　外注依存から、自分たちで価値を届ける組織へ。\n</strong>\n<em class=\"external-article-widget-description\">\nベネフィット・ワンでは、外部ベンダーへの依存によりシステムの知識や責任が社内に蓄積されにくいという課題を抱えていました。\n</em>\n<em class=\"external-article-widget-url\">\nfortee.jp\n</em>\n</a><a class=\"external-article-widget-image\" href=\"https://fortee.jp/komekaigi-2026/proposal/4f90a8a5-407c-4f30-b847-934dd565e654\" rel=\"nofollow noopener\" style=\"background-image: url('https://assets.st-note.com/production/uploads/ext/3352b1bef3e822e47e8a26e685af3622855dec7abae02154d20569bf6b40.png?x-type=ogp');\" target=\"_blank\"></a>\n\n</div>\n</span>",
+      "html_for_display": null
+    },
+    {
+      "key": "embb7d63fce1a5e",
+      "url": "https://fortee.jp/komekaigi-2026/proposal/3f87bcb8-2c2d-451d-9178-7e7f8a6883b8",
+      "service": "external-article",
+      "identifier": null,
+      "caption": null,
+      "html_for_embed": "<span><div class=\"external-article-widget\">\n<a href=\"https://fortee.jp/komekaigi-2026/proposal/3f87bcb8-2c2d-451d-9178-7e7f8a6883b8\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong class=\"external-article-widget-title\">\nXR × AIで描く新潟の未来図！　えだまめ早食いMRアプリから始める地域課題解決\n</strong>\n<em class=\"external-article-widget-description\">\n【概要】 「ばらばらな知見を結び、未来を創る」—— KomeKaigi 2026のテーマのもと、一見かけ離れた「エンタメ（\n</em>\n<em class=\"external-article-widget-url\">\nfortee.jp\n</em>\n</a><a class=\"external-article-widget-image\" href=\"https://fortee.jp/komekaigi-2026/proposal/3f87bcb8-2c2d-451d-9178-7e7f8a6883b8\" rel=\"nofollow noopener\" style=\"background-image: url('https://assets.st-note.com/production/uploads/ext/75f79bb907f62e9b20192c068371180bf8d415911cf680210bf44c0da752.png?x-type=ogp');\" target=\"_blank\"></a>\n\n</div>\n</span>",
+      "html_for_display": null
+    },
+    {
+      "key": "emb18f6ecfcb1db",
+      "url": "https://fortee.jp/komekaigi-2026/proposal/1f2037b8-cf02-42ad-99ab-8d0c7e3096d1",
+      "service": "external-article",
+      "identifier": null,
+      "caption": null,
+      "html_for_embed": "<span><div class=\"external-article-widget\">\n<a href=\"https://fortee.jp/komekaigi-2026/proposal/1f2037b8-cf02-42ad-99ab-8d0c7e3096d1\" rel=\"nofollow noopener\" target=\"_blank\">\n<strong class=\"external-article-widget-title\">\nエンジニアとして地域貢献のために何をすべきか\n</strong>\n<em class=\"external-article-widget-description\">\nエンジニアとして働くために新潟の実家を離れ、気づけば15年が経っていました。 いつからかぼんやりと「Uターンするかは分から\n</em>\n<em class=\"external-article-widget-url\">\nfortee.jp\n</em>\n</a><a class=\"external-article-widget-image\" href=\"https://fortee.jp/komekaigi-2026/proposal/1f2037b8-cf02-42ad-99ab-8d0c7e3096d1\" rel=\"nofollow noopener\" style=\"background-image: url('https://assets.st-note.com/production/uploads/ext/400458992b7b1c0628e742f5eeb09049bc2bb3ea87f64a722d0e7c0a071e.png?x-type=ogp');\" target=\"_blank\"></a>\n\n</div>\n</span>",
+      "html_for_display": null
+    }
+  ],
+  "user": {
+    "urlname": "kyamamoto9120",
+    "nickname": "山本一将｜焚き火を愛するエンジニア"
+  },
+  "_fetched_at": "2026-11-08T03:24:26.092Z"
+}

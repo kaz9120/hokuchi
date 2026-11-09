@@ -29,7 +29,7 @@ export function createShooter(stageUrl: () => string): Shooter {
         await waitStageReady(page)
         thumbs.clear()
         for (const el of await page.$$('[data-frame]')) {
-          // data-frame は "<scene>/<状態 0 始まり>"。画面とコードは 1 始まりにそろえる (rebuild.md 3 章)
+          // data-frame は "<scene>/<状態 0 始まり>"。画面とコードは 1 始まりにそろえる
           const [scene, step] = String(await el.getAttribute('data-frame')).split('/')
           thumbs.set(`${scene}/${Number(step) + 1}`, await el.screenshot({ type: 'jpeg', quality: 80 }))
         }

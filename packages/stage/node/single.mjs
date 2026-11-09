@@ -15,7 +15,7 @@ const safe = (code, tag) => code.replaceAll(`</${tag}`, `<\\/${tag}`)
 
 /**
  * トークを 1 つの HTML にまとめて outDir/<slug>.html に書き出す。戻り値は書き出したパス。
- * 既定は公開用の画面 (ADR-0042) で、PDF を HTML の隣に書き出し、トーク全体のテキストを HTML に埋める。
+ * 既定は公開用の画面で、PDF を HTML の隣に書き出し、トーク全体のテキストを HTML に埋める。
  * present を true にすると、発表用の画面 (発表者ビュー・ノートつき) で書き出す
  */
 export async function buildSingle(talkDir, outDir, { present = false } = {}) {

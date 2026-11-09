@@ -1,4 +1,4 @@
-// hokuchi テーマ (個人の登壇)。値は BRAND.md と hidoko の tokens.css から導く (ADR-0003)。夜の焚き火が基調
+// hokuchi テーマ (個人の登壇)。値は BRAND.md と hidoko の tokens.css から導く。夜の焚き火が基調
 import type { Theme } from '../../runtime/types'
 import './hokuchi.css'
 

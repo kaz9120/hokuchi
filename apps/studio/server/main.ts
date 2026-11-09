@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-// hokuchi studio。発表と記事を、企画から公開まで作るローカルの制作アプリ (ADR-0035・ADR-0049)。
+// hokuchi studio。発表と記事を、企画から公開まで作るローカルの制作アプリ。
 //
 //   bun run studio           ホーム (http://localhost:5300/)
 //   bun run studio <talk>    同じものを立て、そのトークの作品の画面の URL を出す
 //
 // 同じプロセスの中で、サイト全体の開発サーバ (http://localhost:5280/) も立てる。プレビューはそこから描く。
-// 長く動くので、別ターミナルで立てる。構造は apps/studio/docs/rebuild.md 5 章
+// 長く動くので、別ターミナルで立てる。
 import { createServer as createHttpServer } from 'node:http'
 import { join, resolve as resolvePath } from 'node:path'
 import { createServer as createViteServer } from 'vite'

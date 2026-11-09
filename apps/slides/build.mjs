@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// slides.y-kaz.com を組み立てる (ADR-0029)。
+// slides.y-kaz.com を組み立てる。
 //
 //   node apps/slides/build.mjs            talks/ の公開トークを最新のフレームワークでビルドし、dist/ に組み立てる
 //   node apps/slides/build.mjs --accept   見た目の差分を確認したうえで受け入れる

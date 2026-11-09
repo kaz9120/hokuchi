@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// slides.y-kaz.com を、ローカルの開発サーバでまるごと見る (ADR-0034)。
+// slides.y-kaz.com を、ローカルの開発サーバでまるごと見る。
 //
 //   bun run dev            サイト全体。トップページと全トークを、本番と同じ URL (/<slug>/) で開ける
 //   bun run dev <talk>     トーク 1 本だけ (packages/stage の CLI に渡す)

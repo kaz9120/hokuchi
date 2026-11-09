@@ -1,4 +1,4 @@
-// 発表の部品 (rebuild.md 4.3)。中身はトーク (talk.tsx・storyboard.md・シーン)。単位はコマ (シーン + 状態。番号は 1 始まり)。
+// 発表の部品。中身はトーク (talk.tsx・storyboard.md・シーン)。単位はコマ (シーン + 状態。番号は 1 始まり)。
 // 絵コンテの読み書きは packages/stage/node/storyboard.mjs が持つ。Markdown のまま、該当する行だけを書き換える
 import { join } from 'node:path'
 import type { Board, SurveyItem, TalkBody, Thread } from '../../shared/api.ts'
@@ -14,7 +14,7 @@ import { loadTalkDef, theSite, type SiteTalk } from '../infra/site.ts'
 import type { WorkRef } from '../domain/work.ts'
 import type { Media } from './types.ts'
 
-/** アンケートの 8 項目。5 段階と理由 1 行。根拠は docs/research/audience-survey.md */
+/** アンケートの 8 項目。5 段階と理由 1 行 */
 const SURVEY: SurveyItem[] = [
   { key: 'got', group: '届いたか', label: '得に来たものを得られた' },
   { key: 'trouble', group: '届いたか', label: '自分の悩みに触れていた' },
@@ -27,7 +27,7 @@ const SURVEY: SurveyItem[] = [
 ]
 
 const THREADS_HEAD = [
-  '# 指摘のスレッド (ADR-0040)。1 件の指摘と、その往復を 1 本にまとめる。studio の画面が読み書きし、Claude Code も直接直す。',
+  '# 指摘のスレッド。1 件の指摘と、その往復を 1 本にまとめる。studio の画面が読み書きし、Claude Code も直接直す。',
   '#   scene: 絵コンテのシーン id。トーク全体への指摘は "*"。state: コマの番号 (1 始まり)。無ければシーン全体',
   '#   by: 話者 / 聴衆役 / Claude / 検査。聴衆役は name (誰が)・read (何回目の読みか)・kind (感想の種類) を持つ',
   '#   replies: 返事を順に足す。Claude は thinking (考えたこと) と change (変えたこと)、話者は text',
@@ -126,7 +126,7 @@ export const talk: Media = {
   kind: 'talk',
   words: { work: '発表', oneLiner: '中核メッセージ', audience: '聴衆' },
   threadsHeader: THREADS_HEAD,
-  readersHeader: '# この発表を読んでもらう聴衆役 (ADR-0039)。persona は personas/ のプリセットの id か、企画で描いた人 (brief:<名前>)。\n# why は「場」の文脈で、なぜこの発表を聞きに来たかを書く。\n',
+  readersHeader: '# この発表を読んでもらう聴衆役。persona は personas/ のプリセットの id か、企画で描いた人 (brief:<名前>)。\n# why は「場」の文脈で、なぜこの発表を聞きに来たかを書く。\n',
   survey: SURVEY,
 
   home: (ref) => ref.talk?.dir ?? null,
@@ -265,14 +265,14 @@ export const talk: Media = {
   handoff(ref, threads: Thread[]) {
     const list = threads.filter((t) => t.ball === 'Claude')
     const own = list.filter((t) => t.by !== '聴衆役').length
-    // 依頼文は短くし、直し方と feedback.yaml の書き方は skill の側に任せる (rebuild.md 5 章)
+    // 依頼文は短くし、直し方と feedback.yaml の書き方は skill の側に任せる
     return [
       `${ref.talk ? shownDir(ref.talk.dir) : ''}/feedback.yaml に、Claude の番の指摘が ${list.length} 件あります（話者から ${own} 件、聴衆役から ${list.length - own} 件）。`,
       'crafting-presentation skill の Phase 8 に従って直してください。',
     ].join('\n')
   },
 
-  // リポジトリの外のトークだけを移す。リポジトリの中は git の操作が要るので触らない (ADR-0044)
+  // リポジトリの外のトークだけを移す。リポジトリの中は git の操作が要るので触らない
   trashItems: (ref) => (ref.talk?.outside ? [{ from: ref.talk.dir, into: 'talks' }] : []),
   async beforeTrash(ref) {
     if (ref.talk?.outside) await theSite().unmount(ref.talk.info.slug)

@@ -1,4 +1,4 @@
-// 発表の面 (流れ・コマ・読み・公開) が読む形と、そこからの操作 (ADR-0040)。
+// 発表の面 (流れ・コマ・読み・公開) が読む形と、そこからの操作。
 // 作品の WorkView (shared/api.ts) から、面が読む形 (Talk) を作る。取得と購読は works.ts が持つ
 import type { WorkView } from '../../shared/api'
 import { current, send, workPath } from './works'
@@ -13,7 +13,7 @@ export type Thread = {
   id: string
   scene: string
   state?: number
-  /** 記事の原稿への指摘の位置 (ADR-0046)。段落の番号か、記事全体なら "*"。head は段落の書き出し */
+  /** 記事の原稿への指摘の位置。段落の番号か、記事全体なら "*"。head は段落の書き出し */
   para?: number | '*'
   head?: string
   by: '話者' | '聴衆役' | 'Claude' | '検査'
@@ -112,7 +112,7 @@ export const talkApi = (key: string) => ({
   read: () => send(key, '/read', 'POST', {}),
 })
 export type TalkApi = ReturnType<typeof talkApi>
-/** 指摘のスレッドへの操作。発表と記事の原稿 (ADR-0046) で共通 */
+/** 指摘のスレッドへの操作。発表と記事の原稿で共通 */
 export type ThreadApi = Pick<TalkApi, 'reply' | 'close' | 'reopen'>
 
 // ---------------------------------------------------------------- 時間

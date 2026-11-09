@@ -1,6 +1,6 @@
-// 指摘のスレッド (feedback.yaml。ADR-0040)。1 件の指摘とその往復を 1 本にし、「いま誰が動く番か (ball)」と「どう終わったか (closed)」で扱う。
+// 指摘のスレッド (feedback.yaml)。1 件の指摘とその往復を 1 本にし、「いま誰が動く番か (ball)」と「どう終わったか (closed)」で扱う。
 //   ball: 話者 / Claude / none。closed: 直した / そのままにした / 良かった点 / 読み直した
-// 発表と記事で形は同じで、位置 (anchor) だけが違う。発表は scene と state、記事は para と head (ADR-0046)。
+// 発表と記事で形は同じで、位置 (anchor) だけが違う。発表は scene と state、記事は para と head。
 // YAML は文書のまま開いて直し、頭書きのコメントと並びを保って書き戻す (Claude Code も直接直すため)
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import YAML from 'yaml'
@@ -88,7 +88,7 @@ export function operate(file: string, head: string, id: string, op: string, inpu
 }
 
 /**
- * 記事の指摘の位置を付け直す (ADR-0046)。fn は { para, head } を受け取り、新しい { para, head } を返す。
+ * 記事の指摘の位置を付け直す。fn は { para, head } を受け取り、新しい { para, head } を返す。
  * 位置が変わった件だけを書き換え、変えた数を返す
  */
 export function retarget(file: string, head: string, fn: (p: { para: number; head?: string }) => { para: number | '*'; head?: string }) {

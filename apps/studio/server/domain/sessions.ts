@@ -1,4 +1,4 @@
-// 作品ごとの購読 (rebuild.md 5 章)。作品を開いているあいだだけ、監視と撮影の作業場を動かし、閉じたら止める。
+// 作品ごとの購読。作品を開いているあいだだけ、監視と撮影の作業場を動かし、閉じたら止める。
 // ファイルが変わったら (画面の操作でも、Claude Code の直しでも)、作品の画面に WorkView を、ホームに「変わった」を知らせる
 import { join } from 'node:path'
 import { places } from '../infra/config.ts'
@@ -115,7 +115,7 @@ export async function viewNow(key: string) {
   return viewOf(ref, { thumbsVersion: sessions.get(ref.key)?.shooter?.version() ?? 0 })
 }
 
-/** 聴衆役に読んでもらう (ADR-0039)。数分かかるので裏で走らせ、進み具合を画面に知らせる */
+/** 聴衆役に読んでもらう。数分かかるので裏で走らせ、進み具合を画面に知らせる */
 export function startRead(ref: WorkRef) {
   if (readings.has(ref.key)) return
   const media = mediaOf(ref.kind)

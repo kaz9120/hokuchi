@@ -1,4 +1,4 @@
-// 画面の入口。ホーム → 作品の画面 → 面 の 2 階層を、ルータ (lib/router.ts) で振り分ける (design.md 3 章)
+// 画面の入口。ホーム → 作品の画面 → 面 の 2 階層を、ルータ (lib/router.ts) で振り分ける
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import { Toaster } from './lib/notice'

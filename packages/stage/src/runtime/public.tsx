@@ -1,4 +1,4 @@
-// 公開用の画面 (ADR-0042)。資料を読むことだけに絞る。発表者ビューとノートは出さない。
+// 公開用の画面。資料を読むことだけに絞る。発表者ビューとノートは出さない。
 // ステージの下の帯に、送り・一覧・全画面と、テキスト (AI に渡す用) と PDF の書き出しを置く
 import { useRef, useState } from 'react'
 import { MotionConfig } from 'motion/react'

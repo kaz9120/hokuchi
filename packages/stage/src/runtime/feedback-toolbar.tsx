@@ -1,4 +1,4 @@
-// 画面の要素にメモを付ける道具 (agentation, ADR-0032) を、ページに 1 つ立てる。
+// 画面の要素にメモを付ける道具 (agentation) を、ページに 1 つ立てる。
 // トークの作業用サーバ (feedback.tsx) と、サイト全体の開発サーバのトップページ (apps/slides) の両方から使う
 import { Agentation } from 'agentation'
 import { useEffect, useState } from 'react'

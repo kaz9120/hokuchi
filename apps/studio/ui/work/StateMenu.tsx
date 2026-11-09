@@ -1,4 +1,4 @@
-// 帯の右端の「⋯」(design.md 3 章「状態の見せ方」)。状態の表がその状態で許す操作 (WorkState.actions) だけを出す。
+// 帯の右端の「⋯」。状態の表がその状態で許す操作 (WorkState.actions) だけを出す。
 // 画面は判定を持たない。危険な操作 (削除・改稿をやめる) は、確かめる文を 1 文で出す。パスは出さない
 import { useState } from 'react'
 import { Check, ExternalLink, FolderOpen, Info, MoreHorizontal, PenLine, TextCursorInput, Trash2, Undo2 } from 'lucide-react'
@@ -20,7 +20,7 @@ const ITEMS: Record<Action, { label: string; icon: typeof Check; danger?: boolea
   delete: { label: '削除', icon: Trash2, danger: true },
 }
 
-/** 公開の頼み方。公開は手作業とデプロイの確認が要るので、画面からはしない (ADR-0043) */
+/** 公開の頼み方。公開は手作業とデプロイの確認が要るので、画面からはしない */
 const HOWTO = {
   talk: 'Claude Code に公開を頼んでください。発表をリポジトリの talks/ に移して public: true にし、デプロイします。一度公開すると、非公開には戻せません。',
   note: 'note に投稿してから、Claude Code にアーカイブへの取り込みを頼んでください。依頼文は「公開」の画面でコピーできます。一度公開すると、非公開には戻せません。',

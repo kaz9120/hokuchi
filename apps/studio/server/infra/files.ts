@@ -1,4 +1,4 @@
-// ファイルの読み書き。書き込みは「読んだ版と違えば保存しない」にそろえる (rebuild.md 5 章)。
+// ファイルの読み書き。書き込みは「読んだ版と違えば保存しない」にそろえる。
 // Claude Code と画面が同じファイルを直すので、どちらの書き込みも黙って消えないようにする
 import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'

@@ -1,4 +1,4 @@
-// 企画シート (<置き場>/works/<id>/brief.yaml)。作品 1 本の段階ごとの欄・確定・AI の候補・完成にした日時を持つ (ADR-0036・ADR-0045)。
+// 企画シート (<置き場>/works/<id>/brief.yaml)。作品 1 本の段階ごとの欄・確定・AI の候補・完成にした日時を持つ。
 // 人が読めて AI も直せる YAML のまま。知らない欄は消さずに残す (Claude Code が足すことがある)
 import { existsSync, mkdirSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
@@ -50,7 +50,7 @@ export function createBrief(kind: Kind, seedId?: string): Brief {
 /**
  * 企画シートを書き換える。id・種類・作成日時は変えない。
  * base を渡したときは、読んだ版と違えば書かない。fields と gates は、渡した欄だけを変える (null で消す)。
- * finishedAt に null を渡すと消す (下書きに戻す。ADR-0045)
+ * finishedAt に null を渡すと消す (下書きに戻す)
  */
 export function writeBrief(id: string, set: Partial<Omit<Brief, 'fields' | 'gates' | 'finishedAt'>> & { fields?: Record<string, unknown>; gates?: BriefPatch['set']['gates']; finishedAt?: string | null }, base?: string): { brief: Brief; version: string } {
   const cur = readBrief(id)

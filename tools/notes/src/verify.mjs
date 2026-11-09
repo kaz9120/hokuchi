@@ -63,7 +63,7 @@ const countMatches = (s, re) => (s.match(re) ?? []).length;
 
 // 引用ブロックは、連続する「>」行のかたまり (空行は「>」だけになる)。
 const QUOTE_BLOCK_RE = /(?:^>(?: .*)?(?:\n|$))+/gm;
-// 埋め込みは URL だけの 1 行 (ADR-0021)。
+// 埋め込みは URL だけの 1 行。
 const BARE_URL_LINE_RE = /^https?:\/\/\S+$/gm;
 
 /** 原本の埋め込み figure を、出現順に種別と URL の組で返す。 */
@@ -119,7 +119,7 @@ export function verifyArticle(dir) {
   if (found.length > 5) errors.push(`ほか ${found.length - 5} 件の本文の不一致`);
 
   // --- 埋め込み: 原本の data-src が、順序どおりすべて残っていること ------------
-  // 埋め込みは URL だけの行になる (ADR-0021)。URL だけの段落は他にもあり得るので、
+  // 埋め込みは URL だけの行になる。URL だけの段落は他にもあり得るので、
   // 原本の埋め込み URL と一致する行だけを埋め込みとして数える。
   const srcEmbeds = sourceEmbeds(body);
   const srcUrls = srcEmbeds.map((e) => e.url);

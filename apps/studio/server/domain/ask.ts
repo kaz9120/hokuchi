@@ -1,4 +1,4 @@
-// 企画の段階ごとに「Claude に頼めること」(ADR-0036)。候補を出すだけで、欄は書き換えない。選んで欄に入れるのは人。
+// 企画の段階ごとに「Claude に頼めること」。候補を出すだけで、欄は書き換えない。選んで欄に入れるのは人。
 // 出した候補は企画シートの candidates に残す (あとで見返せるように)
 import YAML from 'yaml'
 import type { Candidate } from '../../shared/api.ts'
@@ -32,7 +32,7 @@ export const TASKS: Record<string, { label: string; draft?: boolean; prompt: (w:
     prompt: (w) =>
       `この${w.work}の${w.oneLiner}を 1 文で、候補を 3 案出してください。主張になっていること (「〜について話す」は題目で主張ではない)、書き手の体験から出ていること、相手にとって自明でないこと、反論できる形であることを満たします。最初に浮かんだ案だけで終わらせず、角度の違う案を並べます。text に 1 文を、note にその案を選ぶとどこが厚くなり何を捨てることになるかを入れます。`,
   },
-  // 記事の公開タブで使う。原稿を読んで出す (ADR-0046)
+  // 記事の公開タブで使う。原稿を読んで出す
   'title.candidates': {
     label: 'タイトルの案を出す',
     draft: true,

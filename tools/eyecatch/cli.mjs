@@ -9,7 +9,7 @@
 //
 // build は生成の上限に当たると、そこで止まって終了コード 75 を返す。
 // ルートの package.json から bun run eyecatch <サブコマンド> で使う。モチーフの選び方は
-// .claude/skills/writing-note/references/eyecatch.md にある (ADR-0051)。
+// .claude/skills/writing-note/references/eyecatch.md にある。
 
 import { buildPrompt } from './src/prompt.mjs';
 import { generate } from './src/generate.mjs';

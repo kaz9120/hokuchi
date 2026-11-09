@@ -1,6 +1,6 @@
 # 見出し画像
 
-見出し画像の下地は、nano banana に描かせた手描きのモチーフを暗い紙に置いて作ります (ADR-0051)。道具は `tools/eyecatch` で、仕組みは `tools/eyecatch/docs/design.md` にあります。タイトル・号数・日付はこれまでどおり note-ogp で入れます。
+見出し画像の下地は、nano banana に描かせた手描きのモチーフを暗い紙に置いて作ります。道具は `tools/eyecatch` で、使い方は `tools/eyecatch/README.md` にあります。タイトル・号数・日付はこれまでどおり note-ogp で入れます。
 
 ## モチーフを決める
 
@@ -54,7 +54,7 @@
 
 下地は `~/Hobby/hokuchi-private/eyecatch/<記事のディレクトリ名>/` に置きます。記事のディレクトリ名は公開日と slug をつないだ `articles/note/` と同じ形です。ルートで実行します。
 
-1. そのディレクトリに `eyecatch.json` を書く。タイトル・場面・季節の光・置き場所を入れる (形は `tools/eyecatch/docs/design.md`)
+1. そのディレクトリに `eyecatch.json` を書く。タイトル・場面・季節の光・置き場所を入れる (形は `tools/eyecatch/README.md`)
 2. `bun run eyecatch build <ディレクトリ>` で `motif.jpg` を生成し、`eyecatch.jpg` に置く
 3. `bun run eyecatch sheet <出力.png> <直近の記事の eyecatch.jpg>...` で並べて見る
 4. note-ogp に `eyecatch.jpg` を入れて、タイトル・号数・日付を入れる

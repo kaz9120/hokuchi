@@ -1,4 +1,4 @@
-// 公開済みの note の記事のアーカイブ (articles/note/<公開日>-<slug>/)。index.md は生成物なので読むだけにする (ADR-0019)。
+// 公開済みの note の記事のアーカイブ (articles/note/<公開日>-<slug>/)。index.md は生成物なので読むだけにする。
 // 描画は tools/notes の最小レンダラを使い回す
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'

@@ -1,5 +1,5 @@
-// ごみ箱 (<置き場>/trash/)。消さずに移すので、間違えても戻せる (ADR-0044)。
-// 名前は <日時>-<何を>-<id か slug> の 1 通り (rebuild.md 3 章)。中は元の置き場と同じ形 (works/<id>/・talks/<トーク>/・notes/<slug>/)
+// ごみ箱 (<置き場>/trash/)。消さずに移すので、間違えても戻せる。
+// 名前は <日時>-<何を>-<id か slug> の 1 通り。中は元の置き場と同じ形 (works/<id>/・talks/<トーク>/・notes/<slug>/)
 import { mkdirSync, renameSync } from 'node:fs'
 import { basename, join } from 'node:path'
 import { places } from '../infra/config.ts'

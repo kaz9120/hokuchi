@@ -59,7 +59,7 @@ const md = (note) => toMarkdown({ title: note.name ?? 't' }, parseNote(note).blo
     ],
   };
   const out = md(note);
-  // note のエディタに貼ればカードになる、URL だけの 1 行 (ADR-0021)
+  // note のエディタに貼ればカードになる、URL だけの 1 行
   assert.match(out, /^本文\n\nhttps:\/\/x\.com\/u\/status\/1\n\nhttps:\/\/example\.com\/a$/m);
   assert.ok(!out.includes('ポスト本文') && !out.includes('記事タイトル'), '埋め込み先のテキストは index.md に出さない');
   assert.ok(!out.includes(':::'), '独自のディレクティブを出さない');

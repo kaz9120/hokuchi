@@ -1,4 +1,4 @@
-// 公開済みの記事を、原稿の面で読むだけの状態として出す (ADR-0047・design.md 3 章「状態の見せ方」)。
+// 公開済みの記事を、原稿の面で読むだけの状態として出す。
 // 「改稿する」を押すと、アーカイブを原稿に写し、同じ原稿の面が直せる状態になる。アーカイブは書き換えない
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ExternalLink, Loader2, PenLine } from 'lucide-react'

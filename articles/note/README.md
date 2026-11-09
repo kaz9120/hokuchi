@@ -2,7 +2,7 @@
 
 [note.com/kyamamoto9120](https://note.com/kyamamoto9120) で公開した記事を、原本 (`source.json`) と
 読む用の Markdown (`index.md`) の 2 層でアーカイブしています。取り込みと検査は
-`tools/notes` の `hokuchi-note` が行います。詳しくは [ADR-0019](../../docs/adr/0019-note-archive-two-layer.md)。
+`tools/notes` の `hokuchi-note` が行います。
 
 全 54 本。
 

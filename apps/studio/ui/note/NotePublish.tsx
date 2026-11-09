@@ -1,4 +1,4 @@
-// 記事の公開の面 (ADR-0046)。note に出す前に、タイトル・タグ・見出し画像を決め、note に貼る本文をコピーする。
+// 記事の公開の面。note に出す前に、タイトル・タグ・見出し画像を決め、note に貼る本文をコピーする。
 // タイトルの正は原稿の front matter (作品の画面の上のタイトルと同じもの)。公開したあとの取り込み (sync) は Claude Code に頼む
 import { useEffect, useMemo, useState } from 'react'
 import { Check, Copy, FolderOpen, Loader2, Sparkles, X } from 'lucide-react'

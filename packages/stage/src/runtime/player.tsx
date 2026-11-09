@@ -1,4 +1,4 @@
-// 発表用の画面 (ADR-0042)。ライブ再生・発表者ビュー・一覧・ノート。公開用の画面は public.tsx
+// 発表用の画面。ライブ再生・発表者ビュー・一覧・ノート。公開用の画面は public.tsx
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { MotionConfig, motion } from 'motion/react'
 import { H, W, panT } from './config'

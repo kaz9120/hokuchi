@@ -1,8 +1,8 @@
-// slides.y-kaz.com を、ローカルの開発サーバでまるごと見る (ADR-0034)。bun run dev と studio の両方が使う。
+// slides.y-kaz.com を、ローカルの開発サーバでまるごと見る。bun run dev と studio の両方が使う。
 //
 // トークごとに Vite を立て、/<slug>/ の下にぶら下げる。保存すると即座に反映され、agentation も使える。
 // 一覧のサムネイル (og.png) は、表紙をその場で撮る。非公開のトークも、印を付けて一覧に出す。
-// studio は、公開リポジトリの外のトーク (社内向けの発表) の置き場も足して立てる (ADR-0041)
+// studio は、公開リポジトリの外のトーク (社内向けの発表) の置き場も足して立てる
 import { createServer as createHttp } from 'node:http'
 import { existsSync, readdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
@@ -18,7 +18,7 @@ const repoRoot = resolve(here, '../..')
 export const PORT = 5280
 
 /**
- * サイト全体の開発サーバを立てる。studio も同じものを、同じプロセスの中で立てる (ADR-0035)。
+ * サイト全体の開発サーバを立てる。studio も同じものを、同じプロセスの中で立てる。
  * 戻り値の talks は slug → { dir, info, vite, firstScene, og, outside }。refresh で置き場を読み直し、unmount で 1 本を外す。browser を渡すと、表紙の撮影に使い回す。
  * moreTalkDirs は、talks/ のほかに読むトークの置き場。そこのトークは outside の印を持ち、talk.tsx に関わらず非公開として扱う
  */

@@ -2,6 +2,7 @@
 //
 // 記事ごとに変えるのは、場面 (scene) と季節の光 (light) の 2 つだけ。画風・色・構図は固定する。
 // 位置は描かせない。モチーフを正方形の中央に描かせ、置き場所は place で決める。
+// 生成に位置を指定すると中ほどに寄り、指定が増えるほど絵の質がばらつくため。
 
 const TEMPLATE = `Create a single minimalist hand-drawn illustration on paper.
 

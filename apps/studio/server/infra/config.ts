@@ -5,7 +5,7 @@ import { join, relative, resolve, sep } from 'node:path'
 export const studioDir = resolve(import.meta.dirname, '../..')
 export const repoRoot = resolve(studioDir, '../..')
 
-/** 公開リポジトリの外の置き場 (ADR-0036)。tools/notes/src/drafts.mjs と同じ既定 */
+/** 公開リポジトリの外の置き場。tools/notes/src/drafts.mjs と同じ既定 */
 export const PRIVATE = process.env.HOKUCHI_PRIVATE ?? join(homedir(), 'Hobby', 'hokuchi-private')
 export const PORT = Number(process.env.HOKUCHI_STUDIO_PORT ?? 5300)
 export const SITE_PORT = Number(process.env.HOKUCHI_SITE_PORT ?? 5280)

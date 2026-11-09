@@ -1,4 +1,4 @@
-// 読みの面 (ADR-0039・ADR-0040)。聴衆役に読んでもらった結果を見て、あなたが答える指摘に答える。
+// 読みの面。聴衆役に読んでもらった結果を見て、あなたが答える指摘に答える。
 // 上がアンケート (どこが弱いかを数字で見る)、下が指摘の一覧 (ここで答えきる)。
 // slide:ology の「同僚に見せて、要点を押さえているかを評価してもらう」(p.54) に当たる
 import { useMemo, useState } from 'react'
@@ -48,7 +48,7 @@ export function ReadsView({ data, api, reading, picker }: { data: Talk; api: Tal
   )
 }
 
-/** アンケートの結果。行を選ぶと、その項目に付けた理由を読める。記事の読みの面 (ADR-0046) でも使う */
+/** アンケートの結果。行を選ぶと、その項目に付けた理由を読める。記事の読みの面でも使う */
 export function Survey({ survey, oneLiner, read, prev }: { survey: Talk['survey']; oneLiner: string; read: Read; prev: Read | null }) {
   const rows = useMemo(
     () =>

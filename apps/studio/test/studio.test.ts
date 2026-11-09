@@ -1,4 +1,4 @@
-// studio の振る舞いの固定 (作り直しの段 0。apps/studio/docs/rebuild.md 2 章)。
+// studio の振る舞いの固定 (作り直しの段 0)。
 // 確かめるのは、ファイルの形 (作りの棚卸し 6.2) と振る舞いの規則 (同 6.3) で、実装の中身には頼らない。
 // studio を一時ディレクトリの置き場で立て、client.ts を通して操作し、置き場のファイルを読んで確かめる。
 //
@@ -244,7 +244,7 @@ describe('指摘のスレッド', () => {
   it('指摘を書くと、頭書きつきの feedback.yaml にスレッドが入る', async () => {
     const r = await c.openTalkThread(TALK_A, 'intro', 1, 'コマへの指摘')
     assert.ok(r.ok)
-    assert.ok(text(file()).startsWith('# 指摘のスレッド (ADR-0040)'))
+    assert.ok(text(file()).startsWith('# 指摘のスレッド'))
     const [t] = threads()
     assert.deepEqual({ ...t, at: undefined }, { id: 't001', scene: 'intro', state: 1, by: '話者', text: 'コマへの指摘', at: undefined, ball: 'Claude' })
     assert.match(t.at, /^\d{4}-\d{2}-\d{2}T/)
@@ -439,7 +439,7 @@ describe('記事の原稿', () => {
     const r = await c.openNoteThread(slug, list.n, '箇条への指摘')
     assert.ok(r.ok)
     const feedback = join(s.priv, 'notes', slug, 'feedback.yaml')
-    assert.ok(text(feedback).startsWith('# 指摘のスレッド (ADR-0040・ADR-0046)'))
+    assert.ok(text(feedback).startsWith('# 指摘のスレッド'))
     const tid = threads()[0].id
     assert.deepEqual({ para: threads()[0].para, head: threads()[0].head, by: threads()[0].by, ball: threads()[0].ball }, { para: list.n, head: list.head, by: '話者', ball: 'Claude' })
     assert.ok((await c.openNoteThread(slug, '*', '記事全体への指摘')).ok)

@@ -1,4 +1,4 @@
-// 記事の読みの面 (ADR-0046)。発表の読みの面と同じ骨組みで、聴衆役に原稿を「note の記事」として読んでもらう。
+// 記事の読みの面。発表の読みの面と同じ骨組みで、聴衆役に原稿を「note の記事」として読んでもらう。
 // 先頭で読んでもらう人を選び (work/Readers.tsx)、その下にアンケート。指摘は受信箱で扱う
 import { useMemo, useState } from 'react'
 import { Loader2, Users } from 'lucide-react'

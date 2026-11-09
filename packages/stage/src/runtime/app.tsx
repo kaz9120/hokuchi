@@ -47,7 +47,7 @@ export async function mount(original: TalkDef) {
   document.title = talk.title
   document.body.dataset.mode = MODE
   const el = document.getElementById('root')!
-  // 公開用の画面には、発表者ビューを持たせない (ADR-0042)
+  // 公開用の画面には、発表者ビューを持たせない
   const view =
     MODE === 'shot' ? <Shots talk={talk} /> : VIEW === 'public' ? <PublicPlayer talk={talk} /> : MODE === 'presenter' ? <Presenter talk={talk} /> : <Player talk={talk} />
   createRoot(el).render(view)

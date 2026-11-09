@@ -1,4 +1,4 @@
-// 面のツールバー (design.md 3 章「作品の画面」)。どの面も、上に同じ形の帯を 1 本持つ。
+// 面のツールバー。どの面も、上に同じ形の帯を 1 本持つ。
 // 左に面の名前と要約、右にその面の操作。面の中身は <BarSummary>・<BarActions> で、ここに差し込む (React のポータル)
 import { createContext, useContext, useState } from 'react'
 import { createPortal } from 'react-dom'

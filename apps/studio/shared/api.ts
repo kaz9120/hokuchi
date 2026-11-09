@@ -1,4 +1,4 @@
-// 画面とサーバの契約 (rebuild.md 5 章)。API が受け取るものと返すものの型を、ここだけに書く。
+// 画面とサーバの契約。API が受け取るものと返すものの型を、ここだけに書く。
 // サーバ (server/) と画面 (ui/) の両方が読む。型だけでなく、両方で使う定数もここに置く。
 //
 // API の一覧 (作品は WorkKey で指す。WorkKey は企画シートの id、または talk:<slug>・note:<アーカイブ>・draft:<原稿の slug>)
@@ -33,7 +33,7 @@
 export type Kind = 'talk' | 'note'
 export type WorkKey = string
 
-// ---------------------------------------------------------------- 状態 (rebuild.md 4.1)
+// ---------------------------------------------------------------- 状態
 
 /** 画面に出す 1 語 */
 export type StateWord = '下書き' | '完成' | '公開' | '改稿中'
@@ -45,12 +45,12 @@ export type WorkState = {
   word: StateWord
   /** 画面の表記。社内向けの完成は「完成（社内）」 */
   label: string
-  /** データの 2 つの軸 (ADR-0045) */
+  /** データの 2 つの軸 */
   progress: Progress
   visibility: Visibility
   revising: boolean
   actions: Action[]
-  /** 企画の意図と実物が食い違っているときの知らせ (rebuild.md 4.2) */
+  /** 企画の意図と実物が食い違っているときの知らせ */
   notices: string[]
 }
 
@@ -70,7 +70,7 @@ export type Brief = {
   talk?: string
   /** 紐づく記事の slug (原稿は <置き場>/notes/<slug>/、公開後は articles/note/<公開日>-<slug>/) */
   note?: string
-  /** 「完成にする」を押した日時 (ADR-0045) */
+  /** 「完成にする」を押した日時 */
   finishedAt?: string
   fields: Record<string, any> & { personas?: AudiencePersona[] }
   gates: Record<string, { passedAt: string; value: string }>

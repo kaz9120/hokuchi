@@ -167,7 +167,7 @@ body[data-mode='shot'] * {
   opacity: 0.45;
 }
 
-/* ---- 公開用の画面 (ADR-0042)。資料を読むことだけに絞る ---- */
+/* ---- 公開用の画面。資料を読むことだけに絞る ---- */
 .public {
   position: fixed;
   inset: 0;
@@ -465,7 +465,7 @@ body[data-mode='shot'] {
   display: grid;
   gap: 0;
 }
-/* PDF の書き出し (ADR-0042)。1 状態を 1 ページにする */
+/* PDF の書き出し。1 状態を 1 ページにする */
 @media print {
   @page {
     size: 1280px 720px;

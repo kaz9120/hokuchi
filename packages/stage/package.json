@@ -2,7 +2,7 @@
   "name": "@hokuchi/stage",
   "private": true,
   "type": "module",
-  "description": "シーン×状態で動く発表資料のフレームワーク (ADR-0026)",
+  "description": "シーン×状態で動く発表資料のフレームワーク",
   "bin": {
     "stage": "./cli.mjs"
   },

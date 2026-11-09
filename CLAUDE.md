@@ -1,71 +1,64 @@
 # hokuchi（火口）
 
-発信に関するツールとドキュメントを置くリポジトリです。hokuchi が何を目指し、機能や画面を迷ったときに何で決めるかは `docs/vision.md` にあります。ブランド定義は `BRAND.md` にあります（ビジュアルの一次ソースです。実装トークンは hidoko の `packages/ui/src/tokens.css` にあります）。
+山本一将の発信のためのリポジトリです。何のために発信し、hokuchi が何をするかは `GOALS.md` にあります。機能や画面を迷ったら、まず `GOALS.md` に照らしてください。ブランド定義は `BRAND.md` にあります（ビジュアルの一次ソースです。実装トークンは hidoko の `packages/ui/src/tokens.css` にあります）。
 
-## 意思決定の記録
+## 文書の置き場
 
-設計判断はすべて、`docs/adr/` に ADR として記録します。フォーマットと索引は `docs/adr/README.md` にあります。ADR は書き換えません。決定を変えるときは新しい ADR を書き、古い方を廃止にします。各ツールの `docs/design.md` は生きた設計書で、いつも現在の設計を描いています。
+設計の正はコードとテストです。設計判断の経緯は残しません。必要になったら、その時点で `GOALS.md` に照らして考え直します。
+
+- 目的・成功の基準・hokuchi の役割は `GOALS.md` に書きます。照らして決められないときは、話者と相談して書き換えます
+- ツールの考え方（コードを読んでも分からない原則）・用語・使い方は、各ディレクトリの `README.md` に書きます
+- 数値や挙動の理由は、それを定義しているコードのコメントに書きます
+- ADR・設計書・経緯の記録を新しく作りません
 
 ## ディレクトリ
 
-主役は発信物（コンテンツ）で、ツールは脇役です。root は、発信形態ごとのコンテンツと tools/ で構成しています（ADR-0009）。
+主役は発信物（コンテンツ）で、ツールは脇役です。
 
 ```
-docs/adr/          意思決定の記録（リポジトリ全体で単一系列）
 talks/             発表資料（主役。公開する発表だけを置く）
   <YYYY_MM_DD_タグ_演題>/   命名は過去資料と同じ。URL は日付とタグから作る（/2026-09-29-devsgarden/）
-    storyboard.md  絵コンテ。話者と合意する設計図で、話すこと（ノート）の正本（ADR-0028）
-    feedback.yaml  指摘のスレッド。話者・聴衆役・Claude の往復を残す（ADR-0040）
-    readers.yaml   この発表を読んでもらう聴衆役（ADR-0039）
+    storyboard.md  絵コンテ。話者と合意する設計図で、話すこと（ノート）の正本
+    feedback.yaml  指摘のスレッド。話者・聴衆役・Claude の往復を残す
+    readers.yaml   この発表を読んでもらう聴衆役
     reads/         聴衆役の読みの結果（回ごと。アンケートとコマへの感想）
     talk.tsx       トークの定義（テーマ・公開の可否・シーンの並び）
     scenes/        シーン（1 ファイル 1 シーン。React + Motion）
     assets/        実画像など
     out/           作業出力（git 管理外）
 parts/             トークをまたいで使い回す中身（自己紹介・会社紹介・写真）
-personas/          聴衆役のペルソナのプリセット。発表でも記事でも使い回す（ADR-0039）
-articles/
-  note/            note.com の記事アーカイブ（原本 + Markdown の 2 層。ADR-0019）
-    slugs.json     note key → slug。ディレクトリ名の唯一の真実
-    <YYYY-MM-DD-slug>/
-      source.json  原本。note API の不変フィールドを凍結したもの
-      index.md     読む用。source.json から生成（手で直さない）
-      assets/      見出し画像と本文画像の実体
-packages/
-  stage/           発表のフレームワーク（ADR-0026）。再生機・部品・テーマ・トーク単位の CLI
-    docs/design.md 生きた設計書
+personas/          聴衆役のペルソナのプリセット。発表でも記事でも使い回す
+articles/note/     note.com の記事アーカイブ（原本 + Markdown の 2 層）
+packages/stage/    発表のフレームワーク。再生機・部品・テーマ・トーク単位の CLI
 apps/
-  slides/          slides.y-kaz.com。全トークを最新のフレームワークでビルドして組み立てる（ADR-0029）
-  studio/          ローカルの制作アプリ。発表と note の記事を、企画から公開まで作る（ADR-0036・ADR-0040・ADR-0049・ADR-0050）
-    docs/design.md 生きた設計書。根拠の調査は docs/research/、作り直しの経緯は docs/rebuild.md
+  slides/          slides.y-kaz.com。全トークを最新のフレームワークでビルドして組み立てる
+  studio/          ローカルの制作アプリ。発表と note の記事を、企画から公開まで作る
 archive/talks/     旧方式（意図宣言型 YAML）の deck.yaml と写真。作り直すときの素材で、ビルドしない
 tools/
-  notes/           note の CLI（sync / build / verify / lint / index）
-    docs/design.md 生きた設計書
-  eyecatch/        note の見出し画像の下地を作る CLI（prompt / generate / place / sheet。ADR-0051）
-    docs/design.md 生きた設計書
+  notes/           note の CLI（sync / build / verify / lint / paste / index）
+  eyecatch/        note の見出し画像の下地を作る CLI
 .claude/skills/
-  crafting-presentation/  対話から発表資料を作る skill（Phase 0〜8。ADR-0024・ADR-0028）
-  writing-note/           note の記事を書く skill（Phase 0〜7。ADR-0020・ADR-0046。studio の記事の作品の画面と同じ流れ）
+  crafting-presentation/  対話から発表資料を作る skill（Phase 0〜8）
+  writing-note/           note の記事を書く skill（Phase 0〜7。studio の記事の作品の画面と同じ流れ）
 ```
 
-作品の企画シートとネタ帳、記事の原稿（`notes/<slug>/`）は、公開リポジトリの外の `~/Hobby/hokuchi-private` に置きます（ADR-0036・ADR-0046）。
+作品の企画シートとネタ帳、記事の原稿（`notes/<slug>/`）、社内向けの発表は、公開リポジトリの外の `~/Hobby/hokuchi-private` に置きます。
 
 依存はルートの bun ワークスペース（`packages/*`・`apps/*`・`tools/eyecatch`、hoisted）で管理します。`bun install` はルートで実行します。`tools/notes` は対象外です。
 
 ## note の記事
 
-記事を書く依頼は、writing-note skill に従ってください。原稿は公開リポジトリの外の `~/Hobby/hokuchi-private/notes/<slug>/` に置き、studio の原稿の面で段落ごとに直します。文体は `hokuchi-note lint <slug>` で検査します（ADR-0046）。文体の規範は、公開済み記事の実測（2026-09 時点で 44 本）から引いています。記事が増えたら測り直してください（ADR-0020）。
+記事を書く依頼は、writing-note skill に従ってください。原稿は公開リポジトリの外の `~/Hobby/hokuchi-private/notes/<slug>/` に置き、studio の原稿の面で段落ごとに直します。文体は `hokuchi-note lint <slug>` で検査します。文体の規範は公開済み記事の実測（2026-09 時点で 44 本）から引いています。記事が増えたら測り直してください。
 
-公開済みの記事は、`hokuchi-note sync` で取り込みます。`index.md` は生成物なので、手では直しません。直したいときは変換規則を直して、`build` を回します。取り込みの欠落は `verify` が検査するので、記事を足したら必ず通してください（ADR-0019）。
+公開済みの記事は `hokuchi-note sync` で取り込みます。`index.md` は生成物なので、手では直しません。直したいときは変換規則を直して、`build` を回します。取り込みの欠落は `verify` が検査するので、記事を足したら必ず通してください。
 
 `hokuchi-note` が PATH に無いときは、リポジトリのルートから `node tools/notes/cli.mjs <サブコマンド>` で同じように動きます。
 
-見出し画像の下地は、`bun run eyecatch` で作ります。nano banana に暗い紙の手描きのモチーフを描かせ、作り直した紙の指定位置に置きます。モチーフと置き場所の決め方は writing-note skill の `references/eyecatch.md` にあります（ADR-0051）。
+見出し画像の下地は `bun run eyecatch` で作ります。モチーフと置き場所の決め方は writing-note skill の `references/eyecatch.md` にあります。
 
 ## スライド
 
-発表資料を作る依頼は、crafting-presentation skill に従ってください。絵コンテ `storyboard.md` で話者と合意してから、シーンを `packages/stage` の React コードで実装します（ADR-0026・ADR-0028）。フレームワークの仕様は `packages/stage/docs/design.md` にあります。
+発表資料を作る依頼は、crafting-presentation skill に従ってください。絵コンテ `storyboard.md` で話者と合意してから、シーンを `packages/stage` の React コードで実装します。フレームワークの考え方は `packages/stage/README.md` にあります。
 
 テーマは登壇の立場で選びます。個人としては `hokuchi`（明るい会場なら `hokuchi-light`）、MOSH としては `mosh` です。
 
@@ -83,7 +76,7 @@ bun run site                   # slides.y-kaz.com を apps/slides/dist に組み
 bun run deploy                 # 組み立てて公開する（話者の確認を取ってから。手順は apps/slides/README.md）
 ```
 
-発表資料は `https://slides.y-kaz.com/<日付-タグ>/` で公開します（ADR-0027）。PDF と docswell は使いません。凍結はしません。公開のたびに全トークを最新のフレームワークでビルドし、前回と見た目が変わった状態があれば止まります（ADR-0029）。サイトに載るのは `public: true` のトークだけです。このリポジトリは GitHub で公開されているので、社内向けの発表はリポジトリの外に置きます。デプロイは話者の確認を取ってから行います。
+発表資料は `https://slides.y-kaz.com/<日付-タグ>/` で公開します。PDF と docswell は使いません。凍結はしません。公開のたびに全トークを最新のフレームワークでビルドし、前回と見た目が変わった状態があれば止まります。サイトに載るのは `public: true` のトークだけです。このリポジトリは GitHub で公開されているので、社内向けの発表はリポジトリの外に置きます。デプロイは話者の確認を取ってから行います。
 
 ## コミット
 

@@ -1,4 +1,4 @@
-// 作り直しで決めた API の規則 (rebuild.md 4〜5 章) を確かめる。studio.test.ts (段 0 の固定) と違い、作り直した API (shared/api.ts) に直接当てる。
+// 作り直しで決めた API の規則を確かめる。studio.test.ts (段 0 の固定) と違い、作り直した API (shared/api.ts) に直接当てる。
 //   版つきの書き込み・状態の表・タイトルの正・ごみ箱の名前・key の解決・立て直さずにトークを足す
 //
 //   bun run test:studio

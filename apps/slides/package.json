@@ -2,7 +2,7 @@
   "name": "@hokuchi/slides",
   "private": true,
   "type": "module",
-  "description": "slides.y-kaz.com。talks/ の公開トークを最新のフレームワークでビルドして組み立てる (ADR-0029)",
+  "description": "slides.y-kaz.com。talks/ の公開トークを最新のフレームワークでビルドして組み立てる",
   "scripts": {
     "build": "node build.mjs",
     "deploy": "node build.mjs && wrangler deploy"

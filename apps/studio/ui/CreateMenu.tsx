@@ -1,4 +1,4 @@
-// ホーム右上の「作成」。押すと「発表」「記事」を選ぶメニューを開く (ADR-0044)
+// ホーム右上の「作成」。押すと「発表」「記事」を選ぶメニューを開く
 import { ChevronDown, FileText, Plus, Presentation } from 'lucide-react'
 import { Button } from './components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from './components/ui/popover'

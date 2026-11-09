@@ -1,4 +1,4 @@
-// 作品の画面の左のレール (design.md 3 章「作品の画面」)。上から 芯・工程・受け渡し・場 の 4 段。
+// 作品の画面の左のレール。上から 芯・工程・受け渡し・場 の 4 段。
 // ナビは工程の 1 つだけにする。開いている面は子 (企画の段階・シーン・見出し) を開く。工程の段だけがスクロールする
 import { useEffect, useRef } from 'react'
 import { Check, ChevronRight, Circle, CircleDot, Copy, Users } from 'lucide-react'
@@ -85,7 +85,7 @@ function Core({ view, wide }: { view: WorkView; wide: boolean }) {
 }
 
 type Person = { name: string; rows: [string, string][] }
-/** 聴衆の正は企画の段階 2 で描いた人 (rebuild.md 4.2)。企画シートが無ければ、読み手 (readers.yaml) を出す */
+/** 聴衆の正は企画の段階 2 で描いた人。企画シートが無ければ、読み手 (readers.yaml) を出す */
 function audienceOf(view: WorkView): Person[] {
   const b = planOf(view)
   if (b && view.kind === 'talk') {

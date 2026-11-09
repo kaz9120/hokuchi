@@ -1,6 +1,6 @@
 // サイト全体の開発サーバ (apps/slides/site-server.mjs) と、撮影に使うブラウザ。
-// 発表の絵と再生は、このサーバのトークの URL (/<slug>/) から描く (ADR-0035)。
-// studio は、リポジトリの talks/ に加えて、置き場の talks/ (非公開の発表。ADR-0041) も読む
+// 発表の絵と再生は、このサーバのトークの URL (/<slug>/) から描く。
+// studio は、リポジトリの talks/ に加えて、置き場の talks/ (非公開の発表) も読む
 import { join } from 'node:path'
 import type { ViteDevServer } from 'vite'
 import { chromium, type Browser } from 'playwright'

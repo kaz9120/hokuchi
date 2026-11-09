@@ -1,4 +1,4 @@
-// 作品 (rebuild.md 4 章)。企画シート・中身 (トーク / 原稿)・アーカイブ・指摘・読みを、サーバの中で 1 つの実体にまとめる。
+// 作品。企画シート・中身 (トーク / 原稿)・アーカイブ・指摘・読みを、サーバの中で 1 つの実体にまとめる。
 // 作品は WorkKey で指す。企画シートがあればその id、無ければ talk:<slug>・note:<アーカイブ>・draft:<原稿の slug>。
 // どの key で指しても、同じ作品に解決する (企画シートが紐づいていれば、企画シートの id が本当の key)
 import { existsSync, readdirSync, renameSync } from 'node:fs'
@@ -134,7 +134,7 @@ export async function act(ref: WorkRef, action: Action): Promise<ActionResult> {
     case 'publish-howto':
       return { key: ref.key }
     case 'delete': {
-      // 下書きだけを、ごみ箱に移す。リポジトリの中のファイルには触らない (ADR-0044・ADR-0045)
+      // 下書きだけを、ごみ箱に移す。リポジトリの中のファイルには触らない
       const media = mediaOf(ref.kind)
       await media.beforeTrash(ref)
       const id = ref.brief!.id
@@ -143,7 +143,7 @@ export async function act(ref: WorkRef, action: Action): Promise<ActionResult> {
       return { key: ref.key, trash }
     }
     case 'revise': {
-      // 公開済みの記事を原稿に写し、企画シートに紐づける。アーカイブは読むだけ (ADR-0047)
+      // 公開済みの記事を原稿に写し、企画シートに紐づける。アーカイブは読むだけ
       const { slug } = reviseFromArchive(ref.archive!.dir)
       if (ref.brief) return { key: ref.key, slug }
       const b = createBrief('note')
@@ -151,7 +151,7 @@ export async function act(ref: WorkRef, action: Action): Promise<ActionResult> {
       return { key: b.id, slug }
     }
     case 'cancel-revision': {
-      // 改稿の原稿だけをごみ箱へ移す。企画シート・note の記事・アーカイブは変えない (ADR-0048)
+      // 改稿の原稿だけをごみ箱へ移す。企画シート・note の記事・アーカイブは変えない
       const trash = moveToTrash('revision', ref.draft!, [{ from: draftDir(ref.draft!), into: 'notes' }])
       return { key: ref.key, trash }
     }
@@ -173,7 +173,7 @@ export function folderOf(ref: WorkRef): string {
 const slugTaken = (s: string) => existsSync(draftDir(s)) || !!archiveOfSlug(s)
 
 /**
- * 記事の原稿を作る。index.md を作り、企画シートの note に書く (ADR-0046)。
+ * 記事の原稿を作る。index.md を作り、企画シートの note に書く。
  * slug を渡さなければ、企画のタイトルと伝えたいことから Claude に決めてもらう (話者に聞かない。直したいときは renameBody)
  */
 export async function createBody(ref: WorkRef, slug?: string) {
@@ -201,7 +201,7 @@ export function renameBody(ref: WorkRef, slug: string) {
 }
 
 /**
- * 企画の段階 2 で描いた人を、聴衆役のペルソナの形にする (rebuild.md 4.2: 聴衆の正は企画)。
+ * 企画の段階 2 で描いた人を、聴衆役のペルソナの形にする (聴衆の正は企画)。
  * id は brief:<名前>。readers.yaml の形は変えず、persona にこの id を書く
  */
 export function briefPersonas(ref: WorkRef): Persona[] {
@@ -229,7 +229,7 @@ function bodyRequest(ref: WorkRef): string | null {
   return [`企画シート ${brief} をもとに、原稿 ${shownDir(draftDir(ref.draft))}/index.md の下書きを書いてください。`, 'writing-note skill の Phase 3 から始めてください (企画の段階 1〜4 が Phase 0〜2 に当たります)。'].join('\n')
 }
 
-/** タイトルを直す。正は中身 (発表は talk.tsx、記事は原稿)。中身が無ければ企画シート。企画シートの title にも写す (rebuild.md 4.2) */
+/** タイトルを直す。正は中身 (発表は talk.tsx、記事は原稿)。中身が無ければ企画シート。企画シートの title にも写す */
 export async function setTitle(ref: WorkRef, edit: TitleEdit) {
   const title = String(edit.title ?? '').trim()
   if (!title) throw invalid('タイトルが空です')

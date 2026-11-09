@@ -1,4 +1,4 @@
-// 媒体の部品 (rebuild.md 4.3)。発表と記事は同じ流れを通り、違うところだけをこの部品に寄せる。
+// 媒体の部品。発表と記事は同じ流れを通り、違うところだけをこの部品に寄せる。
 // 部品が持つのは、中身の読み書き・単位と位置・聴衆役に渡す文とアンケート・公開の依頼文・縮小画像だけ。
 // kind の分岐は media/index.ts の選び分けの 1 か所だけにする
 import type { Anchor, DraftSummary, Kind, MetaEdit, NoteBody, OutlineOp, PasteText, SurveyItem, TalkBody, TalkSummary, Thread, TitleEdit, UnitEdit } from '../../shared/api.ts'
@@ -22,7 +22,7 @@ export type Media = {
   watchDirs: (ref: WorkRef) => string[]
   /** 画面に渡す中身 */
   body: (ref: WorkRef, ctx: { thumbsVersion: number }) => Promise<TalkBody | NoteBody | null>
-  /** 中身のタイトル (rebuild.md 4.2 の正)。中身が無ければ null */
+  /** 中身のタイトル。タイトルの正はこちら。中身が無ければ null */
   bodyTitle: (ref: WorkRef) => string | null
   /** 伝えたいことが企画に無いとき、中身から読む値 */
   oneLinerFromBody: (ref: WorkRef) => string

@@ -1,4 +1,4 @@
-# この発表を読んでもらう聴衆役 (ADR-0039)。persona は personas/ のプリセットの id。
+# この発表を読んでもらう聴衆役。persona は personas/ のプリセットの id。
 # why は「場」の文脈で、なぜこの発表を聞きに来たかを書く。
 readers:
   - persona: mid-backend

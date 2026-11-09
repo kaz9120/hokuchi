@@ -1,4 +1,4 @@
-// 媒体の部品の選び分け。kind の分岐は、ここの 1 か所だけにする (rebuild.md 4.3)
+// 媒体の部品の選び分け。kind の分岐は、ここの 1 か所だけにする
 import type { Kind } from '../../shared/api.ts'
 import { note } from './note.ts'
 import { talk } from './talk.ts'

@@ -1,4 +1,4 @@
-// 作品の状態の表 (rebuild.md 4.1)。進み具合・公開範囲・改稿中から、画面の 1 語と押せる操作を導く。
+// 作品の状態の表。進み具合・公開範囲・改稿中から、画面の 1 語と押せる操作を導く。
 // 判定はここだけに置き、画面は結果を表示するだけにする。サーバも、ここで押せない操作は断る。
 //
 //   状態     条件                                  押せる操作
@@ -7,7 +7,7 @@
 //   公開     サイトに載る・アーカイブにある          改稿する (記事)
 //   改稿中   公開で、改稿の原稿がある                改稿をやめる
 //
-// データは ADR-0045 の 2 つの軸 (進み具合・公開範囲) のまま。公開範囲は実物から決め、企画シートには書かない (ADR-0043)
+// データは 2 つの軸 (進み具合・公開範囲) のまま。公開範囲は実物から決め、企画シートには書かない
 import type { Action, Kind, StateWord, WorkState } from '../../shared/api.ts'
 
 export type StateFacts = {
@@ -37,7 +37,7 @@ export function deriveState(f: StateFacts): WorkState {
   const notices: string[] = []
   if (f.kind === 'talk' && f.hasBody) {
     if (f.publishIntent === '公開する' && f.outside && word === '完成') notices.push('企画では「公開する」ですが、発表は公開リポジトリの外に置いてあります。公開するときは talks/ に移します')
-    // 社内向けの資料が公開リポジトリに入っているのは、下書きのうちから知らせる (ADR-0041)
+    // 社内向けの資料が公開リポジトリに入っているのは、下書きのうちから知らせる
     if (f.publishIntent === '社内向け' && !f.outside) notices.push('企画では「社内向け」ですが、発表は公開リポジトリの talks/ にあります')
   }
   return {

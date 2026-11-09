@@ -1,4 +1,4 @@
-// 指摘のスレッドの見せ方 (ADR-0040)。1 件の指摘と、その往復を 1 枚にまとめる。
+// 指摘のスレッドの見せ方。1 件の指摘と、その往復を 1 枚にまとめる。
 // 話者ができるのは、書く・答える・閉じるの 3 つ。状態を選ばせない
 import { useState } from 'react'
 import { Check, CornerDownRight, RotateCcw } from 'lucide-react'

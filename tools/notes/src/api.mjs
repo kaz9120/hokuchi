@@ -5,7 +5,7 @@
 //
 // HTML をスクレイプすると埋め込みが描画後の姿でしか取れず、元 URL が失われる。
 // API は figure の data-src と embedded_contents を保つので、忠実な取り込みは
-// こちらを使う (ADR-0019)。
+// こちらを使う。
 
 const UA = 'hokuchi-note/0.1 (+https://github.com/; personal archive)';
 

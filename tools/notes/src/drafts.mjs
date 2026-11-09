@@ -1,4 +1,4 @@
-// drafts.mjs — 原稿の置き場 (ADR-0046)。
+// drafts.mjs — 原稿の置き場。
 //
 // 公開前の原稿は、公開リポジトリの外の <HOKUCHI_PRIVATE>/notes/<slug>/ に置く。
 // 誤って追跡して GitHub に出る道を、置き場の段階で断つため。HOKUCHI_PRIVATE の既定は

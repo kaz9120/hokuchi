@@ -9,7 +9,7 @@
 //   hokuchi-note paste   <原稿> [--stdout]                   原稿を note に貼れる形でクリップボードへ
 //
 // <原稿> は index.md・原稿のディレクトリ・slug のどれでもよい。slug は
-// <HOKUCHI_PRIVATE>/notes/<slug>/ (公開リポジトリの外の原稿の置き場。ADR-0046) を指す。
+// <HOKUCHI_PRIVATE>/notes/<slug>/ (公開リポジトリの外の原稿の置き場) を指す。
 //
 // npm link (tools/notes で一度実行) で hokuchi-note コマンドとして使う。
 
@@ -246,7 +246,7 @@ function cmdIndex(opts) {
 
 [note.com/${opts.user}](https://note.com/${opts.user}) で公開した記事を、原本 (\`source.json\`) と
 読む用の Markdown (\`index.md\`) の 2 層でアーカイブしています。取り込みと検査は
-\`tools/notes\` の \`hokuchi-note\` が行います。詳しくは [ADR-0019](../../docs/adr/0019-note-archive-two-layer.md)。
+\`tools/notes\` の \`hokuchi-note\` が行います。
 
 全 ${dirs.length} 本。
 

@@ -28,6 +28,7 @@ function newestSince(dir, since) {
 
 export function generate(prompt, output, { timeout = 300 } = {}) {
   const since = Date.now();
+  // シェルを使わせない。print モードではシェルの許可を求められず、自動で拒否されて止まるため
   const message = [
     'Use the image-generator subagent to generate exactly one square 1:1 image.',
     'Pass the prompt between the markers to it verbatim.',

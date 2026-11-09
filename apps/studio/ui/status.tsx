@@ -1,4 +1,4 @@
-// 作品の状態の 1 語 (rebuild.md 4.1・design.md 3 章「状態の見せ方」)。
+// 作品の状態の 1 語。
 // 判定はサーバの状態の表がする。画面は WorkState の label (「完成（社内）」を含む) を、そのまま出すだけにする
 import type { StateWord, WorkState } from '../shared/api'
 import { cn } from './lib/utils'

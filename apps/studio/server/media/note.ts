@@ -1,9 +1,9 @@
-// 記事の部品 (rebuild.md 4.3)。中身は原稿 (<置き場>/notes/<slug>/index.md) と構成 (outline.yaml)。単位は段落 (ADR-0046)。
+// 記事の部品。中身は原稿 (<置き場>/notes/<slug>/index.md) と構成 (outline.yaml)。単位は段落。
 //
 // 段落は、本文を空行で分けたまとまり。コードの囲み (```) は中に空行があっても 1 つにまとめる。
 // 見出し・画像・埋め込みも 1 つの段落として数える。番号は本文の頭から 1 始まり。
 // 書き戻すときは、その段落の範囲だけを置き換える。front matter とほかの段落には触らない。
-// 公開済みの記事は、アーカイブ (articles/note/) を読むだけにし、改稿は原稿に写してから直す (ADR-0047)
+// 公開済みの記事は、アーカイブ (articles/note/) を読むだけにし、改稿は原稿に写してから直す
 import { cpSync, existsSync, mkdirSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import YAML from 'yaml'
@@ -105,7 +105,7 @@ function sectionChars(blocks: Block[]): SectionChars[] {
 }
 
 const OUTLINE_HEAD = [
-  '# 記事の構成 (ADR-0046)。studio の構成タブが読み書きし、Claude Code も直接直す。',
+  '# 記事の構成。studio の構成タブが読み書きし、Claude Code も直接直す。',
   '#   sections: 見出しの並び。先頭は「冒頭」で、point がフック (冒頭に置く場面)',
   '#   title: 見出し (原稿の ## と同じ文字)。point: その見出しで伝えること (1 行)',
   '#   grain: 密 か 粗。密は 2 つまで (writing-note の somitsu.md)。budget: 字数の予算 (空白を除く)',
@@ -161,7 +161,7 @@ export function createDraft(slug: string, title: string) {
 }
 
 /**
- * 公開済みの記事を、原稿に写す (ADR-0047)。アーカイブの index.md と assets/ を <置き場>/notes/<slug>/ に写し、
+ * 公開済みの記事を、原稿に写す。アーカイブの index.md と assets/ を <置き場>/notes/<slug>/ に写し、
  * front matter に revises を残す。アーカイブは読むだけで書き換えない。すでに同じ slug の原稿があれば、何もしない
  */
 export function reviseFromArchive(name: string) {
@@ -177,7 +177,7 @@ export function reviseFromArchive(name: string) {
 }
 
 /**
- * 指摘の位置を付け直す関数を作る (ADR-0046)。番号の段落の書き出しが同じならそのまま。
+ * 指摘の位置を付け直す関数を作る。番号の段落の書き出しが同じならそのまま。
  * 違えば、同じ書き出しの段落を探す。見つからなければ、先頭 8 字が同じ段落。それも無ければ記事全体 ("*")
  */
 function reanchor(blocks: Block[]) {
@@ -190,7 +190,7 @@ function reanchor(blocks: Block[]) {
 
 // ---------------------------------------------------------------- 聴衆役
 
-/** 記事のアンケート。発表の 8 項目と同じ意図を、記事の言葉に置き換える (design.md 5 章) */
+/** 記事のアンケート。発表の 8 項目と同じ意図を、記事の言葉に置き換える */
 const SURVEY: SurveyItem[] = [
   { key: 'got', group: '届いたか', label: '読みに来た目的を果たせた' },
   { key: 'trouble', group: '届いたか', label: '自分の悩みに触れていた' },
@@ -265,7 +265,7 @@ const need = (ref: WorkRef): string => {
 const read = (slug: string) => parseDraft(readText(draftFile(slug)) ?? '')
 
 const THREADS_HEAD = [
-  '# 指摘のスレッド (ADR-0040・ADR-0046)。記事の原稿への指摘と、その往復を 1 本にまとめる。studio の画面が読み書きし、Claude Code も直接直す。',
+  '# 指摘のスレッド。記事の原稿への指摘と、その往復を 1 本にまとめる。studio の画面が読み書きし、Claude Code も直接直す。',
   '#   para: 段落の番号 (本文の頭から 1 始まり。見出し・画像も 1 つと数える)。記事全体への指摘は "*"',
   '#   head: 段落の書き出し (空白を除いた先頭 20 字)。本文を直して番号がずれたら、これで付け直す',
   '#   by・replies・ball・closed は発表と同じ',
@@ -276,7 +276,7 @@ export const note: Media = {
   kind: 'note',
   words: { work: 'note の記事', oneLiner: '芯', audience: '読者' },
   threadsHeader: THREADS_HEAD,
-  readersHeader: '# 聴衆役の読み手 (ADR-0039・ADR-0046)。persona は personas/ の id か、企画で描いた人 (brief:読者)。why は、なぜこの記事を読みに来たか\n',
+  readersHeader: '# 聴衆役の読み手。persona は personas/ の id か、企画で描いた人 (brief:読者)。why は、なぜこの記事を読みに来たか\n',
   survey: SURVEY,
 
   home: (ref) => (hasDraft(ref.draft) ? draftDir(ref.draft) : null),
@@ -407,7 +407,7 @@ export const note: Media = {
     const list = threads.filter((t) => t.ball === 'Claude')
     const own = list.filter((t) => t.by !== '聴衆役').length
     const dir = hasDraft(ref.draft) ? shownDir(draftDir(ref.draft)) : ''
-    // 依頼文は短くし、直し方と feedback.yaml の書き方は skill の側に任せる (rebuild.md 5 章)
+    // 依頼文は短くし、直し方と feedback.yaml の書き方は skill の側に任せる
     return [
       `${dir}/feedback.yaml に、Claude の番の指摘が ${list.length} 件あります（話者から ${own} 件、聴衆役から ${list.length - own} 件）。原稿は ${dir}/index.md です。`,
       'writing-note skill の Phase 5（studio の指摘を受けて直す）に従って直してください。',

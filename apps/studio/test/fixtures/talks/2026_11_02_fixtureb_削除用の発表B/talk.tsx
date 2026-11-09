@@ -11,7 +11,7 @@ export default defineTalk({
   event: { name: 'テスト会' },
   speaker: 'テスト',
   affiliation: 'テスト',
-  // リポジトリの外に置くので、public: true でも非公開として扱われる (ADR-0041)
+  // リポジトリの外に置くので、public: true でも非公開として扱われる
   public: true,
   theme: hokuchi,
   scenes: [intro, body],

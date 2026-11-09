@@ -1,6 +1,6 @@
-// 原稿の面 (ADR-0046)。記事の本文を上から読み、段落ごとにその場で直し、指摘を書く。
+// 原稿の面。記事の本文を上から読み、段落ごとにその場で直し、指摘を書く。
 // 発表のコマの面と同じ並びにする。真ん中に段落、右の余白にその段落への検査と指摘。見出しの目次は、レールの「原稿」の子に出す。
-// いちばん上の帯は記事全体で、段落に寄せられない検査と、記事全体への指摘を置く (docs/design.md の「原稿」)
+// いちばん上の帯は記事全体で、段落に寄せられない検査と、記事全体への指摘を置く
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Plus } from 'lucide-react'
 import { Button } from '../components/ui/button'

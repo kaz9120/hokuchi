@@ -53,7 +53,7 @@ function talkPlugin(talkDir, meta, fonts) {
 }
 
 /**
- * 開発サーバでだけ、画面の要素にメモを付ける道具 (agentation) を差し込む (ADR-0032)。
+ * 開発サーバでだけ、画面の要素にメモを付ける道具 (agentation) を差し込む。
  * HTML に script を足す形にして、公開用のビルドの依存に入れない
  */
 function feedbackPlugin() {
@@ -70,7 +70,7 @@ function feedbackPlugin() {
 }
 
 /**
- * view は画面の種類 (ADR-0042)。present は発表用 (発表者ビュー・ノートつき)、public は公開用 (読むだけ・テキストと PDF の書き出しつき)。
+ * view は画面の種類。present は発表用 (発表者ビュー・ノートつき)、public は公開用 (読むだけ・テキストと PDF の書き出しつき)。
  * 開発サーバと studio は present、サイトの組み立てと単一 HTML は public で作る
  */
 export function stageConfig(talkDir, { outDir, meta, fonts, port, view = 'present' } = {}) {

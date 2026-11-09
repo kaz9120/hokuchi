@@ -1,5 +1,5 @@
 // 公開用のビルド。OGP 画像 (表紙の静止画)・メタタグ・同梱フォントつきの静的ファイル一式を出す。
-// 画面は公開用 (ADR-0042) で、トーク全体のテキスト (talk.md) と PDF も書き出す
+// 画面は公開用で、トーク全体のテキスト (talk.md) と PDF も書き出す
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { build as viteBuild } from 'vite'
@@ -31,7 +31,7 @@ function metaTags(talk, slug) {
     `<meta name="twitter:title" content="${title}" />`,
     `<meta name="twitter:description" content="${desc}" />`,
     `<meta name="twitter:image" content="${url}og.png" />`,
-    // AI に読ませたい人とクローラのために、トーク全体のテキストの在りかを示す (ADR-0042)
+    // AI に読ませたい人とクローラのために、トーク全体のテキストの在りかを示す
     `<link rel="alternate" type="text/markdown" href="talk.md" />`,
   ].join('\n    ')
 }
@@ -66,10 +66,10 @@ export async function buildTalk(talkDir, outDir, { states = false } = {}) {
   const info = publicInfo(talkDir, talk)
   const browser = await launch()
   const page = await browser.newPage({ viewport: { width: 1280, height: 720 } })
-  // 全状態を撮る。OGP 画像は最初の状態 (表紙) そのもので、別のカードは描かない (ADR-0031)
+  // 全状態を撮る。OGP 画像は最初の状態 (表紙) そのもので、別のカードは描かない
   const shots = await shootStates(page, url)
   const og = shots[0].png
-  // 公開用の書き出し (ADR-0042)。テキストは全状態の画面の文字とノートから、PDF は全状態を並べたページから作る
+  // 公開用の書き出し。テキストは全状態の画面の文字とノートから、PDF は全状態を並べたページから作る
   const doc = talkText(talk, info, await collectFrames(page))
   const pdf = await renderPdf(browser, url)
   // 同梱するフォントのために、全状態に出てくる文字と、テーマの書体を集める

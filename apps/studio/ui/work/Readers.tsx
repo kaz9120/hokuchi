@@ -1,4 +1,4 @@
-// 読み手 (聴衆役) を選ぶ (段 4。rebuild.md 4.2・6 章)。発表も記事も、読みの面の先頭で同じ形で選ぶ。
+// 読み手 (聴衆役) を選ぶ。発表も記事も、読みの面の先頭で同じ形で選ぶ。
 // 選べるのは、企画の段階 2 で描いた人 (聴衆の正) と、personas/ のプリセット。企画で描いた人は id を brief:<名前> で readers.yaml に書く
 import { useState } from 'react'
 import type { Persona, WorkView } from '../../shared/api'

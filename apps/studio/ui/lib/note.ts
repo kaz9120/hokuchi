@@ -1,4 +1,4 @@
-// 記事の面 (構成・原稿・読み・公開) が読む形と、そこからの操作 (ADR-0046)。段落を単位に、本文・検査・指摘を扱う。
+// 記事の面 (構成・原稿・読み・公開) が読む形と、そこからの操作。段落を単位に、本文・検査・指摘を扱う。
 // 作品の WorkView (shared/api.ts) から、面が読む形 (Draft) を作る。取得と購読は works.ts が持つ
 import type { PasteText, WorkView } from '../../shared/api'
 import { mine, threadOps, type Persona, type Read, type Thread } from './talk'
@@ -24,7 +24,7 @@ export type Draft = {
   tags: string[]
   /** 見出し画像 (assets/…)。front matter の eyecatch */
   eyecatch: string | null
-  /** 改稿の原稿なら、元の記事のアーカイブのディレクトリ名 (ADR-0047) */
+  /** 改稿の原稿なら、元の記事のアーカイブのディレクトリ名 */
   revises: string | null
   blocks: Block[]
   lint: Finding[]
@@ -99,7 +99,7 @@ export const draftApi = (key: string) => ({
 })
 export type DraftApi = ReturnType<typeof draftApi>
 
-/** 作品のタイトルを直す。正は中身 (発表は talk.tsx、記事は原稿)、無ければ企画シート (rebuild.md 4.2) */
+/** 作品のタイトルを直す。正は中身 (発表は talk.tsx、記事は原稿)、無ければ企画シート */
 export async function setTitle(key: string, title: string) {
   const v = await current(key)
   return send(key, '/title', 'PUT', { orig: v.title, title }, { optimistic: (w) => ({ ...w, title, ...(w.body?.kind === 'note' && { body: { ...w.body, title } }) }) })

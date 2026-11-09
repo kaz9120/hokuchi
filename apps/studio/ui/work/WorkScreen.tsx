@@ -1,4 +1,4 @@
-// 作品の画面 (design.md 3 章「作品の画面」・ADR-0049)。帯 1 行・左のレール・面 の骨組み。
+// 作品の画面。帯 1 行・左のレール・面 の骨組み。
 // 発表も記事も、公開済みも改稿中も、企画シートの無い作品も、この 1 つの骨組みで見せる。
 // 面と場所は URL のハッシュ (/works/<key>#<面>/<場所>) に持ち、ルータ (lib/router.ts) から受け取る
 import { useEffect, useMemo, useRef, useState } from 'react'

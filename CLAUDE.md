@@ -40,9 +40,10 @@ tools/
 .claude/skills/
   crafting-presentation/  対話から発表資料を作る skill（Phase 0〜8）
   writing-note/           note の記事を書く skill（Phase 0〜7。studio の記事の作品の画面と同じ流れ）
+  making-short-video/     X などに流す短い動画を HyperFrames で作る skill（使い込みながら育てる途中）
 ```
 
-作品の企画シートとネタ帳、記事の原稿（`notes/<slug>/`）、社内向けの発表は、公開リポジトリの外の `~/Hobby/hokuchi-private` に置きます。
+作品の企画シートとネタ帳、記事の原稿（`notes/<slug>/`）、短い動画のプロジェクト（`videos/<slug>/`）、社内向けの発表は、公開リポジトリの外の `~/Hobby/hokuchi-private` に置きます。
 
 依存はルートの bun ワークスペース（`packages/*`・`apps/*`・`tools/eyecatch`、hoisted）で管理します。`bun install` はルートで実行します。`tools/notes` は対象外です。
 

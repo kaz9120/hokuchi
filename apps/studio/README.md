@@ -1,0 +1,99 @@
+# hokuchi studio
+
+発表と note の記事を、ネタから出すまで Claude と作るローカルの制作アプリです。始めるのも、話すのも、決めるのも studio の中で行います。ターミナルが要ったら、studio の機能不足として扱います。
+
+```sh
+bun run studio                    # http://localhost:5300/
+bun run test:studio               # 状態 × イベントの表と、Claude に渡す権限のテスト (偽物の claude で動く)
+apps/studio/scripts/install-launchd.sh   # ログイン時に常駐させる。--uninstall で外す
+```
+
+同じプロセスの中で、サイト全体の開発サーバ (http://localhost:5280/) も立てます。`bun run dev` と同じポートを使うので、両方は立てられません。
+
+| 環境変数 | 既定 | 中身 |
+|---|---|---|
+| `HOKUCHI_PRIVATE` | `~/Hobby/hokuchi-private` | 作品・ネタ・記事の原稿・社内の発表の置き場 (公開リポジトリの外) |
+| `HOKUCHI_STUDIO_PORT` | 5300 | studio の画面 |
+| `HOKUCHI_SITE_PORT` | 5280 | 中で立てるサイト全体の開発サーバ |
+| `HOKUCHI_STUDIO_MODEL` | opus | 作品の会話で動かす Claude のモデル |
+
+## 流れ
+
+記事も発表も同じ骨格で動きます。ネタ → 伝えたいこと → 構成 → 下書き → 磨く → 出す → 積み上げる。
+
+1. ホームの「話して始める」に、音声入力の書き起こしや画像を貼って送ります。フォームはありません
+2. Claude が作品の会話で候補を出します。話者は右の面で候補を選ぶか直し、進むボタンを押します
+3. 出したら、学びの案を選び、変わったファイルを記録します (git のコミット)
+
+| 作品 | ステップ | 出した |
+|---|---|---|
+| 記事 | 伝えたいこと → 構成 → 原稿 → 公開 | note のアーカイブに、その作品の note_key がある |
+| 発表 | 伝えたいこと → 構成 → 絵コンテ → スライド → 発表 | 公開: サイトに載った。社内: 話者が「発表した」を押した |
+
+## 考え方
+
+- 作品ごとに Claude との会話を 1 本持つ。Claude はリポジトリのスキル (writing-note・crafting-presentation) で動き、作品のファイルを直す
+- 誰の番かを、いつも 1 つに決める。Claude が動いている間は Claude の番、返事を終えたら話者の番。話者の番の作品だけが「やること」に並ぶ。番は保存せず、実行の記録と作品の記録から導く
+- 決めるのは話者。確定した値 (`work.yaml`) は話者が押したときだけサーバが書く。Claude は候補 (`proposals.yaml`) を書き、確定した値は権限で書けない
+- 話者の言葉は原文のまま残す。話したこと・貼ったものは `material.md` に溜め、毎回の Claude に全文で渡す
+- 外に出すのは話者の手。note への投稿は話者が貼る。デプロイ・コミット・push は、話者が押したときだけサーバが行う
+- 失敗を黙らない。Claude の失敗・時間切れ・studio の再起動で止まった実行は、理由を会話に出して話者の番に戻す
+- 見た目は takibi-design-system に乗る。1 画面の主ボタンは 1 つ (右の面の進むボタン)
+
+## Claude の動かし方
+
+`claude -p` をリポジトリを作業場所にして起こし、stream-json で文字と道具の使用を受け取ります (`server/claude/runner.ts`)。
+
+- 話者のユーザー設定 (包括 allow) と `.claude/settings.local.json` は読ませません (`--setting-sources project`)。許したもの以外は拒みます (`--permission-mode dontAsk`)。この設定でも、話者の CLAUDE.md とリポジトリのスキルは読み込まれます
+- 書けるのはその作品の置き場だけです。`proposals.yaml`、記事の原稿のフォルダ (構成を確定したあとは `outline.yaml` を除く)、発表のフォルダ、見出し画像の下地のフォルダ。Bash は lint・check・wave・eyecatch・typecheck の決まった形だけを許します
+- 権限は事故を防ぐ仕組みで、隔離ではありません。デプロイと GitHub の認証情報は、Claude の実行の環境変数から外します
+- セッションはステップごとに 1 本。同じステップの中は `--resume` で続けます。毎回の頭に、作品の文脈 (確定した値・候補の書き方・材料の全文・話者が直した所) を `--append-system-prompt` で渡します (`server/claude/context.ts`)
+- 作品ごとに 1 本、全体で同時に 2 本まで。1 回の実行は 60 分まで、出力が 15 分途切れたら止まったとみなします。絵コンテとスライドは、時間切れなら同じセッションで 3 回まで続けます
+- 実行の前に作品の YAML の写しを取り、YAML として読めなくなったファイルは写しに戻します
+
+## 置き場
+
+`hokuchi-private/works/<id>/` が作品の正です。
+
+| ファイル | 書き手 | 中身 |
+|---|---|---|
+| `work.yaml` | サーバ | 種類・題・ステップ・確定した値・原稿とトークの置き場・note_key・出した記録・片付け |
+| `proposals.yaml` | Claude | 候補と、話者に求めること (`ask`)。形は `server/claude/context.ts` |
+| `material.md` | サーバ | 話者が話したことと添付の原文 |
+| `chat.jsonl` | サーバ | 会話の表示用の記録 |
+| `runs.jsonl` | サーバ | 実行の始まりと終わり。番と失敗を導く |
+| `files/` | サーバ | 話者が貼った画像。原稿やトークの `assets/` にも写す |
+| `made/` | サーバ | 公開した記事の原稿のフォルダ (制作の記録。正はアーカイブ) |
+
+記事の原稿は `notes/<名前>/`、発表は社内なら `hokuchi-private/talks/`、公開なら `talks/` に置きます。記事とアーカイブは note_key で結び、名前 (slug) では結びません。ネタは `hokuchi-private/neta/*.md` です。
+
+## 画面の言葉
+
+設計の言葉 (番・ステップ・関門・確定した値・候補) は画面に出しません。
+
+| 指すもの | 画面の言葉 |
+|---|---|
+| 話者の番 / Claude の番 | あなたの番 / Claude が作業中 |
+| 芯・中核メッセージ | 伝えたいこと |
+| 密・粗・予算 | 厚く書く・短く通る・目安の字数 |
+| 場所を指す | ここについて話す |
+| 出した | 公開した / 社内で発表した |
+| コミット | 変更を記録する |
+| AI が演じる聴衆 | 聴衆役 (本物の聴衆ではないと画面に書く) |
+
+## しくみ
+
+```
+server/
+  main.ts      起動。画面 (5300)・サイト全体の開発サーバ (5280)・撮影に使うブラウザ
+  flow/        状態 × イベントの表 (steps.ts)・話者の操作 (service.ts)・実行を回す (conductor.ts)・聴衆役 (reads.ts)
+  claude/      claude -p の起こし方と権限 (runner.ts)・作品の文脈 (context.ts)
+  media/       記事 (notes.ts) と発表 (talks.ts) の中身
+  store/       作品の置き場・アーカイブ・指摘・旧企画シートの移し替え
+  http/        API・作品を開いている間の見張りと撮影 (sessions.ts)
+shared/        画面とサーバで共有する型
+ui/            画面 (React + takibi-design-system)。pages/ が画面、panels/ が右の面
+test/          状態 × イベントの表と権限のテスト。fake-claude.mjs が偽物の claude
+```
+
+ワークフローを分け直すときは、まず `server/flow/steps.ts` の表を直します。

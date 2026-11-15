@@ -32,24 +32,24 @@ articles/note/     note.com の記事アーカイブ（原本 + Markdown の 2 �
 packages/stage/    発表のフレームワーク。再生機・部品・テーマ・トーク単位の CLI
 apps/
   slides/          slides.y-kaz.com。全トークを最新のフレームワークでビルドして組み立てる
-  studio/          ローカルの制作アプリ。発表と note の記事を、企画から公開まで作る
+  studio/          ローカルの制作アプリ。発表と note の記事を、ネタから出すまで Claude と作る（常駐。考え方は apps/studio/README.md）
 archive/talks/     旧方式（意図宣言型 YAML）の deck.yaml と写真。作り直すときの素材で、ビルドしない
 tools/
   notes/           note の CLI（sync / build / verify / lint / paste / index）
   eyecatch/        note の見出し画像の下地を作る CLI
 .claude/skills/
   crafting-presentation/  対話から発表資料を作る skill（Phase 0〜8）
-  writing-note/           note の記事を書く skill（Phase 0〜7。studio の記事の作品の画面と同じ流れ）
+  writing-note/           note の記事を書く skill（Phase 0〜7。studio の記事のステップと同じ流れ）
   making-short-video/     X などに流す短い動画を HyperFrames で作る skill（使い込みながら育てる途中）
 ```
 
-作品の企画シートとネタ帳、記事の原稿（`notes/<slug>/`）、短い動画のプロジェクト（`videos/<slug>/`）、社内向けの発表は、公開リポジトリの外の `~/Hobby/hokuchi-private` に置きます。
+studio の作品（`works/<id>/`）とネタ帳（`neta/`）、記事の原稿（`notes/<slug>/`）、短い動画のプロジェクト（`videos/<slug>/`）、社内向けの発表は、公開リポジトリの外の `~/Hobby/hokuchi-private` に置きます。
 
 依存はルートの bun ワークスペース（`packages/*`・`apps/*`・`tools/eyecatch`、hoisted）で管理します。`bun install` はルートで実行します。`tools/notes` は対象外です。
 
 ## note の記事
 
-記事を書く依頼は、writing-note skill に従ってください。原稿は公開リポジトリの外の `~/Hobby/hokuchi-private/notes/<slug>/` に置き、studio の原稿の面で段落ごとに直します。文体は `hokuchi-note lint <slug>` で検査します。文体の規範は公開済み記事の実測（2026-09 時点で 44 本）から引いています。記事が増えたら測り直してください。
+記事を書く依頼は、writing-note skill に従ってください。ふだんは studio のホームで話して始め、作品の会話で進めます。原稿は公開リポジトリの外の `~/Hobby/hokuchi-private/notes/<slug>/` に置きます。文体は `hokuchi-note lint <slug>` で検査します。文体の規範は公開済み記事の実測（2026-09 時点で 44 本）から引いています。記事が増えたら測り直してください。
 
 公開済みの記事は `hokuchi-note sync` で取り込みます。`index.md` は生成物なので、手では直しません。直したいときは変換規則を直して、`build` を回します。取り込みの欠落は `verify` が検査するので、記事を足したら必ず通してください。
 
@@ -66,8 +66,8 @@ tools/
 よく使うコマンドは次のとおりです。`<talk>` は `talks/` の中の名前の先頭だけでも指定できます（例: `2026_09_29`）。
 
 ```sh
-bun run studio                 # 制作アプリ（http://localhost:5300/）。ホームの「いま」から作品を開く。中でサイト全体（5280）も立てる
-bun run test:studio            # studio のファイルの形・振る舞い・API の規則のテスト（偽物の claude で動く）
+bun run studio                 # 制作アプリ（http://localhost:5300/）。常駐させるなら apps/studio/scripts/install-launchd.sh。中でサイト全体（5280）も立てる
+bun run test:studio            # studio の状態 × イベントの表と、Claude に渡す権限のテスト（偽物の claude で動く）
 bun run dev                    # サイト全体の開発サーバだけ（http://localhost:5280/）。studio を使わずに見るとき
 bun run dev <talk>             # トーク 1 本の作業用サーバ。いずれも長く動くので、話者に別ターミナルで立ててもらう
 bun run check <talk> --motion  # 全状態の静止画・検査・絵コンテとの照合・遷移のコマ撮り

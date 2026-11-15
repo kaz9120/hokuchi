@@ -1,0 +1,6 @@
+@import "tailwindcss";
+@import "takibi-design-system/styles.css";
+@source "../../../node_modules/takibi-design-system/src";
+@source "./";
+
+html, body, #root { height: 100%; }

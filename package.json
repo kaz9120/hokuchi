@@ -14,6 +14,6 @@
     "site":"node apps/slides/build.mjs",
     "deploy": "node apps/slides/build.mjs && cd apps/slides && bunx wrangler deploy",
     "typecheck": "tsc -p packages/stage/tsconfig.json && tsc -p apps/studio/tsconfig.json",
-    "test:studio": "node --experimental-strip-types --disable-warning=ExperimentalWarning --test apps/studio/test/studio.test.ts apps/studio/test/contract.test.ts"
+    "test:studio": "node --experimental-strip-types --disable-warning=ExperimentalWarning --test apps/studio/test/studio.test.ts"
   }
 }

@@ -1,0 +1,180 @@
+// Claude に渡す作品の文脈。毎回の実行の頭に、ファイルから組み立てる (会話の記録は表示用で、Claude の記憶の正はファイル)。
+// --append-system-prompt に渡す文と、書いてよい場所を返す
+import { join } from 'node:path'
+import YAML from 'yaml'
+import type { Change, Step, Work } from '../../shared/types.ts'
+import { STEP_LABEL } from '../../shared/types.ts'
+import { PRIVATE, places, repoRoot, shownDir } from '../infra/config.ts'
+import { proposalsFile, readChat, readMaterial, workDir } from '../store/works.ts'
+import { noteDir, talkDirOf } from '../store/places.ts'
+
+/** 材料ファイルを全文で渡す上限。超えたら頭を落として、ファイルを読むよう伝える */
+const MATERIAL_LIMIT = 60_000
+
+type Phase = { skill: string; todo: string }
+
+/** ステップごとに、どのスキルのどこを使い、何を書いてほしいか */
+function phaseOf(work: Work, step: Step | 'shipped'): Phase {
+  const note = work.note?.slug ? shownDir(noteDir(work.note.slug)) : ''
+  const talk = talkDirOf(work)
+  if (work.kind === 'note') {
+    switch (step) {
+      case 'core':
+        return { skill: 'writing-note の Phase 0〜2', todo: `材料と過去の記事 (articles/note/) を読み、proposals.yaml に読者 (reader)・持ち帰り (takeaway)・伝えたいことの候補 3 つ (core) を書く。話者が貼った画像は ${note}/assets/ に写してある` }
+      case 'outline':
+        return {
+          skill: 'writing-note の Phase 3',
+          todo: `フックの案 2〜3 を proposals.yaml の hook に、骨組みを ${note}/outline.yaml に書く (sections: [{title, point, grain: 密|粗, budget}]。先頭は「冒頭」)。厚く書く所の材料を返事で聞く。話者の答えで伝えたいことがずれたら proposals.yaml の coreRevision に案を書く`,
+        }
+      case 'draft':
+        return {
+          skill: 'writing-note の Phase 4〜6',
+          todo: `${note}/index.md に原稿を書き、2 割削り、node tools/notes/cli.mjs lint ${work.note?.slug} を通す。返事に見出しごとの字数を書く。outline.yaml は確定済みで書けない。変えたいときは proposals.yaml の outlineRevision に案を書く。${note}/feedback.yaml の ball: Claude の感想は 1 件ずつ判断し、返事に「直した n 件・見送った n 件」と見送った理由を書く`,
+        }
+      case 'publish':
+        return {
+          skill: 'writing-note の Phase 7',
+          todo: `proposals.yaml にタイトル 3 案 (title)、タグ 3〜5 個 (tags)、置き場の名前の案 3 つ (slug。英小文字とハイフン。notes/ にある名前は避ける)、見出し画像のモチーフ 3 案 (motif) を書く。モチーフが決まったと伝えられたら、references/eyecatch.md に沿って ${shownDir(join(PRIVATE, 'eyecatch'))}/<公開日>-<名前>/ に下地を作る`,
+        }
+      default:
+        return {
+          skill: 'writing-note の振り返り',
+          todo: `公開版 (articles/note/ のこの記事) と原稿 (${shownDir(join(workDir(work.id), 'made'))}) の差を読み、話者が公開前に直した点から学びの案を proposals.yaml の learnings に書く ([{text, file: voice.md, note}])。voice.md は書けない。話者が採ったものだけを studio が足す`,
+        }
+    }
+  }
+  switch (step) {
+    case 'core':
+      return {
+        skill: 'crafting-presentation の Phase 0〜2',
+        todo: '材料から場・日付・持ち時間を拾って proposals.yaml の event ({name, url, date, minutes, venue}) に、公開か社内かを scope (public / internal) に、聴衆 1〜2 人を audience ([{name, who, why, trouble, solve}]) に、中核メッセージの候補 3 つを core に書く。イベントページがあれば読む',
+      }
+    case 'outline':
+      return { skill: 'crafting-presentation の Phase 3', todo: 'メッセージマップを質の違う 2 案以上考え、推す 1 案を proposals.yaml の map ([{chapter, understand, weight}]) に書き、もう 1 案と選んだ理由を返事に書く。トークのフォルダの名前を YYYY_MM_DD_タグ_演題 の形で proposals.yaml の talkDir に書く' }
+    case 'storyboard':
+      return { skill: 'crafting-presentation の Phase 4〜5', todo: `${talk ?? '(トークのフォルダ)'}/storyboard.md に完全版の絵コンテを書き、下書きのシーンで talk.tsx と scenes/ を置く。聴衆役のサブエージェントに読ませて直し、返事に「直した n 件・見送った n 件」と見送った理由を書く` }
+    case 'slides':
+      return { skill: 'crafting-presentation の Phase 6〜7', todo: `持ち時間に合わせて絵コンテの上で削り、シーンを実装し、bun run check ${talk ?? '<発表のフォルダ>'} --motion で確かめる。区切りは章かシーンの単位にし、返事に進み具合を書く` }
+    case 'present':
+      return { skill: 'crafting-presentation の Phase 8', todo: '指されたコマを直し、check を回す' }
+    default:
+      return {
+        skill: 'crafting-presentation の発表後',
+        todo: `${work.decided.scope === 'public' ? 'ノートを公開物として読み直して直す (発表後の 1)。' : ''}指摘の往復と話者の直しから、話者の型として残すべき学びの案を proposals.yaml の learnings ([{text, file: style-defaults.md, note}]) に書く。style-defaults.md は書けない`,
+      }
+  }
+}
+
+function recentReplies(id: string, n = 3): string {
+  return readChat(id)
+    .filter((c) => c.role === 'claude')
+    .slice(-n)
+    .map((c) => `- ${c.text.replace(/\s+/g, ' ').slice(0, 500)}`)
+    .join('\n')
+}
+
+/** 書いてよい場所。ディレクトリは末尾を / にする */
+export function writableOf(work: Work, step: Step | 'shipped', extra: string[] = []): { allow: string[]; deny: string[] } {
+  const allow = [proposalsFile(work.id), ...extra]
+  const deny: string[] = []
+  if (work.kind === 'note' && work.note?.slug) {
+    allow.push(noteDir(work.note.slug) + '/')
+    if (step !== 'core' && step !== 'outline') deny.push(join(noteDir(work.note.slug), 'outline.yaml'))
+    if (step === 'publish') allow.push(join(PRIVATE, 'eyecatch') + '/')
+  }
+  const talk = talkDirOf(work)
+  if (work.kind === 'talk' && talk) allow.push(talk + '/')
+  return { allow, deny }
+}
+
+/** 材料。長いときは真ん中 (途中の往復) を省き、最初の話と最近の話を残す */
+function materialText(id: string): string {
+  const m = readMaterial(id)
+  if (m.length <= MATERIAL_LIMIT) return m
+  const head = m.slice(0, MATERIAL_LIMIT / 3)
+  const tail = m.slice(-(MATERIAL_LIMIT * 2) / 3)
+  return `${head}\n\n…（途中の往復は長いので省いた。全文は ${shownDir(join(workDir(id), 'material.md'))}）…\n\n${tail}`
+}
+
+/** 頼みの頭に添える、前の返事のあとに変わったもの */
+export function changesText(changes: Change[]): string {
+  if (!changes.length) return ''
+  return `前の返事のあとに変わったもの:\n${changes.map((c) => `- ${c.kind === 'you' ? '話者が直した' : '外で変わった'}: ${c.where}`).join('\n')}\n\n`
+}
+
+/**
+ * 作品の文脈。fresh (新しいセッション) のときだけ、材料の全文と前の返事を入れる。
+ * 続きのセッションでは、材料も返事もセッションの中にあるので入れない (毎回同じ文にして、キャッシュを効かせる)
+ */
+export function systemPrompt(work: Work, step: Step | 'shipped', fresh: boolean): string {
+  const phase = phaseOf(work, step)
+  const material = fresh ? materialText(work.id) : '(この会話の中にある。全文は material.md)'
+  const decided = Object.keys(work.decided ?? {}).length ? YAML.stringify(work.decided, { lineWidth: 0 }) : '(まだ無い)'
+  const where = [
+    `- 作品のフォルダ: ${workDir(work.id)}`,
+    `- 候補を書くファイル: ${proposalsFile(work.id)}`,
+    work.note?.slug ? `- 記事の原稿のフォルダ: ${noteDir(work.note.slug)}` : '',
+    talkDirOf(work) ? `- 発表のフォルダ: ${talkDirOf(work)}` : '',
+  ].filter(Boolean)
+  return `# hokuchi studio の中での作業
+
+あなたは hokuchi studio (話者の制作アプリ) の中で、話者と作品を作っている。返事は studio の画面に出る。ターミナルではない。
+話者は音声入力で話すことが多い。固有名詞や用語は文脈から読み直し、読み直した語は返事で示す。
+
+## 作品
+- id: ${work.id}
+- 種類: ${work.kind === 'note' ? 'note の記事' : `発表 (${work.decided.scope === 'public' ? '公開' : '社内'})`}
+- 題: ${work.title || '(未定)'}
+- いまのステップ: ${step === 'shipped' ? '出した後の片付け' : STEP_LABEL[step]}
+${where.join('\n')}
+
+## このステップでしてほしいこと (${phase.skill})
+${phase.todo}
+
+## 確定した値 (話者が決めた。あなたは書けない。変えたいときは proposals.yaml に案を書く)
+${decided}
+## 約束
+- スキルに書かれた「企画シート」「依頼文をコピーして貼る」「レールの Claude へ」「studio の○○の面」の手順は旧 studio のもの。studio の中では、この節の約束を優先する
+- YAML (proposals.yaml・outline.yaml・feedback.yaml・readers.yaml) を書くときは、値に「: 」「#」や記号で始まる文を含むなら引用符で囲む。書いたら node apps/studio/scripts/check-yaml.mjs <ファイルの絶対パス> で読めるか確かめ、NG なら直す
+- 候補は会話の文に埋めず、proposals.yaml に書く (YAML。知らないキーは残す)。画面がカードにし、話者が選んで確定する。話者の発言が明らかに 1 つを選んでいるときは picked にその番号 (0 始まり) を書く (例: picked: {core: 1})
+- 返事の最後に、話者に求めることを 1 つ proposals.yaml の ask に書く。形は ask: {kind: choose|answer|read|press, text: 1 行}。text は話者が次にすることを、動詞で終わる 1 文で書く (例:「伝えたいことの 3 案から選ぶか、話して直す」)
+- 返事は短く、結論から書く。話者に聞きたいことは番号付きで、1 つずつ答えられる形にする
+- 書けるのは作品の置き場だけ。デプロイ・コミット・push・削除はできない (話者が画面で押したときに studio が行う)
+- 動かせるコマンドは次の形だけ。作業場所 (リポジトリのルート) から、cd や && でつながずに、この形のまま動かす: \`node tools/notes/cli.mjs lint <名前>\`・\`bun run check <発表のフォルダの絶対パス> --motion\`・\`node .claude/skills/crafting-presentation/scripts/wave.mjs <絵コンテ>\`・\`bun run typecheck\`・\`bun run eyecatch ...\`。読むだけなら Read・Glob・Grep を使う
+- studio 自身のコード (apps/studio) は読まなくてよい。この節に書いたことが、studio との約束のすべて
+- 発表で packages/stage/src/kit/ や parts/ の部品を足す・直す必要があるときは、書かずに返事でその旨を伝え、ask に「部品を直すのを許すか決める」と書く
+
+## proposals.yaml の形 (使うキーだけ書く。studio のコードは読まなくてよい)
+\`\`\`yaml
+ask: {kind: choose, text: 伝えたいことの 3 案から選ぶか、話して直す}
+picked: {core: 0}            # 話者の発言が明らかに選んだ候補の番号 (core / title / slug / hook)
+reader: {who: …, trouble: …, knows: …}   # 記事の読者
+takeaway: …                  # 持ち帰ってほしいこと
+core: [{text: …, note: …}]   # 伝えたいこと (中核メッセージ) の候補
+coreRevision: {text: …, note: …}         # 確定した伝えたいことを直す案。確定の前 (伝えたいことのステップ) は使わず、直した案を core の先頭に足して picked で指す
+hook: [{text: …, note: …}]   # フックの案
+outlineRevision: [{title: …, point: …, grain: 密, budget: 600}]  # 確定した構成を直す案
+title: [{text: …, note: …}]
+tags: [エンジニア, …]
+slug: [{text: voice-input-again, note: …}]
+motif: [{text: …, note: …}]  # 見出し画像のモチーフ
+learnings: [{text: …, file: voice.md, note: …}]   # text は規範に足す 1 行の本文だけ。先頭の「(日付「題」)」や「(同)」は studio が付ける
+event: {name: …, url: …, date: 2026-12-05, minutes: 20, venue: …}   # 発表の場
+scope: internal              # 発表の公開範囲 (public / internal)
+audience: [{name: …, who: …, why: …, trouble: …, solve: …}]
+map: [{chapter: …, understand: …, weight: 厚い}]   # メッセージマップ
+mapRevision: [...]           # 確定したメッセージマップを直す案
+talkDir: 2026_12_05_タグ_演題
+trash: [{path: scenes/rule.tsx, note: 並びから外した}]   # 要らなくなったファイル。中身のフォルダ (原稿かトークのフォルダ) からの相対パス。あなたは消せないので、話者が画面でごみ箱へ移す
+\`\`\`
+
+## 材料 (話者が話したこと・貼ったものの原文。要約せずに使う)
+${material}
+
+## あなたの前の返事 (要約。正はファイル)
+${fresh ? recentReplies(work.id) || '(まだ無い)' : '(この会話の中にある)'}
+`
+}
+
+export const repo = repoRoot
+export const placesForContext = places

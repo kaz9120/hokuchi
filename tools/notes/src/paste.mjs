@@ -23,7 +23,11 @@ const fileName = (p) => p.split('/').pop();
  * @returns {{ text: string, images: Array<{n:number, file:string, path:string, caption:string, link:string|null}>, eyecatch: string|null }}
  */
 export function toPasteText(md) {
-  const { fm, body } = splitFrontMatter(md);
+  const { fm, body: raw } = splitFrontMatter(md);
+  // HTML コメント (話者に聞くこと、作業の覚え書き) は note に貼らない。<!-- 聞く --> が残る原稿は
+  // まだ公開の段ではないので、pending で知らせる (cli の paste は止まる)
+  const pending = [...raw.matchAll(/<!--\s*聞く[:：]?\s*([\s\S]*?)-->/g)].map((m) => m[1].trim());
+  const body = raw.replace(/<!--[\s\S]*?-->\n?/g, '').replace(/\n{3,}/g, '\n\n');
   const eyecatch = fm?.match(/^eyecatch: (.+)$/m)?.[1]?.replace(/^"(.*)"$/, '$1') ?? null;
   const images = [];
   const total = (body.match(IMAGE_BLOCK_RE) ?? []).length;
@@ -39,5 +43,5 @@ export function toPasteText(md) {
     return `（${parts.join(' ｜ ')}）\n`;
   });
 
-  return { text: text.replace(/\n{3,}/g, '\n\n').trim() + '\n', images, eyecatch };
+  return { text: text.replace(/\n{3,}/g, '\n\n').trim() + '\n', images, eyecatch, pending };
 }

@@ -6,6 +6,7 @@
 // (4) 本文の記法ガード: 行頭の「- 」「## 」、&nbsp;、コード内のフェンス
 // (5) verify の負のテスト: 欠落を作れば必ず error になる
 // (6) 文体 lint: AI 臭い原稿を捕まえ、研ぎ澄まされた原稿を通す
+// (6b) 下書きの癖を捕まえる規則 (受け・口癖・思いました・予算と粗密) と、paste がコメントを外すこと
 // (7) アーカイブ全体が検査を通る (articles/note があるときだけ)
 
 import assert from 'node:assert/strict';
@@ -17,7 +18,7 @@ import { parseHTML, decodeEntities, textOf } from '../src/html.mjs';
 import { parseNote } from '../src/parse.mjs';
 import { toMarkdown } from '../src/markdown.mjs';
 import { verifyArticle } from '../src/verify.mjs';
-import { lintDraft } from '../src/lint.mjs';
+import { lintDraft, lintOutline } from '../src/lint.mjs';
 import { toPasteText } from '../src/paste.mjs';
 import { renderBody, inlineHtml } from '../src/render.mjs';
 import { listArticleDirs } from '../src/build.mjs';
@@ -270,6 +271,27 @@ https://x.com/u/status/1
   assert.match(html, /<pre data-block="6"><code>## コードの中<\/code><\/pre>/);
   assert.match(html, /<hr data-block="7">/);
   ok('render は原稿の記法を、ブロック番号付きの HTML にする');
+}
+
+// (6b) 下書きの癖を捕まえる規則 ---------------------------------------------
+{
+  const ids = (text) => lintDraft(text).map((f) => f.id);
+  const base = '---\ntitle: t\n---\n\n';
+  const uke = base + Array.from({ length: 5 }, (_, i) => `${i}つ目の話です。これは大事だと思います。そう感じました。`).join('\n\n');
+  assert.ok(ids(uke).includes('uke-heavy'), '受けが多いと uke-heavy');
+  assert.ok(ids(base + '結構いい。結構速い。\n\n終わりです。').includes('spoken-degree'), '口癖の程度の語が 2 回で spoken-degree');
+  assert.ok(ids(base + '最初はそうだと思いました。次はこうだと思いました。\n\n終わりです。').includes('omoimashita-run'), '「と思いました」の連続');
+  const draft = base + '冒頭の段落です。\n\n## 粗い節\n\n' + 'あ'.repeat(200) + 'です。\n\n## 密な節\n\n' + 'い'.repeat(100) + 'です。';
+  const outline = 'sections:\n  - title: 冒頭\n    grain: 粗\n    budget: 60\n  - title: 粗い節\n    grain: 粗\n    budget: 120\n  - title: 密な節\n    grain: 密\n    budget: 600\n';
+  const o = lintOutline(draft, outline).map((f) => f.id);
+  assert.ok(o.includes('over-budget'), '粗の節が予算を超えると over-budget');
+  assert.ok(o.includes('rough-over-dense'), '粗の合計が密を超えると rough-over-dense');
+  ok('lint が受け・口癖・「と思いました」の連続・予算と粗密を捕まえる');
+
+  const p = toPasteText(base + '<!-- 聞く: 決め手 -->\n\n本文です。\n\n<!--\n覚え書き\n-->\n');
+  assert.ok(!p.text.includes('<!--'), 'paste は HTML コメントを貼らない');
+  assert.deepEqual(p.pending, ['決め手']);
+  ok('paste は HTML コメントを外し、残った聞くことを pending で返す');
 }
 
 // (7) アーカイブ全体 ---------------------------------------------------------

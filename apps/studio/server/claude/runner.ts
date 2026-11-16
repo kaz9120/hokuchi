@@ -49,6 +49,7 @@ export const ALLOWED_TOOLS = [
   'Bash(bun run check:*)',
   'Bash(node packages/stage/cli.mjs check:*)',
   'Bash(node .claude/skills/crafting-presentation/scripts/wave.mjs:*)',
+  'Bash(node .claude/skills/crafting-presentation/scripts/rehearse.mjs:*)',
   'Bash(bun run typecheck)',
   'Bash(node apps/studio/scripts/check-yaml.mjs:*)',
   'Bash(bun run eyecatch:*)',

@@ -20,7 +20,7 @@ function phaseOf(work: Work, step: Step | 'shipped'): Phase {
   if (work.kind === 'note') {
     switch (step) {
       case 'core':
-        return { skill: 'writing-note の Phase 0〜2', todo: `材料と過去の記事 (articles/note/) を読み、proposals.yaml に読者 (reader)・持ち帰り (takeaway)・伝えたいことの候補 3 つ (core) を書く。話者が貼った画像は ${note}/assets/ に写してある` }
+        return { skill: 'writing-note の Phase 0〜2', todo: `材料と過去の記事 (articles/note/) を読み、proposals.yaml に読者 (reader)・持ち帰り (takeaway)・伝えたいことの候補 3 つ (core) を書く。記事の原料になる話者の言葉が足りないとき (出来事の間の理由、いちばん意外だったこと、芯の中の抽象語の中身) は、問いを 3 つまで返事に番号付きで書き、ask に「問いに答えてください」と書く。話者が貼った画像は ${note}/assets/ に写してある` }
       case 'outline':
         return {
           skill: 'writing-note の Phase 3',
@@ -29,12 +29,12 @@ function phaseOf(work: Work, step: Step | 'shipped'): Phase {
       case 'draft':
         return {
           skill: 'writing-note の Phase 4〜6',
-          todo: `${note}/index.md に原稿を書き、2 割削り、node tools/notes/cli.mjs lint ${work.note?.slug} を通す。返事に見出しごとの字数を書く。outline.yaml は確定済みで書けない。変えたいときは proposals.yaml の outlineRevision に案を書く。${note}/feedback.yaml の ball: Claude の感想は 1 件ずつ判断し、返事に「直した n 件・見送った n 件」と見送った理由を書く`,
+          todo: `${note}/index.md に原稿を書き (話者の言葉を書き言葉に直して並べる。素材に無い描写・数字・気持ちは作らない)、出どころの無い文と重複から削り、node tools/notes/cli.mjs lint ${work.note?.slug} を通す。返事に見出しごとの字数を書く。outline.yaml は確定済みで書けない。変えたいときは proposals.yaml の outlineRevision に案を書く。${note}/feedback.yaml の ball: Claude の感想は 1 件ずつ判断し、返事に「直した n 件・見送った n 件」と見送った理由を書く`,
         }
       case 'publish':
         return {
           skill: 'writing-note の Phase 7',
-          todo: `proposals.yaml にタイトル 3 案 (title)、タグ 3〜5 個 (tags)、置き場の名前の案 3 つ (slug。英小文字とハイフン。notes/ にある名前は避ける)、見出し画像のモチーフ 3 案 (motif) を書く。モチーフが決まったと伝えられたら、references/eyecatch.md に沿って ${shownDir(join(PRIVATE, 'eyecatch'))}/<公開日>-<名前>/ に下地を作る`,
+          todo: `proposals.yaml にタイトル 3 案 (title)、タグ 2〜5 個 (tags)、置き場の名前の案 3 つ (slug。英小文字とハイフン。notes/ にある名前は避ける)、見出し画像のモチーフ 3 案 (motif) を書く。モチーフが決まったと伝えられたら、references/eyecatch.md に沿って ${shownDir(join(PRIVATE, 'eyecatch'))}/<公開日>-<名前>/ に下地を作る`,
         }
       default:
         return {
@@ -47,7 +47,7 @@ function phaseOf(work: Work, step: Step | 'shipped'): Phase {
     case 'core':
       return {
         skill: 'crafting-presentation の Phase 0〜2',
-        todo: '材料から場・日付・持ち時間を拾って proposals.yaml の event ({name, url, date, minutes, venue}) に、公開か社内かを scope (public / internal) に、聴衆 1〜2 人を audience ([{name, who, why, trouble, solve}]) に、中核メッセージの候補 3 つを core に書く。イベントページがあれば読む',
+        todo: '材料から場・日付・持ち時間を拾って proposals.yaml の event ({name, url, date, minutes, venue}) に、公開か社内かを scope (public / internal) に、聴衆 1〜2 人を audience ([{name, who, why, trouble, solve}]) に、中核メッセージの候補 3 つを core に書く。イベントページがあれば読む。話者にしか出せない実物 (画面・数字・失敗) とそれを選んだ理由、中核メッセージの中の抽象語の中身が素材に無いときは、問いを 3 つまで返事に番号付きで書き、ask に「問いに答えてください」と書く',
       }
     case 'outline':
       return { skill: 'crafting-presentation の Phase 3', todo: 'メッセージマップを質の違う 2 案以上考え、推す 1 案を proposals.yaml の map ([{chapter, understand, weight}]) に書き、もう 1 案と選んだ理由を返事に書く。トークのフォルダの名前を YYYY_MM_DD_タグ_演題 の形で proposals.yaml の talkDir に書く' }
@@ -140,7 +140,7 @@ ${decided}
 - 返事の最後に、話者に求めることを 1 つ proposals.yaml の ask に書く。形は ask: {kind: choose|answer|read|press, text: 1 行}。text は話者が次にすることを、動詞で終わる 1 文で書く (例:「伝えたいことの 3 案から選ぶか、話して直す」)
 - 返事は短く、結論から書く。話者に聞きたいことは番号付きで、1 つずつ答えられる形にする
 - 書けるのは作品の置き場だけ。デプロイ・コミット・push・削除はできない (話者が画面で押したときに studio が行う)
-- 動かせるコマンドは次の形だけ。作業場所 (リポジトリのルート) から、cd や && でつながずに、この形のまま動かす: \`node tools/notes/cli.mjs lint <名前>\`・\`bun run check <発表のフォルダの絶対パス> --motion\`・\`node .claude/skills/crafting-presentation/scripts/wave.mjs <絵コンテ>\`・\`bun run typecheck\`・\`bun run eyecatch ...\`。読むだけなら Read・Glob・Grep を使う
+- 動かせるコマンドは次の形だけ。作業場所 (リポジトリのルート) から、cd や && でつながずに、この形のまま動かす: \`node tools/notes/cli.mjs lint <名前>\`・\`bun run check <発表のフォルダの絶対パス> --motion\`・\`node .claude/skills/crafting-presentation/scripts/wave.mjs <絵コンテ>\`・\`node .claude/skills/crafting-presentation/scripts/rehearse.mjs <発表のフォルダの絶対パス>\`・\`bun run typecheck\`・\`bun run eyecatch ...\`。読むだけなら Read・Glob・Grep を使う
 - studio 自身のコード (apps/studio) は読まなくてよい。この節に書いたことが、studio との約束のすべて
 - 発表で packages/stage/src/kit/ や parts/ の部品を足す・直す必要があるときは、書かずに返事でその旨を伝え、ask に「部品を直すのを許すか決める」と書く
 

@@ -20,7 +20,7 @@ import { fileURLToPath } from 'node:url';
 import { listNotes, fetchNote, freezeNote } from './src/api.mjs';
 import { downloadImage, downloadEyecatch } from './src/assets.mjs';
 import { buildArticle, articleIndex, listArticleDirs, readSource, SOURCE, INDEX } from './src/build.mjs';
-import { lintDraft, draftStats } from './src/lint.mjs';
+import { lintDraft, lintOutline, draftStats } from './src/lint.mjs';
 import { verifyArticle } from './src/verify.mjs';
 import { toPasteText } from './src/paste.mjs';
 import { resolveDraft } from './src/drafts.mjs';
@@ -194,7 +194,9 @@ function cmdLint(opts) {
 
   for (const file of files) {
     const md = fs.readFileSync(file, 'utf8');
-    const findings = lintDraft(md).sort((a, b) => SEV_ORDER[a.severity] - SEV_ORDER[b.severity]);
+    const outlineFile = path.join(path.dirname(file), 'outline.yaml');
+    const extra = fs.existsSync(outlineFile) ? lintOutline(md, fs.readFileSync(outlineFile, 'utf8')) : [];
+    const findings = [...lintDraft(md), ...extra].sort((a, b) => SEV_ORDER[a.severity] - SEV_ORDER[b.severity]);
     for (const f of findings) total[f.severity]++;
     if (findings.length === 0) {
       if (files.length === 1) out(`lint ${path.basename(file)}: 指摘なし`);
@@ -213,7 +215,12 @@ function cmdLint(opts) {
 function cmdPaste(opts) {
   if (opts.rest.length !== 1) usage();
   const file = resolveDraft(opts.rest[0]);
-  const { text, images, eyecatch } = toPasteText(fs.readFileSync(file, 'utf8'));
+  const { text, images, eyecatch, pending } = toPasteText(fs.readFileSync(file, 'utf8'));
+  if (pending.length) {
+    out(`paste: 話者に聞くこと (<!-- 聞く -->) が ${pending.length} 件残っています。答えを入れてから貼ってください`);
+    for (const p of pending) out(`  - ${p}`);
+    return false;
+  }
 
   if (opts.stdout) {
     process.stdout.write(text);

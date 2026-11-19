@@ -1,0 +1,506 @@
+threads:
+  - id: t001
+    scene: result-2015
+    state: 1
+    by: 聴衆役
+    name: 佐藤さん・田中さん
+    kind: word
+    text: "「ひまわり」が話者のソフトの名前だと、この場面で初めて分かった。自己紹介で名前を聞いていれば迷わなかった"
+    replies:
+      - by: Claude
+        thinking: 2 人とも同じ所で迷った。5 章の主役なので、先に名前を渡す
+        change: "profile の趣味の欄と話すことに「ひまわり」を足した"
+    ball: none
+    closed: 直した
+  - id: t002
+    scene: result-2015
+    state: 1
+    by: 聴衆役
+    name: 佐藤さん・田中さん
+    kind: word
+    text: "「一次予選」と、場面 5 の「予選は 2 日」の関係が分からない"
+    replies:
+      - by: Claude
+        thinking: 大会の仕組みを話す championship で、予選の 2 日の中身を言えば足りる
+        change: "championship の状態 2 の話すことに「1 日目の一次予選を抜けると 2 日目の二次予選」を足した"
+    ball: none
+    closed: 直した
+  - id: t003
+    scene: result-2015
+    state: 4
+    by: 聴衆役
+    name: 佐藤さん・田中さん
+    kind: word
+    text: "「8+」の意味が分からない。推測はできるが確かではない"
+    replies:
+      - by: Claude
+        thinking: 画面が指す印を、話すことで読み方ごと言う
+        change: "「4 回戦の欄の「8+」が 8 位の YSS に勝ったという印です」を足した"
+    ball: none
+    closed: 直した
+  - id: t004
+    scene: party
+    state: 1
+    by: 聴衆役
+    name: 佐藤さん・田中さん
+    kind: word
+    text: "きのあ将棋の山田元気さんがどんな人か分からず、言葉の重みが測れない"
+    replies:
+      - by: Claude
+        thinking: 材料に「山田さんもベテラン」とある。立場を 1 語で添える
+        change: "「きのあ将棋を作っているベテランの開発者」と添えた"
+    ball: none
+    closed: 直した
+  - id: t005
+    scene: keep-up
+    state: 1
+    by: 聴衆役
+    name: 佐藤さん・田中さん
+    kind: jump
+    text: "場面 10 の「新しい技術に追いつく」が、すぐ次で「すごさの 3 つ目」として繰り返され、新しい話か確認か迷う"
+    replies:
+      - by: Claude
+        thinking: 繰り返しは意図したつなぎなので、つなぎだと分かる言い方にする
+        change: "「いま挙げた 3 つのうち 山下さんがいちばんすごいのは 1 つ目」と受けてから話すようにした"
+    ball: none
+    closed: 直した
+  - id: t006
+    scene: result-2015
+    state: 1
+    by: 聴衆役
+    name: 佐藤さん・田中さん
+    kind: jump
+    text: "山下さんの話から急に 2015 年の話者の話になる。場面 8 の予告から時間が空いて忘れかけていた"
+    replies:
+      - by: Claude
+        thinking: 予告の回収だと分かるひと言を入口に置く
+        change: "「YSS の連続の最後の年 2015 年の話をします。ひまわりが YSS と一度だけ並んだ年です」で入るようにした"
+    ball: none
+    closed: 直した
+  - id: t007
+    scene: streak
+    state: 3
+    by: 聴衆役
+    name: 佐藤さん
+    kind: unconvinced
+    text: "2015 年に YSS は決勝に進んでいるのに、なぜ 2015 年が連続の最後の年なのかが説明されない"
+    replies:
+      - by: Claude
+        thinking: Wikipedia の表に、2016 年は二次予選 10 位で決勝を逃したとある。素材の外の事実なので extract.md に出どころを書いた
+        change: "「翌年の 2016 年に連続が途切れたので 最後の年は 2015 年です」に直した"
+    ball: none
+    closed: 直した
+  - id: t008
+    scene: closing
+    state: 1
+    by: 聴衆役
+    name: 佐藤さん
+    kind: jump
+    text: "締めで初めて「今年また開発を始めた」が出てきて唐突"
+    replies:
+      - by: Claude
+        thinking: 自己紹介で先に出しておけば、締めは回収になる
+        change: "profile の趣味と話すことに「今年 7 年ぶりに開発を再開」を足し、締めは「最初に話したとおり」で受けた"
+    ball: none
+    closed: 直した
+  - id: t009
+    scene: fun
+    state: 1
+    by: 聴衆役
+    name: 佐藤さん・田中さん
+    kind: jump
+    text: "「いつも楽しそう」が、20 年続けられたことと関係あるのかが語られない。なぜ様子を知っているのかも欲しい"
+    replies:
+      - by: Claude
+        thinking: 楽しいから続いた、という因果は話者が言っていないので足さない。話者の「理由は聞いた気がするけど覚えていない」をそのまま言い、会場で会っていることを添えた
+        change: "「大会の会場で会う山下さんは」で始め、「20 年続けられた理由は 聞いた気がするのですが 覚えていません。ただ とにかくいつも楽しそうです」にした"
+    ball: none
+    closed: 直した
+  - id: t010
+    scene: keep-up
+    state: 2
+    by: 聴衆役
+    name: 佐藤さん・田中さん
+    kind: word
+    text: "AobaZero が何で、「形を変えて」が何を変えたのかが分からない"
+    replies:
+      - by: Claude
+        thinking: 素材に AobaZero の中身が無い。推測で書かず話者に聞く
+        change: "絵コンテの冒頭に聞くこととして書いた"
+    ball: 話者
+  - id: t011
+    scene: keep-up
+    state: 1
+    by: 聴衆役
+    name: 田中さん
+    kind: unconvinced
+    text: "「新しい技術」が具体的にどんな技術か分からない"
+    replies:
+      - by: Claude
+        thinking: 本題の章なのに実物が無い。追いついた技術の例を話者に聞く
+        change: "絵コンテの冒頭に聞くこととして書いた"
+    ball: 話者
+  - id: t012
+    scene: result-2015
+    by: 聴衆役
+    name: 佐藤さん・田中さん
+    kind: unreadable
+    text: "5 つの状態で表を読み解くのは重い。3 秒では表を追えない。「直接勝った」と「0.5 差」の 2 点で足りる"
+    replies:
+      - by: Claude
+        thinking: 持ち時間に合わせて削るのは次の段 (削る段) で行う。いまは完全版なので残す。2 人とも 1 週間後に覚えている場面にここを挙げたので、削るときも実物の表は残す
+    ball: none
+    closed: そのままにした
+  - id: t013
+    scene: first-pc
+    by: 聴衆役
+    name: 佐藤さん
+    kind: unconvinced
+    text: "きっかけの話が 4 状態あり、主役の山下さんが出るまでが長い"
+    replies:
+      - by: Claude
+        thinking: 削る段で扱う。完全版では残す
+    ball: none
+    closed: そのままにした
+  - id: t014
+    scene: "*"
+    by: 聴衆役
+    name: 田中さん
+    kind: unconvinced
+    text: "場面 9〜11 は「続くのは難しい」を言い方を変えて 3 回聞いた感じがする。全体が 5 分に収まらない量に感じる"
+    replies:
+      - by: Claude
+        thinking: 完全版はいまの話す字数で 8 分ほどあり、5 分に削るのは次の段で行う。five-years と why-hard のどちらを残すかもそこで決める
+    ball: none
+    closed: そのままにした
+  - id: t015
+    scene: "*"
+    by: 聴衆役
+    name: 佐藤さん・田中さん
+    kind: unconvinced
+    text: "山下さんが「どうやって」続けたのかが分からず、持ち帰って試せるヒントが無い"
+    replies:
+      - by: Claude
+        thinking: 話者も理由を覚えていないと話していて、素材に無い。作ると話者の言葉でなくなる。話者は「メッセージは最後に 1 行」と決めているので、ヒントを渡す章も足さない
+    ball: none
+    closed: そのままにした
+  - id: t016
+    scene: result-2015
+    by: 聴衆役
+    name: 佐藤さん・田中さん
+    kind: good
+    text: "1 週間後に覚えているのは、直接勝ったのに 0.5 差で 9 位になった場面。場面 14 の「もう 1 年やるのか」とつながって効く"
+    replies:
+      - by: Claude
+        thinking: 絵コンテで覚えて帰る瞬間に指名したのは streak (20 の灯) だった。2 人とも result-2015 を挙げた
+    ball: none
+    closed: 良かった点
+  # ここから 2 回目の読み (選手権を軸にした構成に書き直した版)
+  - id: t017
+    scene: theme
+    state: 4
+    by: 聴衆役
+    name: 佐藤さん
+    kind: word
+    text: "札の「YSS」が、この時点では何なのか分からない"
+    replies:
+      - by: Claude
+        thinking: 話すことでは「YSS という将棋ソフト」と言っているが、画面の札だけでは分からない
+        change: "札を「YSS (将棋ソフト)」にした"
+    ball: none
+    closed: 直した
+  - id: t018
+    scene: championship
+    state: 1
+    by: 聴衆役
+    name: 佐藤さん
+    kind: unreadable
+    text: "画面の点が何を表すか分からない"
+    replies:
+      - by: Claude
+        thinking: 点の上にラベルを置けば足りる。出場数は素材に無いので数は書かない
+        change: "点の上に小さく「出場する将棋ソフト」を置いた"
+    ball: none
+    closed: 直した
+  - id: t019
+    scene: closing
+    state: 1
+    by: 聴衆役
+    name: 佐藤さん
+    kind: unconvinced
+    text: "場面 9 で「1 年届かせるのも精一杯」と言ったのに、締めで「走ることは難しくない」と言うのはぶつかって聞こえる"
+    replies:
+      - by: Claude
+        thinking: 話者の言う「走る」は、1 年全力で走ることを指している (材料の「1 年は本当にすごい頑張った」)。それを締めの前に一言で言えば食い違わない
+        change: "締めを「1 年なら 私も全力で走れました。走ることは 難しくありません」で始めた"
+    ball: none
+    closed: 直した
+  - id: t020
+    scene: result-2015
+    state: 3
+    by: 聴衆役
+    name: 田中さん
+    kind: word
+    text: "表の「Pt」が最後まで分からなかった"
+    replies:
+      - by: Claude
+        thinking: 2 行を強調するときに、列の読み方を一言添える
+        change: "「Pt の列が勝ち点で どちらも 5 勝です」にした"
+    ball: none
+    closed: 直した
+  - id: t021
+    scene: strong
+    state: 1
+    by: 聴衆役
+    name: 田中さん
+    kind: jump
+    text: "自分の挫折の話から、急に YSS の戦績に移る。橋渡しの一言が欲しい"
+    replies:
+      - by: Claude
+        thinking: championship の予告 (8 枠に 20 年) を、ここで問いとして受け直す
+        change: "「では この 8 枠に 20 年残り続けたのは どんなソフトなのか」で入るようにした。streak の冒頭の同じ予告の回収は消した"
+    ball: none
+    closed: 直した
+  - id: t022
+    scene: "*"
+    by: 聴衆役
+    name: 佐藤さん・田中さん
+    kind: unconvinced
+    text: "どうすれば続けられるのかの手がかりが「楽しそう」しかない。聞き手に何を持ち帰ってほしいかが語られずに終わる"
+    replies:
+      - by: Claude
+        thinking: 1 回目の読みと同じ指摘。話者は理由を覚えていないと話していて、メッセージは最後に 1 行と決めている。素材に無い秘訣や勧めは足さない
+    ball: none
+    closed: そのままにした
+  - id: t023
+    scene: "*"
+    by: 聴衆役
+    name: 佐藤さん
+    kind: unconvinced
+    text: "「仕事と別の技術の世界を覗きたい」には半分しか応えていない。将棋ソフトの作り方 (エンジニアリングの中身) がほとんど出てこない"
+    replies:
+      - by: Claude
+        thinking: テーマが「× エンジニアリング」なので大事な指摘。ただ素材に技術の中身が無い。聞いている「山下さんが追いついた技術の入れ替わりの例」の答えが入れば、keep-up のシーンで中身が 1 つ出る。それまで足さない
+    ball: none
+    closed: そのままにした
+  - id: t024
+    scene: "*"
+    by: 聴衆役
+    name: 佐藤さん・田中さん
+    kind: unconvinced
+    text: "9-2 は 9-1 の言い直し、11-3 は 1 年と 20 年の並べ直し、12〜13 は 11 の言い直しに聞こえる。5 分に 16 場面は詰め込み"
+    replies:
+      - by: Claude
+        thinking: 持ち時間に合わせて削る次の段で扱う。11-3 は伝えたいことがいちばん直に見える状態なので残す。9-2 と 12〜13 は削る候補
+    ball: none
+    closed: そのままにした
+  - id: t025
+    scene: result-2015
+    state: 2
+    by: 聴衆役
+    name: 田中さん
+    kind: unreadable
+    text: "結果表の写真は 3 秒では読めず、表を見せている間は置いていかれた"
+    replies:
+      - by: Claude
+        thinking: 全体を見せる状態は「表がある」ことを見せるだけなので、実装で短くするか、削る段で次の状態とまとめる
+    ball: none
+    closed: そのままにした
+  - id: t026
+    scene: title
+    by: 聴衆役
+    name: 田中さん
+    kind: word
+    text: "「焚き火を愛するエンジニア」が本題につながらない"
+    replies:
+      - by: Claude
+        thinking: 個人の登壇では表紙にキャッチコピーを置く決まり (BRAND.md 6.5) なので残す。本題とつなげる必要はない
+    ball: none
+    closed: そのままにした
+  - id: t027
+    scene: keep-up
+    by: 聴衆役
+    name: 田中さん
+    kind: jump
+    text: "3 つの条件のうち、詳しく話したのは 1 つ目だけ。残りの 2 つ (開発を続ける・やる気を保つ) はどうだったのか"
+    replies:
+      - by: Claude
+        thinking: やる気と「楽しそう」をつなぐのは、話者が言っていない因果になる。素材に無いので足さない
+    ball: none
+    closed: そのままにした
+  - id: t028
+    scene: result-2015
+    by: 聴衆役
+    name: 佐藤さん・田中さん
+    kind: good
+    text: "1 週間後に覚えているのは、同じ 5 勝で直接勝ったのに 0.5 差で決勝を逃した場面。田中さんは、子どものころ衝撃を受けた AI 将棋 (= YSS) と 0.5 差を争ったつながりを挙げた"
+    replies:
+      - by: Claude
+        thinking: 2 回とも result-2015 が残った。原点の章で AI 将棋 = YSS と渡した効果が、田中さんの答えに出ている
+    ball: none
+    closed: 良かった点
+  # ここから 5 分に削った版への検査 (素材照合は check.md に件数をまとめた。下は聴衆役の指摘)
+  - id: t029
+    scene: one-year
+    state: 1
+    by: 聴衆役
+    name: 佐藤さん
+    kind: jump
+    text: "「来年決勝に残るかが全て」の「その先」が何か語られず、急に重い話になった"
+    replies:
+      - by: Claude
+        thinking: 話者の言葉「活躍する人としない人の分水嶺」で中身を言う
+        change: "「来年も決勝に残れるかどうかで コンピュータ将棋で活躍し続ける人かどうかが分かれる」にした"
+    ball: none
+    closed: 直した
+  - id: t030
+    scene: theme
+    state: 1
+    by: 聴衆役
+    name: 佐藤さん
+    kind: unconvinced
+    text: "今日は話さない好きなこと (焚き火・個人開発) の紹介が、5 分では回り道"
+    replies:
+      - by: Claude
+        thinking: 札は「私の答え」を唯一解に見せないために要るので残す。話すことだけを 1 文に縮めた
+        change: "「私の好きなことはいくつかあります」だけにした"
+    ball: none
+    closed: 直した
+  - id: t031
+    scene: closing
+    state: 2
+    by: 聴衆役
+    name: 佐藤さん
+    kind: unconvinced
+    text: "締めの「本当にそう思っているかは 自信がない」で勢いが抜け、締めが長い"
+    replies:
+      - by: Claude
+        thinking: 話者の留保だが、締めの勢いを落としている。足すのではなく削る直しなので、その 1 文を外した。戻したければ話者が戻せる
+        change: "「本当にそう思っているかは ちょっと自信がありません」を外した"
+    ball: none
+    closed: 直した
+  - id: t032
+    scene: still-running
+    by: 聴衆役
+    name: 佐藤さん
+    kind: unconvinced
+    text: "YSS と山下さんへの称賛 (すさまじい・想像もつかない・強い) が続き、同じことの繰り返しに感じる"
+    replies:
+      - by: Claude
+        thinking: 3 つとも話者の言葉だが、1 つ減らしても伝わる
+        change: "still-running の「強いです」を外した"
+    ball: none
+    closed: 直した
+  - id: t033
+    scene: result-2015
+    state: 1
+    by: 聴衆役
+    name: 佐藤さん
+    kind: word
+    text: "表の「Pt」が最後まで分からない"
+    replies:
+      - by: Claude
+        thinking: 削ったときに落ちていた。戻す
+        change: "「Pt の列が勝ち点で どちらも 5 勝です」に戻した"
+    ball: none
+    closed: 直した
+  - id: t034
+    scene: streak
+    state: 3
+    by: 聴衆役
+    name: 佐藤さん
+    kind: word
+    text: "「芝浦将棋」が初耳で混乱した。話者が決勝に残った 1 年がいつなのかも分からない"
+    replies:
+      - by: Claude
+        thinking: 芝浦将棋の年と、話者との関わりは素材に無い。話者に聞く
+        change: "絵コンテの冒頭に聞くこととして書いた"
+    ball: 話者
+  - id: t035
+    scene: "*"
+    by: 聴衆役
+    name: 佐藤さん
+    kind: unconvinced
+    text: "題は「× エンジニアリング」なのに、将棋ソフトの中身や技術の話がほぼ無い。AobaZero と「新しい技術」の中身も分からない"
+    replies:
+      - by: Claude
+        thinking: 3 回の読みで毎回出ている。素材に技術の中身が無いので、山下さんが追いついた技術の入れ替わりの例を話者に聞いている。答えが入れば still-running に 1 つ出る
+    ball: 話者
+  - id: t036
+    scene: "*"
+    by: 聴衆役
+    name: 佐藤さん
+    kind: unconvinced
+    text: "13 場面は 5 分に詰め込みすぎに感じる。結果表は 3 秒では 2 行以外入ってこない"
+    replies:
+      - by: Claude
+        thinking: 話す字数からの見積もりは 4.4 分で、持ち時間に収まる。場面の数は区切り 2 つを含めた数で、区切りは 3〜5 秒。結果表は 2 行だけ読めれば足りる作りにしてある
+    ball: none
+    closed: そのままにした
+  # ここから、話者の指摘 (区切り・私と YSS の結びつけ・AobaZero を外す) で組み直した版への聴衆役の読み
+  - id: t038
+    scene: streak
+    state: 1
+    by: 聴衆役
+    name: 田中さん
+    kind: jump
+    text: "「しかも」で、燃え尽きた話から技術の歴史に急に変わる。なぜ技術史を聞いているのか、8-4 まで分からなかった"
+    replies:
+      - by: Claude
+        thinking: 8 枠に残り続ける難しさの、もう 1 つの理由として入る、と先に言う
+        change: "「8 枠に残り続けるのが難しいのは やる気だけの問題ではありません。8 枠を争う戦い方そのものが 何度も変わってきました」で入るようにした"
+    ball: none
+    closed: 直した
+  - id: t039
+    scene: streak
+    state: 1
+    by: 聴衆役
+    name: 田中さん
+    kind: unreadable
+    text: "評価関数・ボナンザメソッド・選択的な探索・全幅探索・Apery・やねうら王と用語が続き、いちばん長く感じた"
+    replies:
+      - by: Claude
+        thinking: AobaZero と同じく、名前は認知負荷を上げる。中身は残し、名前と専門語を言い換える
+        change: "「手を絞って読む探索を 全部の手を読む探索に変えました」に言い換え、ボナンザメソッド・Apery・やねうら王の名前を外した"
+    ball: none
+    closed: 直した
+  - id: t040
+    scene: yamashita
+    by: 聴衆役
+    name: 田中さん
+    kind: unconvinced
+    text: "「新しい技術に追いつき続けて」の具体がない。ボナンザやオープンソースのどれにどう追いついたのか、1 つでも例が欲しい"
+    replies:
+      - by: Claude
+        thinking: YSS がボナンザ以降に何を取り入れたかは素材に無い。話者に聞けば入る
+      - by: 話者
+        thinking: "多分何でも取り入れている。「コンピュータ将棋の進歩 2」の記事を基本に、流行りの技術やいいと言われたものは全部実装していく印象。とらわれず柔軟に常に新しいものを開発し続けている"
+      - by: Claude
+        thinking: 個別の技術名は話者も挙げていないので、話者の印象をそのまま話者の言葉として言う
+        change: "yamashita の話すことを「流行りの技術や いいと言われたものを とらわれずに全部取り入れていく人だと感じています」にした。写真で保木さん (ボナンザ) と並ぶので、ボナンザの印ともつながる"
+    ball: none
+    closed: 直した
+  - id: t041
+    scene: closing
+    state: 2
+    by: 聴衆役
+    name: 田中さん
+    kind: jump
+    text: "惰性になってから今年再開するまでの 7 年が空白のまま「また走り始めました」に飛ぶ"
+    replies:
+      - by: Claude
+        thinking: 再開の理由は伝えたいことの外。5 分では足さない
+    ball: none
+    closed: そのままにした
+  - id: t037
+    scene: still-running
+    state: 2
+    by: 聴衆役
+    name: 佐藤さん
+    kind: unconvinced
+    text: "続けられた理由のヒントが無いまま「楽しそう」に移る。楽しさが答えなのか分からない"
+    replies:
+      - by: Claude
+        thinking: 3 回の読みで出ている。話者は理由を覚えていないと話していて、楽しさと続けられたことをつなぐのは話者が言っていない因果になる。足さない
+    ball: none
+    closed: そのままにした

@@ -92,6 +92,8 @@ export type Work = {
   note?: { slug: string; key?: string; url?: string; revises?: string }
   /** 発表のトークの名前 (talk.tsx の slug) とフォルダ */
   talk?: { slug?: string; dir?: string }
+  /** 同じ材料から始めた、もう一方の作品 (記事なら発表、発表なら記事) の id */
+  from?: string
   /** ステップごとの Claude のセッション。サーバだけが書く */
   sessions?: Partial<Record<Step | 'shipped', string>>
   /** 社内でも公開でも、発表した記録 */

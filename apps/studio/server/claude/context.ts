@@ -13,7 +13,7 @@ import { noteDir, talkDirOf } from '../store/places.ts'
 const MATERIAL_LIMIT = 60_000
 
 /** file は crafting-presentation の steps/ の中のファイル名。段ごとに、その段の手順だけを読ませる (1 つの段で読む規則が多いほど、出てくるものが規則の挿絵になる) */
-type Phase = { skill: string; file?: string; todo: string }
+type Phase = { skill: string; dir?: 'writing-note' | 'crafting-presentation'; file?: string; then?: string; todo: string }
 
 /** ステップごとに、どのスキルのどこを使い、何を書いてほしいか */
 function phaseOf(work: Work, step: Step | 'shipped'): Phase {
@@ -22,25 +22,34 @@ function phaseOf(work: Work, step: Step | 'shipped'): Phase {
   if (work.kind === 'note') {
     switch (step) {
       case 'core':
-        return { skill: 'writing-note の Phase 0〜2', todo: `材料と過去の記事 (articles/note/) を読み、proposals.yaml に読者 (reader)・持ち帰り (takeaway)・伝えたいことの候補 3 つ (core) を書く。記事の原料になる話者の言葉が足りないとき (出来事の間の理由、いちばん意外だったこと、芯の中の抽象語の中身) は、問いを 3 つまで返事に番号付きで書き、ask に「問いに答えてください」と書く。話者が貼った画像は ${note}/assets/ に写してある` }
+        return { skill: 'writing-note の伝えたいこと (Phase 0〜2)', dir: 'writing-note', file: 'core', todo: `材料と過去の記事 (articles/note/) を読み、proposals.yaml に読者 (reader)・持ち帰り (takeaway)・伝えたいことの候補 3 つ (core) を書く。記事の原料になる話者の言葉が足りないとき (出来事の間の理由、いちばん意外だったこと、芯の中の抽象語の中身) は、問いを 3 つまで返事に番号付きで書き、ask に「問いに答えてください」と書く。話者が貼った画像は ${note}/assets/ に写してある` }
       case 'outline':
         return {
-          skill: 'writing-note の Phase 3',
+          skill: 'writing-note の構成 (Phase 3)',
+          dir: 'writing-note',
+          file: 'outline',
           todo: `フックの案 2〜3 を proposals.yaml の hook に、骨組みを ${note}/outline.yaml に書く (sections: [{title, point, grain: 密|粗, budget}]。先頭は「冒頭」)。厚く書く所の材料を返事で聞く。話者の答えで伝えたいことがずれたら proposals.yaml の coreRevision に案を書く`,
         }
       case 'draft':
         return {
-          skill: 'writing-note の Phase 4〜6',
-          todo: `${note}/index.md に原稿を書き (話者の言葉を書き言葉に直して並べる。素材に無い描写・数字・気持ちは作らない)、出どころの無い文と重複から削り、node tools/notes/cli.mjs lint ${work.note?.slug} を通す。返事に見出しごとの字数を書く。outline.yaml は確定済みで書けない。変えたいときは proposals.yaml の outlineRevision に案を書く。${note}/feedback.yaml の ball: Claude の感想は 1 件ずつ判断し、返事に「直した n 件・見送った n 件」と見送った理由を書く`,
+          skill: 'writing-note の書く段と確かめて直す段 (Phase 4〜6)',
+          dir: 'writing-note',
+          file: 'draft',
+          then: 'check',
+          todo: `${note}/index.md に原稿を書き切ってから、確かめて直す。outline.yaml は確定済みで書けない。変えたいときは proposals.yaml の outlineRevision に案を書く。${note}/feedback.yaml の ball: Claude の感想は 1 件ずつ判断し、返事に「直した n 件・見送った n 件」と見送った理由を書く。原稿がもうあり、話者が直しを頼んでいるときは、書く段を飛ばして確かめて直す段から入る`,
         }
       case 'publish':
         return {
-          skill: 'writing-note の Phase 7',
+          skill: 'writing-note の出す段 (Phase 7)',
+          dir: 'writing-note',
+          file: 'publish',
           todo: `proposals.yaml にタイトル 3 案 (title)、タグ 2〜5 個 (tags)、置き場の名前の案 3 つ (slug。英小文字とハイフン。notes/ にある名前は避ける)、見出し画像のモチーフ 3 案 (motif) を書く。モチーフが決まったと伝えられたら、references/eyecatch.md に沿って ${shownDir(join(PRIVATE, 'eyecatch'))}/<公開日>-<名前>/ に下地を作る`,
         }
       default:
         return {
           skill: 'writing-note の振り返り',
+          dir: 'writing-note',
+          file: 'retro',
           todo: `公開版 (articles/note/ のこの記事) と原稿 (${shownDir(join(workDir(work.id), 'made'))}) の差を読み、話者が公開前に直した点から学びの案を proposals.yaml の learnings に書く ([{text, file: voice.md, note}])。voice.md は書けない。話者が採ったものだけを studio が足す`,
         }
     }
@@ -49,14 +58,16 @@ function phaseOf(work: Work, step: Step | 'shipped'): Phase {
     case 'core':
       return {
         skill: 'crafting-presentation の伝えること (Phase 0〜2)',
+        dir: 'crafting-presentation',
         file: 'core',
         todo: '材料から場・日付・持ち時間を拾って proposals.yaml の event ({name, url, date, minutes, venue}) に、公開か社内かを scope (public / internal) に、聴衆 1〜2 人を audience ([{name, who, why, trouble, solve}]) に、中核メッセージの候補 3 つを core に書く。イベントページがあれば読む。話者にしか出せない実物 (画面・数字・失敗) とそれを選んだ理由、中核メッセージの中の抽象語の中身が素材に無いときは、問いを 3 つまで返事に番号付きで書き、ask に「問いに答えてください」と書く',
       }
     case 'outline':
-      return { skill: 'crafting-presentation の構成 (Phase 3)', file: 'outline', todo: 'メッセージマップを質の違う 2 案以上考え、推す 1 案を proposals.yaml の map ([{chapter, understand, weight}]) に書き、もう 1 案と選んだ理由を返事に書く。トークのフォルダの名前を YYYY_MM_DD_タグ_演題 の形で proposals.yaml の talkDir に書く' }
+      return { skill: 'crafting-presentation の構成 (Phase 3)', dir: 'crafting-presentation', file: 'outline', todo: 'メッセージマップを質の違う 2 案以上考え、推す 1 案を proposals.yaml の map ([{chapter, understand, weight}]) に書き、もう 1 案と選んだ理由を返事に書く。トークのフォルダの名前を YYYY_MM_DD_タグ_演題 の形で proposals.yaml の talkDir に書く' }
     case 'storyboard':
       return {
         skill: 'crafting-presentation の絵コンテ (Phase 4〜6)',
+        dir: 'crafting-presentation',
         file: 'storyboard',
         todo: `${talk ?? '(トークのフォルダ)'}/storyboard.md に完全版の絵コンテを書き、聴衆役のサブエージェントに読ませて直し、話者の直しを受けてから持ち時間に合わせて削る。状態の行には画面に出す言葉と実物だけを書き、配置・図の形・動きは書かない。縮小画像のために talk.tsx と scenes/ を置くときは、状態の行の言葉を無地に並べるだけの下書きにし、見た目を作らない。返事に「直した n 件・見送った n 件」と見送った理由を書く`,
       }
@@ -64,19 +75,28 @@ function phaseOf(work: Work, step: Step | 'shipped'): Phase {
       if (talk && hasLook(talk)) return lookedPhase(talk)
       return {
         skill: 'crafting-presentation のスライド (Phase 7)',
+        dir: 'crafting-presentation',
         file: 'slides',
         todo: `承認した絵コンテから画面を作る。構成と言葉は変えない。テーマが mosh なら MOSH のテンプレート (テーマの背景・色・書体・ロゴの枠) に厳密に従う。先に表紙・覚えて帰る瞬間・まとめの 3 か所を作って見せ、話者が良いと言ってから残りを作る。bun run check ${talk ?? '<発表のフォルダ>'} --motion で撮った静止画を自分の目で見て、かっこよくなるまで直す。他のトークのシーンと、このトークの scenes/ にある下書きは、見た目の参考にしない。返事に進み具合と、確かめていないことを書く`,
       }
     case 'present':
       if (talk && hasLook(talk)) return lookedPhase(talk)
-      return { skill: 'crafting-presentation の直し (Phase 8)', file: 'fix', todo: '指されたコマを直し、check を回す' }
+      return { skill: 'crafting-presentation の直し (Phase 8)', dir: 'crafting-presentation', file: 'fix', todo: '指されたコマを直し、check を回す' }
     default:
       return {
         skill: 'crafting-presentation の発表後',
+        dir: 'crafting-presentation',
         file: 'after',
         todo: `${work.decided.scope === 'public' ? 'ノートを公開物として読み直して直す (発表後の 1)。' : ''}指摘の往復と話者の直しから、話者の型として残すべき学びの案を proposals.yaml の learnings ([{text, file: style-defaults.md, note}]) に書く。style-defaults.md は書けない`,
       }
   }
+}
+
+/** 段のファイルを読ませる文。then があれば、前の段を終えてから次のファイルを開かせる (書く前に検査の規則を読ませない) */
+function stepText(p: Phase): string {
+  const at = (f: string) => `.claude/skills/${p.dir}/steps/${f}.md`
+  const then = p.then ? `書き終えてから、${at(p.then)} を開いて従う。` : ''
+  return `手順は ${at(p.file!)} にある。最初にこのファイルを Read で開いて従う。${then}Skill ツールで ${p.dir} を呼ばず、SKILL.md と、ほかの段のファイル (steps/) は開かない (いまの段の手順だけで足りる)。\n`
 }
 
 /**
@@ -97,6 +117,7 @@ function hasLook(talk: string): boolean {
 function lookedPhase(talk: string): Phase {
   return {
     skill: 'crafting-presentation の直し (Phase 8。見た目を守る)',
+    dir: 'crafting-presentation',
     file: 'fix',
     todo: [
       `話者はこのトークの見た目を認めている (${talk}/out/look/ が認めた静止画。steps/fix.md の「認めた見た目を守る」)。話者が指した所と、頼んだことだけを直す。`,
@@ -193,7 +214,7 @@ export function systemPrompt(work: Work, step: Step | 'shipped', fresh: boolean)
 ${where.join('\n')}
 
 ## このステップでしてほしいこと (${phase.skill})
-${phase.file ? `手順は .claude/skills/crafting-presentation/steps/${phase.file}.md にある。最初にこのファイルを Read で開いて従う。Skill ツールで crafting-presentation を呼ばず、SKILL.md とほかの段のファイル (steps/) も開かない (いまの段の手順だけで足りる)。\n` : ''}${phase.todo}
+${phase.dir && phase.file ? stepText(phase) : ''}${phase.todo}
 
 ## 確定した値 (話者が決めた。あなたは書けない。変えたいときは proposals.yaml に案を書く)
 ${decided}

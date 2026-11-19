@@ -27,7 +27,7 @@ mkdirSync(join(root, 'private', 'works'), { recursive: true })
 const { Studio, addNeta, listNeta, trashNeta, refuseAction, cleanLearning, lastHeadOf } = await import('../server/flow/service.ts')
 const { changedSince, saveStamps } = await import('../server/store/stamps.ts')
 const { claudeArgs } = await import('../server/claude/runner.ts')
-const { writableOf } = await import('../server/claude/context.ts')
+const { writableOf, readDenyOf } = await import('../server/claude/context.ts')
 const { turnOf, choresOf, askOf, ADVANCES } = await import('../server/flow/steps.ts')
 const { readWork, readChat, readProposals, appendRun, workFile, updateWork, writeProposals } = await import('../server/store/works.ts')
 const { migrate } = await import('../server/store/migrate.ts')
@@ -90,6 +90,31 @@ test('記事を始めると、話した文と画像が材料と会話に入り�
   const call = JSON.parse(readFileSync(log, 'utf8').trim().split('\n').at(-1)!)
   assert.equal(call.cwd, join(import.meta.dirname, '../../..'), 'リポジトリで起こす (スキルを読ませる)')
   assert.ok(call.args.join(' ').includes('音声入力を再開した話'), '材料を全文で渡す')
+})
+
+test('同じ材料から、もう一方の作品を始めると、材料の原文と確定した伝えたいことが写り、元の作品と結ばれる', async () => {
+  const src = studio.start('talk', '将棋の大会の話をしたい')
+  await idle(src)
+  updateWork(src, (w) => (w.decided.core = '走り続けることが難しい'))
+  const id = studio.derive(src)
+  await idle(id)
+  const w = readWork(id).work
+  assert.equal(w.kind, 'note')
+  assert.equal(w.from, src)
+  const m = readFileSync(join(PRIVATE, 'works', id, 'material.md'), 'utf8')
+  assert.ok(m.includes('将棋の大会の話をしたい'), '元の材料の原文を写す')
+  assert.ok(m.includes('走り続けることが難しい'), '確定した伝えたいことを写す')
+})
+
+test('スライドを作る段と直す段では、他のトークを読ませない。自分のトークと、ほかの段は拒まない', () => {
+  const talks = join(PRIVATE, 'talks')
+  mkdirSync(join(talks, '2026_01_01_a_自分'), { recursive: true })
+  mkdirSync(join(talks, '2026_01_02_b_他'), { recursive: true })
+  const w = { id: 'x', kind: 'talk', title: '', createdAt: '', updatedAt: '', step: 'slides', decided: { scope: 'internal' }, talk: { dir: '2026_01_01_a_自分' } } as any
+  const deny = readDenyOf(w, 'slides')
+  assert.ok(deny.some((d: string) => d.includes('2026_01_02_b_他')))
+  assert.ok(!deny.some((d: string) => d.includes('2026_01_01_a_自分')))
+  assert.deepEqual(readDenyOf(w, 'core'), [])
 })
 
 test('伝えたいことを決めないと構成へ進めない。進むと値を確定し、新しいセッションで次を頼む', async () => {

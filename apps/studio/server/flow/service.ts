@@ -1,7 +1,7 @@
 // 話者の操作と、画面に渡す形。状態 × イベントの表 (steps.ts) どおりに作品を動かす。
 // 外に出す操作 (取り込み・記録・push・デプロイ) は、話者が押したときだけここで行う
 import { execFile, execFileSync } from 'node:child_process'
-import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, statSync, writeFileSync } from 'node:fs'
+import { appendFileSync, copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, statSync, writeFileSync } from 'node:fs'
 import { basename, join } from 'node:path'
 import { promisify } from 'node:util'
 import YAML from 'yaml'
@@ -15,7 +15,7 @@ import { editNote, siteTalkOf, talkView } from '../media/talks.ts'
 import { listArchives } from '../store/archive.ts'
 import { reveal } from '../infra/reveal.ts'
 import { assetsDirOf, noteDir, talkDirOf } from '../store/places.ts'
-import { appendChat, appendMaterial, appendRun, readRuns, costOf, createWork, filesDir, isWork, listWorkIds, madeDir, readChat, readProposals, readQueue, readWork, updateWork, workDir, workFile, writeProposals } from '../store/works.ts'
+import { appendChat, appendMaterial, appendRun, readRuns, costOf, createWork, filesDir, isWork, listWorkIds, madeDir, materialFile, readMaterial, readChat, readProposals, readQueue, readWork, updateWork, workDir, workFile, writeProposals } from '../store/works.ts'
 import { Conductor, type Job, type Kept } from './conductor.ts'
 import { cleanLearning } from '../../shared/learning.ts'
 export { cleanLearning }
@@ -211,6 +211,30 @@ export class Studio {
       markNeta(seed, work.id)
     }
     this.say(work.id, { text, files, mode: 'after' })
+    this.notify('home')
+    return work.id
+  }
+
+  /**
+   * 同じ材料から、もう一方の作品 (発表なら記事、記事なら発表) を始める。
+   * 話者の言葉は 1 つのネタから記事にも発表にもなる。材料の原文と、確定した伝えたいこと・発表なら絵コンテの話すことを、新しい作品の材料に写す
+   */
+  derive(id: string): string {
+    const { work: src } = readWork(id)
+    if (src.dropped) throw invalid('やめた作品からは始められません')
+    const kind: Kind = src.kind === 'talk' ? 'note' : 'talk'
+    const work = createWork(kind)
+    if (kind === 'note') ensureDraft(work.note!.slug, '')
+    updateWork(work.id, (w) => (w.from = src.id))
+    const what = src.kind === 'talk' ? '発表' : '記事'
+    const parts = [`## ${what}「${src.title || src.id}」の材料 (原文)\n\n${readMaterial(src.id).replace(/^# 材料\n\n[^\n]*\n/, '').trim()}`]
+    if (src.decided.core) parts.push(`## ${what}で確定した伝えたいこと\n\n${src.decided.core}`)
+    const talk = src.kind === 'talk' ? talkDirOf(src) : null
+    const board = talk ? join(talk, 'storyboard.md') : null
+    if (board && existsSync(board)) parts.push(`## 発表の絵コンテ (話すことは話者と合意した言葉)\n\n${readFileSync(board, 'utf8').trim()}`)
+    appendFileSync(materialFile(work.id), '\n' + parts.join('\n\n') + '\n')
+    const text = kind === 'note' ? `発表「${src.title || src.id}」と同じ材料から、記事を書きたい。発表で話したことを、記事として読める形にしたい。` : `記事「${src.title || src.id}」と同じ材料から、発表を作りたい。`
+    this.say(work.id, { text, mode: 'after' })
     this.notify('home')
     return work.id
   }

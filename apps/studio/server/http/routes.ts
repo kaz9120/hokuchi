@@ -39,6 +39,7 @@ export function routes(studio: Studio, sessions: Sessions) {
     return { id: studio.start(b.kind === 'talk' ? 'talk' : 'note', b.text ?? '', b.files ?? [], b.seed) }
   })
   r.get('/api/works/:id', ({ params }) => studio.view(need(params.id)))
+  r.post('/api/works/:id/derive', ({ params }) => ({ id: studio.derive(params.id) }))
   r.post('/api/works/:id/say', async ({ params, body }) => {
     const b = await body()
     studio.say(need(params.id), { text: String(b.text ?? ''), files: b.files ?? [], anchors: b.anchors ?? [], mode: b.mode === 'interrupt' ? 'interrupt' : 'after' })

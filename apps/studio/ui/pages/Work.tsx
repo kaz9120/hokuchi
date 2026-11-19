@@ -144,6 +144,9 @@ function WorkMenu({ ctx }: { ctx: WorkCtx }) {
             </MenuItem>
           )}
           {w.kind === 'talk' && talkReady(view) && <MenuItem disabled={ctx.locked} onClick={() => void ctx.press('export')}>1 つの HTML と PDF に書き出す</MenuItem>}
+          {!w.dropped && w.decided.core && (
+            <MenuItem onClick={() => void api.derive(w.id).then(({ id }) => navigate(`/works/${id}`))}>{w.kind === 'talk' ? '同じ材料で記事も書く' : '同じ材料で発表も作る'}</MenuItem>
+          )}
           {view.revising && <MenuItem onClick={() => void ctx.press('cancel-revise')}>改稿をやめる</MenuItem>}
           {w.note?.url && (
             <MenuItem onClick={() => window.open(w.note!.url, '_blank')}>note で開く</MenuItem>

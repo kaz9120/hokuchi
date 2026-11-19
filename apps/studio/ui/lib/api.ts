@@ -21,6 +21,7 @@ export const api = {
   work: (id: string) => call<WorkView>('GET', `/api/works/${id}`),
   say: (id: string, body: { text: string; files?: Attachment[]; anchors?: Anchor[]; mode?: 'after' | 'interrupt' }) => call<WorkView>('POST', `/api/works/${id}/say`, body),
   stop: (id: string) => call('POST', `/api/works/${id}/stop`),
+  derive: (id: string) => call<{ id: string }>('POST', `/api/works/${id}/derive`, {}),
   press: (id: string, action: string, payload: unknown = {}) => call<WorkView>('POST', `/api/works/${id}/press/${action}`, payload),
   paragraph: (id: string, n: number, text: string, base: string) => call<WorkView>('PUT', `/api/works/${id}/paragraphs/${n}`, { text, base }),
   outline: (id: string, sections: Section[], base: string) => call<WorkView>('PUT', `/api/works/${id}/outline`, { sections, base }),

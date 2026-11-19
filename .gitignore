@@ -1,3 +1,4 @@
 talks/*/out/
 .DS_Store
 node_modules/
+.yomiyasu/

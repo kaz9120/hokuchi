@@ -31,6 +31,21 @@ export type Attachment = { name: string; data: string }
 /** 作品ごとの変化を画面に知らせる。home は一覧の更新 */
 export type Notify = (id: string | 'home') => void
 
+/**
+ * 絵コンテの頭に「見た目: 話者が認めた (日付)」を書く。Claude への指示を「見た目を守って直す」に切り替える印で、
+ * out/look/ (作業出力で消えうる) が無くても切り替わるよう、絵コンテに残す
+ */
+function markLook(talkDir: string) {
+  const file = join(talkDir, 'storyboard.md')
+  if (!existsSync(file)) return
+  const md = readFileSync(file, 'utf8')
+  const line = `見た目: 話者が認めた (${new Date().toLocaleDateString('sv-SE')})。直すのは話者が指した所と頼んだことだけ。認めた静止画は out/look/`
+  if (/^見た目[:：].*$/m.test(md)) return writeFileSync(file, md.replace(/^見た目[:：].*$/m, line))
+  // 最初の章 (## ) の前、トーク全体の情報の終わりに足す
+  const at = md.search(/^## /m)
+  writeFileSync(file, at < 0 ? `${md.trimEnd()}\n${line}\n` : `${md.slice(0, at).trimEnd()}\n${line}\n\n${md.slice(at)}`)
+}
+
 export class Studio {
   conductor: Conductor
   /** 取り込み・デプロイなど、サーバの中の作業 */
@@ -531,6 +546,16 @@ export class Studio {
           reveal(join(dir, 'out'))
         })
       }
+      case 'accept-look': {
+        const dir = talkDirOf(work)
+        if (!dir) throw invalid('発表のフォルダがありません')
+        // 話者が気に入った見た目を、以後の直しで崩さないための基準にする。Claude には許していない操作
+        return this.serverJob(id, 'いまの見た目を撮っています', async () => {
+          await run('node', ['packages/stage/cli.mjs', 'look', dir], { cwd: repoRoot, maxBuffer: 20 << 20, timeout: 15 * 60_000 })
+          markLook(dir)
+          appendChat(id, { role: 'system', text: 'いまの見た目を認めました。以後の直しでは、ここから変わった状態を Claude が返事で知らせます', tone: 'step' })
+        })
+      }
       case 'link-archive': {
         const dir = String(payload.dir ?? '')
         if (!work.linkCandidates?.includes(dir)) throw invalid('その記事は候補にありません')
@@ -846,6 +871,7 @@ export function refuseAction(w: Work, action: string, busy: boolean, p: Proposal
     'set-scope': () => talk && !(w.shipped?.by === 'site'),
     deploy: () => talk && w.decided.scope === 'public' && w.step === 'present' && !!w.presented && (!w.shipped || !!w.reworking),
     'allow-parts': () => talk && !shipped,
+    'accept-look': () => talk && !shipped && (w.step === 'slides' || w.step === 'present'),
     'set-readers': () => !shipped,
     read: () => !shipped,
     reopen: () => !shipped,

@@ -12,7 +12,8 @@ export type SceneDef = {
   title?: string
 }
 
-export type FrameProps = { talk: TalkDef; scene: SceneDef; index: number }
+/** step はシーンの中の状態、at はトーク全体での通しの状態 (0 始まり)、total は全状態の数 */
+export type FrameProps = { talk: TalkDef; scene: SceneDef; index: number; step: number; at: number; total: number }
 
 export type Theme = {
   name: string
@@ -43,6 +44,16 @@ export type TalkDef = {
   public?: boolean
   theme: Theme
   scenes: SceneDef[]
+  /**
+   * トーク全体を通して残る層。背景や、シーンをまたいで育つ物 (8 枠の列が 20 年の並びになる、など) を置く。
+   * シーンの下に 1 つだけ描かれ、シーンが変わっても組み立て直されない。いまの位置は useWorld() で読む
+   */
+  world?: ComponentType
+  /**
+   * シーンの切り替え方。pan (既定) はカメラが横に動き、fade はその場で入れ替わる。
+   * world でシーンをまたぐ物を見せるトークは fade にする (パンすると、残る物とシーンの中身がずれて見える)
+   */
+  cut?: 'pan' | 'fade'
 }
 
 export const defineTalk = (talk: TalkDef) => talk

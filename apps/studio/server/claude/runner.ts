@@ -26,6 +26,8 @@ export type RunOptions = {
   writable: string[]
   /** writable の中でも書かせない場所 (確定した構成など)。拒否は許可より強い */
   denyWrite?: string[]
+  /** 読ませない場所 (絶対パス。ディレクトリは末尾を / にする)。スライドを作る段で、他のトークの見た目に寄らないようにする */
+  denyRead?: string[]
   onEvent: (e: RunEvent) => void
 }
 
@@ -56,7 +58,7 @@ export const ALLOWED_TOOLS = [
 ]
 
 /** 許していないので使えないが、念のため名前でも拒む。外に出す操作は話者が画面で押したときだけサーバが行う */
-export const DENIED_TOOLS = ['Bash(bun run deploy:*)', 'Bash(git push:*)', 'Bash(git commit:*)', 'Bash(git reset:*)', 'Bash(rm:*)', 'Bash(bunx wrangler:*)', 'Bash(npx wrangler:*)']
+export const DENIED_TOOLS = ['Bash(bun run deploy:*)', 'Bash(bun run look:*)', 'Bash(node packages/stage/cli.mjs look:*)', 'Bash(git push:*)', 'Bash(git commit:*)', 'Bash(git reset:*)', 'Bash(rm:*)', 'Bash(bunx wrangler:*)', 'Bash(npx wrangler:*)']
 
 /** 書いてよい場所を、Edit の許可の形にする。絶対パスは // で始める。
  *  ファイルの権限は Edit の規則が書き込み全般 (Write も) を受け持つ。Write(...) の規則は照合されない (Claude Code がそう警告する) */
@@ -64,8 +66,13 @@ export function writeRules(writable: string[]): string[] {
   return writable.map((p) => `Edit(${p.endsWith('/') ? `/${p}**` : `/${p}`})`)
 }
 
+/** 読ませない場所を、Read の拒否の形にする。Read の規則は Grep と Glob にも効く */
+export function readRules(paths: string[]): string[] {
+  return paths.map((p) => `Read(${p.endsWith('/') ? `/${p}**` : `/${p}`})`)
+}
+
 /** claude -p に渡す引数。テストで固定する */
-export function claudeArgs({ prompt, sessionId, system, writable, denyWrite = [] }: Omit<RunOptions, 'onEvent'>, session: string): string[] {
+export function claudeArgs({ prompt, sessionId, system, writable, denyWrite = [], denyRead = [] }: Omit<RunOptions, 'onEvent'>, session: string): string[] {
   return [
     '-p',
     prompt,
@@ -87,6 +94,7 @@ export function claudeArgs({ prompt, sessionId, system, writable, denyWrite = []
     '--disallowedTools',
     ...DENIED_TOOLS,
     ...writeRules(denyWrite),
+    ...readRules(denyRead),
     '--append-system-prompt',
     system,
     ...(sessionId ? ['--resume', sessionId] : ['--session-id', session]),

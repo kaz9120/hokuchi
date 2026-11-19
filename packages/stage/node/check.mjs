@@ -1,5 +1,5 @@
 // 検査。全状態の静止画、文字の重なり・はみ出し・小さい文字、絵コンテとの照合、遷移のコマ撮り
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { basename, join } from 'node:path'
 import { parseStoryboard } from './storyboard.mjs'
 import { launch, loadTalk, shootStates, startServer } from './talk.mjs'
@@ -118,8 +118,67 @@ export async function motionSheets(browser, url, dir) {
   await page.close()
 }
 
-/** 検査を回して out/check.md に書く。戻り値は { errors, issues, boardIssues, frames } */
-export async function check(talkDir, { motion = false, quiet = false } = {}) {
+// 認めた見た目 (out/look/) との比較。話者が見た目を気に入った画面を、言葉や事実を直すあいだに崩さないための検出。
+// 文字の縁のにじみ程度の差は数えず、はっきり色の変わった画素が LOOK_PIXELS を超えた状態だけを「変わった」とする。
+// 14px の 1 文字の差 (8+ → 9+) が約 50 画素。撮影を安定させたあとの誤差は 0 画素だったので、小さく取っている
+const LOOK_DELTA = 24
+const LOOK_PIXELS = 8
+
+async function diffPixels(page, a, b) {
+  return page.evaluate(
+    async ({ a, b, delta }) => {
+      const load = (src) => new Promise((ok) => { const i = new Image(); i.onload = () => ok(i); i.src = `data:image/png;base64,${src}` })
+      const [x, y] = await Promise.all([load(a), load(b)])
+      if (x.width !== y.width || x.height !== y.height) return Infinity
+      const px = (img) => { const c = new OffscreenCanvas(img.width, img.height); const g = c.getContext('2d'); g.drawImage(img, 0, 0); return g.getImageData(0, 0, img.width, img.height).data }
+      const p = px(x)
+      const q = px(y)
+      let n = 0
+      for (let i = 0; i < p.length; i += 4) if (Math.max(Math.abs(p[i] - q[i]), Math.abs(p[i + 1] - q[i + 1]), Math.abs(p[i + 2] - q[i + 2])) > delta) n++
+      return n
+    },
+    { a: a.toString('base64'), b: b.toString('base64'), delta: LOOK_DELTA },
+  )
+}
+
+/** 認めた見た目と今回の静止画を比べる。変わった状態の名前を返し、前後の画像を out/look-diff/ に置く。認めた見た目が無ければ null */
+async function compareLook(browser, outDir, shots) {
+  const look = join(outDir, 'look')
+  const diffDir = join(outDir, 'look-diff')
+  rmSync(diffDir, { recursive: true, force: true })
+  if (!existsSync(look)) return null
+  const page = await browser.newPage()
+  const changed = []
+  const names = new Set(shots.map((s) => s.name))
+  for (const s of shots) {
+    const prev = join(look, `${s.name}.png`)
+    if (!existsSync(prev)) {
+      changed.push(`${s.name} (新しい状態)`)
+      continue
+    }
+    const before = readFileSync(prev)
+    if (before.equals(s.png) || (await diffPixels(page, before, s.png)) <= LOOK_PIXELS) continue
+    mkdirSync(diffDir, { recursive: true })
+    writeFileSync(join(diffDir, `${s.name}.before.png`), before)
+    writeFileSync(join(diffDir, `${s.name}.after.png`), s.png)
+    changed.push(s.name)
+  }
+  for (const f of readdirSync(look)) if (!names.has(f.replace(/\.png$/, ''))) changed.push(`${f.replace(/\.png$/, '')} (無くなった状態)`)
+  await page.close()
+  return changed
+}
+
+/** 今回の静止画を、認めた見た目にする */
+function acceptLook(outDir, shots) {
+  const look = join(outDir, 'look')
+  rmSync(look, { recursive: true, force: true })
+  mkdirSync(look, { recursive: true })
+  for (const s of shots) writeFileSync(join(look, `${s.name}.png`), s.png)
+  rmSync(join(outDir, 'look-diff'), { recursive: true, force: true })
+}
+
+/** 検査を回して out/check.md に書く。戻り値は { errors, issues, boardIssues, frames, lookChanged }。accept で今回の見た目を認める */
+export async function check(talkDir, { motion = false, quiet = false, accept = false } = {}) {
   const outDir = join(talkDir, 'out')
   mkdirSync(join(outDir, 'states'), { recursive: true })
   const { server, url } = await startServer(talkDir)
@@ -134,6 +193,8 @@ export async function check(talkDir, { motion = false, quiet = false } = {}) {
   const issues = await page.evaluate(inspect)
   const talk = await loadTalk(server)
   const boardIssues = compareBoard(talkDir, talk)
+  if (accept) acceptLook(outDir, shots)
+  const lookChanged = await compareLook(browser, outDir, shots)
 
   if (motion) await motionSheets(browser, url, join(outDir, 'motion'))
   await browser.close()
@@ -142,10 +203,15 @@ export async function check(talkDir, { motion = false, quiet = false } = {}) {
   const lines = [`# check: ${basename(talkDir)}`, '', `状態 ${shots.length} 枚を out/states/ に出しました。`, '']
   if (errors.length) lines.push('## 実行時のエラー', '', ...errors.map((e) => `- ${e}`), '')
   if (boardIssues) lines.push('## 絵コンテとの照合', '', ...(boardIssues.length ? boardIssues.map((x) => `- ${x}`) : ['食い違いはありません。']), '')
+  lines.push('## 認めた見た目からの変化', '')
+  if (lookChanged === null) lines.push('認めた見た目はまだありません (話者が studio の「この見た目を認める」か `bun run look <トーク>` で認めると、以後の check で比べます)。')
+  else if (!lookChanged.length) lines.push(accept ? '今回の見た目を、認めた見た目にしました。' : '変わった状態はありません。')
+  else lines.push('次の状態が、話者の認めた見た目から変わりました。前後の画像は out/look-diff/ にあります。頼まれていない状態が変わっていたら、戻してください。', '', ...lookChanged.map((x) => `- ${x}`))
+  lines.push('')
   lines.push('## 検査', '')
   if (!issues.length) lines.push('指摘はありません。')
   for (const x of issues) lines.push(`- ${x.frame} ${x.kind}: ${x.text}`)
   writeFileSync(join(outDir, 'check.md'), lines.join('\n') + '\n')
   if (!quiet) console.log(lines.join('\n'))
-  return { errors, issues, boardIssues, frames: shots.map((s) => s.name) }
+  return { errors, issues, boardIssues, frames: shots.map((s) => s.name), lookChanged }
 }

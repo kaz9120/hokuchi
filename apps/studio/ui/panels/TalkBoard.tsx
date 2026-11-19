@@ -1,7 +1,7 @@
 import { STRONG, classifyDiff, isChange, type DiffResult } from '../../shared/diff.ts'
 // 発表の「絵コンテ」「スライド」「発表」の面。コマ (縮小画像と話すこと) を並べ、流れ (時間) を上に出す。
 // 話すことはその場で直せ、コマを指して話せる。発表のステップでは、発表したこととサイトに出すことを扱う
-import { CalendarClock, ExternalLink, Play, Presentation, Rocket } from 'lucide-react'
+import { CalendarClock, ExternalLink, Eye, Play, Presentation, Rocket } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Badge, Button, Callout, CalloutDescription, CalloutTitle, Input, Textarea, cn, toast } from 'takibi-design-system'
 import type { SceneView, TalkView } from '../../shared/types'
@@ -40,6 +40,17 @@ export function TalkBoard({ ctx }: { ctx: WorkCtx }) {
             <Presentation aria-hidden />
             発表者ビュー
           </LinkButton>
+          {(step === 'slides' || step === 'present') && !w.shipped && talk.scenes.length > 0 && (
+            <Button
+              variant="ghost"
+              disabled={ctx.locked}
+              title="いまの見た目を基準にします。以後の直しで、ここから変わった状態を Claude が返事で知らせます"
+              onClick={() => void ctx.press('accept-look')}
+            >
+              <Eye aria-hidden />
+              この見た目を認める
+            </Button>
+          )}
         </div>
       )}
       {talk && talk.scenes.length > 0 && <Flow talk={talk} />}

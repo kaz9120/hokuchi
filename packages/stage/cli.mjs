@@ -4,6 +4,8 @@
 //   bun run dev <talk>              作業用のサーバ。保存すると即座に反映される
 //   bun run check <talk> [--motion] 全状態の静止画と、はみ出し・重なり・小さい文字の検査、絵コンテとの照合 (out/check.md)
 //                                 --motion で遷移のコマ撮りも出す (out/motion/)
+//                                 out/look/ があれば、話者の認めた見た目から変わった状態も出す
+//   bun run look <talk>           いまの見た目を、話者が認めた見た目 (out/look/) にする。話者が押すもので、Claude には許していない
 //   bun run build <talk>          公開用の静的ファイルを out/build/ に出す (OGP 画像・同梱フォント・テキスト・PDF つき)
 //   bun run single <talk> [--present] 1 つの HTML (out/<slug>.html) と PDF に書き出す。サイトに載せずにファイルで共有するとき
 //                                 --present で、発表用の画面 (発表者ビュー・ノートつき) にする
@@ -54,6 +56,12 @@ switch (cmd) {
     if (r.errors.length) process.exitCode = 1
     break
   }
+  case 'look': {
+    const r = await check(talkDirOf(arg), { accept: true, quiet: true })
+    console.log(`いまの ${r.frames.length} 状態を、認めた見た目にしました (out/look/)`)
+    if (r.errors.length) process.exitCode = 1
+    break
+  }
   case 'build': {
     const dir = talkDirOf(arg)
     await buildTalk(dir, join(dir, 'out', 'build'))
@@ -65,5 +73,5 @@ switch (cmd) {
     break
   }
   default:
-    console.log(readFileSync(new URL(import.meta.url), 'utf8').split('\n').slice(1, 12).join('\n').replace(/^\/\/ ?/gm, ''))
+    console.log(readFileSync(new URL(import.meta.url), 'utf8').split('\n').slice(1, 14).join('\n').replace(/^\/\/ ?/gm, ''))
 }

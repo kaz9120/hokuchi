@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { MotionConfig, motion } from 'motion/react'
 import { H, W, panT } from './config'
 import { nextPos, progress, useFit, useKeys, useNav, type Pos } from './nav'
-import { SceneView, Stage, StaticFrame } from './scene'
+import { SceneView, Stage, StaticFrame, World, worldPos } from './scene'
 import type { TalkDef } from './types'
 
 /**
@@ -33,23 +33,29 @@ export function LiveStage({ talk, pos }: { talk: TalkDef; pos: Pos }) {
   }, [i])
   const near = settled ? [i - 1, i, i + 1] : [Math.min(from.current, i), Math.max(from.current, i)]
   const strip = [...new Set(near)].filter((k) => k >= 0 && k < talk.scenes.length)
+  const wp = worldPos(talk, i, pos.step)
+  // fade では、前後のシーンも同じ場所に透明で組み立てておき、その場で入れ替える (world の上でずれて見えないように)
+  const fade = talk.cut === 'fade'
   return (
     <Stage talk={talk}>
-      {strip.map((k) => {
-        const s = talk.scenes[k]
-        const step = k === i ? pos.step : k < i ? s.steps - 1 : 0
-        // 先に組み立てていなかったシーン (一覧から飛んだ・速く送った) は、進む向きから入ってくる
-        const initial = first.current ? false : { x: k === i ? pos.dir * W : (k - i) * W }
-        // 登場の動きは、パンが終わってから始める。出ていくシーンと通り過ぎたシーンは、表示中の姿のまま保つ。
-        // 戻るときに入ってくるシーンは、もう登場を済ませているので、パンの最中も表示中の姿のままにする
-        const active = !settled && k === from.current ? true : k === i ? settled || pos.dir < 0 : k < i
-        return (
-          <motion.div key={s.id} className="pan" initial={initial} animate={{ x: (k - i) * W }} transition={panT()} aria-hidden={k !== i}>
-            <SceneView scene={s} step={step} active={active} />
-          </motion.div>
-        )
-      })}
-      <Frame talk={talk} scene={scene} index={i} />
+      <World talk={talk} pos={wp}>
+        {strip.map((k) => {
+          const s = talk.scenes[k]
+          const step = k === i ? pos.step : k < i ? s.steps - 1 : 0
+          // 先に組み立てていなかったシーン (一覧から飛んだ・速く送った) は、進む向きから入ってくる
+          const initial = first.current ? false : fade ? { opacity: 0 } : { x: k === i ? pos.dir * W : (k - i) * W }
+          // 登場の動きは、パンが終わってから始める。出ていくシーンと通り過ぎたシーンは、表示中の姿のまま保つ。
+          // 戻るときに入ってくるシーンは、もう登場を済ませているので、パンの最中も表示中の姿のままにする
+          const active = !settled && k === from.current ? true : k === i ? settled || pos.dir < 0 : k < i
+          const animate = fade ? { opacity: k === i ? 1 : 0 } : { x: (k - i) * W }
+          return (
+            <motion.div key={s.id} className="pan" initial={initial} animate={animate} transition={panT()} aria-hidden={k !== i}>
+              <SceneView scene={s} step={step} active={active} />
+            </motion.div>
+          )
+        })}
+        <Frame talk={talk} scene={scene} index={i} step={pos.step} at={wp.at} total={wp.total} />
+      </World>
     </Stage>
   )
 }

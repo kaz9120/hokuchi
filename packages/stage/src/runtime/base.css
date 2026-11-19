@@ -48,6 +48,12 @@ body {
 .pan {
   will-change: transform;
 }
+/* トーク全体を通して残る層。シーン (.pan) より下に描く */
+.world {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
 
 /* ---- シーンでよく使う型。使わずに素で書いてもよい ---- */
 .headline {
@@ -89,7 +95,9 @@ body {
 .tone-dim {
   opacity: 0.3;
 }
-body[data-mode='shot'] * {
+body[data-mode='shot'] *,
+body[data-mode='shot'] *::before,
+body[data-mode='shot'] *::after {
   transition: none !important;
 }
 .morph-inner {

@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "node apps/slides/dev.mjs",
     "check": "node packages/stage/cli.mjs check",
+    "look": "node packages/stage/cli.mjs look",
     "build": "node packages/stage/cli.mjs build",
     "single": "node packages/stage/cli.mjs single",
     "studio": "node --experimental-strip-types --disable-warning=ExperimentalWarning apps/studio/server/main.ts",

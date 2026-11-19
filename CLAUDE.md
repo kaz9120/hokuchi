@@ -38,7 +38,7 @@ tools/
   notes/           note の CLI（sync / build / verify / lint / paste / index）
   eyecatch/        note の見出し画像の下地を作る CLI
 .claude/skills/
-  crafting-presentation/  対話から発表資料を作る skill（Phase 0〜8）
+  crafting-presentation/  対話から発表資料を作る skill（段ごとのファイルは steps/）
   writing-note/           note の記事を書く skill（Phase 0〜7。studio の記事のステップと同じ流れ）
   making-short-video/     X などに流す短い動画を HyperFrames で作る skill（使い込みながら育てる途中）
 ```
@@ -71,6 +71,7 @@ bun run test:studio            # studio の状態 × イベントの表と、Cla
 bun run dev                    # サイト全体の開発サーバだけ（http://localhost:5280/）。studio を使わずに見るとき
 bun run dev <talk>             # トーク 1 本の作業用サーバ。いずれも長く動くので、話者に別ターミナルで立ててもらう
 bun run check <talk> --motion  # 全状態の静止画・検査・絵コンテとの照合・遷移のコマ撮り
+bun run look <talk>            # いまの見た目を、話者が認めた見た目にする (studio の「この見た目を認める」と同じ)。以後の check が変化を出す
 bun run single <talk>          # 1 つの HTML と PDF に書き出す (公開用の画面。--present で発表用)。社内向けの発表をファイルで共有するとき
 bun run typecheck
 bun run site                   # slides.y-kaz.com を apps/slides/dist に組み立てる
@@ -82,3 +83,5 @@ bun run deploy                 # 組み立てて公開する（話者の確認�
 ## コミット
 
 コミットメッセージは日本語で書きます。1 行目には「〜を追加」「〜を修正」のように、変更内容を書いてください。
+
+コミットと push は、話者に確かめずに進めます。区切りのよい所でコミットし、そのまま push してください。話者が止めることはほとんどありません。デプロイ (`bun run deploy`) だけは、これまでどおり話者の確認を取ってから行います。

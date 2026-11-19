@@ -42,6 +42,36 @@ export function SceneView({ scene, step, active = true }: { scene: SceneDef; ste
   )
 }
 
+/** トーク全体の中での位置。scene はいまのシーンの id、index はその番号、step はシーンの中の状態、at は通しの状態 (0 始まり) */
+export type WorldPos = { scene: string; index: number; step: number; at: number; total: number }
+
+const WorldCtx = createContext<WorldPos>({ scene: '', index: 0, step: 0, at: 0, total: 1 })
+
+/** world (トーク全体を通して残る層) の中で、いまの位置を読む。シーンの中で使ってもよい */
+export const useWorld = () => useContext(WorldCtx)
+
+/** シーンと状態の番号から、通しの位置を作る */
+export function worldPos(talk: TalkDef, index: number, step: number): WorldPos {
+  const total = talk.scenes.reduce((n, s) => n + s.steps, 0)
+  const at = talk.scenes.slice(0, index).reduce((n, s) => n + s.steps, 0) + step
+  return { scene: talk.scenes[index].id, index, step, at, total }
+}
+
+/** world の層と、位置の文脈。シーンより下に描く */
+export function World({ talk, pos, children }: { talk: TalkDef; pos: WorldPos; children: ReactNode }) {
+  const Layer = talk.world
+  return (
+    <WorldCtx.Provider value={pos}>
+      {Layer && (
+        <div className="world">
+          <Layer />
+        </div>
+      )}
+      {children}
+    </WorldCtx.Provider>
+  )
+}
+
 /** 1280×720 の舞台。テーマのクラスと背景を持つ */
 export function Stage({ talk, children, style }: { talk: TalkDef; children: ReactNode; style?: React.CSSProperties }) {
   return (
@@ -58,10 +88,13 @@ export function Stage({ talk, children, style }: { talk: TalkDef; children: Reac
 export function StaticFrame({ talk, index, step }: { talk: TalkDef; index: number; step: number }) {
   const scene = talk.scenes[index]
   const { Frame } = talk.theme
+  const pos = worldPos(talk, index, step)
   return (
     <Stage talk={talk}>
-      <SceneView key={`${scene.id}-${step}`} scene={scene} step={step} />
-      <Frame talk={talk} scene={scene} index={index} />
+      <World talk={talk} pos={pos}>
+        <SceneView key={`${scene.id}-${step}`} scene={scene} step={step} />
+        <Frame talk={talk} scene={scene} index={index} step={step} at={pos.at} total={pos.total} />
+      </World>
     </Stage>
   )
 }

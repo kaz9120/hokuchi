@@ -6,7 +6,7 @@
 import { rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { Anchor, Live, Step } from '../../shared/types.ts'
-import { changesText, systemPrompt, writableOf } from '../claude/context.ts'
+import { changesText, readDenyOf, systemPrompt, writableOf } from '../claude/context.ts'
 import { startRun, type Run } from '../claude/runner.ts'
 import { noteDir, talkDirOf } from '../store/places.ts'
 import { changedSince, saveStamps } from '../store/stamps.ts'
@@ -209,6 +209,7 @@ export class Conductor {
       system: systemPrompt(work, step, !sessionId),
       writable: allow,
       denyWrite: deny,
+      denyRead: readDenyOf(work, step),
       onEvent: (e) => {
         if (e.type === 'started') {
           currentSession = e.sessionId

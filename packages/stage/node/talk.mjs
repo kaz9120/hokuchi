@@ -33,9 +33,18 @@ export async function waitReady(page) {
 export async function shootStates(page, url) {
   await page.goto(`${url}?shot=all`)
   await waitReady(page)
+  // トークの CSS が @import で足したフォントは、準備完了の合図より遅れて届く。font-display: block の文字は
+  // 届くまで描かれないので、待たないと撮るたびに一部の文字が欠ける (欠ける状態が回ごとに変わる)
+  // @import の CSS 自体が遅れると、fonts.ready はフォントを宣言する前に解決してしまうので、先に通信が落ち着くのを待つ
+  await page.waitForLoadState('networkidle')
+  await page.evaluate(() => document.fonts.ready)
   const shots = []
   for (const el of await page.$$('[data-frame]')) {
     const name = (await el.getAttribute('data-frame')).replace('/', '-')
+    // 全状態を縦に並べたページでは、画面から遠い状態のぼかしや合成の層がまだ描かれていないことがある。
+    // 画面に入れて 2 コマ待ってから撮る (待たないと、撮るたびに欠ける要素が変わる)
+    await el.scrollIntoViewIfNeeded()
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))))
     shots.push({ name, png: await el.screenshot() })
   }
   return shots

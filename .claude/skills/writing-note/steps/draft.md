@@ -26,7 +26,7 @@ front matter は次の形にします。画像は `![説明](assets/名前.png)`
 
 ```yaml
 ---
-title: サクッと作れる楽しさに、飽きた
+title: <タイトル>
 hashtags:
   - エンジニア
 ---

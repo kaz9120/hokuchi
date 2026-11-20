@@ -51,6 +51,8 @@ export function readWork(id: string): { work: Work; version: string } {
   if (text === null) throw notFound(`作品（${id}）が見つかりません`)
   const work = (YAML.parse(text) ?? {}) as Work
   work.decided ??= {}
+  // 記事の構成の段は 2026-11 に外した。その段にいた作品は原稿の段で続ける
+  if (work.kind === 'note' && (work.step as string) === 'outline') work.step = 'draft'
   return { work, version: versionOf(text) }
 }
 

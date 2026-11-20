@@ -67,12 +67,11 @@ test('Claude には、作品の置き場だけを書ける権限と、話者の�
   assert.equal(at('--session-id'), 'sess')
 })
 
-test('確定した値 (work.yaml) と材料は、Claude が書ける場所に入らない。構成は確定したあと書けない', () => {
+test('確定した値 (work.yaml) と材料は、Claude が書ける場所に入らない', () => {
   const work: any = { id: '2026-01-01-aaaa', kind: 'note', note: { slug: 'x' }, decided: {}, step: 'draft' }
   const { allow, deny } = writableOf(work, 'draft')
   assert.ok(allow.every((p) => !p.endsWith('work.yaml') && !p.endsWith('material.md')))
-  assert.ok(deny.some((p) => p.endsWith('notes/x/outline.yaml')))
-  assert.equal(writableOf({ ...work, step: 'outline' }, 'outline').deny.length, 0)
+  assert.equal(deny.length, 0)
 })
 
 test('記事を始めると、話した文と画像が材料と会話に入り、Claude の返事のあとは話者の番になる', async () => {
@@ -117,17 +116,17 @@ test('スライドを作る段と直す段では、他のトークを読ませ�
   assert.deepEqual(readDenyOf(w, 'core'), [])
 })
 
-test('伝えたいことを決めないと構成へ進めない。進むと値を確定し、新しいセッションで次を頼む', async () => {
+test('伝えたいことを決めないと原稿へ進めない。進むと値を確定し、新しいセッションで次を頼む', async () => {
   const id = studio.start('note', 'テスト')
   await idle(id)
   await assert.rejects(studio.press(id, 'decide-core', { decided: { core: '' } }), /伝えたいことを決めて/)
   const before = readWork(id).work.sessions?.core
   await studio.press(id, 'decide-core', { decided: { core: '道具が合うかは、仕事のやり方で変わる', reader: { who: 'エンジニア' } } })
   const w = readWork(id).work
-  assert.equal(w.step, 'outline')
+  assert.equal(w.step, 'draft')
   assert.equal(w.decided.core, '道具が合うかは、仕事のやり方で変わる')
   await idle(id)
-  const after = readWork(id).work.sessions?.outline
+  const after = readWork(id).work.sessions?.draft
   assert.ok(after && after !== before, 'ステップごとにセッションを分ける')
 })
 
@@ -237,7 +236,7 @@ test('学びの案の先頭の印は落とし、同じ作品の 2 行目から�
 test('状態 × イベントの表の「起きない」マスは、サーバが断る', () => {
   const note: any = { kind: 'note', step: 'draft', decided: {} }
   assert.match(refuseAction(note, 'ship-note', false, {})!, /できません/)
-  assert.match(refuseAction(note, 'decide-outline', true, {})!, /作業中/)
+  assert.match(refuseAction(note, 'to-publish', true, {})!, /作業中/)
   assert.equal(refuseAction({ ...note, step: 'publish' }, 'ship-note', false, {}), null)
   assert.match(refuseAction({ ...note, shipped: { at: 'x', by: 'note' } }, 'record', false, {})!, /できません/, '学びが済むまで記録できない')
   assert.equal(refuseAction({ ...note, shipped: { at: 'x', by: 'note' }, learned: true }, 'record', false, {}), null)

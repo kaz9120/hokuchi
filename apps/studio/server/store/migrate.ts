@@ -63,7 +63,7 @@ export function migrate(): string[] {
           work.title = hit.title
           step = 'publish'
         } else if (work.linkCandidates) step = 'publish'
-        else if (existsSync(join(noteDir(slug), 'outline.yaml'))) step = existsSync(join(noteDir(slug), 'index.md')) ? 'draft' : 'outline'
+        else if (existsSync(join(noteDir(slug), 'outline.yaml')) || existsSync(join(noteDir(slug), 'index.md'))) step = 'draft'
       } else {
         work.note = { slug: id }
       }

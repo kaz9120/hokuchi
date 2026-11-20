@@ -4,12 +4,12 @@
 export type Kind = 'note' | 'talk'
 
 /** ステップ。話者が押したときだけ進む */
-export type NoteStep = 'core' | 'outline' | 'draft' | 'publish'
+export type NoteStep = 'core' | 'draft' | 'publish'
 export type TalkStep = 'core' | 'outline' | 'storyboard' | 'slides' | 'present'
 export type Step = NoteStep | TalkStep
 
 export const STEPS: Record<Kind, Step[]> = {
-  note: ['core', 'outline', 'draft', 'publish'],
+  note: ['core', 'draft', 'publish'],
   talk: ['core', 'outline', 'storyboard', 'slides', 'present'],
 }
 

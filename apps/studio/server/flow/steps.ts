@@ -9,8 +9,8 @@ export type Advance = { action: string; from: Step; to: Step; label: string; pro
 
 export const ADVANCES: Record<Kind, Advance[]> = {
   note: [
-    { action: 'decide-core', from: 'core', to: 'outline', label: 'この内容で構成へ', prompt: '伝えたいことが決まった。構成に進んでほしい。フックの案と骨組みを書き、厚く書く所の材料を聞いて' },
-    { action: 'decide-outline', from: 'outline', to: 'draft', label: 'この構成で書く', prompt: '構成が決まった。原稿を書いてほしい。書き終えたら 2 割削り、lint を通し、見出しごとの字数を返して' },
+    // 記事は構成の段を挟まずに書く。先に骨組み (見出しの順・厚く書く所・字数) を決めて書かせると、決めずに書かせた原稿より伏せた比べで点が下がった (2026-11)
+    { action: 'decide-core', from: 'core', to: 'draft', label: 'この内容で書く', prompt: '伝えたいことが決まった。原稿を書き、確かめて直して' },
     { action: 'to-publish', from: 'draft', to: 'publish', label: '公開の準備へ', prompt: '原稿はこれでよい。公開の準備に進んでほしい。タイトル・タグ・置き場の名前・見出し画像のモチーフの案を書いて' },
   ],
   talk: [
@@ -27,7 +27,6 @@ export const advanceOf = (kind: Kind, step: Step) => ADVANCES[kind].find((a) => 
 const DEFAULT_ASK: Record<Kind, Partial<Record<Step, string>>> = {
   note: {
     core: '伝えたいことの候補を選ぶか、話して直す',
-    outline: '構成を読み、厚く書く所の材料を話す',
     draft: '原稿を読み、直したい所を指して話す',
     publish: 'タイトルと名前を選び、note に貼って公開した URL を貼る',
   },

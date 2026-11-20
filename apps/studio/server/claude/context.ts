@@ -23,20 +23,13 @@ function phaseOf(work: Work, step: Step | 'shipped'): Phase {
     switch (step) {
       case 'core':
         return { skill: 'writing-note の伝えたいこと (Phase 0〜2)', dir: 'writing-note', file: 'core', todo: `材料と過去の記事 (articles/note/) を読み、proposals.yaml に読者 (reader)・持ち帰り (takeaway)・伝えたいことの候補 3 つ (core) を書く。記事の原料になる話者の言葉が足りないとき (出来事の間の理由、いちばん意外だったこと、芯の中の抽象語の中身) は、問いを 3 つまで返事に番号付きで書き、ask に「問いに答えてください」と書く。話者が貼った画像は ${note}/assets/ に写してある` }
-      case 'outline':
-        return {
-          skill: 'writing-note の構成 (Phase 3)',
-          dir: 'writing-note',
-          file: 'outline',
-          todo: `フックの案 2〜3 を proposals.yaml の hook に、骨組みを ${note}/outline.yaml に書く (sections: [{title, point, grain: 密|粗, budget}]。先頭は「冒頭」)。厚く書く所の材料を返事で聞く。話者の答えで伝えたいことがずれたら proposals.yaml の coreRevision に案を書く`,
-        }
       case 'draft':
         return {
           skill: 'writing-note の書く段と確かめて直す段 (Phase 4〜6)',
           dir: 'writing-note',
           file: 'draft',
           then: 'check',
-          todo: `${note}/index.md に原稿を書き切ってから、確かめて直す。outline.yaml は確定済みで書けない。変えたいときは proposals.yaml の outlineRevision に案を書く。${note}/feedback.yaml の ball: Claude の感想は 1 件ずつ判断し、返事に「直した n 件・見送った n 件」と見送った理由を書く。原稿がもうあり、話者が直しを頼んでいるときは、書く段を飛ばして確かめて直す段から入る`,
+          todo: `${note}/index.md に原稿を書き切ってから、確かめて直す。${note}/feedback.yaml の ball: Claude の感想は 1 件ずつ判断し、返事に「直した n 件・見送った n 件」と見送った理由を書く。原稿がもうあり、話者が直しを頼んでいるときは、書く段を飛ばして確かめて直す段から入る`,
         }
       case 'publish':
         return {
@@ -164,7 +157,6 @@ export function writableOf(work: Work, step: Step | 'shipped', extra: string[] =
   const deny: string[] = []
   if (work.kind === 'note' && work.note?.slug) {
     allow.push(noteDir(work.note.slug) + '/')
-    if (step !== 'core' && step !== 'outline') deny.push(join(noteDir(work.note.slug), 'outline.yaml'))
     if (step === 'publish') allow.push(join(PRIVATE, 'eyecatch') + '/')
   }
   const talk = talkDirOf(work)

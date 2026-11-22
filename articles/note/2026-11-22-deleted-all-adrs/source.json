@@ -1,0 +1,55 @@
+{
+  "id": 192534424,
+  "key": "n6502c854b9d6",
+  "slug": "slug-n6502c854b9d6",
+  "type": "TextNote",
+  "status": "published",
+  "format": "4.0",
+  "name": "AIが読む記録は、寿命で置き場所を分ける",
+  "description": "",
+  "body": "<p name=\"7157ea8d-aae7-4735-b538-0f512993f383\" id=\"7157ea8d-aae7-4735-b538-0f512993f383\">7月に、将棋AI「Himawari」の開発を再開しました。そのときの記事に、進め方をこう書いています。</p><figure name=\"612c0aae-1106-462d-b18b-06ad77fdfcd3\" id=\"612c0aae-1106-462d-b18b-06ad77fdfcd3\"><blockquote><p name=\"9afacce2-c4b1-4460-9273-f22d9edb9647\" id=\"9afacce2-c4b1-4460-9273-f22d9edb9647\">進め方は 2 つだけ決めました。実装は全部 Claude Code に任せる。方針は全部 ADR（設計判断の記録）を書きながら調整する。コードは書かず、判断だけ自分でやる。</p></blockquote><figcaption></figcaption></figure><figure name=\"023bc808-3a35-47b5-a5cb-b3f84b4a8233\" id=\"023bc808-3a35-47b5-a5cb-b3f84b4a8233\" data-src=\"https://note.com/kyamamoto9120/n/n8e50f15a69e0\" data-identifier=\"n8e50f15a69e0\" embedded-service=\"note\" embedded-content-key=\"emb4f33628baa12\">\n</figure><p name=\"1c4a0966-a564-4965-a8bc-fa29ab418b09\" id=\"1c4a0966-a564-4965-a8bc-fa29ab418b09\">ADR を書くのも AI です。8月の記事では、こうも書きました。</p><figure name=\"1f7e38f1-653e-4a16-9433-96eb04f1471f\" id=\"1f7e38f1-653e-4a16-9433-96eb04f1471f\"><blockquote><p name=\"ff4202bf-f61b-4657-a9c3-0c3fbbd7ec64\" id=\"ff4202bf-f61b-4657-a9c3-0c3fbbd7ec64\">棄却された案の ADR も消しません。エージェントは会話の文脈を持ち越さないので、「なぜ前回失敗したか」をファイルで読める状態にしておく価値が、人間の開発より大きいと考えています。</p></blockquote><figcaption></figcaption></figure><figure name=\"b6e62801-5bb1-44c0-83ab-f8c687461e88\" id=\"b6e62801-5bb1-44c0-83ab-f8c687461e88\" data-src=\"https://note.com/kyamamoto9120/n/nfe667accffd0\" data-identifier=\"nfe667accffd0\" embedded-service=\"note\" embedded-content-key=\"emb7fdc56603c10\">\n</figure><p name=\"883b4a26-6b75-4563-8a1f-4cb3ebad818e\" id=\"883b4a26-6b75-4563-8a1f-4cb3ebad818e\">11月9日、その ADR を全部消しました。7月17日から書き始めて、262 本、42,813 行になっていました。</p><h2 name=\"76a438a3-eff9-41b2-b4b2-130b0adb371e\" id=\"76a438a3-eff9-41b2-b4b2-130b0adb371e\">寿命が違う情報を、同じ場所に置かない</h2><p name=\"ce6439ac-706a-4536-a008-c67e0c0f307e\" id=\"ce6439ac-706a-4536-a008-c67e0c0f307e\">4か月前は、棄却した案まで残すほど AI の助けになると考えていました。いまは考えが変わっています。</p><p name=\"ab102de6-88a9-4f4f-bf63-1af7f28dd3d6\" id=\"ab102de6-88a9-4f4f-bf63-1af7f28dd3d6\">AI に読ませる情報は、寿命で置き場所を分けます。更新し続ける文書はリポジトリに置き、増え続ける記録はリポジトリの外に置きます。</p><p name=\"f5eea8cc-3622-4ba9-a57d-af7874410a83\" id=\"f5eea8cc-3622-4ba9-a57d-af7874410a83\">ADR を消したとき、前提が変わっても成り立つ教訓だけを <a href=\"http://CLAUDE.md\" target=\"_blank\" rel=\"nofollow noopener\">CLAUDE.md</a> に移しました。<a href=\"http://CLAUDE.md\" target=\"_blank\" rel=\"nofollow noopener\">CLAUDE.md</a> は前提が変われば書き直す文書で、ファイルは増えません。一方の ADR は、1 本書くたびに増え、書いた時点の判断がそのまま積もります。実験の記録も、リポジトリとは別の時間軸で動きます。それを全部リポジトリに置いたので、AI が読むコンテキストは増え続け、ノイズになりました。</p><p name=\"8a41ee33-bfcc-49f2-b284-a877f610f7dc\" id=\"8a41ee33-bfcc-49f2-b284-a877f610f7dc\">古い ADR を廃止していく手もありました。ただ、廃止するにはそのつど判断が要り、それが重いのです。</p><h2 name=\"4e65b685-44bb-4c99-b22e-db2c97ec0cc1\" id=\"4e65b685-44bb-4c99-b22e-db2c97ec0cc1\">AI が過去の決定を尊重しすぎる</h2><p name=\"2a7f0b22-6205-42da-bb07-f2525cc39487\" id=\"2a7f0b22-6205-42da-bb07-f2525cc39487\">ADR が増えるにつれて、AI は過去の決定を尊重しすぎるようになりました。</p><p name=\"cf190c63-3bdf-4ed4-8d05-bacfae411c59\" id=\"cf190c63-3bdf-4ed4-8d05-bacfae411c59\">10月21日に、探索の盤をビットボードから配列盤に替えました。前提が変わったので、7月に −57.5 Elo で打ち切った 1手詰めの判定も、やり直す価値があります。それでも、こちらから促さないと「過去に試したアイデアなので、やりません」と返ってくることが多くありました。</p><p name=\"782419d4-59ea-4ead-9f13-f45fb0688f09\" id=\"782419d4-59ea-4ead-9f13-f45fb0688f09\">いまのモデルは、何も足さなくても高い性能が出ます。それなのに、古いモデルで失敗した判断に引っ張られ、ブレーキの効きすぎたハーネスになっていました。これが、ADR をやめようと思ったきっかけです。</p><h2 name=\"a27f132a-915c-46a7-9f21-2b7b89c327f2\" id=\"a27f132a-915c-46a7-9f21-2b7b89c327f2\">消しても、履歴から掘り出してくる</h2><p name=\"198b1604-d8f8-4471-9b3c-3510ea9b3a1d\" id=\"198b1604-d8f8-4471-9b3c-3510ea9b3a1d\">11月12日、Claude が探索に 1手詰めの判定を入れる PR を出しました。本文にはこう書いてありました。</p><figure name=\"818d508e-954f-403f-b7da-9784bea64630\" id=\"818d508e-954f-403f-b7da-9784bea64630\"><blockquote><p name=\"ea7caca0-8e8b-4d0c-a307-8583dce3c1a0\" id=\"ea7caca0-8e8b-4d0c-a307-8583dce3c1a0\">ADR-0093（2026-07）は同じ条件を−57.5 Eloで打ち切った。原因は `mate_1ply` が1回1.5usかかったことである。配列盤と利きの地図で、いまは約45nsになった</p></blockquote><figcaption></figcaption></figure><p name=\"796e6d9d-61b6-4998-b89d-11b366c68218\" id=\"796e6d9d-61b6-4998-b89d-11b366c68218\">消したはずの ADR-0093 を、git の履歴から掘り出して引用していたのです。11月12日から14日までの PR には、消した ADR が 8 本引用されています。</p><p name=\"a4db44bc-4757-4714-878e-b448746e3a2c\" id=\"a4db44bc-4757-4714-878e-b448746e3a2c\">やり直しそのものに不満はありません。驚いたのは、廃止した ADR をまだ参照していることでした。ADR は大切な過去の意思決定として扱われ、意味を持ちすぎています。だから、消したものまで参照するのでしょう。</p><h2 name=\"66972e4b-d4d1-4a00-8634-fadf1aa35e66\" id=\"66972e4b-d4d1-4a00-8634-fadf1aa35e66\">いま試そうとしていること</h2><p name=\"c2874a88-aa1c-4b71-a964-c9d957df421b\" id=\"c2874a88-aa1c-4b71-a964-c9d957df421b\">1つは、コードを書いた理由をコミットログに残すことです。意思決定はその時々のものなので、それで足りるかもしれません。コミットログは、ADR ほど特別な記録には見えません。軽い情報として扱われるかどうかは、試して確かめます。</p><p name=\"b55f2e2e-5505-4c8f-b5ca-0c5db298565f\" id=\"b55f2e2e-5505-4c8f-b5ca-0c5db298565f\">もう1つは、実験の記録をリポジトリの外で、データベースのように管理することです。前提が変わったら丸ごと捨てるか、世代を分けて一からやり直せる形にするつもりです。</p><p name=\"ef80c90d-3734-4512-b9e7-ab19666cb108\" id=\"ef80c90d-3734-4512-b9e7-ab19666cb108\">記録を残すのも、消すのも、置き場所を分けるのも、すべては AI の性能を最大限に引き出すためです。これからも模索し続けます。</p>",
+  "separator": null,
+  "publish_at": "2026-11-22T09:54:12.000+09:00",
+  "created_at": "2026-11-22T09:52:22.000+09:00",
+  "note_url": "https://note.com/kyamamoto9120/n/n6502c854b9d6",
+  "price": 0,
+  "is_limited": false,
+  "is_trial": false,
+  "eyecatch": "https://assets.st-note.com/production/uploads/images/339116859/rectangle_large_type_2_0319f35c1ca11f6c8730705e68180098.png?fit=bounds&quality=85&width=1280",
+  "eyecatch_alt": "見出し画像",
+  "eyecatch_width": 1920,
+  "eyecatch_height": 1005,
+  "hashtags": [
+    "#エンジニア",
+    "#ClaudeCode",
+    "#AI駆動開発",
+    "#ADR",
+    "#コンピュータ将棋"
+  ],
+  "pictures": [],
+  "embedded_contents": [
+    {
+      "key": "emb4f33628baa12",
+      "url": "https://note.com/kyamamoto9120/n/n8e50f15a69e0",
+      "service": "note",
+      "identifier": "n8e50f15a69e0",
+      "caption": null,
+      "html_for_embed": "<iframe class=\"note-embed\" height=\"210\" scrolling=\"no\" src=\"https://note.com/embed/notes/n8e50f15a69e0\" style=\"border: 0; display: block; max-width: 99%; width: 494px; padding: 0px; margin: 10px 0px; position: static; visibility: visible;\"></iframe>\n",
+      "html_for_display": null
+    },
+    {
+      "key": "emb7fdc56603c10",
+      "url": "https://note.com/kyamamoto9120/n/nfe667accffd0",
+      "service": "note",
+      "identifier": "nfe667accffd0",
+      "caption": null,
+      "html_for_embed": "<iframe class=\"note-embed\" height=\"210\" scrolling=\"no\" src=\"https://note.com/embed/notes/nfe667accffd0\" style=\"border: 0; display: block; max-width: 99%; width: 494px; padding: 0px; margin: 10px 0px; position: static; visibility: visible;\"></iframe>\n",
+      "html_for_display": null
+    }
+  ],
+  "user": {
+    "urlname": "kyamamoto9120",
+    "nickname": "山本一将｜焚き火を愛するエンジニア"
+  },
+  "_fetched_at": "2026-11-22T01:09:22.620Z"
+}

@@ -4,10 +4,11 @@
 読む用の Markdown (`index.md`) の 2 層でアーカイブしています。取り込みと検査は
 `tools/notes` の `hokuchi-note` が行います。
 
-全 55 本。
+全 56 本。
 
 | 公開日 | タイトル | 原文 |
 |---|---|---|
+| 2026-11-22 | [AIが読む記録は、寿命で置き場所を分ける](2026-11-22-deleted-all-adrs/) | [note](https://note.com/kyamamoto9120/n/n6502c854b9d6) |
 | 2026-11-15 | [音声入力を再開した。やめた理由が、もう思い出せない](2026-11-15-voice-input-again/) | [note](https://note.com/kyamamoto9120/n/n18bae5c074c5) |
 | 2026-11-08 | [地方カンファレンスは、ご当地まで味わって完成する。KomeKaigi 2026 参加レポート](2026-11-08-komekaigi-2026/) | [note](https://note.com/kyamamoto9120/n/nc87ef9fa41b6) |
 | 2026-11-01 | [2026年10月の活動振り返り](2026-11-01-monthly-review/) | [note](https://note.com/kyamamoto9120/n/ne4e46269210a) |

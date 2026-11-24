@@ -7,6 +7,7 @@ import profile from '../assets/profile.jpg'
 import aiShogi from '../assets/ai-shogi.png'
 import result2015 from '../assets/result2015.png'
 import yamashitaHoki from '../assets/yamashita-hoki.png'
+import burikaigiQr from '../assets/burikaigi-qr.png'
 import './shogi.css'
 
 const N = 26
@@ -614,6 +615,11 @@ function Bare() {
           世界大会に出よう
         </div>
         <div className="sub">将棋 AI の話の続きは ブリ会議で</div>
+      </Show>
+      {/* fortee の採択ページ (https://fortee.jp/burikaigi-2027/proposal/fd2ec402-a8ce-4aa5-8550-3178ba56c8b7) へ */}
+      <Show {...p} show="25" anim="fade" d={0.5} className="qr">
+        <img src={burikaigiQr} alt="BuriKaigi 2027 のプロポーザルのページの QR コード" />
+        <div className="cap">fortee のプロポーザル</div>
       </Show>
 
       <Show {...p} show="1,4-25" anim="fade" className="foot">

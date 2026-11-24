@@ -292,3 +292,7 @@
 
 /* ---------- stage の .stage が足すものを元に戻す (palt・行の高さ 1.4・文節の折り返し・文字の平滑化) ---------- */
 .bx{font-feature-settings:normal;line-height:normal;word-break:normal;-webkit-font-smoothing:auto}
+/* 読み取れるよう、白地のまま角を丸めるだけにする */
+.bx .qr{left:930px;top:200px;width:240px;text-align:center}
+.bx .qr img{display:block;width:240px;height:240px;border-radius:10px}
+.bx .qr .cap{margin-top:12px}

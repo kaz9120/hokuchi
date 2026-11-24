@@ -37,7 +37,7 @@ description: 山本一将の発信に使う短い動画を作る。HyperFrames�
 
 1. 話者に 3 つだけ聞く。何の動画か（元の記事や登壇）、どこに流すか、いつまでに要るか。尺と画面の形は、聞かずに既定値（下記）で進める
 2. 元ネタを読み、写真やスクリーンショットなど本物の素材を探す。記事なら `articles/note/<slug>/assets/` にある
-3. `npx hyperframes init <dir> --example blank --resolution portrait --skip-skills --non-interactive` でプロジェクトを作り、`index.html` の `data-resolution` を外して `data-width="1080" data-height="1350"` にする（4:5 のプリセットはない）
+3. `npx hyperframes init <dir> --example blank --resolution portrait --skip-skills --non-interactive` でプロジェクトを作る
 4. 絵コンテを文で出し、話者と合意する。シーンごとに秒数・画面の文言・動き・音を 1 行ずつ。合意するまで作らない
 5. `hyperframes` スキルの決まりに従って書く。部品は先に `npx hyperframes catalog --query "<英語>" --json` で探す
 6. `npx hyperframes check` を通す。エラーは全部直し、警告は読んで判断する
@@ -47,8 +47,8 @@ description: 山本一将の発信に使う短い動画を作る。HyperFrames�
 
 ## hokuchi の既定値
 
-- 画面: 4:5（1080×1350）、30fps、15〜18 秒、6 シーン前後（1 シーン 2.5 秒が目安）。9:16 は X のデスクトップで左右に大きな余白が出る（`references/lessons.md` の 10）
-- 上下に 90px ほどの余白を残して文字を置く
+- 画面: 縦 1080×1920（9:16）、30fps、15〜18 秒、6 シーン前後（1 シーン 2.5 秒が目安）。X のデスクトップでは左右に余白が出るが、スマホの縦型の再生を優先して 9:16 にする（`references/lessons.md` の 10）
+- 文字を置くのは上端 168px から 1330px までの帯。下と右は X の操作部品に隠れる
 - 0 秒のコマがサムネイルになる。最初から結論か問いが見えている状態で始める
 - 最後は記事の見出し画像・タイトル・「note で読む →」で終える
 

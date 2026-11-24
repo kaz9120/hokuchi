@@ -1,6 +1,6 @@
 # hokuchi（火口）
 
-山本一将の発信のためのリポジトリです。何のために発信し、hokuchi が何をするかは `GOALS.md` にあります。機能や画面を迷ったら、まず `GOALS.md` に照らしてください。ブランド定義は `BRAND.md` にあります（ビジュアルの一次ソースです。実装トークンは hidoko の `packages/ui/src/tokens.css` にあります）。
+山本一将の発信のためのリポジトリです。何のために発信し、hokuchi が何をするかは `GOALS.md` にあります。機能や画面を迷ったら、まず `GOALS.md` に照らしてください。ブランド定義は `BRAND.md` にあります（ビジュアルの一次ソースです）。デザインシステムは takibi-design-system（`~/Hobby/takibi-design-system`）で、発信物もこれに沿わせます。沿っていないものは出しません。
 
 ## 文書の置き場
 

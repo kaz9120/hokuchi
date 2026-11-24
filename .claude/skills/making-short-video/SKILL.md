@@ -20,7 +20,18 @@ description: 山本一将の発信に使う短い動画を作る。HyperFrames�
 
 動画のプロジェクトは公開リポジトリの外の `~/Hobby/hokuchi-private/videos/<YYYY-MM-DD-slug>/` に置きます。日付と slug は元になる記事や登壇に揃えます。BGM や効果音の利用条件を確かめる前のものを、公開リポジトリに入れないためです。
 
-見本は `~/Hobby/hokuchi-private/videos/2026-11-08-komekaigi-teaser/` です。KomeKaigi 2026 の記事の予告で、6 シーン・17.5 秒、シェーダー 1 か所、効果音と BGM 入り。迷ったらこの `index.html` を開いてください。
+見本は `~/Hobby/hokuchi-private/videos/2026-11-25-mosh-teaser/` です。MOSH Tech Meetup #6 の登壇の告知で、5 シーン・17.5 秒、効果音と BGM 入り。takibi のトークン・書体・曲線と、火の粉の背景の移し方は、この `index.html` を写してください。KomeKaigi の予告（`2026-11-08-komekaigi-teaser/`）はデザインシステムに沿っていないので、見本にしません。
+
+## デザインシステムに沿う（鉄則）
+
+デザインシステムに沿っていない動画は出しません。直すまで投稿を勧めません。デザインシステムは takibi-design-system（`~/Hobby/takibi-design-system`）で、発信物にも使うと `content/communication/index.md` に書いてあります。書く前に `content/basics/` の color・typography・motion を読みます。
+
+- 色は `packages/takibi/dist/tokens.css` をプロジェクトの `assets/takibi/` に写して読み込み、役割のトークン（`--color-surface`、`--color-fg-*`、`--color-line*`、`--color-brand` など）だけを使う。値を直に書かない
+- ブランドカラー（`--color-brand`）は CTA だけに使う。強調したい語は、色ではなく文字の大きさと `fg-strong` / `fg-muted` の差で強調する。温度の色（`--color-heat-*`）は光と火の粉だけに使う
+- 書体は Inter と LINE Seed JP。LINE Seed JP の woff2 は `apps/slides/dist/<トーク>/fonts/` にあるので `assets/fonts/` に写し、`@font-face` で読む。太さは 700 まで（見出しは 600 か 700）
+- 文字と角丸の段は画面の px なので、動画では 2.5 倍して使う（幅 432px の画面を 2.5 倍で映したものとみなす）
+- 動きの長さと曲線は `--duration-*` と `--ease-*` を JS で読んで使う。文字の送りは `ease-ignite`（500ms）、消える要素は `ease-rise` で 10px 上がって 1.03 倍。ぼかし（`filter: blur`）と、takibi にない場面転換（シェーダー）は使わない
+- 火の粉の背景は `packages/takibi/src/embers.js` の式を写し、seed 付きの乱数で全編を先に計算して、`hf-seek` で時刻のコマを描く。自分で丸を浮かせない
 
 ## 流れ
 
@@ -39,16 +50,15 @@ description: 山本一将の発信に使う短い動画を作る。HyperFrames�
 - 画面: 縦 1080×1920、30fps、15〜18 秒、6 シーン前後（1 シーン 2.5 秒が目安）
 - 文字を置くのは上端 168px から 1330px までの帯。下と右は X の操作部品に隠れる
 - 0 秒のコマがサムネイルになる。最初から結論か問いが見えている状態で始める
-- 色は hidoko の夜の焚き火（`~/Hobby/hidoko/packages/ui/src/tokens.css`）。背景 `#0a0907`、文字 `#ebe5d8`、アクセント `#f47d3a`。フォントは同梱の Noto Sans JP と JetBrains Mono（LINE Seed JP は `@font-face` で入れる必要があり、まだ試していない）
 - 最後は記事の見出し画像・タイトル・「note で読む →」で終える
 
 ## 動画を地味にしないために
 
 1 本目が地味だった原因と、2 本目で効いたことです。
 
+どれもデザインシステムの範囲の中で行います。
+
 - 登場した文字はそこで止め、動き続けるのは背景にする。見本では火の粉が全編で昇り続ける
-- 場面転換は、山場の 1 か所だけシェーダー（`@hyperframes/shader-transitions`）にし、残りは普通のカットか、画面の動きでつなぐ
-- 動きの緩急を変える。登場は `expo.out` / `power4.out`、退場は `power3.in`、同じ ease を並べない
 - 効果音を、画面で何かが起きる瞬間に当てる。BGM は盛り上がる拍を山場に合わせる（`npx hyperframes beats <曲> --json` で拍を出し、`data-start` をずらして揃える）
 
 ## やらないこと

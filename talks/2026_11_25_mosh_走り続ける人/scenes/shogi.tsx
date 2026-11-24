@@ -11,7 +11,7 @@ import './shogi.css'
 
 const N = 27
 
-// 状態ごとに舞台の根に付けるクラス。枠の列は 0〜15 のあいだ拡大位置で待ち、16 で 20 年の並びに縮む
+// 状態ごとに舞台の根に付けるクラス。枠の列は 0〜15 のあいだ拡大位置で待ち、16 で 24 大会の並びに縮む
 const FLAGS: Record<string, (s: number) => boolean> = {
   boardon: (s) => [0, 2, 3].includes(s),
   warm: (s) => s >= 24,
@@ -64,14 +64,18 @@ function Show({ show, anim, d, className = '', style, children, s }: ShowProps) 
 const WIN = [1997, 2004, 2007]
 const SECOND = [1999, 2000, 2003, 2006]
 
-/** 1996〜2015 の 20 大会。順位が分かっている年だけ色を付ける (ほかの年は「決勝に残った」だけを示す) */
+// 第 2 回 (1991) から第 25 回 (2015) の 24 大会。CSA 会誌 27 号の「24 回連続 8 位以内」に合わせた。
+// 1995 年は開催が無い (第 5 回が 1994 年 12 月、第 6 回が 1996 年 1 月)。決勝リーグができたのは第 6 回からだが、
+// 話者の判断で 8 位以内の 24 大会を「決勝」として数える
+const YEARS = [1991, 1992, 1993, 1994, ...Array.from({ length: 20 }, (_, i) => 1996 + i)]
+
+/** 24 大会の 8 枠。順位が分かっている年だけ色を付ける (ほかの年は「8 位以内に残った」だけを示す) */
 function Grid() {
   return (
     <div className="abs grid">
-      {Array.from({ length: 20 }, (_, i) => {
-        const y = 1996 + i
+      {YEARS.map((y, i) => {
         const yc = WIN.includes(y) ? ' w' : SECOND.includes(y) ? ' r' : ''
-        const full = i === 0 || i === 19
+        const full = i === 0 || i === YEARS.length - 1
         return (
           <div key={y} className={`col y${y}`} style={{ '--cd': `${(i * 0.06).toFixed(2)}s` } as CSSProperties}>
             {Array.from({ length: 8 }, (_, k) => {
@@ -254,10 +258,10 @@ function Bare() {
         </div>
       </Show>
       <Show {...p} show="6" d={0.25} className="s2text">
-        <div className="kicker">20 years</div>
+        <div className="kicker">24 years</div>
         <div className="big">
           この <em>8 枠</em>に<br />
-          <em>20 年</em>残り続けた
+          <em>24 年</em>残り続けた
           <br />
           ソフトがある
         </div>
@@ -375,6 +379,10 @@ function Bare() {
           <br />
           残れないかが全て<span className="br">」</span>
         </div>
+        <div className="sub" style={{ marginTop: 28 }}>
+          前年 9 位から翌年優勝した例が何度かあった
+          <br />9 位は 翌年の出世がかかる順位
+        </div>
       </Show>
       <Show {...p} show="14" d={0.2} className="quote">
         <div className="kicker jp">9 位でやりきった感が出ていた</div>
@@ -389,7 +397,7 @@ function Bare() {
         <div className="q">
           走れたのは
           <br />
-          <em>翌 1 年</em>
+          <em>2015 年までの 1 年</em>だけ
         </div>
       </Show>
       <Show {...p} show="15" anim="fade" d={0.2} className="mytrack">
@@ -397,23 +405,23 @@ function Bare() {
         <div className="seg2" />
         <div className="over">本当に頑張った 1 年</div>
         <div className="dot" style={{ left: 0 }} />
-        <div className="dot dim" style={{ left: 400 }} />
+        <div className="dot" style={{ left: 400 }} />
         <div className="lb" style={{ left: 0 }}>
-          <small>2015</small>9 位
+          <small>2014</small>走り出す
         </div>
         <div className="lb" style={{ left: 400 }}>
-          <small>2016</small>成績が落ちる
+          <small>2015</small>9 位
         </div>
         <div className="lb" style={{ left: 740, color: 'var(--mute)' }}>
-          <small>その後</small>惰性
+          <small>2016〜</small>続けられなかった
         </div>
       </Show>
 
-      {/* ===== 16-21 YSS の 20 年 ===== */}
+      {/* ===== 16-21 YSS の 24 大会 ===== */}
       <Grid />
       <div className="abs track" />
       <Show {...p} show="16-21" anim="fade" d={0.6} className="tracklabel">
-        決勝進出 ─ 20 大会連続
+        決勝進出 ─ 24 大会連続
       </Show>
       <Show {...p} show="16-21" anim="left" className="hd">
         <div className="kicker jp">世界コンピュータ将棋選手権</div>
@@ -426,10 +434,10 @@ function Bare() {
       </Show>
       <Show {...p} show="16" anim="right" d={0.2} className="zone">
         <div className="ztext">
-          <div className="kicker">1996 ─ 2015</div>
+          <div className="kicker">1991 ─ 2015</div>
           <div className="lead" style={{ marginTop: 18, fontSize: 40 }}>
             決勝の 8 枠を<br />
-            <em>20 年</em>並べると
+            <em>24 大会</em>並べると
           </div>
         </div>
       </Show>
@@ -502,17 +510,18 @@ function Bare() {
           </p>
         </div>
       </Show>
-      {[100, 370, 640, 910].map((left, i) => (
-        <Show key={left} {...p} show="20" d={0.3 + i * 0.25} className="brk" style={{ left, width: 270 }}>
+      {/* 列の間隔は 44.83px (shogi.css の .tl の列幅と隙間)。括弧は 5 列ずつ、先頭の列から */}
+      {[102, 326, 550, 775].map((left, i) => (
+        <Show key={left} {...p} show="20" d={0.3 + i * 0.25} className="brk" style={{ left, width: 224 }}>
           <span>5 年</span>
         </Show>
       ))}
-      {[370, 640, 910].map((left, i) => (
+      {[326, 550, 775].map((left, i) => (
         <Show key={left} {...p} show="20" anim="fade" d={0.55 + i * 0.25} className="wall" style={{ left }} />
       ))}
       <Show {...p} show="21" anim="zoom" d={0.15} className="zone">
         <div className="stat">
-          <span className="num">20</span>
+          <span className="num">24</span>
           <span className="lbl">
             大会連続
             <br />

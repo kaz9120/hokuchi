@@ -114,10 +114,10 @@
 .bx.bx.s4 .term pre .ln{opacity:1;transition-delay:calc(var(--k) * 260ms + .5s)}
 .bx.bx.s4 .term.b pre .ln{transition-delay:calc(var(--k) * 260ms + .63s)}
 
-/* ---------- 枠（8 枠 → 20 年） ---------- */
+/* ---------- 枠（8 枠 → 24 大会） ---------- */
 .bx .grid{left:107px;top:360px;width:1066px;height:204px;display:flex;gap:14px;transform-origin:0 0;
   transition:transform 1.3s var(--ease),opacity .8s var(--ease);opacity:0}
-.bx .col{position:relative;width:40px;display:flex;flex-direction:column;gap:4px;transition:opacity .8s var(--ease)}
+.bx .col{position:relative;flex:none;width:40px;display:flex;flex-direction:column;gap:4px;transition:opacity .8s var(--ease),width 1.3s var(--ease)}
 .bx .cell{position:relative;height:22px;border:1px solid rgba(235,229,216,.16);border-radius:3px;background:rgba(235,229,216,.025);
   transition:background .6s var(--ease),border-color .6s var(--ease),box-shadow .6s var(--ease);transition-delay:var(--cd,0s)}
 .bx .cell .n{position:absolute;inset:0;display:grid;place-items:center;font:600 10px/1 var(--en);color:var(--mute);transition:opacity .5s}
@@ -128,6 +128,11 @@
   opacity:0;transition:opacity .6s, color .4s;transition-delay:var(--cd,0s)}
 .bx .yr.full{font-weight:600;color:var(--ink)}
 .bx.bx.bigpos .grid{transform:translate(730px,-280px) scale(2.75)}
+/* 24 大会を同じ幅 1066px に収める: 列 34.83px + 隙間 10px = 間隔 44.83px。
+   拡大位置 (0〜15) の 1 列目は元の 40px のまま見せたいので、並びに縮むときだけ細くする */
+.bx.bx.tl .grid{gap:10px}
+.bx.bx.tl .col{width:34.83px}
+.bx.bx.tl .yr{left:-9.6px}
 .bx.bx:not(.tl) .col:not(:first-child){opacity:0}
 .bx.bx.col8 .grid,.bx.bx.tl .grid{opacity:1}
 .bx.bx.col8lit .col:first-child::after{opacity:1}
@@ -171,7 +176,7 @@
 .bx .legend .sw.r{border:1px solid var(--e400);background:repeating-linear-gradient(135deg,rgba(244,125,58,.55) 0 3px,transparent 3px 6px)}
 .bx .legend .yl{font:400 21px/1 var(--mono);color:var(--mute);letter-spacing:.04em}
 .bx .legend .cnt{font:800 34px/1 var(--en);color:var(--e300);width:40px;text-align:right}
-.bx .connector{left:667px;top:294px;width:2px;height:44px;background:linear-gradient(var(--e300),transparent);transform-origin:top}
+.bx .connector{left:752px;top:294px;width:2px;height:44px;background:linear-gradient(var(--e300),transparent);transform-origin:top}
 .bx .connector[data-show]{transform:scaleY(0)}
 .bx .connector[data-show].on{transform:scaleY(1)}
 .bx .bxchip{display:inline-block;margin-left:10px;padding:4px 9px;border:1px dashed var(--e400);border-radius:999px;

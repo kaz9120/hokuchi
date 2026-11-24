@@ -29,3 +29,17 @@
 - 衝撃音とタイマーの秒針は、狙いどおりの音が取れた
 - 「ペンで線を引く音」は見つからず、同梱の短いスウッシュで代わりにした
 - クリック音は小さく、`data-volume` を上限近く（3.9）まで上げた。`data-media-start` で鳴り始めに合わせないと、無音の区間を鳴らしてしまう（`check` が `audio_clip_silent` で教えてくれる）
+
+## 6. `tl.to` の始まりの値が、書き出しの一部のコマで狂う（2026-11-24、v0.9.88）
+
+同じ線に `fromTo`（描き始め）と `to`（続き）を重ねたら、MP4 の 3.6 秒のコマだけ線がほぼ消えた。前後のコマは正しい。書き出しは複数のワーカーが順不同にシークするので、`to` が始まりの値を拾う時点がずれるらしい。
+
+同じ要素を 2 回以上動かすときは、2 つ目以降も `fromTo` にして始まりの値を書き、`immediateRender: false` を付ける。
+
+## 7. `~/.cache` が他のユーザーから書ける状態だと、書き出しが Chrome を使わない（2026-11-24、v0.9.88）
+
+`render` が「Chrome not found」で止まった。`check` は通る。原因は `~/.cache` のパーミッション（777）。`~/.cache` は変えずに、`export HYPERFRAMES_CACHE_DIR=~/Library/Caches/hyperframes`（700 で作る）を付けて `npx hyperframes browser ensure` してから書き出すと通った。
+
+## 8. connpass のページは curl では読めない（2026-11-24）
+
+curl と WebFetch には、本文が空の 202 が返る。Claude in Chrome で開くと読める。告知に入れる日時・会場・空き状況はそこから取る。

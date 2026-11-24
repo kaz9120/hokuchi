@@ -9,7 +9,7 @@ import result2015 from '../assets/result2015.png'
 import yamashitaHoki from '../assets/yamashita-hoki.png'
 import './shogi.css'
 
-const N = 25
+const N = 26
 
 // 状態ごとに舞台の根に付けるクラス。枠の列は 0〜16 のあいだ拡大位置で待ち、17 で 24 大会の並びに縮む
 const FLAGS: Record<string, (s: number) => boolean> = {
@@ -416,24 +416,22 @@ function Bare() {
           <em>2015 年までの 1 年</em>だけ
         </div>
       </Show>
-      {/* ひまわりの順位 (出典は選手権の全成績の表)。縦は順位で、1 位が上。1 順位 = 5.3px */}
+      {/* ひまわりの順位 (出典は選手権の全成績の表)。縦は順位で、1 位が上。1 順位 = 5.3px。
+          決勝の線を引くと 1 順位の差が見えず 9 位が決勝に届いて見えたので、線は引かない (話者の指摘) */}
       <Show {...p} show="15" anim="fade" d={0.2} className="hchart">
         <svg width={1000} height={190} aria-hidden="true">
-          <rect className="band" x={0} y={10} width={1000} height={42.4} />
-          <line className="cut" x1={0} y1={52.4} x2={1000} y2={52.4} />
           <line className="s1" x1={150} y1={171.7} x2={500} y2={55} pathLength={1} />
           <line className="s2" x1={500} y1={55} x2={850} y2={108} />
           <circle cx={150} cy={171.7} r={8} />
           <circle cx={500} cy={55} r={10} className="hot" />
           <circle cx={850} cy={108} r={8} className="dim" />
         </svg>
-        <div className="bandlb">決勝の 8 枠（8 位まで）</div>
         <div className="over">本当に頑張った 1 年</div>
         <div className="lb" style={{ left: 150 }}>
           <small>2014</small>31 位
         </div>
         <div className="lb hot" style={{ left: 500 }}>
-          <small>2015</small>9 位<span className="miss">決勝まで あと 1 つ</span>
+          <small>2015</small>9 位
         </div>
         <div className="lb" style={{ left: 850, color: 'var(--mute)' }}>
           <small>2016</small>19 位
@@ -451,9 +449,9 @@ function Bare() {
         <div className="sub" style={{ marginTop: 28 }}>
           3〜4 年で主な技術をやり尽くし 強くならなくなる
         </div>
-        {/* 出典は伊藤英紀さんの文 (コンピュータ将棋協会誌 2009)。話者の判断で、引用した新書の読書感想のブログを参照した */}
+        {/* 出典は会誌の原文 (第 21 巻 2009 年号 p.3〜「FPGA 将棋開発の軌跡」の「おわりに」) */}
         <div className="cap" style={{ marginTop: 40, fontSize: 17 }}>
-          伊藤英紀（ボンクラーズ / Puella α 開発者）　コンピュータ将棋協会誌 2009 年
+          伊藤英紀「FPGA 将棋開発の軌跡」　コンピュータ将棋協会誌 第 21 巻（2009 年号）
         </div>
       </Show>
 
@@ -568,16 +566,7 @@ function Bare() {
           選手権に出ている
         </div>
         {/* 順位は選手権の全成績の表 (2026 年はまだ載っていない) */}
-        <div className="sub">
-          2024 年と 2025 年は 8 位
-          <br />
-          決勝の 8 枠に戻った
-        </div>
-        <div className="sub" style={{ fontSize: 20, color: 'var(--mute)' }}>
-          会場で会う山下さんは
-          <br />
-          いつも若々しく楽しそう
-        </div>
+        <div className="sub">2024 年と 2025 年は 8 位</div>
       </Show>
 
       {/* ===== 22-24 締め ===== */}
@@ -614,8 +603,20 @@ function Bare() {
         </div>
       </Show>
       <Show {...p} show="24" d={0.5} className="run" />
+      {/* 告知。演題・日程・会場は fortee の採択ページと開催情報から */}
+      <Show {...p} show="25" d={0.15} className="restart">
+        <div className="kicker">BuriKaigi 2027 · 2027.01.08 – 09 · 富山国際会議場</div>
+        <div className="big" style={{ fontSize: 60 }}>
+          Claude Code と 3 週間で
+          <br />
+          <em>将棋 AI</em> を作って
+          <br />
+          世界大会に出よう
+        </div>
+        <div className="sub">将棋 AI の話の続きは ブリ会議で</div>
+      </Show>
 
-      <Show {...p} show="1,4-24" anim="fade" className="foot">
+      <Show {...p} show="1,4-25" anim="fade" className="foot">
         <b>WCSC</b>　World Computer Shogi Championship
       </Show>
       <div className="abs pager">

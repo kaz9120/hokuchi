@@ -296,3 +296,10 @@
 .bx .qr{left:930px;top:200px;width:240px;text-align:center}
 .bx .qr img{display:block;width:240px;height:240px;border-radius:10px}
 .bx .qr .cap{margin-top:12px}
+
+/* PDF (印刷) のときだけ、粒子のざらつきを外す。ざらつきはページごとに 1366x769 の画像 (約 2.2MB) になり、
+   PDF が 85MB を超えてサイト (Cloudflare Workers の 1 ファイル 25MiB まで) に載らなかったため。
+   不透明度 .07 の重ねなので、外しても見た目はほぼ変わらない。画面には残す */
+@media print{
+  .bx .grain{display:none}
+}

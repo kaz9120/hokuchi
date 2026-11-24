@@ -1013,11 +1013,17 @@ const touch = (w: Work, ...paths: string[]) => (w.touched = [...new Set([...(w.t
 /** git の変わったファイル。paths の下だけ */
 export function gitChanges(paths: string[]): FileChange[] {
   try {
-    const out = execFileSync('git', ['status', '--porcelain', '--untracked-files=all', '--', ...paths], { cwd: gitRoot, encoding: 'utf8' }) as string
-    return out
-      .split('\n')
-      .filter(Boolean)
-      .map((l) => ({ status: l.slice(0, 2).trim(), path: l.slice(3) }))
+    // -z で受ける。-z が無いと、日本語を含むパスが "talks/2026_..\350.." のように引用符と 8 進数で返り、
+    // そのまま git add に渡すと pathspec が一致しない。-z では名前の変更 (R/C) の後ろに元の名前が 1 つ続くので読み飛ばす
+    const out = execFileSync('git', ['status', '--porcelain', '-z', '--untracked-files=all', '--', ...paths], { cwd: gitRoot, encoding: 'utf8' }) as string
+    const fields = out.split('\0').filter(Boolean)
+    const changes: FileChange[] = []
+    for (let i = 0; i < fields.length; i++) {
+      const status = fields[i].slice(0, 2)
+      changes.push({ status: status.trim(), path: fields[i].slice(3) })
+      if (/[RC]/.test(status)) i++
+    }
+    return changes
   } catch {
     return []
   }

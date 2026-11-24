@@ -265,10 +265,10 @@ function Bare() {
         </div>
       </Show>
       <Show {...p} show="6" d={0.25} className="s2text">
-        <div className="kicker">24 years</div>
+        <div className="kicker">24 tournaments</div>
         <div className="big">
           この <em>8 枠</em>に<br />
-          <em>24 年</em>残り続けた
+          <em>24 大会</em>残り続けた
           <br />
           ソフトがある
         </div>
@@ -339,11 +339,6 @@ function Bare() {
           いちばん
           <br />
           良かった年
-        </div>
-        <div className="sub" style={{ marginTop: 22, fontSize: 24 }}>
-          YSS が最後に
-          <br />
-          決勝に残った年
         </div>
       </Show>
       <Show {...p} show="11" d={0.5} className="ttop">
@@ -432,13 +427,13 @@ function Bare() {
           <circle cx={500} cy={55} r={10} className="hot" />
           <circle cx={850} cy={108} r={8} className="dim" />
         </svg>
-        <div className="bandlb">決勝の 8 枠</div>
+        <div className="bandlb">決勝の 8 枠（8 位まで）</div>
         <div className="over">本当に頑張った 1 年</div>
         <div className="lb" style={{ left: 150 }}>
           <small>2014</small>31 位
         </div>
         <div className="lb hot" style={{ left: 500 }}>
-          <small>2015</small>9 位
+          <small>2015</small>9 位<span className="miss">決勝まで あと 1 つ</span>
         </div>
         <div className="lb" style={{ left: 850, color: 'var(--mute)' }}>
           <small>2016</small>19 位
@@ -449,12 +444,16 @@ function Bare() {
       <Show {...p} show="16" d={0.15} className="quote">
         <div className="kicker jp">コンピュータ将棋の 5 年限界説</div>
         <div className="q">
-          開発 <em>5 年</em>で
+          開発 <em>5 年</em>ほどで
           <br />
-          改良のネタが尽きる
+          撤退してしまう
         </div>
         <div className="sub" style={{ marginTop: 28 }}>
-          強くならなくなり 開発者は去っていく という経験則
+          3〜4 年で主な技術をやり尽くし 強くならなくなる
+        </div>
+        {/* 出典は伊藤英紀さんの文 (コンピュータ将棋協会誌 2009)。話者の判断で、引用した新書の読書感想のブログを参照した */}
+        <div className="cap" style={{ marginTop: 40, fontSize: 17 }}>
+          伊藤英紀（ボンクラーズ / Puella α 開発者）　コンピュータ将棋協会誌 2009 年
         </div>
       </Show>
 
@@ -526,7 +525,7 @@ function Bare() {
             <em>Bonanza</em> のソースが公開される
           </div>
           <p style={{ fontSize: 19, marginTop: 8 }}>
-            誰でも Bonanza の上から始められるようになった
+            Bonanza を土台にしたソフトが次々と参加 ボナンザ・チルドレン
             <br />
             この年 YSS は 7 位
           </p>
@@ -543,17 +542,20 @@ function Bare() {
       <Show {...p} show="20-21" anim="fade" d={0.3} className="phcap cap">
         右 山下さん（YSS）　左 保木さん（Bonanza）
       </Show>
-      {/* 話者の印象。山下さんの言葉と取られないよう、本文でも印象だと分かる形にする */}
+      {/* 話者から見た山下さん。山下さんの言葉と取られないよう、見出しで話者の見方だと示す */}
       <Show {...p} show="20" anim="right" d={0.2} className="yt">
-        <div className="kicker jp">私の印象</div>
+        <div className="kicker jp">私から見た山下さん</div>
         <div className="mid">
-          流行りの技術も
+          新しい技術を
           <br />
-          いいと言われたものも
+          取り入れ続け
           <br />
-          <em>とらわれずに</em>取り入れる
+          <em>前線に居続ける</em>
+        </div>
+        <div className="sub">
+          1 年でも大変なことを 24 大会
           <br />
-          人に見える
+          だから かっこいい
         </div>
       </Show>
       <Show {...p} show="21" anim="right" d={0.2} className="yt">
@@ -561,11 +563,17 @@ function Bare() {
         <div className="mid">
           いまも
           <br />
-          <em>形を変えて</em>
+          <em>AobaZero</em> で
           <br />
-          開発を続けている
+          選手権に出ている
         </div>
+        {/* 順位は選手権の全成績の表 (2026 年はまだ載っていない) */}
         <div className="sub">
+          2024 年と 2025 年は 8 位
+          <br />
+          決勝の 8 枠に戻った
+        </div>
+        <div className="sub" style={{ fontSize: 20, color: 'var(--mute)' }}>
           会場で会う山下さんは
           <br />
           いつも若々しく楽しそう

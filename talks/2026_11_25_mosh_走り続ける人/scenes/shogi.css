@@ -142,15 +142,19 @@
 .bx.bx.tl .yr{opacity:1}
 .bx.bx.tl .col .cell{border-color:rgba(244,125,58,.28);background:rgba(244,125,58,.05)}
 .bx .cell.win,.bx .cell.second{--cd:0s}
+.bx.bx.res .cell.yss{background:rgba(244,125,58,.5);border-color:var(--e400)}
+.bx .rankline{position:absolute;left:0;top:0;overflow:visible;pointer-events:none;opacity:0;transition:opacity .8s var(--ease)}
+.bx .rankline polyline{fill:none;stroke:var(--e300);stroke-width:2;stroke-linejoin:round;filter:drop-shadow(0 0 4px rgba(248,160,92,.8))}
+.bx.bx.res .rankline{opacity:.9;transition-delay:1.3s}
 .bx.bx.res .cell.win{background:var(--e300);border-color:var(--e300);box-shadow:0 0 16px rgba(248,160,92,.85)}
 .bx.bx.res .cell.second{background:repeating-linear-gradient(135deg,rgba(244,125,58,.55) 0 3px,transparent 3px 6px);border-color:var(--e400)}
 .bx.bx.res .yr.w{color:var(--e300);font-weight:600}
 .bx.bx.res .yr.r{color:var(--e400)}
-.bx.bx.y06 .col:not(.y2006),.bx.bx.dimall .col{opacity:.38}
+.bx.bx.y06 .col:not(.y2006),.bx.bx.y09 .col:not(.y2009){opacity:.38}
+.bx.bx.y09 .col.y2009::after{border-width:2.5px;box-shadow:0 0 26px rgba(248,160,92,.9)}
+.bx.bx.y09 .yr.y2009{color:var(--paper)!important;font-weight:600}
 .bx.bx.y06 .col.y2006::after{border-width:2.5px;box-shadow:0 0 26px rgba(248,160,92,.9)}
 .bx.bx.y06 .yr.y2006{color:var(--paper)!important;font-weight:600}
-.bx.bx.five .col{opacity:.6}
-.bx.bx.fin .col::after{box-shadow:0 0 20px rgba(244,125,58,.75),inset 0 0 12px rgba(244,125,58,.25)}
 
 .bx .track{left:107px;top:336px;width:1066px;height:2px;background:linear-gradient(90deg,var(--e600),var(--e400) 40%,var(--e300));
   box-shadow:0 0 12px rgba(244,125,58,.8);transform-origin:0 50%;transform:scaleX(0);
@@ -175,21 +179,16 @@
 .bx .legend .sw.w{background:var(--e300);box-shadow:0 0 14px rgba(248,160,92,.85)}
 .bx .legend .sw.r{border:1px solid var(--e400);background:repeating-linear-gradient(135deg,rgba(244,125,58,.55) 0 3px,transparent 3px 6px)}
 .bx .legend .yl{font:400 21px/1 var(--mono);color:var(--mute);letter-spacing:.04em}
+.bx .legend .sw.yss{background:rgba(244,125,58,.5);border:1px solid var(--e400)}
 .bx .legend .cnt{font:800 34px/1 var(--en);color:var(--e300);width:40px;text-align:right}
 .bx .connector{left:752px;top:294px;width:2px;height:44px;background:linear-gradient(var(--e300),transparent);transform-origin:top}
+/* 2009 年の列の中心 (先頭から 17 列目) */
+.bx .connector.c09{left:887px}
 .bx .connector[data-show]{transform:scaleY(0)}
 .bx .connector[data-show].on{transform:scaleY(1)}
 .bx .bxchip{display:inline-block;margin-left:10px;padding:4px 9px;border:1px dashed var(--e400);border-radius:999px;
   font:600 13px/1 var(--jp);color:var(--e300);vertical-align:4px;letter-spacing:.1em}
 .bx .big2006{font:800 64px/1 var(--en);color:var(--e300);letter-spacing:-.01em}
-.bx .brk{top:606px;height:16px;border:1.5px solid var(--e400);border-top:none;border-radius:0 0 6px 6px}
-.bx .brk span{position:absolute;left:0;right:0;top:24px;text-align:center;font:600 15px/1 var(--jp);color:var(--e300);letter-spacing:.1em}
-.bx .wall{top:346px;width:0;height:226px;border-left:1.5px dashed rgba(235,229,216,.45)}
-.bx .stat{display:flex;align-items:flex-end;gap:20px}
-.bx .stat .num{font:800 170px/0.8 var(--en);letter-spacing:-.04em;color:var(--e400);text-shadow:0 0 40px rgba(244,125,58,.45)}
-.bx .stat .lbl{font:800 42px/1.25 var(--jp);padding-bottom:2px}
-.bx .stat2{margin-top:30px;display:flex;gap:32px;font:700 26px/1 var(--jp)}
-.bx .stat2 b{font:800 38px/1 var(--en);color:var(--e300);margin-left:10px}
 
 /* ---------- 原点 ---------- */
 .bx .pkg{left:880px;top:96px;width:250px;height:357px;border-radius:5px;overflow:hidden;
@@ -237,19 +236,28 @@
 .bx .quote{left:96px;top:150px;width:1100px}
 .bx .quote .q{font:800 72px/1.3 var(--jp);margin-top:28px}
 .bx .quote .q .br{color:var(--e400);font-weight:400}
-.bx .mytrack{left:160px;top:520px;width:1000px;height:120px}
-.bx .mytrack .seg1{position:absolute;left:0;top:20px;width:400px;height:3px;background:linear-gradient(90deg,var(--e400),var(--e300));
-  box-shadow:0 0 14px rgba(244,125,58,.9);transform-origin:0 50%;transform:scaleX(0);transition:transform 1.2s var(--ease) .3s}
-.bx .mytrack .seg2{position:absolute;left:400px;top:21px;width:600px;height:0;border-top:2px dashed rgba(244,125,58,.6);
-  -webkit-mask:linear-gradient(90deg,#000,transparent);mask:linear-gradient(90deg,#000,transparent);
-  opacity:0;transition:opacity 1s var(--ease) 1.3s}
-.bx .mytrack .dot{position:absolute;top:12px;width:18px;height:18px;margin-left:-9px;border-radius:50%;background:var(--e300);box-shadow:0 0 18px 4px rgba(248,160,92,.7)}
-.bx .mytrack .dot.dim{background:var(--night);border:2px solid var(--e400);box-shadow:none}
-.bx .mytrack .lb{position:absolute;top:50px;font:700 24px/1.4 var(--jp);white-space:nowrap;transform:translateX(-50%)}
-.bx .mytrack .lb small{display:block;font:400 17px/1 var(--mono);color:var(--mute);letter-spacing:.14em;margin-bottom:6px}
-.bx .mytrack .over{position:absolute;left:200px;top:-22px;transform:translateX(-50%);font:700 20px/1 var(--jp);color:var(--e300);white-space:nowrap}
-.bx .mytrack.on .seg1{transform:scaleX(1)}
-.bx .mytrack.on .seg2{opacity:1}
+.bx .nine{margin-top:34px;display:flex;flex-direction:column;gap:10px}
+.bx .nine .row{display:flex;align-items:baseline;gap:20px;font:800 54px/1.35 var(--jp)}
+.bx .nine .y{font:600 30px/1 var(--mono);color:var(--mute);letter-spacing:.04em}
+.bx .nine .ar{color:var(--e400);font-weight:400;margin:0 6px}
+.bx .nine b{font:800 54px/1 var(--en);margin-left:14px}
+.bx .hchart{left:160px;top:400px;width:1000px;height:250px}
+.bx .hchart svg{position:absolute;left:0;top:0;overflow:visible}
+.bx .hchart .band{fill:rgba(244,125,58,.08)}
+.bx .hchart .cut{stroke:rgba(244,125,58,.55);stroke-width:1.5;stroke-dasharray:6 6}
+.bx .hchart .s1{stroke:var(--e300);stroke-width:3;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 6px rgba(244,125,58,.9));
+  transition:stroke-dashoffset 1.2s var(--ease) .3s}
+.bx .hchart.on .s1{stroke-dashoffset:0}
+.bx .hchart .s2{stroke:rgba(244,125,58,.6);stroke-width:2;stroke-dasharray:7 7;opacity:0;transition:opacity 1s var(--ease) 1.3s}
+.bx .hchart.on .s2{opacity:1}
+.bx .hchart circle{fill:var(--e400)}
+.bx .hchart circle.hot{fill:var(--e300);filter:drop-shadow(0 0 10px rgba(248,160,92,.9))}
+.bx .hchart circle.dim{fill:var(--night);stroke:var(--e400);stroke-width:2}
+.bx .hchart .bandlb{position:absolute;right:0;top:20px;font:600 15px/1 var(--jp);color:var(--e400);letter-spacing:.14em}
+.bx .hchart .over{position:absolute;left:280px;top:78px;transform:translateX(-50%);font:700 20px/1 var(--jp);color:var(--e300);white-space:nowrap}
+.bx .hchart .lb{position:absolute;top:196px;font:700 24px/1.4 var(--jp);white-space:nowrap;transform:translateX(-50%);text-align:center}
+.bx .hchart .lb.hot{color:var(--e300)}
+.bx .hchart .lb small{display:block;font:400 17px/1 var(--mono);color:var(--mute);letter-spacing:.14em;margin-bottom:6px}
 
 /* ---------- 山下さん ---------- */
 .bx .ph{left:80px;top:140px;width:540px;height:303px;border-radius:6px;overflow:hidden;

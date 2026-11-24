@@ -9,21 +9,19 @@ import result2015 from '../assets/result2015.png'
 import yamashitaHoki from '../assets/yamashita-hoki.png'
 import './shogi.css'
 
-const N = 27
+const N = 25
 
-// 状態ごとに舞台の根に付けるクラス。枠の列は 0〜15 のあいだ拡大位置で待ち、16 で 24 大会の並びに縮む
+// 状態ごとに舞台の根に付けるクラス。枠の列は 0〜16 のあいだ拡大位置で待ち、17 で 24 大会の並びに縮む
 const FLAGS: Record<string, (s: number) => boolean> = {
   boardon: (s) => [0, 2, 3].includes(s),
-  warm: (s) => s >= 24,
-  bigpos: (s) => s <= 15,
+  warm: (s) => s >= 22,
+  bigpos: (s) => s <= 16,
   col8: (s) => s === 5 || s === 6,
   col8lit: (s) => s === 6,
-  tl: (s) => s >= 16 && s <= 21,
-  res: (s) => s >= 17 && s <= 21,
+  tl: (s) => s >= 17 && s <= 19,
+  res: (s) => s >= 17 && s <= 19,
   y06: (s) => s === 18,
-  dimall: (s) => s === 19,
-  five: (s) => s === 20,
-  fin: (s) => s === 21,
+  y09: (s) => s === 19,
   zoom: (s) => s === 11 || s === 12,
   mean: (s) => s === 12,
 }
@@ -68,8 +66,14 @@ const SECOND = [1999, 2000, 2003, 2006]
 // 1995 年は開催が無い (第 5 回が 1994 年 12 月、第 6 回が 1996 年 1 月)。決勝リーグができたのは第 6 回からだが、
 // 話者の判断で 8 位以内の 24 大会を「決勝」として数える
 const YEARS = [1991, 1992, 1993, 1994, ...Array.from({ length: 20 }, (_, i) => 1996 + i)]
+// 各大会の YSS の最終順位。出典は選手権の全成績の表 (http://www.yss-aya.com/csa_all.html)
+const RANK = [5, 4, 4, 3, 4, 1, 5, 2, 2, 5, 8, 2, 1, 4, 2, 1, 4, 7, 8, 8, 7, 8, 3, 6]
+// 並びに縮んだあとの列の間隔とマスの高さ (shogi.css の .tl .col と .cell)。順位の線はこの座標で引く
+const PITCH = 44.83
+const COLW = 34.83
+const ROWH = 26
 
-/** 24 大会の 8 枠。順位が分かっている年だけ色を付ける (ほかの年は「8 位以内に残った」だけを示す) */
+/** 24 大会の 8 枠。各列にその年の YSS の順位のマスを灯し、線でつなぐ。優勝と準優勝のマスは色を変える */
 function Grid() {
   return (
     <div className="abs grid">
@@ -80,7 +84,7 @@ function Grid() {
           <div key={y} className={`col y${y}`} style={{ '--cd': `${(i * 0.06).toFixed(2)}s` } as CSSProperties}>
             {Array.from({ length: 8 }, (_, k) => {
               const r = k + 1
-              const cls = r === 1 && WIN.includes(y) ? ' win' : r === 2 && SECOND.includes(y) ? ' second' : ''
+              const cls = r === 1 && WIN.includes(y) ? ' win' : r === 2 && SECOND.includes(y) ? ' second' : r === RANK[i] ? ' yss' : ''
               return (
                 <div key={r} className={`cell${cls}`}>
                   <span className="n">{r}</span>
@@ -91,6 +95,9 @@ function Grid() {
           </div>
         )
       })}
+      <svg className="rankline" width={1066} height={204} aria-hidden="true">
+        <polyline points={RANK.map((r, i) => `${(i * PITCH + COLW / 2).toFixed(1)},${(r - 1) * ROWH + 11}`).join(' ')} />
+      </svg>
     </div>
   )
 }
@@ -265,6 +272,11 @@ function Bare() {
           <br />
           ソフトがある
         </div>
+        <div className="sub">
+          私がエンジニアになった
+          <br />
+          きっかけのソフト
+        </div>
       </Show>
 
       {/* ===== 7-9 原点 ===== */}
@@ -353,7 +365,8 @@ function Bare() {
           <img src={result2015} alt="2015 年 第 25 回選手権 2 日目の結果表" />
           <div className="dimr" style={{ top: 0, height: 199 }} />
           <div className="dimr" style={{ top: 245, bottom: 0 }} />
-          <div className="box rows" style={{ left: 66, top: 199, width: 700, height: 46 }} />
+          {/* 拡大したときに見える行の全幅 (順位の数字から右端の列まで) を囲む */}
+          <div className="box rows" style={{ left: 42, top: 199, width: 748, height: 46 }} />
           <div className="box ring" style={{ left: 360, top: 221, width: 46, height: 24 }} />
           <div className="box ring" style={{ left: 636, top: 197, width: 68, height: 50, borderRadius: 14 }} />
         </div>
@@ -371,17 +384,25 @@ function Bare() {
         </div>
       </Show>
 
-      {/* ===== 13-15 走れたのは翌 1 年 ===== */}
+      {/* ===== 13-15 9 位の翌年 / 走れたのは 1 年 ===== */}
       <Show {...p} show="13" className="quote">
-        <div className="kicker jp">2015 · 懇親会で言われた</div>
-        <div className="q">
-          <span className="br">「</span>来年 決勝に残るか
-          <br />
-          残れないかが全て<span className="br">」</span>
+        <div className="kicker jp">前年 9 位から 翌年優勝</div>
+        <div className="nine">
+          <div className="row">
+            <span className="y">2012</span>9 位<span className="ar">→</span>
+            <span className="y">2013</span>
+            <em>優勝</em>
+            <b>Bonanza</b>
+          </div>
+          <div className="row">
+            <span className="y">2013</span>9 位<span className="ar">→</span>
+            <span className="y">2014</span>
+            <em>優勝</em>
+            <b>Apery</b>
+          </div>
         </div>
-        <div className="sub" style={{ marginTop: 28 }}>
-          前年 9 位から翌年優勝した例が何度かあった
-          <br />9 位は 翌年の出世がかかる順位
+        <div className="sub" style={{ marginTop: 30 }}>
+          2 年続けて 前年 9 位のソフトが優勝していた
         </div>
       </Show>
       <Show {...p} show="14" d={0.2} className="quote">
@@ -400,30 +421,50 @@ function Bare() {
           <em>2015 年までの 1 年</em>だけ
         </div>
       </Show>
-      <Show {...p} show="15" anim="fade" d={0.2} className="mytrack">
-        <div className="seg1" />
-        <div className="seg2" />
+      {/* ひまわりの順位 (出典は選手権の全成績の表)。縦は順位で、1 位が上。1 順位 = 5.3px */}
+      <Show {...p} show="15" anim="fade" d={0.2} className="hchart">
+        <svg width={1000} height={190} aria-hidden="true">
+          <rect className="band" x={0} y={10} width={1000} height={42.4} />
+          <line className="cut" x1={0} y1={52.4} x2={1000} y2={52.4} />
+          <line className="s1" x1={150} y1={171.7} x2={500} y2={55} pathLength={1} />
+          <line className="s2" x1={500} y1={55} x2={850} y2={108} />
+          <circle cx={150} cy={171.7} r={8} />
+          <circle cx={500} cy={55} r={10} className="hot" />
+          <circle cx={850} cy={108} r={8} className="dim" />
+        </svg>
+        <div className="bandlb">決勝の 8 枠</div>
         <div className="over">本当に頑張った 1 年</div>
-        <div className="dot" style={{ left: 0 }} />
-        <div className="dot" style={{ left: 400 }} />
-        <div className="lb" style={{ left: 0 }}>
-          <small>2014</small>走り出す
+        <div className="lb" style={{ left: 150 }}>
+          <small>2014</small>31 位
         </div>
-        <div className="lb" style={{ left: 400 }}>
+        <div className="lb hot" style={{ left: 500 }}>
           <small>2015</small>9 位
         </div>
-        <div className="lb" style={{ left: 740, color: 'var(--mute)' }}>
-          <small>2016〜</small>続けられなかった
+        <div className="lb" style={{ left: 850, color: 'var(--mute)' }}>
+          <small>2016</small>19 位
         </div>
       </Show>
 
-      {/* ===== 16-21 YSS の 24 大会 ===== */}
+      {/* ===== 16 5 年限界説 (YSS とは別の話として 1 枚で) ===== */}
+      <Show {...p} show="16" d={0.15} className="quote">
+        <div className="kicker jp">コンピュータ将棋の 5 年限界説</div>
+        <div className="q">
+          開発 <em>5 年</em>で
+          <br />
+          改良のネタが尽きる
+        </div>
+        <div className="sub" style={{ marginTop: 28 }}>
+          強くならなくなり 開発者は去っていく という経験則
+        </div>
+      </Show>
+
+      {/* ===== 17-19 YSS の 24 大会 ===== */}
       <Grid />
       <div className="abs track" />
-      <Show {...p} show="16-21" anim="fade" d={0.6} className="tracklabel">
-        決勝進出 ─ 24 大会連続
+      <Show {...p} show="17-19" anim="fade" d={0.6} className="tracklabel">
+        各列 ＝ その年の決勝の 8 枠
       </Show>
-      <Show {...p} show="16-21" anim="left" className="hd">
+      <Show {...p} show="17-19" anim="left" className="hd">
         <div className="kicker jp">世界コンピュータ将棋選手権</div>
         <div className="name grad" style={{ marginTop: 22 }}>
           YSS
@@ -432,17 +473,14 @@ function Bare() {
           作者 <b>山下さん</b>
         </div>
       </Show>
-      <Show {...p} show="16" anim="right" d={0.2} className="zone">
+      <Show {...p} show="17" anim="right" d={0.2} className="zone">
         <div className="ztext">
           <div className="kicker">1991 ─ 2015</div>
-          <div className="lead" style={{ marginTop: 18, fontSize: 40 }}>
-            決勝の 8 枠を<br />
-            <em>24 大会</em>並べると
+          <div className="lead" style={{ marginTop: 14, fontSize: 40 }}>
+            <em>24 大会</em>連続 決勝進出
           </div>
         </div>
-      </Show>
-      <Show {...p} show="17" anim="right" d={0.15} className="zone">
-        <div className="legend">
+        <div className="legend" style={{ position: 'absolute', top: 104, margin: 0 }}>
           <div className="row">
             <span className="sw w" />
             <span>優勝</span>
@@ -456,14 +494,14 @@ function Bare() {
             <span className="yl">1999 · 2000 · 2003 · 2006</span>
           </div>
           <div className="row" style={{ fontWeight: 400, fontSize: 20, color: 'var(--mute)' }}>
-            <span className="sw" style={{ border: '1.5px solid var(--e400)', boxShadow: '0 0 10px rgba(244,125,58,.5)' }} />
-            決勝の 8 本に入った年
+            <span className="sw yss" />
+            灯ったマスが その年の YSS の順位
           </div>
         </div>
       </Show>
       <Show {...p} show="18" anim="zoom" d={0.1} className="zone">
         <div className="ztext">
-          <div className="kicker">技術の入れ替わり</div>
+          <div className="kicker">技術の入れ替わり 1</div>
           <div className="big2006" style={{ marginTop: 16 }}>
             2006
           </div>
@@ -478,86 +516,47 @@ function Bare() {
         </div>
       </Show>
       <Show {...p} show="18" d={0.45} className="connector" />
-      <Show {...p} show="19" anim="right" d={0.1} className="zone">
+      <Show {...p} show="19" anim="zoom" d={0.1} className="zone">
         <div className="ztext">
-          <div className="kicker jp">
-            もう一つの入れ替わり<span className="bxchip">時期は要確認</span>
+          <div className="kicker">技術の入れ替わり 2</div>
+          <div className="big2006" style={{ marginTop: 16 }}>
+            2009
           </div>
-          <div className="lead" style={{ marginTop: 18 }}>
-            強いソフトが<em>ソースごと</em>公開される
+          <div className="lead" style={{ marginTop: 12 }}>
+            <em>Bonanza</em> のソースが公開される
           </div>
-          <p>
-            優勝ラインに届きうるソースコードと評価関数が
+          <p style={{ fontSize: 19, marginTop: 8 }}>
+            誰でも Bonanza の上から始められるようになった
             <br />
-            そのまま使える形で出回る
-            <br />
-            誰でもその上から始められる
+            この年 YSS は 7 位
           </p>
         </div>
       </Show>
-      <Show {...p} show="20" anim="right" d={0.1} className="zone">
-        <div className="ztext">
-          <div className="kicker jp">5 年限界説</div>
-          <div className="lead" style={{ marginTop: 18 }}>
-            開発 <em>5 年</em>で改良のネタが尽きる
-          </div>
-          <p>
-            強くならなくなり
-            <br />
-            開発者は去っていく
-            <br />
-            そう言われてきた経験則
-          </p>
-        </div>
-      </Show>
-      {/* 列の間隔は 44.83px (shogi.css の .tl の列幅と隙間)。括弧は 5 列ずつ、先頭の列から */}
-      {[102, 326, 550, 775].map((left, i) => (
-        <Show key={left} {...p} show="20" d={0.3 + i * 0.25} className="brk" style={{ left, width: 224 }}>
-          <span>5 年</span>
-        </Show>
-      ))}
-      {[326, 550, 775].map((left, i) => (
-        <Show key={left} {...p} show="20" anim="fade" d={0.55 + i * 0.25} className="wall" style={{ left }} />
-      ))}
-      <Show {...p} show="21" anim="zoom" d={0.15} className="zone">
-        <div className="stat">
-          <span className="num">24</span>
-          <span className="lbl">
-            大会連続
-            <br />
-            決勝進出
-          </span>
-        </div>
-        <div className="stat2">
-          <span>
-            優勝<b>3</b>
-          </span>
-          <span>
-            準優勝<b>4</b>
-          </span>
-        </div>
-      </Show>
+      <Show {...p} show="19" d={0.45} className="connector c09" />
 
-      {/* ===== 22-23 山下さん ===== */}
-      <Show {...p} show="22-23" anim="zoom" className="ph">
+      {/* ===== 20-21 山下さん ===== */}
+      <Show {...p} show="20-21" anim="zoom" className="ph">
         <img src={yamashitaHoki} alt="保木さんと山下さん" />
         <div className="shade" />
         <span className="tag">山下さん</span>
       </Show>
-      <Show {...p} show="22-23" anim="fade" d={0.3} className="phcap cap">
+      <Show {...p} show="20-21" anim="fade" d={0.3} className="phcap cap">
         右 山下さん（YSS）　左 保木さん（Bonanza）
       </Show>
-      <Show {...p} show="22" anim="right" d={0.2} className="yt">
-        <div className="kicker jp">山下さん</div>
+      {/* 話者の印象。山下さんの言葉と取られないよう、本文でも印象だと分かる形にする */}
+      <Show {...p} show="20" anim="right" d={0.2} className="yt">
+        <div className="kicker jp">私の印象</div>
         <div className="mid">
           流行りの技術も
           <br />
           いいと言われたものも
           <br />
           <em>とらわれずに</em>取り入れる
+          <br />
+          人に見える
         </div>
       </Show>
-      <Show {...p} show="23" anim="right" d={0.2} className="yt">
+      <Show {...p} show="21" anim="right" d={0.2} className="yt">
         <div className="kicker jp">山下さん</div>
         <div className="mid">
           いまも
@@ -573,15 +572,15 @@ function Bare() {
         </div>
       </Show>
 
-      {/* ===== 24-26 締め ===== */}
-      <Show {...p} show="24" className="end">
+      {/* ===== 22-24 締め ===== */}
+      <Show {...p} show="22" className="end">
         <div className="l">走ることは難しくない</div>
         <div className="l" style={{ '--d': '.6s' } as CSSProperties}>
           <em>走り続けること</em>が難しい
         </div>
       </Show>
-      <Show {...p} show="24" d={0.4} className="run" />
-      <Show {...p} show="25" d={0.15} className="restart">
+      <Show {...p} show="22" d={0.4} className="run" />
+      <Show {...p} show="23" d={0.15} className="restart">
         <div className="kicker jp">2026</div>
         <div className="big">
           私も今年
@@ -594,11 +593,11 @@ function Bare() {
           このやる気が続くといい
         </div>
       </Show>
-      <Show {...p} show="25" className="newrun" />
-      <Show {...p} show="25" anim="fade" d={1.6} className="newrunlb">
+      <Show {...p} show="23" className="newrun" />
+      <Show {...p} show="23" anim="fade" d={1.6} className="newrunlb">
         → 2027.05
       </Show>
-      <Show {...p} show="26" d={0.15} className="goal">
+      <Show {...p} show="24" d={0.15} className="goal">
         <div className="l1">世界コンピュータ将棋選手権には</div>
         <div className="l2">
           <em>山下さん</em>のような
@@ -606,9 +605,9 @@ function Bare() {
           人がいる
         </div>
       </Show>
-      <Show {...p} show="26" d={0.5} className="run" />
+      <Show {...p} show="24" d={0.5} className="run" />
 
-      <Show {...p} show="1,4-26" anim="fade" className="foot">
+      <Show {...p} show="1,4-24" anim="fade" className="foot">
         <b>WCSC</b>　World Computer Shogi Championship
       </Show>
       <div className="abs pager">

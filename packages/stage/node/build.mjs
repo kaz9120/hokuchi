@@ -45,6 +45,10 @@ const BAR_TEXT = '‹›0123456789 / 一覧全画面このページのリンク�
  * そこでパスの URL を状態ごとに作り、メタタグだけ持たせて、開いた人は再生画面の該当の位置へ送る。
  * n は帯の「n / 全体」と同じ 1 始まりの通し番号
  */
+// 再生画面はアドレス欄を /<slug>/<n>/ に書き換える (nav.ts の paths)。そのあと読み込む assets/ などの相対パスが
+// /<slug>/<n>/assets/ を指さないよう、開いた時点のトークの根を <base> に固定する。配信先のパスに依らないよう実行時に作る
+const BASE_TAG = `<script>document.write('<base href="' + location.href.replace(/[?#].*$/, '').replace(/index\\.html$/, '').replace(/"/g, '%22') + '">')</script>`
+
 function writePages(talk, info, shots, outDir) {
   const byName = new Map(shots.map((s) => [s.name, s.png]))
   const states = talk.scenes.flatMap((s) => Array.from({ length: s.steps }, (_, step) => ({ id: s.id, step })))
@@ -142,7 +146,7 @@ export async function buildTalk(talkDir, outDir, { states = false } = {}) {
   const bundled = await bundleFonts(families, text + talk.title + BAR_TEXT, outDir)
   const html = join(outDir, 'index.html')
   const pdfName = `${info.slug}.pdf`
-  writeFileSync(html, readFileSync(html, 'utf8').replace(marker, bundled.link).replace('</body>', `${exportTag({ text: doc, pdf: `./${pdfName}`, pages: true })}</body>`))
+  writeFileSync(html, readFileSync(html, 'utf8').replace('<head>', `<head>${BASE_TAG}`).replace(marker, bundled.link).replace('</body>', `${exportTag({ text: doc, pdf: `./${pdfName}`, pages: true })}</body>`))
   writeFileSync(join(outDir, 'talk.md'), doc)
   writeFileSync(join(outDir, pdfName), pdf)
   writeFileSync(join(outDir, 'og.png'), og)

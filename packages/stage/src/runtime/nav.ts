@@ -32,8 +32,14 @@ export function progress(talk: TalkDef, p: Pos) {
   return { done, total }
 }
 
-export function useNav(talk: TalkDef) {
+/**
+ * paths を true にすると、アドレス欄を # ではなくページごとの共有 URL (<トークの根>/<n>/) にする。
+ * アドレス欄からそのまま共有しても、そのページの OGP が出るようにするため (# の後ろはサーバに届かない)。
+ * /<n>/ はビルドが書くページで、根の #/<scene-id>/<step> へ転送するので、起動時はいつも根にいる
+ */
+export function useNav(talk: TalkDef, { paths = false }: { paths?: boolean } = {}) {
   const [pos, setPos] = useState<Pos>(() => fromHash(talk))
+  const root = useRef(location.pathname.replace(/index\.html$/, '')).current
   const chan = useRef<BroadcastChannel | null>(null)
   const remote = useRef<string>('')
 
@@ -49,13 +55,15 @@ export function useNav(talk: TalkDef) {
   }, [])
 
   useEffect(() => {
-    history.replaceState(null, '', `${location.search}#/${talk.scenes[pos.scene].id}/${pos.step}`)
+    const { done } = progress(talk, pos)
+    const url = paths ? `${root}${done > 1 ? `${done}/` : ''}${location.search}` : `${location.search}#/${talk.scenes[pos.scene].id}/${pos.step}`
+    history.replaceState(null, '', url)
     // replaceState はイベントを出さないので、位置を見たい側 (開発中の agentation) に知らせる
     dispatchEvent(new Event('stage:moved'))
     const key = `${pos.scene}/${pos.step}`
     if (remote.current !== key) chan.current?.postMessage({ scene: pos.scene, step: pos.step })
     remote.current = ''
-  }, [pos, talk])
+  }, [pos, talk, paths, root])
 
   const next = useCallback(() => setPos((p) => nextPos(talk, p) ?? p), [talk])
   const prev = useCallback(() => setPos((p) => prevPos(talk, p) ?? p), [talk])

@@ -176,15 +176,36 @@ body[data-mode='shot'] *::after {
 }
 
 /* ---- 公開用の画面。資料を読むことだけに絞る ---- */
+/* ステージの外の色と書体は、テーマごとに変える。既定 (mosh など) は中立の暗色と OS のフォント。
+   hokuchi 系は BRAND.md の「夜の焚き火」に合わせ、暖灰と ember、LINE Seed JP / Inter にする
+   (帯の文字はビルドが同梱フォントの字に足す。node/build.mjs の BAR_TEXT) */
 .public {
+  --pub-bg: #1d1c1f;
+  --pub-ink: #f4f3f1;
+  --pub-line: rgb(255 255 255 / 0.08);
+  --pub-hover: rgb(255 255 255 / 0.1);
+  --pub-progress: rgb(255 255 255 / 0.5);
+  --pub-font: system-ui, -apple-system, 'Hiragino Sans', sans-serif;
   position: fixed;
   inset: 0;
   display: flex;
   flex-direction: column;
-  background: #1d1c1f;
-  color: #f4f3f1;
-  /* ステージの外の UI は OS のフォントで描く (同梱するのはステージの書体だけ) */
-  font-family: system-ui, -apple-system, 'Hiragino Sans', sans-serif;
+  background: var(--pub-bg);
+  color: var(--pub-ink);
+  font-family: var(--pub-font);
+}
+.public[data-theme^='hokuchi'] {
+  --pub-bg: #13110e;
+  --pub-ink: #ebe5d8;
+  --pub-line: #26221c;
+  --pub-hover: rgb(244 125 58 / 0.14);
+  --pub-progress: #f47d3a;
+  --pub-font: 'LINE Seed JP', 'Inter', system-ui, -apple-system, 'Hiragino Sans', sans-serif;
+}
+.public button:focus-visible,
+.public-actions a:focus-visible {
+  outline: 2px solid #f47d3a;
+  outline-offset: 1px;
 }
 .public-main {
   flex: 1;
@@ -202,7 +223,7 @@ body[data-mode='shot'] *::after {
   gap: 16px;
   padding: 0 16px;
   font-size: 14px;
-  border-top: 1px solid rgb(255 255 255 / 0.08);
+  border-top: 1px solid var(--pub-line);
 }
 .public-nav {
   display: flex;
@@ -250,7 +271,7 @@ body[data-mode='shot'] *::after {
 }
 .public button:hover:not(:disabled),
 .public-actions a:hover {
-  background: rgb(255 255 255 / 0.1);
+  background: var(--pub-hover);
 }
 .public button:disabled {
   opacity: 0.3;
@@ -265,7 +286,7 @@ body[data-mode='shot'] *::after {
 }
 .public-progress > div {
   height: 100%;
-  background: rgb(255 255 255 / 0.5);
+  background: var(--pub-progress);
   transition: width 0.4s;
 }
 /* 縦長の画面では、スライドと操作の帯を離さず、まとめて縦の真ん中に置く */
@@ -408,6 +429,13 @@ body[data-mode='shot'] *::after {
 }
 .overview-item.current > div:first-child {
   outline-color: #f47d3a;
+}
+.public .overview {
+  background: var(--pub-bg);
+}
+.public .overview-item {
+  color: var(--pub-ink);
+  font-family: var(--pub-font);
 }
 
 /* ---- 発表者ビュー ---- */
